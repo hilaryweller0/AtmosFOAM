@@ -4,6 +4,9 @@ WMAKE := FOAM_USER_SRC=${CURDIR} wmake
 
 .PHONY: clean
 
+# TODO: fix dependencies since many executables/libraries depend upon stuff in lnInclude, not just the .so
+# we'll probably want .INTERMEDIATE trick again because wmake builds both the .so and lnInclude at the same time
+
 LIB_EXNER_THETA := $(FOAM_USER_LIBBIN)/libExnerTheta.so
 LIB_FINITE_VOLUME_USER := $(FOAM_USER_LIBBIN)/libfiniteVolumeUser.so
 LIB_FV_MESH_WITH_DUAL := $(FOAM_USER_LIBBIN)/libfvMeshWithDual.so
