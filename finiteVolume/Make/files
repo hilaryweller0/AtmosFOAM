@@ -22,7 +22,5 @@ $(faceToFace)/MeshObjects/centredCFCFaceToFaceStencilObject.C
 
 finiteVolume/sGradSchemes/quadraticFitSGrad/quadraticFitSGrads.C
 
-finiteVolume/snGradSchemes/linearFitSnGrad/linearFitSnGrads.C
-
 LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeUser
 
