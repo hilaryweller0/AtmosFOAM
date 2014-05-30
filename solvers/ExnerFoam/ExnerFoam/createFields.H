@@ -13,6 +13,10 @@ surfaceVectorField Uf
     mesh
 );
 
+// Cell centre velocity
+//volVectorField U("U", H.reconstruct(Uf & mesh.Sf()));
+volVectorField U("U", fvc::reconstruct(Uf & mesh.Sf()));
+
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
 (
@@ -49,14 +53,6 @@ surfaceScalarField thetaf
 );
 thetaf.oldTime();
 
-//// Diffusion coefficient for theta
-//const surfaceScalarField diffuseTheta
-//(
-//    IOobject("diffuseTheta", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-//    mesh,
-//    dimensionedScalar("diffuseTheta", dimensionSet(1,-1,-1,0,0), scalar(0))
-//);
-
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
 (
@@ -82,38 +78,27 @@ volScalarField Psi("Psi", rho/Exner);
 Psi.oldTime();
 
 // fixed flux boundary conditions
-wordList VuBCs(mesh.boundaryMesh().size(), "calculated");
-wordList uBCs(mesh.boundaryMesh().size(), "zeroGradient");
+wordList phiUBCs(mesh.boundaryMesh().size(), "calculated");
 forAll(mesh.boundaryMesh(), patchi)
 {
     const word btype = mesh.boundaryMesh()[patchi].type();
     const word utype = Uf.boundaryField()[patchi].type();
-    if (btype == "wall" || btype == "symmetryPlane" || btype == "empty")
+    if
+    (
+        btype == "wall" || btype == "symmetryPlane" || btype == "empty"
+     || utype == "fixedValue"
+    )
     {
-        VuBCs[patchi] = "fixedValue";
-        uBCs[patchi] = "slip";
-    }
-    else if (utype == "fixedValue")
-    {
-        VuBCs[patchi] = "fixedValue";
-        uBCs[patchi] = "fixedValue";
+        phiUBCs[patchi] = "fixedValue";
     }
 }
 
-// Cell centre velocity
-volVectorField u
-(
-    IOobject("u", runTime.timeName(), mesh),
-    H.reconstruct(Uf & mesh.Sf()),
-    uBCs
-);
-
-Info<< "Calculating face flux field U\n" << endl;
-surfaceScalarField U
+Info<< "Calculating face flux field phi\n" << endl;
+surfaceScalarField phi
 (
     IOobject
     (
-       "U",
+       "phi",
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
@@ -122,52 +107,35 @@ surfaceScalarField U
     rhof*(Uf & mesh.Sf())
 //    phiUBCs
 );
-
-Info << "Calculating V mass circulation field\n" << endl;
-surfaceScalarField V
-(
-    IOobject("V", runTime.timeName(), mesh),
-    rhof*(Uf & H.delta())
-//    phiUBCs
-);
-V.oldTime();
+phi.oldTime();
 
 // Temporary flux with fixed boundary conditions (without hydrostatic terms)
-surfaceScalarField Vu
+surfaceScalarField phiU
 (
-    IOobject("Vu", runTime.timeName(), mesh),
-    V,
-    VuBCs
+    IOobject("phiU", runTime.timeName(), mesh),
+    phi,
+    phiUBCs
 );
 
 // Perpendicular component of the momentum
-surfaceVectorField vperp("vperp", rhof*(Uf - (Uf & H.delta())*H.delta()/sqr(H.magd())));
+surfaceVectorField vperp("vperp", Uf - (Uf & mesh.Sf())*mesh.Sf()/sqr(mesh.magSf()));
 
 // Rates of change for Crank-Nicholson
-surfaceScalarField dVdt
+surfaceScalarField dPhidt
 (
-    IOobject("dVdt", runTime.timeName(), mesh),
-    -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
-    +rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner),
-     VuBCs
+    IOobject("dPhidt", runTime.timeName(), mesh),
+    -(mesh.Sf() & (fvc::interpolate(fvc::div(phi,U))+2*rhof*(Omega^(Uf-Ug))))
+    +rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner)),
+    phiUBCs
 );
-dVdt.oldTime();
 
-volScalarField divU("divU", fvc::div(U));
-volScalarField divUtheta("divUtheta", fvc::div(U, theta));
-divU.oldTime();
-divUtheta.oldTime();
-
-// intermediate values for sub time-stepping of advection
-surfaceScalarField divUu1
-(
-    IOobject("divUu1", runTime.timeName(), mesh),
-    fvc::interpolate(fvc::div(U,u)) & H.delta(),
-    VuBCs
-);
+volScalarField divPhi("divPhi", fvc::div(phi));
+volScalarField divPhitheta("divPhitheta", fvc::div(phi, theta));
+divPhi.oldTime();
+divPhitheta.oldTime();
 
 // fix no flow boundaries
-forAll(Vu.boundaryField(), patchi)
+forAll(phiU.boundaryField(), patchi)
 {
     const word btype = mesh.boundaryMesh()[patchi].type();
     const word utype = U.boundaryField()[patchi].type();
@@ -176,16 +144,8 @@ forAll(Vu.boundaryField(), patchi)
         btype == "wall" || btype == "symmetryPlane" || btype == "empty"
     )
     {
-        Vu.boundaryField()[patchi] == 0;
-        dVdt.boundaryField()[patchi] == 0;
-        divUu1.boundaryField()[patchi] == 0;
+        phiU.boundaryField()[patchi] == 0;
+        dPhidt.boundaryField()[patchi] == 0;
     }
 }
-
-surfaceScalarField divUu2("divUu2", divUu1);
-surfaceScalarField divUu3("divUu3", divUu1);
-
-//volScalarField divUt1("divUt1", fvc::div(U,theta));
-//volScalarField divUt2("divUt2", divUt1);
-//volScalarField divUt3("divUt3", divUt1);
 

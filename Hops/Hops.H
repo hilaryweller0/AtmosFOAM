@@ -37,7 +37,6 @@ SourceFiles
 #ifndef Hops_H
 #define Hops_H
 
-#include "surfaceInterpolation.H"
 #include "fvc.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

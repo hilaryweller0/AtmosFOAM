@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #include "orthogonalBoundaries.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
     Hops H(mesh);
@@ -70,8 +71,9 @@ int main(int argc, char *argv[])
         {
 //            rho = pRef/(R*theta)*pow(Exner, (1-kappa)/kappa);
 //            rhof = fvc::interpolate(rho);
-            U = H.ddirToFlux(gd)
-              - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
+            //U = H.ddirToFlux(gd)
+            //  - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
+            U = H.Hdiag()*gd;
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
@@ -81,7 +83,7 @@ int main(int argc, char *argv[])
                     Exner
                 )
             );
-//            if (BCiter < 2) ExnerEqn.relax(0.01);
+            //ExnerEqn.relax(0.85);
             innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
             //Exner = mag(Exner);
 
@@ -102,8 +104,20 @@ int main(int argc, char *argv[])
         Info << topBCval << endl;
         Exner.boundaryField()[topBC] == topBCval;
     	
-        Exner.write();
+        //Exner.write();
 	}
+
+	// Change the top boundary type to be fixedFluxBuoyantExner
+	wordList ExnerBCs = Exner.boundaryField().types();
+	ExnerBCs[topBC] = "fixedFluxBuoyantExner";
+	volScalarField ExnerNew
+	(
+	    IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
+	    Exner,
+	    ExnerBCs
+	);
+	ExnerNew.correctBoundaryConditions();
+	ExnerNew.write();
 
     Info<< "End\n" << endl;
 

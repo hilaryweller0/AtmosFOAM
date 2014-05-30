@@ -35,7 +35,7 @@ Foam::Hops::Hops(const fvMesh& mesh__)
     Hdiag_((mesh_.Sf() & delta_)/sqr(magd_))
 {
     surfaceScalarField dc = mesh_.deltaCoeffs();
-    mesh_.surfaceInterpolation::overrideDeltaCoeffs(dc);
+    const_cast<surfaceScalarField&>(mesh_.nonOrthDeltaCoeffs()) = dc;
 }
 
 // ************************************************************************* //

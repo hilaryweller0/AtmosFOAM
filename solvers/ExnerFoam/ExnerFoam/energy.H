@@ -1,5 +1,5 @@
 {
-    KE = 0.25*fvc::surfaceSum(U*V/rhof)
+    KE = 0.25*fvc::surfaceSum(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))
         /dimensionedScalar("V", dimVol, scalar(1));
     KE.internalField() /= mesh.V();
     internalEnergy = rho*theta*Exner*Cv;

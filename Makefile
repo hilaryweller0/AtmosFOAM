@@ -41,7 +41,7 @@ clean:
 	$(WCLEAN) fvMeshWithDual
 	$(WCLEAN) Hops
 	$(WCLEAN) solvers/ExnerFoam/ExnerFoamH
-	$(WCLEAN) solvers/ExnerFoam/ExnerFoamNonOrthog_IMEXEX
+	$(WCLEAN) solvers/ExnerFoam/ExnerFoam
 	$(WCLEAN) utilities/mesh/add2dMountain
 	$(WCLEAN) utilities/preProcessing/setExnerBalancedH
 	$(WCLEAN) utilities/preProcessing/setScalarOverOrography
