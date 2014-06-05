@@ -20,6 +20,7 @@ SET_EXNER_BALANCED_H := $(FOAM_USER_APPBIN)/setExnerBalancedH
 SET_SCALAR_OVER_OROGRAPHY := $(FOAM_USER_APPBIN)/setScalarOverOrography
 SET_THETA := $(FOAM_USER_APPBIN)/setTheta
 CREATE_SPONGE_LAYER := $(FOAM_USER_APPBIN)/createSpongeLayer
+PLOT_PATCH_DATA := $(FOAM_USER_APPBIN)/plotPatchData
 
 ALL_LIBS := $(LIB_EXNER_THETA) \
 	$(LIB_FINITE_VOLUME_USER) \
@@ -51,6 +52,7 @@ clean:
 	$(WCLEAN) utilities/preProcessing/setTheta
 	$(WCLEAN) utilities/postProcessing/globalSum
 	$(WCLEAN) utilities/postProcessing/sumFields
+	$(WCLEAN) utilities/postProcessing/plotPatchData_for5.1.1
 	$(RM) $(ALL_LIBS) $(ALL_EXECUTABLES)
 
 $(LIB_EXNER_THETA): ExnerTheta/BCs/fixedFluxBuoyantExnerFvPatchScalarField.C $(LIB_FINITE_VOLUME_USER)
@@ -89,3 +91,6 @@ $(SET_SCALAR_OVER_OROGRAPHY):
 
 $(CREATE_SPONGE_LAYER): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) utilities/preProcessing/createSpongeLayer
+
+$(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER) $(LIB_FV_MESH_WITH_DUAL)
+	$(WMAKE) utilities/postProcessing/plotPatchData_for5.1.1
