@@ -17,6 +17,7 @@ EXNER_FOAM_H := $(FOAM_USER_APPBIN)/exnerFoamH
 ADD_2D_MOUNTAIN := $(FOAM_USER_APPBIN)/add2dMountain
 GLOBAL_SUM := $(FOAM_USER_APPBIN)/globalSum
 SUM_FIELDS := $(FOAM_USER_APPBIN)/sumFields
+SET_EXNER_BALANCED := $(FOAM_USER_APPBIN)/setExnerBalanced
 SET_EXNER_BALANCED_H := $(FOAM_USER_APPBIN)/setExnerBalancedH
 SET_SCALAR_OVER_OROGRAPHY := $(FOAM_USER_APPBIN)/setScalarOverOrography
 SET_THETA := $(FOAM_USER_APPBIN)/setTheta
@@ -34,6 +35,7 @@ ALL_EXECUTABLES := \
 	$(ADD_2D_MOUNTAIN) \
 	$(GLOBAL_SUM) \
 	$(SUM_FIELDS) \
+	$(SET_EXNER_BALANCED) \
 	$(SET_EXNER_BALANCED_H) \
 	$(SET_SCALAR_OVER_OROGRAPHY) \
 	$(SET_THETA) \
@@ -51,6 +53,7 @@ clean:
 	$(WCLEAN) solvers/ExnerFoam/ExnerFoam
 	$(WCLEAN) utilities/mesh/add2dMountain
 	$(WCLEAN) utilities/preProcessing/createSpongeLayer
+	$(WCLEAN) utilities/preProcessing/setExnerBalanced
 	$(WCLEAN) utilities/preProcessing/setExnerBalancedH
 	$(WCLEAN) utilities/preProcessing/setScalarOverOrography
 	$(WCLEAN) utilities/preProcessing/setTheta
@@ -77,6 +80,9 @@ $(EXNER_FOAM): $(LIB_HOPS) $(LIB_EXNER_THETA) $(LIB_FINITE_VOLUME_USER)
 
 $(EXNER_FOAM_H): $(LIB_HOPS) $(LIB_EXNER_THETA)
 	$(WMAKE) solvers/ExnerFoam/ExnerFoamH	
+
+$(SET_EXNER_BALANCED): $(LIB_HOPS) $(LIB_EXNER_THETA)
+	$(WMAKE) utilities/preProcessing/setExnerBalanced
 
 $(SET_EXNER_BALANCED_H): $(LIB_HOPS) $(LIB_EXNER_THETA)
 	$(WMAKE) utilities/preProcessing/setExnerBalancedH
