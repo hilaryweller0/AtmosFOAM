@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #include "orthogonalBoundaries.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
     #include "createFields.H"
@@ -90,8 +91,20 @@ int main(int argc, char *argv[])
         Info << topBCval << endl;
         Exner.boundaryField()[topBC] == topBCval;
     	
-        Exner.write();
+        //Exner.write();
 	}
+	
+	// Change the top boundary type to be fixedFluxBuoyantExner
+	wordList ExnerBCs = Exner.boundaryField().types();
+	ExnerBCs[topBC] = "fixedFluxBuoyantExner";
+	volScalarField ExnerNew
+	(
+	    IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
+	    Exner,
+	    ExnerBCs
+	);
+	ExnerNew.correctBoundaryConditions();
+	ExnerNew.write();
 
     Info<< "End\n" << endl;
 

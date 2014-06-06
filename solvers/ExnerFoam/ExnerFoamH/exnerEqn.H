@@ -47,6 +47,18 @@
         surfaceScalarField gradPcoeff = G*offCentre*Cp*dt
                                         *rhof*thetaf*H.magd();
 
+        surfaceScalarField snGradExner("snGradExner", fvc::snGrad(Exner));
+        snGradExner.write();
+        gradPcoeff.rename("gradPcoeff");
+        gradPcoeff.write();
+        U = H.ddirToFlux(V);
+        U.write();
+        V.write();
+        thetaf.write();
+        dVdt.write();
+        Vu.write();
+        FatalErrorIn("") << exit(FatalError);
+
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
             U = H.ddirToFlux(V)
@@ -54,6 +66,13 @@
 //              - H.ddirToFlux(gradPcoeff*fvc::snGrad(Exner))
 //              + gradPcoeff*fvc::snGrad(Exner)*mesh.magSf()/H.magd();
  
+            U.write();
+            V.write();
+            thetaf.write();
+            dVdt.write();
+            Vu.write();
+            FatalErrorIn("") << exit(FatalError);
+
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)

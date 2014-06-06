@@ -148,7 +148,7 @@ surfaceScalarField dVdt
 (
     IOobject("dVdt", runTime.timeName(), mesh),
     -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
-    +rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner),
+    +rhof*(gd - H.magd()*Cp*thetaf*fvc::snGrad(Exner)),
      VuBCs
 );
 dVdt.oldTime();
