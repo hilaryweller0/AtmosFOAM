@@ -7,6 +7,11 @@ Foam::scalar AgnessiWitch(const scalar x, const scalar a, const scalar hm)
     return hm/(1 + sqr(x/a));
 }
 
+Foam::scalar BottaKlein(const scalar x, const scalar a, const scalar hm)
+{
+    return hm/Foam::pow(1 + sqr(x/a), 1.5);
+}
+
 Foam::scalar ScharExp(const scalar x, const scalar a, const scalar hm)
 {
     return hm*Foam::exp(-sqr(x/a));

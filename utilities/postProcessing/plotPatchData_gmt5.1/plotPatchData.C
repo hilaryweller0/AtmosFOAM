@@ -480,16 +480,19 @@ int main(int argc, char *argv[])
                               + epsFile;
             systemVerbose(systemCall);
             
-            // convert to eps and remove ps file
-            systemCall = "ps2eps -f -q " + epsFile;
-            systemVerbose(systemCall);
-
-            systemCall = "mv " + epsFile + ".eps " + epsFile;
-            systemVerbose(systemCall);
+            if (!overlay)
+            {
+                // convert to eps and remove ps file
+                systemCall = "ps2eps -f -q " + epsFile;
+                systemVerbose(systemCall);
+    
+                systemCall = "mv " + epsFile + ".eps " + epsFile;
+                systemVerbose(systemCall);
             
-            // give the file a postscript title
-            systemCall = "pstitle " + epsFile + " " + epsFile;
-            systemVerbose(systemCall);
+                // give the file a postscript title
+                systemCall = "pstitle " + epsFile + " " + epsFile;
+                systemVerbose(systemCall);
+            }
         }
     }
 

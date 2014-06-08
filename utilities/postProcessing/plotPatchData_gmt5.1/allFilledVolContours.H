@@ -253,11 +253,11 @@ else
 
     systemCall2 = "psscale -C../colourScale.cpt -S -E ";
     systemCall = systemCall2 + " -D9c/-0.5c/18c/0.5ch -B"
-                       + stringScalar(2*colourStep) + " | ps2eps -f -q > " + legNameH;
+                       + stringScalar(4*colourStep) + " | ps2eps -f -q > " + legNameH;
     systemVerbose(systemCall);
 
     systemCall = systemCall2 + " -D-0.5c/9c/18c/0.5c -B"
-                       + stringScalar(2*colourStep) + " | ps2eps -f -q > " + legNameV;
+                       + stringScalar(4*colourStep) + " | ps2eps -f -q > " + legNameV;
     systemVerbose(systemCall);
 
     chDir("..");

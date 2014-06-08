@@ -44,21 +44,23 @@ int main(int argc, char *argv[])
     scalar (*smoothMountain)(scalar, scalar, scalar) = 
         mountainName == "ScharExp" ? &ScharExp :
         mountainName == "ScharCos" ? &ScharCosSmooth :
-        mountainName == "AgnessiWitch" ? &AgnessiWitch : NULL;
+        mountainName == "AgnessiWitch" ? &AgnessiWitch :
+        mountainName == "BottaKlein"   ? &BottaKlein : NULL;
         
     scalar (*fineMountain)(scalar, scalar) = 
         mountainName == "ScharExp" ? &ScharCos :
         mountainName == "ScharCos" ? &ScharCos :
-        mountainName == "AgnessiWitch" ? &flatMountain : NULL;
+        mountainName == "AgnessiWitch" ? &flatMountain :
+        mountainName == "BottaKlein" ? &flatMountain : NULL;
 
     if 
     (
         mountainName != "ScharExp" && mountainName != "ScharCos"
-     && mountainName != "AgnessiWitch"
+     && mountainName != "AgnessiWitch" && mountainName != "BottaKlein"
     )
     {
         FatalErrorIn("ScharMountain")
-      <<"mountainType should be one of ScharExp, ScharCos or AgnessiWitch"
+      <<"mountainType should be one of ScharExp, ScharCos, BottaKlein or AgnessiWitch"
          << " not " << mountainName << exit(FatalError);
     }
     
@@ -106,7 +108,9 @@ int main(int argc, char *argv[])
             scalar z = newPoints[ip].z();
             if (z < zt)
             {
-                scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
+                scalar h = //(x < a*lambda) ?
+                           smoothMountain(x,a,hm) * fineMountain(x,lambda);//:
+                           //0;
                 newPoints[ip].z() += h*(1 - z/zt);
             }
         }

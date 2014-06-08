@@ -249,7 +249,7 @@ Foam::Istream& Foam::operator>>(Istream& is, FieldToPlot& ftp)
     {
         FatalErrorIn("Istream& operator>>(Istream&, FieldToPlot&)")
         << "Second element of FieldToPlot named " << ftp.name()
-        << " should be one of filledContours, solidContours, dashedContours, vectors, vectorContours, mesh, meshPoints, meshCentres, advectedContours, writeContours or rawValues but " << plotType << " given" << exit(FatalError);
+        << " should be one of filledContours, solidContours, dashedContours, vectors, vectorContours, mesh, meshPoints, meshCentres, numbered, advectedContours, writeContours or rawValues but " << plotType << " given" << exit(FatalError);
     }
 
     // Check state of IOstream

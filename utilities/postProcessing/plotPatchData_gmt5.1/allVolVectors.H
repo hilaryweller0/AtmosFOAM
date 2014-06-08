@@ -11,6 +11,17 @@ scalar maxMagU = 0;
     Info << U.name() << " goes from " << min(mag(Uf)) << " to " << maxMagU
         << endl;
 
+    if (projection2D!="latLon" && mag(vectorScale)<VSMALL && maxMagU>VSMALL)
+    {
+        const scalar meshSize = mag(mesh.bounds().max()-mesh.bounds().min());
+        vectorScale = meshSize/(maxMagU*Foam::sqrt(1.*mesh.nCells()));
+    }
+    else if (projection2D=="latLon"&&mag(vectorScale)<VSMALL && maxMagU>VSMALL)
+    {
+        vectorScale = 180./(maxMagU*Foam::sqrt(1.*mesh.nCells()));
+    }
+    Info << "Using vectorScale = " << vectorScale << endl;
+
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
     scalar maxDist2 = 0;
@@ -140,8 +151,8 @@ scalar maxMagU = 0;
 }
 
 // plot vectors
-systemCall = "psxy '" + tmpFile + "' -J -R -h1 -Sv0.5i+s+e+n"
-                  + stringScalar(100./vectorScale)
+systemCall = "psxy '" + tmpFile + "' -J -R -h1 -Sv0.3c+s+e"
+                  +"+n" + stringScalar(0.3) //100./vectorScale)
                   + " -W" + fieldsToPlot[ifield].colourScale()
                   + " -G" + fieldsToPlot[ifield].colourScale()
                   + " -O -K >> " + epsFile;

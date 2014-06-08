@@ -212,7 +212,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
             B, Eigen::ComputeThinU | Eigen::ComputeThinV
         );
         Eigen::VectorXd pickElt0 = Eigen::ArrayXd::Zero(B.rows());
-        pickElt0[0] = 0;
+        pickElt0[0] = 1;
         Eigen::VectorXd Binv0 = svd.solve(pickElt0);
 
         scalar maxCoeff = 0;

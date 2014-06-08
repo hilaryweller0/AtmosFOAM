@@ -158,10 +158,10 @@ scalar maxMagU = 0;
 }
 
 // plot vectors
-systemCall = "psxy '" + tmpFile + "' -J -R -h1 -Sv0.5i+s+e+n"
-                  + stringScalar(100./vectorScale)
+systemCall = "psxy '" + tmpFile + "' -J -R -h1 -Sv0.3c+s+e"
+                  +"+n" + stringScalar(0.3) //100./vectorScale)
                   + " -W" + fieldsToPlot[ifield].colourScale()
-                  //+ " -G" + fieldsToPlot[ifield].colourScale()
+                  + " -G" + fieldsToPlot[ifield].colourScale()
                   + " -O -K >> " + epsFile;
 systemVerbose(systemCall);
 

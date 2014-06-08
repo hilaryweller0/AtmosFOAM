@@ -59,7 +59,7 @@ clean:
 	$(WCLEAN) utilities/preProcessing/setTheta
 	$(WCLEAN) utilities/postProcessing/globalSum
 	$(WCLEAN) utilities/postProcessing/sumFields
-	$(WCLEAN) utilities/postProcessing/plotPatchData_for5.1.1
+	$(WCLEAN) utilities/postProcessing/plotPatchData_gmt5.1
 	$(RM) $(ALL_LIBS) $(ALL_EXECUTABLES)
 
 $(LIB_EXNER_THETA): ExnerTheta/BCs/fixedFluxBuoyantExnerFvPatchScalarField.C $(LIB_FINITE_VOLUME_USER)
@@ -106,4 +106,4 @@ $(CREATE_SPONGE_LAYER): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) utilities/preProcessing/createSpongeLayer
 
 $(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER) $(LIB_FV_MESH_WITH_DUAL)
-	$(WMAKE) utilities/postProcessing/plotPatchData_for5.1.1
+	$(WMAKE) utilities/postProcessing/plotPatchData_gmt5.1
