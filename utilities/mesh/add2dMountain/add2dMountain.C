@@ -59,21 +59,22 @@ int main(int argc, char *argv[])
      && mountainName != "AgnessiWitch" && mountainName != "BottaKlein"
     )
     {
-        FatalErrorIn("ScharMountain")
+        FatalErrorIn("add2dMountain")
       <<"mountainType should be one of ScharExp, ScharCos, BottaKlein or AgnessiWitch"
          << " not " << mountainName << exit(FatalError);
     }
     
     // Get which coord system to use
-    enum coordSysType{BTF, HTF, SLEVE, NONE};
+    enum coordSysType{BTF, HTF, SLEVE, SNAP, NONE};
     const word coordSysName(initDict.lookup("coordSys"));
     const coordSysType coordSys = coordSysName == "BTF" ? BTF :
                                   coordSysName == "HTF" ? HTF :
-                                  coordSysName == "SLEVE" ? SLEVE : NONE;
+                                  coordSysName == "SLEVE" ? SLEVE : 
+				  coordSysName == "SNAP" ? SNAP : NONE;
     if (coordSys == NONE)
     {
         FatalErrorIn("ScharMountain")
-            << "coordSys must be one of BTF, HTF or SLEVE. Not "
+            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
             << coordSysName << exit(FatalError);
     }
     
@@ -98,7 +99,7 @@ int main(int argc, char *argv[])
             << exit(FatalError);
     }
     
-    // Calculate new points for BTF
+    // Calculate new points
     switch (coordSys)
     {
     case BTF:
@@ -108,9 +109,7 @@ int main(int argc, char *argv[])
             scalar z = newPoints[ip].z();
             if (z < zt)
             {
-                scalar h = //(x < a*lambda) ?
-                           smoothMountain(x,a,hm) * fineMountain(x,lambda);//:
-                           //0;
+                scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
                 newPoints[ip].z() += h*(1 - z/zt);
             }
         }
@@ -160,10 +159,21 @@ int main(int argc, char *argv[])
             }
         }
     }break;
+
+    case SNAP:
+        forAll(newPoints, ip)
+        {
+            scalar x = newPoints[ip].x();
+            scalar y = newPoints[ip].y();
+            scalar z = newPoints[ip].z();
+            scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
+            newPoints[ip].z() = h;
+	}
+    break;
     
     default:
-        FatalErrorIn("ScharMountain")
-            << "coordSys must be one of BTF, HTF or SLEVE. Not "
+        FatalErrorIn("add2dMountain")
+            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
             << coordSysName << exit(FatalError);
     }
 
