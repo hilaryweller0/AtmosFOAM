@@ -8,6 +8,9 @@ Moves the grid points.
 #include "fvCFD.H"
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
+#include "HashTable.H"
+#include "doubleScalar.H"
+#include <cmath>
 
 using namespace Foam::constant::mathematical;
 
@@ -161,14 +164,37 @@ int main(int argc, char *argv[])
     }break;
 
     case SNAP:
+    {
+	/* For each column of fixed x value, find the point whose z value is closest to h.
+           Update those points to have a z value of h.
+         */
+	HashTable<scalar, scalar> minDistances;
+        HashTable<scalar, scalar> closestZcoords;
+
         forAll(newPoints, ip)
         {
             scalar x = newPoints[ip].x();
-            scalar y = newPoints[ip].y();
             scalar z = newPoints[ip].z();
             scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-            newPoints[ip].z() = h;
+            scalar distance = abs(z - h);
+            
+            if (!minDistances.found(x) || distance < minDistances[x])
+            {
+                minDistances.set(x, distance);
+                closestZcoords.set(x, z);
+            }
 	}
+
+        forAll(newPoints, ip)
+        {
+            scalar x = newPoints[ip].x();
+            scalar z = newPoints[ip].z();
+            if (closestZcoords[x] == z)
+            {
+                newPoints[ip].z() = smoothMountain(x,a,hm) * fineMountain(x,lambda);
+            }
+        }
+    }
     break;
     
     default:
