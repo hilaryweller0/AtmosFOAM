@@ -14,11 +14,80 @@ Moves the grid points.
 
 using namespace Foam::constant::mathematical;
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+typedef scalar (*SmoothMountainFunction)(scalar, scalar, scalar);
+typedef scalar (*FineMountainFunction)(scalar, scalar);
+
+class Add2dMountainParameters
+{
+    public:
+    Add2dMountainParameters(
+            const scalar zt,
+            const scalar a,
+            const scalar hm,
+            const scalar lambda,
+            const SmoothMountainFunction smoothMountain,
+            const FineMountainFunction fineMountain)
+        :
+            zt(zt),
+            a(a),
+            hm(hm),
+            lambda(lambda),
+            smoothMountain(smoothMountain),
+            fineMountain(fineMountain)
+    {}
+
+    scalar heightAt(const scalar x) const
+    {
+	    return smoothMountain(x,a,hm) * fineMountain(x,lambda);
+    }
+
+    private:
+    const scalar zt; // top of movement of levels
+    const scalar a; // horizontal mountain scale
+    const scalar hm; // Maximum mountain height
+    const scalar lambda; // horizontal scale in Schar mountain width
+    const SmoothMountainFunction smoothMountain;
+    const FineMountainFunction fineMountain;
+};
 
 int roundUp(int numToRound, int multiple) 
 {
    return (numToRound + multiple - 1) / multiple * multiple;
+}
+
+/* For each column of fixed x value, find the point whose z value is closest to h.
+   Update those points to have a z value of h.
+ */
+void snapNearestPointsToSurface(
+        IOField<point>& newPoints,
+        const Add2dMountainParameters& params)
+{
+	HashTable<int, scalar> minDistances;
+	HashTable<int, scalar> closestZcoords;
+
+	forAll(newPoints, ip)
+	{
+	    int x = roundUp(newPoints[ip].x(), 10);
+	    scalar z = newPoints[ip].z();
+	    scalar h = params.heightAt(x);
+	    scalar distance = abs(z - h);
+	    
+	    if (!minDistances.found(x) || distance < minDistances[x])
+	    {
+            minDistances.set(x, distance);
+            closestZcoords.set(x, z);
+	    }
+	}
+
+	forAll(newPoints, ip)
+	{
+	    int x = roundUp(newPoints[ip].x(), 10);
+	    scalar z = newPoints[ip].z();
+	    if (closestZcoords[x] == z)
+	    {
+		    newPoints[ip].z() = params.heightAt(x);
+	    }
+	}
 }
 
 int main(int argc, char *argv[])
@@ -169,39 +238,10 @@ int main(int argc, char *argv[])
     }break;
 
     case SNAP:
-    {
-	/* For each column of fixed x value, find the point whose z value is closest to h.
-           Update those points to have a z value of h.
-         */
-	HashTable<int, scalar> minDistances;
-        HashTable<int, scalar> closestZcoords;
-
-        forAll(newPoints, ip)
-        {
-            int x = roundUp(newPoints[ip].x(), 10);
-            scalar z = newPoints[ip].z();
-            scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-            scalar distance = abs(z - h);
-            
-            if (!minDistances.found(x) || distance < minDistances[x])
-            {
-		Info << "[" << x << "," << z << "]" << " distance " << distance << endl;
-                minDistances.set(x, distance);
-                closestZcoords.set(x, z);
-            }
-	}
-
-        forAll(newPoints, ip)
-        {
-            int x = roundUp(newPoints[ip].x(), 10);
-            scalar z = newPoints[ip].z();
-            if (closestZcoords[x] == z)
-            {
-                newPoints[ip].z() = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-            }
-        }
-    }
-    break;
+        snapNearestPointsToSurface(
+                newPoints,
+                Add2dMountainParameters(zt, a, hm, lambda, smoothMountain, fineMountain));
+        break;
     
     default:
         FatalErrorIn("add2dMountain")
