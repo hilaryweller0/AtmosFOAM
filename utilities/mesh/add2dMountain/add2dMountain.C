@@ -16,6 +16,11 @@ using namespace Foam::constant::mathematical;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+int roundUp(int numToRound, int multiple) 
+{
+   return (numToRound + multiple - 1) / multiple * multiple;
+}
+
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
@@ -168,18 +173,19 @@ int main(int argc, char *argv[])
 	/* For each column of fixed x value, find the point whose z value is closest to h.
            Update those points to have a z value of h.
          */
-	HashTable<scalar, scalar> minDistances;
-        HashTable<scalar, scalar> closestZcoords;
+	HashTable<int, scalar> minDistances;
+        HashTable<int, scalar> closestZcoords;
 
         forAll(newPoints, ip)
         {
-            scalar x = newPoints[ip].x();
+            int x = roundUp(newPoints[ip].x(), 10);
             scalar z = newPoints[ip].z();
             scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
             scalar distance = abs(z - h);
             
             if (!minDistances.found(x) || distance < minDistances[x])
             {
+		Info << "[" << x << "," << z << "]" << " distance " << distance << endl;
                 minDistances.set(x, distance);
                 closestZcoords.set(x, z);
             }
@@ -187,7 +193,7 @@ int main(int argc, char *argv[])
 
         forAll(newPoints, ip)
         {
-            scalar x = newPoints[ip].x();
+            int x = roundUp(newPoints[ip].x(), 10);
             scalar z = newPoints[ip].z();
             if (closestZcoords[x] == z)
             {
