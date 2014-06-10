@@ -17,10 +17,10 @@ using namespace Foam::constant::mathematical;
 typedef scalar (*SmoothMountainFunction)(scalar, scalar, scalar);
 typedef scalar (*FineMountainFunction)(scalar, scalar);
 
-class Add2dMountainParameters
+class Mountain
 {
     public:
-    Add2dMountainParameters(
+    Mountain(
             const scalar zt,
             const scalar a,
             const scalar hm,
@@ -60,7 +60,7 @@ int roundUp(int numToRound, int multiple)
  */
 void snapNearestPointsToSurface(
         IOField<point>& newPoints,
-        const Add2dMountainParameters& params)
+        const Mountain& mountain)
 {
 	HashTable<int, scalar> minDistances;
 	HashTable<int, scalar> closestZcoords;
@@ -69,7 +69,7 @@ void snapNearestPointsToSurface(
 	{
 	    int x = roundUp(newPoints[ip].x(), 10);
 	    scalar z = newPoints[ip].z();
-	    scalar h = params.heightAt(x);
+	    scalar h = mountain.heightAt(x);
 	    scalar distance = abs(z - h);
 	    
 	    if (!minDistances.found(x) || distance < minDistances[x])
@@ -85,7 +85,7 @@ void snapNearestPointsToSurface(
 	    scalar z = newPoints[ip].z();
 	    if (closestZcoords[x] == z)
 	    {
-		    newPoints[ip].z() = params.heightAt(x);
+		    newPoints[ip].z() = mountain.heightAt(x);
 	    }
 	}
 }
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
     case SNAP:
         snapNearestPointsToSurface(
                 newPoints,
-                Add2dMountainParameters(zt, a, hm, lambda, smoothMountain, fineMountain));
+                Mountain(zt, a, hm, lambda, smoothMountain, fineMountain));
         break;
     
     default:
