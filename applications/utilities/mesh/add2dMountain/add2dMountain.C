@@ -1,10 +1,3 @@
-/*---------------------------------------------------------------------------*\
-Date started: 10/05/2013
-
-Moves the grid points.
-
-\*---------------------------------------------------------------------------*/
-
 #include "fvCFD.H"
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
@@ -37,7 +30,7 @@ class Mountain
 
     scalar heightAt(const scalar x) const
     {
-	    return smoothMountain(x,a,hm) * fineMountain(x,lambda);
+        return smoothMountain(x,a,hm) * fineMountain(x,lambda);
     }
 
     private:
@@ -52,6 +45,13 @@ class Mountain
 int roundUp(int numToRound, int multiple) 
 {
    return (numToRound + multiple - 1) / multiple * multiple;
+}
+
+void badCoordinateSystem(const word& coordSysName)
+{
+        FatalErrorIn("add2dMountain")
+            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP_NEAREST. Not "
+            << coordSysName << exit(FatalError);
 }
 
 /* For each column of fixed x value, find the point whose z value is closest to h.
@@ -141,28 +141,18 @@ int main(int argc, char *argv[])
     }
     
     // Get which coord system to use
-    enum coordSysType{BTF, HTF, SLEVE, SNAP, NONE};
+    enum coordSysType{BTF, HTF, SLEVE, SNAP_NEAREST, NONE};
     const word coordSysName(initDict.lookup("coordSys"));
     const coordSysType coordSys = coordSysName == "BTF" ? BTF :
                                   coordSysName == "HTF" ? HTF :
                                   coordSysName == "SLEVE" ? SLEVE : 
-				  coordSysName == "SNAP" ? SNAP : NONE;
-    if (coordSys == NONE)
-    {
-        FatalErrorIn("ScharMountain")
-            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
-            << coordSysName << exit(FatalError);
-    }
+                                  coordSysName == "SNAP_NEAREST" ? SNAP_NEAREST : NONE;
+    if (coordSys == NONE) badCoordinateSystem(coordSysName);
     
     // Declare and read in constants
-    // top of movement of levels
     const scalar zt(readScalar(initDict.lookup("zt")));
-    // horizontal mountain scale
     const scalar a(readScalar(initDict.lookup("a")));
-    // Maximum mountain height
     const scalar hm(readScalar(initDict.lookup("hm")));
-
-    // horizontal scale in Schar mountain width
     const scalar lambda(initDict.lookupOrDefault<scalar>("lambda", scalar(0)));
     if
     (
@@ -236,16 +226,14 @@ int main(int argc, char *argv[])
         }
     }break;
 
-    case SNAP:
+    case SNAP_NEAREST:
         snapNearestPointsToSurface(
                 newPoints,
                 Mountain(zt, a, hm, lambda, smoothMountain, fineMountain));
         break;
     
     default:
-        FatalErrorIn("add2dMountain")
-            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
-            << coordSysName << exit(FatalError);
+        badCoordinateSystem(coordSysName);
     }
 
     newPoints.write();
