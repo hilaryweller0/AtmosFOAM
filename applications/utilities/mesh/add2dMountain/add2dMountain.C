@@ -2,6 +2,7 @@
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
 #include "HashTable.H"
+#include "fvMeshSubset.H"
 #include <cmath>
 
 using namespace Foam::constant::mathematical;
@@ -50,7 +51,7 @@ int roundUp(int numToRound, int multiple)
 void badCoordinateSystem(const word& coordSysName)
 {
         FatalErrorIn("add2dMountain")
-            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP_NEAREST. Not "
+            << "coordSys must be one of BTF, HTF, SLEVE, SNAP_NEAREST, or SNAP_BELOW. Not "
             << coordSysName << exit(FatalError);
 }
 
@@ -66,7 +67,7 @@ void snapNearestPointsToSurface(
 
 	forAll(newPoints, ip)
 	{
-	    int x = roundUp(newPoints[ip].x(), 10);
+	    int x = roundUp(newPoints[ip].x(), 10); // FIXME: this hashtable method is dubious because it's not safe to compare doubles for equality
 	    scalar z = newPoints[ip].z();
 	    scalar h = mountain.heightAt(x);
 	    scalar distance = abs(z - h);
@@ -89,11 +90,62 @@ void snapNearestPointsToSurface(
 	}
 }
 
+void snapPointsBelowSurface(
+        fvMesh& mesh,
+        IOField<point>& newPoints,
+        const Mountain& mountain)
+{
+	forAll(newPoints, pointIdx)
+	{
+        scalar x = newPoints[pointIdx].x();
+        scalar z = newPoints[pointIdx].z();
+        scalar h = mountain.heightAt(x);
+        if (z < h) {
+            newPoints[pointIdx].z() = h;
+        }
+    }
+
+    mesh.movePoints(newPoints);
+
+    fvMeshSubset subset(mesh);
+    labelHashSet retainedCells;
+
+    const cellList& cells = mesh.cells();
+
+    forAll(cells, cellIdx)
+    {
+        if (mesh.V()[cellIdx] > 1e-9)
+        {
+           retainedCells.set(cellIdx);
+        }
+    }
+
+    subset.setLargeCellSubset(retainedCells);
+    const fvMesh& subMesh = subset.subMesh();
+
+    Info << "subsetted " << subMesh.nCells() << " cells from " << mesh.nCells() << endl;
+
+    // TODO: if a deleted cell face belonged to a boundary patch, find that cell's neighbour and add the face it shared with the deleted cell to the patch
+
+    subMesh.write();
+}
+
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-#   include "createMesh.H"
+
+    Foam::fvMesh mesh
+    (
+        Foam::IOobject
+        (
+            Foam::fvMesh::defaultRegion,
+            runTime.constant(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
 
     IOdictionary initDict
     (
@@ -139,14 +191,15 @@ int main(int argc, char *argv[])
       <<"mountainType should be one of ScharExp, ScharCos, BottaKlein or AgnessiWitch"
          << " not " << mountainName << exit(FatalError);
     }
-    
+
     // Get which coord system to use
-    enum coordSysType{BTF, HTF, SLEVE, SNAP_NEAREST, NONE};
+    enum coordSysType{BTF, HTF, SLEVE, SNAP_NEAREST, SNAP_BELOW, NONE};
     const word coordSysName(initDict.lookup("coordSys"));
     const coordSysType coordSys = coordSysName == "BTF" ? BTF :
                                   coordSysName == "HTF" ? HTF :
                                   coordSysName == "SLEVE" ? SLEVE : 
-                                  coordSysName == "SNAP_NEAREST" ? SNAP_NEAREST : NONE;
+                                  coordSysName == "SNAP_NEAREST" ? SNAP_NEAREST : 
+                                  coordSysName == "SNAP_BELOW" ? SNAP_BELOW : NONE;
     if (coordSys == NONE) badCoordinateSystem(coordSysName);
     
     // Declare and read in constants
@@ -164,6 +217,8 @@ int main(int argc, char *argv[])
             << "if mountain type is Schar, must specify lambda"
             << exit(FatalError);
     }
+
+    Mountain mountain(zt, a, hm, lambda, smoothMountain, fineMountain);
     
     // Calculate new points
     switch (coordSys)
@@ -227,14 +282,16 @@ int main(int argc, char *argv[])
     }break;
 
     case SNAP_NEAREST:
-        snapNearestPointsToSurface(
-                newPoints,
-                Mountain(zt, a, hm, lambda, smoothMountain, fineMountain));
+        snapNearestPointsToSurface(newPoints, mountain);
+        break;
+
+    case SNAP_BELOW:
+        snapPointsBelowSurface(mesh, newPoints, mountain);
         break;
     
     default:
         badCoordinateSystem(coordSysName);
     }
 
-    newPoints.write();
+    //newPoints.write();
 }
