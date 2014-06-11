@@ -35,7 +35,6 @@ SourceFiles
 #ifndef CentredFitSGradData_H
 #define CentredFitSGradData_H
 
-#include "fvMeshWithDual.H"
 #include "FitData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
