@@ -1,6 +1,6 @@
 RM := rm -f
 WCLEAN := wclean
-WMAKE := FOAM_USER_SRC=${CURDIR} wmake
+WMAKE := FOAM_USER_SRC=${CURDIR}/src wmake
 
 .PHONY: clean
 
@@ -45,65 +45,65 @@ ALL_EXECUTABLES := \
 all: $(ALL_EXECUTABLES)
 
 clean:
-	$(WCLEAN) ExnerTheta
-	$(WCLEAN) finiteVolume
-	$(WCLEAN) fvMeshWithDual
-	$(WCLEAN) Hops
-	$(WCLEAN) solvers/ExnerFoam/ExnerFoamH
-	$(WCLEAN) solvers/ExnerFoam/ExnerFoam
-	$(WCLEAN) utilities/mesh/add2dMountain
-	$(WCLEAN) utilities/preProcessing/createSpongeLayer
-	$(WCLEAN) utilities/preProcessing/setExnerBalanced
-	$(WCLEAN) utilities/preProcessing/setExnerBalancedH
-	$(WCLEAN) utilities/preProcessing/setScalarOverOrography
-	$(WCLEAN) utilities/preProcessing/setTheta
-	$(WCLEAN) utilities/postProcessing/globalSum
-	$(WCLEAN) utilities/postProcessing/sumFields
-	$(WCLEAN) utilities/postProcessing/plotPatchData_gmt5.1
+	$(WCLEAN) src/ExnerTheta
+	$(WCLEAN) src/finiteVolume
+	$(WCLEAN) src/fvMeshWithDual
+	$(WCLEAN) src/Hops
+	$(WCLEAN) applications/solvers/ExnerFoam/ExnerFoamH
+	$(WCLEAN) applications/solvers/ExnerFoam/ExnerFoam
+	$(WCLEAN) applications/utilities/mesh/add2dMountain
+	$(WCLEAN) applications/utilities/preProcessing/createSpongeLayer
+	$(WCLEAN) applications/utilities/preProcessing/setExnerBalanced
+	$(WCLEAN) applications/utilities/preProcessing/setExnerBalancedH
+	$(WCLEAN) applications/utilities/preProcessing/setScalarOverOrography
+	$(WCLEAN) applications/utilities/preProcessing/setTheta
+	$(WCLEAN) applications/utilities/postProcessing/globalSum
+	$(WCLEAN) applications/utilities/postProcessing/sumFields
+	$(WCLEAN) applications/utilities/postProcessing/plotPatchData_gmt5.1
 	$(RM) $(ALL_LIBS) $(ALL_EXECUTABLES)
 
-$(LIB_EXNER_THETA): ExnerTheta/BCs/fixedFluxBuoyantExnerFvPatchScalarField.C $(LIB_FINITE_VOLUME_USER)
-	$(WMAKE) ExnerTheta
+$(LIB_EXNER_THETA): src/ExnerTheta/BCs/fixedFluxBuoyantExnerFvPatchScalarField.C $(LIB_FINITE_VOLUME_USER)
+	$(WMAKE) src/ExnerTheta
 
 # TODO: get dependencies from Make/files ?
 $(LIB_FINITE_VOLUME_USER): $(LIB_FV_MESH_WITH_DUAL)
-	$(WMAKE) finiteVolume
+	$(WMAKE) src/finiteVolume
 
 $(LIB_FV_MESH_WITH_DUAL):
-	$(WMAKE) fvMeshWithDual
+	$(WMAKE) src/fvMeshWithDual
 
 $(LIB_HOPS):
-	$(WMAKE) Hops
+	$(WMAKE) src/Hops
 
 $(EXNER_FOAM): $(LIB_HOPS) $(LIB_EXNER_THETA) $(LIB_FINITE_VOLUME_USER)
-	$(WMAKE) solvers/ExnerFoam/ExnerFoam
+	$(WMAKE) applications/solvers/ExnerFoam/ExnerFoam
 
 $(EXNER_FOAM_H): $(LIB_HOPS) $(LIB_EXNER_THETA)
-	$(WMAKE) solvers/ExnerFoam/ExnerFoamH	
+	$(WMAKE) applications/solvers/ExnerFoam/ExnerFoamH	
 
 $(SET_EXNER_BALANCED): $(LIB_HOPS) $(LIB_EXNER_THETA)
-	$(WMAKE) utilities/preProcessing/setExnerBalanced
+	$(WMAKE) applications/utilities/preProcessing/setExnerBalanced
 
 $(SET_EXNER_BALANCED_H): $(LIB_HOPS) $(LIB_EXNER_THETA)
-	$(WMAKE) utilities/preProcessing/setExnerBalancedH
+	$(WMAKE) applications/utilities/preProcessing/setExnerBalancedH
 
 $(SET_THETA): $(LIB_EXNER_THETA)
-	$(WMAKE) utilities/preProcessing/setTheta
+	$(WMAKE) applications/utilities/preProcessing/setTheta
 
 $(ADD_2D_MOUNTAIN):
-	$(WMAKE) utilities/mesh/add2dMountain
+	$(WMAKE) applications/utilities/mesh/add2dMountain
 
 $(GLOBAL_SUM): $(LIB_FV_MESH_WITH_DUAL) $(LIB_FINITE_VOLUME_USER)
-	$(WMAKE) utilities/postProcessing/globalSum
+	$(WMAKE) applications/utilities/postProcessing/globalSum
 
 $(SUM_FIELDS):
-	$(WMAKE) utilities/postProcessing/sumFields
+	$(WMAKE) applications/utilities/postProcessing/sumFields
 
 $(SET_SCALAR_OVER_OROGRAPHY):
-	$(WMAKE) utilities/preProcessing/setScalarOverOrography
+	$(WMAKE) applications/utilities/preProcessing/setScalarOverOrography
 
 $(CREATE_SPONGE_LAYER): $(LIB_FINITE_VOLUME_USER)
-	$(WMAKE) utilities/preProcessing/createSpongeLayer
+	$(WMAKE) applications/utilities/preProcessing/createSpongeLayer
 
 $(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER) $(LIB_FV_MESH_WITH_DUAL)
-	$(WMAKE) utilities/postProcessing/plotPatchData_gmt5.1
+	$(WMAKE) applications/utilities/postProcessing/plotPatchData_gmt5.1
