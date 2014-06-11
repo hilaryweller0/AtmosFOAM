@@ -1,12 +1,9 @@
 EXE_INC = \
     -ggdb3 -O0 \
-    -I$(FOAM_USER_SRC)/fvMeshWithDual/lnInclude \
     -I$(FOAM_USER_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 
 EXE_LIBS = \
-    -L$(FOAM_USER_LIBBIN) \
-    -lfvMeshWithDual \
     -lfiniteVolume \
     -lmeshTools

@@ -9,7 +9,6 @@ Moves the grid points.
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
 #include "HashTable.H"
-#include "doubleScalar.H"
 #include <cmath>
 
 using namespace Foam::constant::mathematical;

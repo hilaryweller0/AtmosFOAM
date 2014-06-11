@@ -31,7 +31,6 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "meshWithDual.H"
 #include "fvCFD.H"
 #include "argList.H"
 #include "OFstream.H"
@@ -75,7 +74,7 @@ int main(int argc, char *argv[])
     Info << "Create mesh for time = " << runTime.timeName() <<  " region "
          << meshRegion << endl;
 
-    Foam::fvMeshWithDual mesh
+    Foam::fvMesh mesh
     (
         Foam::IOobject
         (
