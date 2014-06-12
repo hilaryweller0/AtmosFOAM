@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     #include "readThermoProperties.H"
     Hops H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
+    //#include "../../../solvers/ExnerFoam/ExnerFoamNonOrthog_IMEXEX/gravityOffHeight.H"
     #include "createFields.H"
       
     const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");

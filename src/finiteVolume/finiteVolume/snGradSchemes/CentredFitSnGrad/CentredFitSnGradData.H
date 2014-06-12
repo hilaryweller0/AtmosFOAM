@@ -22,20 +22,19 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::CentredFitSGradData
+    Foam::CentredFitSnGradData
 
 Description
-    Data for the SGrad scheme
+    Data for centred fit snGrad schemes
 
 SourceFiles
-    CentredFitSGradData.C
+    CentredFitSnGradData.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef CentredFitSGradData_H
-#define CentredFitSGradData_H
+#ifndef CentredFitSnGradData_H
+#define CentredFitSnGradData_H
 
-//#include "fvMeshWithDual.H"
 #include "FitData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -46,48 +45,35 @@ namespace Foam
 class extendedCentredCellToFaceStencil;
 
 /*---------------------------------------------------------------------------*\
-                    Class CentredFitSGradData Declaration
+                    Class CentredFitSnGradData Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Polynomial>
-class CentredFitSGradData
+class CentredFitSnGradData
 :
     public FitData
     <
-        CentredFitSGradData<Polynomial>,
+        CentredFitSnGradData<Polynomial>,
         extendedCentredCellToFaceStencil,
         Polynomial
     >
 {
     // Private data
-    
-        //- Store the face deltas for the mesh
-        const surfaceVectorField delta_;
 
         //- For each cell in the mesh store the values which multiply the
         //  values of the stencil to obtain the gradient for each direction
         List<scalarList> coeffs_;
 
-protected:
-
-    //- Find the cell to cell direction (i) and j and k directions for face faci
-        void findFaceDirs
-        (
-            vector& idir,        // value changed in return
-            vector& jdir,        // value changed in return
-            vector& kdir,        // value changed in return
-            const label faci
-        );
 
 public:
 
-    TypeName("CentredFitSGradData");
+    TypeName("CentredFitSnGradData");
 
 
     // Constructors
 
         //- Construct from components
-        CentredFitSGradData
+        CentredFitSnGradData
         (
             const fvMesh& mesh,
             const extendedCentredCellToFaceStencil& stencil,
@@ -97,7 +83,7 @@ public:
 
 
     //- Destructor
-    virtual ~CentredFitSGradData()
+    virtual ~CentredFitSnGradData()
     {}
 
 
@@ -131,7 +117,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "CentredFitSGradData.C"
+#   include "CentredFitSnGradData.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

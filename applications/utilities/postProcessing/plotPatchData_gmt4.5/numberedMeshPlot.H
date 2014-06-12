@@ -125,13 +125,13 @@ fileName tmpFile = args.rootPath() / args.caseName()
                  << exit(FatalError);
             }
         
-            // Now plot the face labels
+            // Now plot the internal face labels
             for(label faci = 0; faci < mesh.cells()[celli].size(); faci++)
             {
                 const label faceI = mesh.cells()[celli][faci];
-                if (faceI < mesh.nFaces() - 2*mesh.nCells())
+                if (faceI < mesh.nInternalFaces())
                 {
-                    p = mesh.faceCentres()[faceI];
+                    p = mesh.Cf()[faceI];
 
                     if (projection2D == "XY")
                     {
@@ -212,7 +212,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 }
 
 // plot mesh
-systemCall = "pstext '" + tmpFile + "' -W"
+string systemCall = "pstext '" + tmpFile + "' -W"
                   + fieldsToPlot[ifield].colourScale()
                            + " -J -R -K -O >>" + epsFile;
 systemVerbose(systemCall);

@@ -30,9 +30,8 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-//#include "meshWithDual.H"
+#include "meshWithDual.H"
 #include "fvCFD.H"
-#include "unitVectors.H"
 #include "pointFields.H"
 #include "OFstream.H"
 #include "IStringStream.H"
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
     Info << "Create mesh for time = " << runTime.timeName() <<  " region "
          << meshRegion << endl;
 
-    fvMesh/*WithDual*/ mesh
+    fvMeshWithDual mesh
     (
         Foam::IOobject
         (
@@ -120,7 +119,7 @@ int main(int argc, char *argv[])
 
         if ( !overlay)
         {
-            systemCall = "echo 0 0 | psxy -R" + region + " -J"
+            string systemCall = "echo 0 0 | psxy -R" + region + " -J"
                               + projection + " -A -K > " + epsFile;
             systemVerbose(systemCall);
         }
@@ -163,8 +162,7 @@ int main(int argc, char *argv[])
             else
             {
                 Info << "Plotting " << fieldsToPlot[ifield].name()
-                     << " of type " << fieldHeader.headerClassName()
-                     << " using " << fieldsToPlot[ifield].plotType() << endl;
+                     << " of type " << fieldHeader.headerClassName() << endl;
             
                 scalar colourMin = fieldsToPlot[ifield].min();
                 scalar colourMax = fieldsToPlot[ifield].max();
@@ -474,26 +472,17 @@ int main(int argc, char *argv[])
         // finishing off
         if (lastPlot)
         {
-            systemCall = "psbasemap -R" + region + " -J"
+            string systemCall = "psbasemap -R" + region + " -J"
                               + projection
                               + " -B" + boundaryMarks
                               + " -O >>"
                               + epsFile;
             systemVerbose(systemCall);
-            
-            if (!overlay)
-            {
-                // convert to eps and remove ps file
-                systemCall = "ps2eps -f -q " + epsFile;
-                systemVerbose(systemCall);
-    
-                systemCall = "mv " + epsFile + ".eps " + epsFile;
-                systemVerbose(systemCall);
-            
-                // give the file a postscript title
-                systemCall = "pstitle " + epsFile + " " + epsFile;
-                systemVerbose(systemCall);
-            }
+        }
+        if (!overlay)
+        {
+            string systemCall = "pstitle " + epsFile + " " + epsFile;
+            systemVerbose(systemCall);
         }
     }
 
