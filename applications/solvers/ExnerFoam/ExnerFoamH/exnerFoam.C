@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
     #include "readThermoProperties.H"
     Hops H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
-    //#include "gravityOffHeight.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
