@@ -1,0 +1,12 @@
+surfaceInterpolation/overrideDeltaCoeffs.C
+
+primitiveMesh/overrideCentresAreas.C
+polyMesh/meshDirections.C
+
+fvMeshWithDual/fvMeshWithDual.C
+fvMeshWithDual/fvMeshWithDualGeometry.C
+fvMeshWithDual/fvMeshWithDualSphericalVolGeom.C
+fvMeshWithDual/fvMeshWithDualSphericalDistGeom.C
+fvMeshWithDual/fvMeshWithDualAddressing.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfvMeshWithDual
