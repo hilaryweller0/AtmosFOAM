@@ -84,14 +84,10 @@ void Foam::CentredFitSGradData<Polynomial>::findFaceDirs
 )
 {
     const fvMesh& mesh = this->mesh();
-    //const fvMeshWithDual& mesh
-    //     = *(dynamic_cast<const fvMeshWithDual*>(&(this->mesh())));
 
     idir = delta_[facei];
     idir /= mag(idir);
 
-    //if (mesh.gType() == fvMeshWithDual::CARTESIAN)
-    // ONly for Cartesian geometry
     {
         if (mesh.nGeometricD() <= 2) // find the normal direction
         {
@@ -119,7 +115,6 @@ void Foam::CentredFitSGradData<Polynomial>::findFaceDirs
 //        kdir = mesh.faceCentres()[facei];
 //    }
 
-//    if (mesh.gType() != fvMeshWithDual::CARTESIAN || mesh.nGeometricD() == 3)
     if (mesh.nGeometricD() == 3)
     {
         // Remove the idir component from kdir and normalise
