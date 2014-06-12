@@ -23,8 +23,8 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "CentredFitSnGradScheme.H"
-#include "linearFitUserPolynomial.H"
+#include "CentredFitSnGradSchemeUser.H"
+#include "linearFitPolynomial.H"
 #include "centredFECCellToFaceStencilObject.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -33,16 +33,16 @@ namespace Foam
 {
     defineTemplateTypeNameAndDebug
     (
-        CentredFitSnGradData<linearFitUserPolynomial>,
+        CentredFitSnGradDataUser<linearFitPolynomial>,
         0
     );
 
     namespace fv
     {
-        makeCentredFitSnGradScheme
+        makeCentredFitSnGradSchemeUser
         (
             linearFitUser,
-            linearFitUserPolynomial,
+            linearFitPolynomial,
             centredFECCellToFaceStencilObject
         );
     }

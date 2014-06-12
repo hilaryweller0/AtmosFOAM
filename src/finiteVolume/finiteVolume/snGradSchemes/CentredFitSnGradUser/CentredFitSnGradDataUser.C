@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "CentredFitSnGradData.H"
+#include "CentredFitSnGradDataUser.H"
 #include "surfaceFields.H"
 #include <Eigen/SVD>
 #include "extendedCentredCellToFaceStencil.H"
@@ -31,7 +31,7 @@ License
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
 template<class Polynomial>
-Foam::CentredFitSnGradData<Polynomial>::CentredFitSnGradData
+Foam::CentredFitSnGradDataUser<Polynomial>::CentredFitSnGradDataUser
 (
     const fvMesh& mesh,
     const extendedCentredCellToFaceStencil& stencil,
@@ -41,7 +41,7 @@ Foam::CentredFitSnGradData<Polynomial>::CentredFitSnGradData
 :
     FitData
     <
-        CentredFitSnGradData<Polynomial>,
+        CentredFitSnGradDataUser<Polynomial>,
         extendedCentredCellToFaceStencil,
         Polynomial
     >
@@ -52,14 +52,14 @@ Foam::CentredFitSnGradData<Polynomial>::CentredFitSnGradData
 {
     if (debug)
     {
-        Info<< "Contructing CentredFitSnGradData<Polynomial>" << endl;
+        Info<< "Contructing CentredFitSnGradDataUser<Polynomial>" << endl;
     }
 
     calcFit();
 
     if (debug)
     {
-        Info<< "CentredFitSnGradData<Polynomial>::CentredFitSnGradData() :"
+        Info<< "CentredFitSnGradDataUser<Polynomial>::CentredFitSnGradDataUser() :"
             << "Finished constructing polynomialFit data"
             << endl;
     }
@@ -69,7 +69,7 @@ Foam::CentredFitSnGradData<Polynomial>::CentredFitSnGradData
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Polynomial>
-void Foam::CentredFitSnGradData<Polynomial>::calcFit
+void Foam::CentredFitSnGradDataUser<Polynomial>::calcFit
 (
     scalarList& coeffsi,
     const List<point>& C,
@@ -182,7 +182,7 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
 
             WarningIn
             (
-                "CentredFitSnGradData<Polynomial>::calcFit"
+                "CentredFitSnGradDataUser<Polynomial>::calcFit"
                 "(const List<point>& C, const label facei"
             )   << "Cannot fit face " << facei << " iteration " << iIt
                 << " with sum of weights " << sum(coeffsi) << nl
@@ -237,7 +237,7 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
     {
         WarningIn
         (
-            "CentredFitSnGradData<Polynomial>::calcFit(..)"
+            "CentredFitSnGradDataUser<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << facei
             << "    Coefficients = " << coeffsi
             << ", reverting to uncorrected." << endl;
@@ -253,7 +253,7 @@ void Foam::CentredFitSnGradData<Polynomial>::calcFit
 
 
 template<class Polynomial>
-void Foam::CentredFitSnGradData<Polynomial>::calcFit()
+void Foam::CentredFitSnGradDataUser<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 

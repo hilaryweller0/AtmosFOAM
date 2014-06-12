@@ -22,17 +22,17 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::CentredFitSnGradScheme
+    Foam::CentredFitSnGradSchemeUser
 
 Description
     Centred fit snGrad scheme which applies an explicit correction to snGrad
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef CentredFitSnGradScheme_H
-#define CentredFitSnGradScheme_H
+#ifndef CentredFitSnGradSchemeUser_H
+#define CentredFitSnGradSchemeUser_H
 
-#include "CentredFitSnGradData.H"
+#include "CentredFitSnGradDataUser.H"
 #include "snGradScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -51,7 +51,7 @@ namespace fv
 \*---------------------------------------------------------------------------*/
 
 template<class Type, class Polynomial, class Stencil>
-class CentredFitSnGradScheme
+class CentredFitSnGradSchemeUser
 :
     public snGradScheme<Type>
 {
@@ -69,22 +69,22 @@ class CentredFitSnGradScheme
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        CentredFitSnGradScheme(const CentredFitSnGradScheme&);
+        CentredFitSnGradSchemeUser(const CentredFitSnGradSchemeUser&);
 
         //- Disallow default bitwise assignment
-        void operator=(const CentredFitSnGradScheme&);
+        void operator=(const CentredFitSnGradSchemeUser&);
 
 
 public:
 
     //- Runtime type information
-    TypeName("CentredFitSnGradScheme");
+    TypeName("CentredFitSnGradSchemeUser");
 
 
     // Constructors
 
         //- Construct from mesh and Istream
-        CentredFitSnGradScheme(const fvMesh& mesh, Istream& is)
+        CentredFitSnGradSchemeUser(const fvMesh& mesh, Istream& is)
         :
             snGradScheme<Type>(mesh),
             linearLimitFactor_(readScalar(is)),
@@ -123,8 +123,8 @@ public:
                 mesh
             );
 
-            const CentredFitSnGradData<Polynomial>& cfd =
-                CentredFitSnGradData<Polynomial>::New
+            const CentredFitSnGradDataUser<Polynomial>& cfd =
+                CentredFitSnGradDataUser<Polynomial>::New
                 (
                     mesh,
                     stencil,
@@ -158,16 +158,16 @@ public:
 
 #define makeCentredFitSnGradTypeScheme(SS, POLYNOMIAL, STENCIL, TYPE) \
                                                                       \
-typedef CentredFitSnGradScheme<TYPE, POLYNOMIAL, STENCIL>             \
-    CentredFitSnGradScheme##TYPE##POLYNOMIAL##STENCIL##_;             \
+typedef CentredFitSnGradSchemeUser<TYPE, POLYNOMIAL, STENCIL>             \
+    CentredFitSnGradSchemeUser##TYPE##POLYNOMIAL##STENCIL##_;             \
 defineTemplateTypeNameAndDebugWithName                                \
-    (CentredFitSnGradScheme##TYPE##POLYNOMIAL##STENCIL##_, #SS, 0);   \
+    (CentredFitSnGradSchemeUser##TYPE##POLYNOMIAL##STENCIL##_, #SS, 0);   \
                                                                       \
 snGradScheme<TYPE>::addMeshConstructorToTable                         \
-<CentredFitSnGradScheme<TYPE, POLYNOMIAL, STENCIL> >                  \
+<CentredFitSnGradSchemeUser<TYPE, POLYNOMIAL, STENCIL> >                  \
     add##SS##STENCIL##TYPE##MeshConstructorToTable_;
 
-#define makeCentredFitSnGradScheme(SS, POLYNOMIAL, STENCIL)           \
+#define makeCentredFitSnGradSchemeUser(SS, POLYNOMIAL, STENCIL)           \
                                                                       \
 makeCentredFitSnGradTypeScheme(SS,POLYNOMIAL,STENCIL,scalar)          \
 makeCentredFitSnGradTypeScheme(SS,POLYNOMIAL,STENCIL,vector)          \

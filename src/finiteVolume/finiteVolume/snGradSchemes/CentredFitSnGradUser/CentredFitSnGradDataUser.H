@@ -22,18 +22,18 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::CentredFitSnGradData
+    Foam::CentredFitSnGradDataUser
 
 Description
     Data for centred fit snGrad schemes
 
 SourceFiles
-    CentredFitSnGradData.C
+    CentredFitSnGradDataUser.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef CentredFitSnGradData_H
-#define CentredFitSnGradData_H
+#ifndef CentredFitSnGradDataUser_H
+#define CentredFitSnGradDataUser_H
 
 #include "FitData.H"
 
@@ -45,15 +45,15 @@ namespace Foam
 class extendedCentredCellToFaceStencil;
 
 /*---------------------------------------------------------------------------*\
-                    Class CentredFitSnGradData Declaration
+                    Class CentredFitSnGradDataUser Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Polynomial>
-class CentredFitSnGradData
+class CentredFitSnGradDataUser
 :
     public FitData
     <
-        CentredFitSnGradData<Polynomial>,
+        CentredFitSnGradDataUser<Polynomial>,
         extendedCentredCellToFaceStencil,
         Polynomial
     >
@@ -67,13 +67,13 @@ class CentredFitSnGradData
 
 public:
 
-    TypeName("CentredFitSnGradData");
+    TypeName("CentredFitSnGradDataUser");
 
 
     // Constructors
 
         //- Construct from components
-        CentredFitSnGradData
+        CentredFitSnGradDataUser
         (
             const fvMesh& mesh,
             const extendedCentredCellToFaceStencil& stencil,
@@ -83,7 +83,7 @@ public:
 
 
     //- Destructor
-    virtual ~CentredFitSnGradData()
+    virtual ~CentredFitSnGradDataUser()
     {}
 
 
@@ -117,7 +117,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "CentredFitSnGradData.C"
+#   include "CentredFitSnGradDataUser.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
