@@ -1,9 +1,0 @@
-EXE_INC = \
-    -ggdb3 -O0 \
-    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
-
-EXE_LIBS = \
-    -lspecie \
-    -lfiniteVolume
-

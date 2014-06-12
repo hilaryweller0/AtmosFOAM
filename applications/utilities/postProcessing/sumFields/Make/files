@@ -1,5 +1,0 @@
-sumFields.C
-/*../../../solvers/heatTransfer/ExnerFoam/fixedFluxBuoyantExnerFvPatchScalarField.C*/
-
-
-EXE = $(FOAM_USER_APPBIN)/sumFields
