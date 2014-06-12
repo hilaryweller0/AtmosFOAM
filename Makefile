@@ -9,7 +9,6 @@ WMAKE := FOAM_USER_SRC=${CURDIR}/src wmake
 
 LIB_EXNER_THETA := $(FOAM_USER_LIBBIN)/libExnerTheta.so
 LIB_FINITE_VOLUME_USER := $(FOAM_USER_LIBBIN)/libfiniteVolumeUser.so
-LIB_FV_MESH_WITH_DUAL := $(FOAM_USER_LIBBIN)/libfvMeshWithDual.so
 LIB_HOPS := $(FOAM_USER_LIBBIN)/libHops.so
 
 EXNER_FOAM := $(FOAM_USER_APPBIN)/exnerFoam
@@ -26,7 +25,6 @@ PLOT_PATCH_DATA := $(FOAM_USER_APPBIN)/plotPatchData
 
 ALL_LIBS := $(LIB_EXNER_THETA) \
 	$(LIB_FINITE_VOLUME_USER) \
-	$(LIB_FV_MESH_WITH_DUAL) \
 	$(LIB_HOPS)
 
 ALL_EXECUTABLES := \
@@ -47,7 +45,6 @@ all: $(ALL_EXECUTABLES)
 clean:
 	$(WCLEAN) src/ExnerTheta
 	$(WCLEAN) src/finiteVolume
-	$(WCLEAN) src/fvMeshWithDual
 	$(WCLEAN) src/Hops
 	$(WCLEAN) applications/solvers/ExnerFoam/ExnerFoamH
 	$(WCLEAN) applications/solvers/ExnerFoam/ExnerFoam
@@ -66,11 +63,8 @@ $(LIB_EXNER_THETA): src/ExnerTheta/BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 	$(WMAKE) src/ExnerTheta
 
 # TODO: get dependencies from Make/files ?
-$(LIB_FINITE_VOLUME_USER): $(LIB_FV_MESH_WITH_DUAL)
+$(LIB_FINITE_VOLUME_USER):
 	$(WMAKE) src/finiteVolume
-
-$(LIB_FV_MESH_WITH_DUAL):
-	$(WMAKE) src/fvMeshWithDual
 
 $(LIB_HOPS):
 	$(WMAKE) src/Hops
@@ -93,7 +87,7 @@ $(SET_THETA): $(LIB_EXNER_THETA)
 $(ADD_2D_MOUNTAIN):
 	$(WMAKE) applications/utilities/mesh/add2dMountain
 
-$(GLOBAL_SUM): $(LIB_FV_MESH_WITH_DUAL) $(LIB_FINITE_VOLUME_USER)
+$(GLOBAL_SUM): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) applications/utilities/postProcessing/globalSum
 
 $(SUM_FIELDS):
@@ -105,5 +99,5 @@ $(SET_SCALAR_OVER_OROGRAPHY):
 $(CREATE_SPONGE_LAYER): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) applications/utilities/preProcessing/createSpongeLayer
 
-$(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER) $(LIB_FV_MESH_WITH_DUAL)
+$(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) applications/utilities/postProcessing/plotPatchData_gmt5.1
