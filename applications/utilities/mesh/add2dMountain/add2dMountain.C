@@ -91,43 +91,24 @@ void snapNearestPointsToSurface(
 }
 
 void snapPointsBelowSurface(
-        fvMesh& mesh,
         IOField<point>& newPoints,
-        const Mountain& mountain)
+        const Mountain& mountain,
+        const scalar dz)
 {
 	forAll(newPoints, pointIdx)
 	{
         scalar x = newPoints[pointIdx].x();
         scalar z = newPoints[pointIdx].z();
         scalar h = mountain.heightAt(x);
-        if (z < h) {
+        if (z < h && z > h-dz)
+        {
             newPoints[pointIdx].z() = h;
         }
-    }
-
-    mesh.movePoints(newPoints);
-
-    fvMeshSubset subset(mesh);
-    labelHashSet retainedCells;
-
-    const cellList& cells = mesh.cells();
-
-    forAll(cells, cellIdx)
-    {
-        if (mesh.V()[cellIdx] > 1e-9)
+        else if (z < h && z > h-2*dz)
         {
-           retainedCells.set(cellIdx);
+            newPoints[pointIdx].z() = h-0.01*dz;
         }
     }
-
-    subset.setLargeCellSubset(retainedCells);
-    const fvMesh& subMesh = subset.subMesh();
-
-    Info << "subsetted " << subMesh.nCells() << " cells from " << mesh.nCells() << endl;
-
-    // TODO: if a deleted cell face belonged to a boundary patch, find that cell's neighbour and add the face it shared with the deleted cell to the patch
-
-    subMesh.write();
 }
 
 int main(int argc, char *argv[])
@@ -286,12 +267,15 @@ int main(int argc, char *argv[])
         break;
 
     case SNAP_BELOW:
-        snapPointsBelowSurface(mesh, newPoints, mountain);
+        {
+            const scalar dz(readScalar(initDict.lookup("SNAP_dz")));
+            snapPointsBelowSurface(newPoints, mountain, dz);
+        }
         break;
     
     default:
         badCoordinateSystem(coordSysName);
     }
 
-    //newPoints.write();
+    newPoints.write();
 }
