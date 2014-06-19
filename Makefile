@@ -39,8 +39,8 @@ ALL_EXECUTABLES := \
 	$(SET_SCALAR_OVER_OROGRAPHY) \
 	$(SET_THETA) \
 	$(CREATE_SPONGE_LAYER) \
-	$(PLOT_PATCH_DATA) \
 	$(FIX_PROCESSOR_FACE_VELOCITIES)
+	#$(PLOT_PATCH_DATA) \
 
 all: $(ALL_EXECUTABLES)
 
@@ -106,4 +106,4 @@ $(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) applications/utilities/postProcessing/plotPatchData_gmt5.1
 
 $(FIX_PROCESSOR_FACE_VELOCITIES):
-	$(WMAKE) applicatoins/utilities/preProcessing/fixProcessorFaceVelocities
+	$(WMAKE) applications/utilities/preProcessing/fixProcessorFaceVelocities
