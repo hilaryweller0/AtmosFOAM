@@ -22,6 +22,7 @@ SET_SCALAR_OVER_OROGRAPHY := $(FOAM_USER_APPBIN)/setScalarOverOrography
 SET_THETA := $(FOAM_USER_APPBIN)/setTheta
 CREATE_SPONGE_LAYER := $(FOAM_USER_APPBIN)/createSpongeLayer
 PLOT_PATCH_DATA := $(FOAM_USER_APPBIN)/plotPatchData
+FIX_PROCESSOR_FACE_VELOCITIES := $(FOAM_USER_APPBIN)/fixProcessorFaceVelocities
 
 ALL_LIBS := $(LIB_EXNER_THETA) \
 	$(LIB_FINITE_VOLUME_USER) \
@@ -38,7 +39,8 @@ ALL_EXECUTABLES := \
 	$(SET_SCALAR_OVER_OROGRAPHY) \
 	$(SET_THETA) \
 	$(CREATE_SPONGE_LAYER) \
-	$(PLOT_PATCH_DATA)
+	$(PLOT_PATCH_DATA) \
+	$(FIX_PROCESSOR_FACE_VELOCITIES)
 
 all: $(ALL_EXECUTABLES)
 
@@ -54,6 +56,7 @@ clean:
 	$(WCLEAN) applications/utilities/preProcessing/setExnerBalancedH
 	$(WCLEAN) applications/utilities/preProcessing/setScalarOverOrography
 	$(WCLEAN) applications/utilities/preProcessing/setTheta
+	$(WCLEAN) applications/utilities/preProcessing/fixProcessorFaceVelocities
 	$(WCLEAN) applications/utilities/postProcessing/globalSum
 	$(WCLEAN) applications/utilities/postProcessing/sumFields
 	$(WCLEAN) applications/utilities/postProcessing/plotPatchData_gmt5.1
@@ -101,3 +104,6 @@ $(CREATE_SPONGE_LAYER): $(LIB_FINITE_VOLUME_USER)
 
 $(PLOT_PATCH_DATA): $(LIB_FINITE_VOLUME_USER)
 	$(WMAKE) applications/utilities/postProcessing/plotPatchData_gmt5.1
+
+$(FIX_PROCESSOR_FACE_VELOCITIES):
+	$(WMAKE) applicatoins/utilities/preProcessing/fixProcessorFaceVelocities
