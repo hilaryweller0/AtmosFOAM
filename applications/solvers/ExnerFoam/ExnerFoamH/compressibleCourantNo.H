@@ -57,4 +57,9 @@ if (mesh.nInternalFaces())
 Info<< "Courant Number mean: " << meanCoNum
     << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
 
+courantFile << runTime.timeName() << ' '
+            << meanCoNum << ' '
+            << CoNum << ' '
+            << maxNdt << endl;
+
 // ************************************************************************* //

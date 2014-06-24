@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
+    #include "initCourantFile.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
