@@ -8,18 +8,9 @@
     if (SIgravityWaves)
     {
         G =1/(G - sqr(dt*offCentre)*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner));
-//        //if (ucorr == 0 && corr == 0)
-//        if (true) //(ucorr < nOuterCorr-1)
-//        {
         vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
         thetaf = thetaf.oldTime()
                - offCentre*dt*(vperp & fvc::interpolate(fvc::grad(theta)));
-//        }
-//        else
-//        {
-//            thetaf = fvc::interpolate(theta)
-//                   + offCentre*dt*V/(rhof*H.magd())*fvc::snGrad(theta);
-//        }
     }
     else
     {
@@ -35,6 +26,7 @@
             fvc::interpolate(fvc::div(U,u)) 
          + (2*rhof*(Omega^(Uf-Ug)))
         );
+        nonlinearMomentum = fvc::div(U,u);
 
         // Vu is the flux without g or dpdz (to get the BCs right)
         Vu = G*(V.oldTime() + offCentre*dt*dVdt);
@@ -51,8 +43,6 @@
         {
             U = H.ddirToFlux(V)
               - H.ddirToFluxOffDiag(gradPcoeff*fvc::snGrad(Exner));
-//              - H.ddirToFlux(gradPcoeff*fvc::snGrad(Exner))
-//              + gradPcoeff*fvc::snGrad(Exner)*mesh.magSf()/H.magd();
 
             fvScalarMatrix ExnerEqn
             (
@@ -62,7 +52,6 @@
               - fvm::laplacian
                 (
                     offCentre*H.Hdiag()*gradPcoeff/mesh.magSf(),
-                    //offCentre*gradPcoeff/H.magd(),
                     Exner
                 )
             );

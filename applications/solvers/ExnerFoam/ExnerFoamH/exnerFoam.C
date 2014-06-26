@@ -89,9 +89,6 @@ int main(int argc, char *argv[])
             );
         }
 
-        // u predictor
-        //u = H.reconstructd((V.oldTime() + offCentre*dt*dVdt)/rhof);
-
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
@@ -102,13 +99,6 @@ int main(int argc, char *argv[])
         
         #include "rhoThetaEqn.H"
         
-        // Updates for next time step
-//        if (Charney-Phillips)
-//        {
-//            thetaf -= dt*offCentre*V/(rhof*H.magd())*fvc::snGrad(theta);
-//            theta = fvc::faceToCell(thetaf);
-//        }
-//        else
         {
             thetaf = fvc::interpolate(theta);
         }

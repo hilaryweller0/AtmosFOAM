@@ -49,14 +49,6 @@ surfaceScalarField thetaf
 );
 thetaf.oldTime();
 
-//// Diffusion coefficient for theta
-//const surfaceScalarField diffuseTheta
-//(
-//    IOobject("diffuseTheta", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-//    mesh,
-//    dimensionedScalar("diffuseTheta", dimensionSet(1,-1,-1,0,0), scalar(0))
-//);
-
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
 (
@@ -152,12 +144,6 @@ surfaceScalarField dVdt
      VuBCs
 );
 dVdt.oldTime();
-//surfaceScalarField dUdt
-//(
-//    IOobject("dUdt", runTime.timeName(), mesh),
-//    mesh,
-//    dimensionedScalar("dUdt", dimensionSet(1,0,-2,0,0), scalar(0))
-//);
 
 volScalarField divU("divU", fvc::div(U));
 volScalarField divUtheta("divUtheta", fvc::div(U, theta));
@@ -179,3 +165,13 @@ forAll(Vu.boundaryField(), patchi)
     }
 }
 
+volVectorField nonlinearMomentum(
+    IOobject(
+        "nonlinearMomentum",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    fvc::div(U,u)
+);
