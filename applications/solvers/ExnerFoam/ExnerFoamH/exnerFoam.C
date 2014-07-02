@@ -38,6 +38,10 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+scalar entropy(const volScalarField& theta, const volScalarField& rho) {
+    return gSum(fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field()));
+}
+
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -52,6 +56,7 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
+    const scalar initEntropy = entropy(theta, rho);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
@@ -111,7 +116,9 @@ int main(int argc, char *argv[])
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
                                         - initHeat;
-        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
+        normalisedHeatDiff = (totalHeatDiff/initHeat).value();
+        entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
+        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = " << entropyError << endl;
         #include "energy.H"
 
         runTime.write();
