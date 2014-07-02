@@ -31,6 +31,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+#include <cmath>
 #include "fvCFD.H"
 #include "argList.H"
 #include "OFstream.H"
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
       : args.rootPath() / args.caseName() /"globalSum"+fieldName+".dat";
     Info << "Writing global sums to " << outFile << endl;
     OFstream os(outFile);
-    os << "#time mag RMS inf sum" << endl;
+    os << "#time mag RMS inf sum variance" << endl;
     
     for (label i=startTime; i<endTime; i++)
     {
@@ -135,12 +136,6 @@ int main(int argc, char *argv[])
         else if(header.headerClassName() == "volScalarField")
         {
             const volScalarField f(header, mesh);
-
-//            dimensionedScalar Vtot = sum(mesh.V());
-//            scalar l1 = (sum(mag(f)*mesh.V())/Vtot).value();
-//            scalar l2 = (Foam::sqrt(sum(sqr(f)*mesh.V())/Vtot)).value();
-//            scalar li = (max(mag(f))).value();
-//            scalar l0 = (sum(f*mesh.V())/Vtot).value();
             
             scalar Vtot = 0;
             scalar l1 = 0;
@@ -162,23 +157,21 @@ int main(int argc, char *argv[])
             l1 /= Vtot;
             l2 = Foam::sqrt(l2/Vtot);
             l0 /= Vtot;
+
+            scalar variance = 0;
+            forAll(sumCells, i)
+            {
+                label cellI = sumCells[i];
+                scalar fi = f[cellI];
+                scalar Vi = mesh.V()[cellI];
+                variance += pow(fi - l0, 2) * Vi;
+            }
+
+            variance /= Vtot;
             
             os << runTime.timeName() << ' ' << l1 << ' ' << l2 << ' ' << li
-               << ' ' << l0 << endl;
+               << ' ' << l0 << ' ' << variance << endl;
         }
-//        else if(header.headerClassName() == "surfaceScalarField")
-//        {
-//            const surfaceScalarField f(header, mesh);
-//            
-//            scalar Vtot = sum(mesh.V()).value();
-//            scalar l1 = sum(TRiSK::volumeIntegrate(mag(f)))/Vtot;
-//            scalar l2 = Foam::sqrt(sum(TRiSK::volumeIntegrate(sqr(f)))/Vtot);
-//            scalar li = (max(mag(f))).value();
-//            scalar l0 = sum(TRiSK::volumeIntegrate(f))/Vtot;
-//            
-//            os << runTime.timeName() << ' ' << l1 << ' ' << l2 << ' ' << li
-//               << ' ' << l0 << endl;
-//        }
         else
         {
             FatalErrorIn("globalSum") << "Field type "
