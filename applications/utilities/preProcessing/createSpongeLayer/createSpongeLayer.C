@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
             {
                 muSponge[faceI] += muBar
                     *sqr(Foam::sin(0.5*pi*(xSpongeLength-xDist)/xSpongeLength));
-            } else if (x2Dist <= xSpongeLength)
+            } else if (x2Dist <= x2SpongeLength)
             {
                 muSponge[faceI] += muBar
                     *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
