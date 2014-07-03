@@ -42,6 +42,32 @@ scalar entropy(const volScalarField& theta, const volScalarField& rho) {
     return gSum(fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field()));
 }
 
+scalar variance(const volScalarField& field) {
+    scalar totalVolume = 0;
+    scalar average = 0;
+
+    forAll(field.mesh().cells(), cellI)
+    {
+        scalar value = field[cellI];
+        scalar cellVolume = field.mesh().V()[cellI];
+        totalVolume += cellVolume;
+        average += value*cellVolume;
+    }
+
+    average /= totalVolume;
+
+    scalar variance = 0;
+    forAll(field.mesh().cells(), cellI)
+    {
+	scalar value = field[cellI];
+	scalar cellVolume = field.mesh().V()[cellI];
+	variance += pow(value - average, 2) * cellVolume;
+    }
+
+    variance /= totalVolume;
+    return variance;
+}
+
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -57,6 +83,7 @@ int main(int argc, char *argv[])
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     const scalar initEntropy = entropy(theta, rho);
+    scalar thetaVariance = variance(theta);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
@@ -118,6 +145,7 @@ int main(int argc, char *argv[])
                                         - initHeat;
         normalisedHeatDiff = (totalHeatDiff/initHeat).value();
         entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
+        thetaVariance = variance(theta);
         Info << "Heat error = " << normalisedHeatDiff << ", entropy error = " << entropyError << endl;
         #include "energy.H"
 

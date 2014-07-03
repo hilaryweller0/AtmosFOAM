@@ -19,6 +19,7 @@
        << max(Uf.component(vector::Z)).value() << "  "
        << max(theta).value() << " "
        << normalisedHeatDiff << " "
-       << entropyError << endl;
+       << entropyError << " "
+       << thetaVariance << endl;
 }
 
