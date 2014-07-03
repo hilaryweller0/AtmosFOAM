@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     const scalar initEntropy = entropy(theta, rho);
     scalar thetaVariance = variance(theta);
+    scalar thetaRhoVariance = variance(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
@@ -146,6 +147,7 @@ int main(int argc, char *argv[])
         normalisedHeatDiff = (totalHeatDiff/initHeat).value();
         entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
         thetaVariance = variance(theta);
+        thetaRhoVariance = variance(theta*rho);
         Info << "Heat error = " << normalisedHeatDiff << ", entropy error = " << entropyError << endl;
         #include "energy.H"
 

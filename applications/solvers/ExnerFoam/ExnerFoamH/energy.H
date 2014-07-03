@@ -20,6 +20,7 @@
        << max(theta).value() << " "
        << normalisedHeatDiff << " "
        << entropyError << " "
-       << thetaVariance << endl;
+       << thetaVariance << " "
+       << thetaRhoVariance << endl;
 }
 

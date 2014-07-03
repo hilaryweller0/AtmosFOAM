@@ -1,7 +1,7 @@
 Info << "Initialising total energy file energy.dat\n" << endl;
 
 OFstream es(args.rootPath() / args.caseName() / "energy.dat");
-es << "#time   KE       internal potential normalisedEnergy  max w max theta heatError entropyError thetaVariance"
+es << "#time   KE       internal potential normalisedEnergy  max w max theta heatError entropyError thetaVariance thetaRhoVariance"
    << endl;
 
 dimensionedScalar Vtot = sum(mesh.V());
