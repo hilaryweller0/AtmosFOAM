@@ -233,7 +233,3 @@ systemCall = "pscontour '" + tmpFile + "' -Ccontours.cpt"
            + " -A- -J -R -h1 -W" + contourType + " -O -K >> " + epsFile;
 systemVerbose(systemCall);
 
-// remove temp files
-systemCall = "rm contours.cpt '" + tmpFile + "' ";
-systemVerbose(systemCall);
-
