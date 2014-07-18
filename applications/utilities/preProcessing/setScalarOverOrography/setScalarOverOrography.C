@@ -37,6 +37,23 @@ Description
 
 using namespace Foam::constant::mathematical;
 
+scalar ScharCos(const scalar x, const scalar a) {
+    return sqr(Foam::cos(M_PI*x/a));
+}
+
+scalar ScharCosSmooth(const scalar x, const scalar a, const scalar hm) {
+    scalar h = 0;
+    if (mag(x) < a)
+    {
+        h = hm*sqr(Foam::cos(0.5*M_PI*x/a));
+    }
+    return h;
+}
+
+scalar h(scalar x, scalar a, scalar hm, scalar lambda) {
+    return ScharCosSmooth(x, a, hm) * ScharCos(x, lambda);
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
@@ -85,6 +102,10 @@ int main(int argc, char *argv[])
     if (args.options().found("x0")) {
         x0 = readScalar(IStringStream(args.options()["x0"])());
     }
+
+    enum windFieldType{LINEAR, BTF};
+    const word windFieldName(initDict.lookupOrDefault<word>("windFieldType", "LINEAR"));
+    const windFieldType windField = windFieldName == "BTF" ? BTF : LINEAR;
     
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
@@ -96,24 +117,55 @@ int main(int argc, char *argv[])
     );
     
     if (!args.options().found("withoutWindField")) {
-	Info << "Creating initial wind field U" << endl;
-	volVectorField U
-	(
-		IOobject("U", runTime.timeName(), mesh),
-		mesh,
-		dimensionedVector("U", dimVelocity, vector(0,0,0)),
-		"zeroGradient"
-	);
+        volVectorField U
+        (
+            IOobject("U", runTime.timeName(), mesh),
+            mesh,
+            dimensionedVector("U", dimVelocity, vector(0,0,0)),
+            "zeroGradient"
+        );
 
-        forAll(T, cellI) {
-            const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
+        if (windField == LINEAR) {
+            Info << "Creating initial linear wind field U" << endl;
+            forAll(T, cellI) {
+                const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
 
-	    if (c.z() > z1 && c.z() < z2) { // region of changing wind speed
-		    U[cellI] = vector( pow((Foam::sin(M_PI/2*(c.z()-z1)/(z2-z1))),2), 0, 0 );
-	    } else if (c.z() >= z2) { // region of constant max wind speed
-		    U[cellI] = vector(u0, 0, 0);
-	    }
-	}
+                if (c.z() > z1 && c.z() < z2) { // region of changing wind speed
+                    U[cellI] = vector(u0*pow((Foam::sin(M_PI/2*(c.z()-z1)/(z2-z1))),2), 0, 0 );
+                } else if (c.z() >= z2) { // region of constant max wind speed
+                    U[cellI] = vector(u0, 0, 0);
+                }
+            }
+        } else {
+            const scalar zt(readScalar(initDict.lookup("zt")));
+            const scalar a(readScalar(initDict.lookup("a")));
+            const scalar hm(readScalar(initDict.lookup("hm")));
+            const scalar lambda(initDict.lookupOrDefault<scalar>("lambda", scalar(0)));
+            Info << "Creating initial BTF wind field U" << endl;
+            forAll(T, cellI) {
+                const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
+
+                scalar x = c.x();
+                scalar z = c.z();
+                scalar u = zt / (zt - h(x, a, hm, lambda));
+
+                scalar dhdx = hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
+                        pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
+
+
+                if (x < -a || x > a) {
+                    dhdx = 0.0;
+                }
+                scalar w = zt * dhdx * (z - zt) / pow(zt - h(x, a, hm, lambda), 2);
+
+                /*if (z > z1 && z < z2) { // region of changing wind speed
+                    scalar coeff = pow((Foam::sin(M_PI/2*(z-z1)/(z2-z1))),2);
+                    U[cellI] = vector(u0*u*coeff, 0, u0*w*coeff);
+                } else*/ if (c.z() >= z2) { // region of constant max wind speed
+                    U[cellI] = vector(u*u0, 0, w*u0);
+                }
+            }
+        }
 
     	U.write();
     }
