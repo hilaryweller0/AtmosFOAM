@@ -50,7 +50,7 @@ scalar ScharCosSmooth(const scalar x, const scalar a, const scalar hm) {
     return h;
 }
 
-scalar h(scalar x, scalar a, scalar hm, scalar lambda) {
+scalar height(scalar x, scalar a, scalar hm, scalar lambda) {
     return ScharCosSmooth(x, a, hm) * ScharCos(x, lambda);
 }
 
@@ -147,7 +147,8 @@ int main(int argc, char *argv[])
 
                 scalar x = c.x();
                 scalar z = c.z();
-                scalar u = zt / (zt - h(x, a, hm, lambda));
+                scalar h = height(x, a, hm, lambda);
+                scalar u = zt / (zt - h);
 
                 scalar dhdx = hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
                         pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
@@ -156,12 +157,9 @@ int main(int argc, char *argv[])
                 if (x < -a || x > a) {
                     dhdx = 0.0;
                 }
-                scalar w = zt * dhdx * (z - zt) / pow(zt - h(x, a, hm, lambda), 2);
+                scalar w = zt * dhdx * (z - zt) / pow(zt - h, 2);
 
-                /*if (z > z1 && z < z2) { // region of changing wind speed
-                    scalar coeff = pow((Foam::sin(M_PI/2*(z-z1)/(z2-z1))),2);
-                    U[cellI] = vector(u0*u*coeff, 0, u0*w*coeff);
-                } else*/ if (c.z() >= z2) { // region of constant max wind speed
+                if (c.z() >= h) {
                     U[cellI] = vector(u*u0, 0, w*u0);
                 }
             }
