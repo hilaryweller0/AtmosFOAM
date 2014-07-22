@@ -165,13 +165,13 @@ int main(int argc, char *argv[])
 			scalar h = height_schaerCos(x, a, hm, lambda);
 			scalar u = zt / (zt - h);
 
-			scalar dhdx = hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
+			scalar dhdx = - hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
 				pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
 
 			if (x < -a || x > a) {
 			    dhdx = 0.0;
 			}
-			scalar w = zt * dhdx * (z - zt) / pow(zt - h, 2);
+			scalar w = zt * dhdx * (zt - z) / pow(zt - h, 2);
 
 			if (c.z() >= h) {
 			    U[cellI] = vector(u*u0, 0, w*u0);
