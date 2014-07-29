@@ -50,8 +50,17 @@ scalar ScharCosSmooth(const scalar x, const scalar a, const scalar hm) {
     return h;
 }
 
-scalar height(scalar x, scalar a, scalar hm, scalar lambda) {
+Foam::scalar ScharExp(const scalar x, const scalar a, const scalar hm)
+{
+    return hm*Foam::exp(-sqr(x/a));
+}
+
+scalar height_schaerCos(scalar x, scalar a, scalar hm, scalar lambda) {
     return ScharCosSmooth(x, a, hm) * ScharCos(x, lambda);
+}
+
+scalar height_schaerExp(scalar x, scalar a, scalar hm, scalar lambda) {
+    return ScharExp(x, a, hm) * ScharCos(x, lambda);
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -106,6 +115,10 @@ int main(int argc, char *argv[])
     enum windFieldType{LINEAR, BTF};
     const word windFieldName(initDict.lookupOrDefault<word>("windFieldType", "LINEAR"));
     const windFieldType windField = windFieldName == "BTF" ? BTF : LINEAR;
+
+    enum mountainType{SCHAER_COS, SCHAER_EXP};
+    const word mountainTypeName(initDict.lookupOrDefault<word>("mountainType", "SCHAER_COS"));
+    const mountainType mountain = mountainTypeName == "SCHAER_EXP" ? SCHAER_EXP : SCHAER_COS;
     
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
@@ -142,26 +155,47 @@ int main(int argc, char *argv[])
             const scalar hm(readScalar(initDict.lookup("hm")));
             const scalar lambda(initDict.lookupOrDefault<scalar>("lambda", scalar(0)));
             Info << "Creating initial BTF wind field U" << endl;
-            forAll(T, cellI) {
-                const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
 
-                scalar x = c.x();
-                scalar z = c.z();
-                scalar h = height(x, a, hm, lambda);
-                scalar u = zt / (zt - h);
+            if (mountain == SCHAER_COS) {
+		    forAll(T, cellI) {
+			const point& c = mesh.C()[cellI];
 
-                scalar dhdx = hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
-                        pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
+			scalar x = c.x();
+			scalar z = c.z();
+			scalar h = height_schaerCos(x, a, hm, lambda);
+			scalar u = zt / (zt - h);
 
+			scalar dhdx = - hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
+				pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
 
-                if (x < -a || x > a) {
-                    dhdx = 0.0;
-                }
-                scalar w = zt * dhdx * (z - zt) / pow(zt - h, 2);
+			if (x < -a || x > a) {
+			    dhdx = 0.0;
+			}
+			scalar w = zt * dhdx * (zt - z) / pow(zt - h, 2);
 
-                if (c.z() >= h) {
-                    U[cellI] = vector(u*u0, 0, w*u0);
-                }
+			if (c.z() >= h) {
+			    U[cellI] = vector(u*u0, 0, w*u0);
+			}
+		    }
+            } else {
+		    Info << zt << ' ' << a << ' ' << hm << ' ' << lambda << endl;
+		    forAll(T, cellI) {
+			const point& c = mesh.C()[cellI];
+
+			scalar x = c.x();
+			scalar z = c.z();
+			scalar h = height_schaerExp(x, a, hm, lambda);
+			scalar u = zt / (zt - h);
+
+			scalar dhdx = - 2.0 * hm * Foam::exp(-pow(x/a, 2)) * Foam::cos(pi * x / lambda) * (
+				pi * Foam::sin(pi*x/lambda)/lambda + x * Foam::cos(pi * x / lambda) / pow(a,2));
+
+			scalar w = zt * dhdx * (zt - z) / pow(zt - h, 2);
+
+			if (c.z() >= h) {
+			    U[cellI] = vector(u*u0, 0, w*u0);
+			}
+		    }
             }
         }
 
