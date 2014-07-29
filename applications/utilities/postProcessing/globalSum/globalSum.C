@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
       : args.rootPath() / args.caseName() /"globalSum"+fieldName+".dat";
     Info << "Writing global sums to " << outFile << endl;
     OFstream os(outFile);
-    os << "#time mag RMS inf sum variance" << endl;
+    os << "#time mag RMS inf sum variance min max" << endl;
     
     for (label i=startTime; i<endTime; i++)
     {
@@ -142,6 +142,8 @@ int main(int argc, char *argv[])
             scalar l2 = 0;
             scalar li = 0;
             scalar l0 = 0;
+            scalar min = 0.0;
+            scalar max = 0.0;
             
             forAll(sumCells, i)
             {
@@ -153,6 +155,8 @@ int main(int argc, char *argv[])
                 l2 += sqr(fi)*Vi;
                 if (mag(fi) > li) li = mag(fi);
                 l0 += fi*Vi;
+                if (fi > max) max = fi;
+                if (fi < min) min = fi;
             }
             l1 /= Vtot;
             l2 = Foam::sqrt(l2/Vtot);
@@ -170,7 +174,7 @@ int main(int argc, char *argv[])
             variance /= Vtot;
             
             os << runTime.timeName() << ' ' << l1 << ' ' << l2 << ' ' << li
-               << ' ' << l0 << ' ' << variance << endl;
+               << ' ' << l0 << ' ' << variance << ' ' << min << ' ' << max << endl;
         }
         else
         {
