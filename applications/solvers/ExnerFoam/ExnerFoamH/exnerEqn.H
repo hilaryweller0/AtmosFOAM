@@ -74,5 +74,6 @@
             }
         }
     }
+    divUf = fvc::div(Uf & mesh.Sf());
 }
 

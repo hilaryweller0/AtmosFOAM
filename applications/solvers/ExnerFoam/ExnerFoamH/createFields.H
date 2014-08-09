@@ -175,3 +175,15 @@ volVectorField nonlinearMomentum(
     ),
     fvc::div(U,u)
 );
+
+volScalarField divUf(
+    IOobject(
+        "divUf",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    fvc::div(Uf & mesh.Sf())
+);
+
