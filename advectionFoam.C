@@ -10,6 +10,8 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "createFvOptions.H"
 
+    divUf.write();
+
     simpleControl simple(mesh);
 
     Info<< "\nCalculating advection\n" << endl;

@@ -42,3 +42,16 @@
         ),
         Uf & mesh.Sf()
     );
+
+    Info<< "Calculating divergence of phi\n" << endl;
+
+    volScalarField divUf(
+        IOobject(
+            "divUf",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        fvc::div(phi)
+    );
