@@ -41,6 +41,8 @@ surfaceScalarField readOrCalculatePhi(argList& args, Time& runTime, fvMesh& mesh
 {
     if (args.options().found("usePhi"))
     {
+        Info<< "Reading field phi\n" << endl;
+
         return surfaceScalarField
         (
             IOobject
