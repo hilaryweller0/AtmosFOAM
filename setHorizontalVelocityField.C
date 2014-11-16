@@ -32,14 +32,31 @@ int main(int argc, char *argv[])
     );
 
     Info << "Creating velocity field U" << endl;
-    forAll(Uf, cellI) {
+    forAll(Uf, cellI)
+    {
         const point& face = mesh.Cf()[cellI];
 
-        if (face.z() > z1 && face.z() < z2) {
+        if (face.z() > z1 && face.z() < z2)
+        {
             Uf[cellI] = vector(u0*pow((Foam::sin(M_PI/2*(face.z()-z1)/(z2-z1))),2), 0, 0);
-        } else if (face.z() >= z2) {
+        }
+        else if (face.z() >= z2)
+        {
             Uf[cellI] = vector(u0, 0, 0);
         }
+    }
+
+    label inletBC = -1;
+    forAll(mesh.boundaryMesh(), patchI)
+    {
+        if (mesh.boundaryMesh()[patchI].name() == "inlet")
+        {
+            inletBC = patchI;
+        }
+    }
+    forAll(Uf.boundaryField()[inletBC], cellI)
+    {
+	Uf.boundaryField()[inletBC][cellI] = vector(0, 0, 0);
     }
 
     // TODO: define Uf at inlet and outlet boundaries
