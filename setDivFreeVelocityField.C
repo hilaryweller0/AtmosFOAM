@@ -13,6 +13,6 @@ int main(int argc, char *argv[])
     );
     pEqn.solve();
 
-    phi -= pEqn.flux();
+    phi += pEqn.flux();
     phi.write();
 }
