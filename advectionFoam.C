@@ -1,5 +1,4 @@
 #include "fvCFD.H"
-#include "fvIOoptionList.H"
 #include "simpleControl.H"
 
 volScalarField readT(Time& runTime, fvMesh& mesh)
@@ -96,7 +95,6 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "createFvOptions.H"
 
     volScalarField T = readT(runTime, mesh);
     surfaceScalarField phi = readOrCalculatePhi(args, runTime, mesh);
@@ -118,9 +116,7 @@ int main(int argc, char *argv[])
             solve
             (
                 fvm::ddt(T)
-              + fvm::div(phi, T)
-             ==
-                fvOptions(T)
+              + fvc::div(phi, T)
             );
         }
 
