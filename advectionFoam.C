@@ -1,5 +1,4 @@
 #include "fvCFD.H"
-#include "simpleControl.H"
 
 volScalarField readT(Time& runTime, fvMesh& mesh)
 {
@@ -101,22 +100,19 @@ int main(int argc, char *argv[])
     volScalarField divUf = calculateDivUf(runTime, mesh, phi);
     divUf.write();
 
-    simpleControl simple(mesh);
-
     Info<< "\nCalculating advection\n" << endl;
 
     #include "CourantNo.H"
 
-    while (simple.loop())
+    while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        while (simple.correctNonOrthogonal())
+        for (int corr=0; corr < 3; corr++)
         {
-            solve
+            T = T.oldTime() - runTime.deltaT() * 0.5 *
             (
-                fvm::ddt(T)
-              + fvc::div(phi, T)
+                fvc::div(phi, T) + fvc::div(phi, T.oldTime())
             );
         }
 
