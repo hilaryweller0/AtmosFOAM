@@ -91,6 +91,7 @@ surfaceScalarField readOrCalculatePhi(argList& args, Time& runTime, fvMesh& mesh
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("usePhi", "use 0/phi rather than calculating it from 0/Uf");
+    Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -108,12 +109,19 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        for (int corr=0; corr < 3; corr++)
+        if (args.options().found("leapfrog"))
         {
-            T = T.oldTime() - runTime.deltaT() * 0.5 *
-            (
-                fvc::div(phi, T) + fvc::div(phi, T.oldTime())
-            );
+            T = T.oldTime().oldTime() - 2*runTime.deltaT()*fvc::div(phi,T);
+        }
+        else
+        {
+            for (int corr=0; corr < 3; corr++)
+            {
+                T = T.oldTime() - runTime.deltaT() * 0.5 *
+                (
+                    fvc::div(phi, T) + fvc::div(phi, T.oldTime())
+                );
+            }
         }
 
         runTime.write();
