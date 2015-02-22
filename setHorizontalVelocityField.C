@@ -1,3 +1,36 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+Application
+    setHorizontalVelocityField
+
+Description
+    Sets the horizontal velocity field for the 
+    Schar et al Mon. Wea. Rev., 130(10):2459-2480, 2002
+    horizontal advection over orography test case
+
+\*---------------------------------------------------------------------------*/
+
 #include "fvCFD.H"
 
 class VelocityProfile
@@ -10,7 +43,8 @@ class VelocityProfile
             z2(readScalar(dict.lookup("zeroVelocityHeight")))
     {}
 
-    void applyTo(surfaceVectorField& field)
+    template<class Type, template<class> class PatchField, class GeoMesh>
+    void applyTo(GeometricField<Type, PatchField, GeoMesh>& field)
     {
         applyToInternalField(field);
         applyToBoundary("inlet", field);
@@ -22,16 +56,31 @@ class VelocityProfile
     const scalar z1;
     const scalar z2;
     
-    void applyToInternalField(surfaceVectorField& field)
+    template<class Type>
+    void applyToInternalField(GeometricField<Type, fvsPatchField, surfaceMesh>& field)
     {
-        forAll(field, cellI)
+        forAll(field, faceI)
         {
-            const point& face = field.mesh().Cf()[cellI];
-            field[cellI] = velocityAt(face.z());
+            const point& Cf = field.mesh().Cf()[faceI];
+            field[faceI] = velocityAt(Cf.z());
         }
     }
 
-    void applyToBoundary(const word name, surfaceVectorField& field)
+    template<class Type>
+    void applyToInternalField(GeometricField<Type, fvPatchField, volMesh>& field)
+    {
+        forAll(field, cellI)
+        {
+            const point& C = field.mesh().C()[cellI];
+            field[cellI] = velocityAt(C.z());
+        }
+    }
+
+    template<class Type, template<class> class PatchField, class GeoMesh>
+    void applyToBoundary
+    (
+        const word name, GeometricField<Type, PatchField, GeoMesh>& field
+    )
     {
         label boundaryI = findBoundaryPatchIndex(field.mesh(), name);
         forAll(field.boundaryField()[boundaryI], cellI)
@@ -75,6 +124,8 @@ class VelocityProfile
     }
 };
 
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
@@ -107,4 +158,17 @@ int main(int argc, char *argv[])
     velocityProfile.applyTo(Uf);
 
     Uf.write();
+
+    volVectorField U
+    (
+        IOobject("U", runTime.timeName(), mesh),
+        mesh,
+        dimensionedVector("U", dimVelocity, vector(0,0,0)),
+        "fixedValue"
+    );
+
+    Info << "Creating velocity field U" << endl;
+    velocityProfile.applyTo(U);
+
+    U.write();
 }
