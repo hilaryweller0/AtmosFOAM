@@ -1,7 +1,0 @@
-EXE_INC = \
-    -ggdb3 -O0 \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
-
-EXE_LIBS = \
-    -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolume
