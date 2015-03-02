@@ -1,0 +1,27 @@
+interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
+interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
+interpolation/surfaceInterpolation/schemes/biQuadraticUpwindFit/biQuadraticUpwindFit.C
+interpolation/surfaceInterpolation/schemes/quadraticUpwindCPCFit/quadraticUpwindCPCFit.C
+interpolation/surfaceInterpolation/schemes/quadraticUpwindCECFit/quadraticUpwindCECFit.C
+interpolation/surfaceInterpolation/schemes/quadraticUpwindCFCFit/quadraticUpwindCFCFit.C
+interpolation/surfaceInterpolation/schemes/linearQuadraticUpwindFit/linearQuadraticUpwindFit.C
+interpolation/surfaceInterpolation/schemes/biLinearUpwindFit/biLinearUpwindFit.C
+interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
+
+interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
+interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
+
+extendedStencil = fvMesh/extendedStencil
+
+faceToFace = $(extendedStencil)/faceToFace
+$(faceToFace)/fullStencils/faceToFaceStencil.C
+$(faceToFace)/fullStencils/CFCFaceToFaceStencil.C
+$(faceToFace)/extendedCentredFaceToFaceStencil.C
+$(faceToFace)/MeshObjects/centredCFCFaceToFaceStencilObject.C
+
+finiteVolume/sGradSchemes/quadraticFitSGrad/quadraticFitSGrads.C
+
+finiteVolume/snGradSchemes/linearFitSnGradUser/linearFitSnGradsUser.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeUser
+

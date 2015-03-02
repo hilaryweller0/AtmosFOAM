@@ -10,3 +10,4 @@ makeType=${1:-libso}
 
 wmake $makeType ExnerTheta
 wmake $makeType Hops
+wmake $makeType finiteVolume
