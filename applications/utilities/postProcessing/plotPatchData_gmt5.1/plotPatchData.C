@@ -30,7 +30,6 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-//#include "meshWithDual.H"
 #include "fvCFD.H"
 #include "unitVectors.H"
 #include "pointFields.H"
@@ -79,7 +78,7 @@ int main(int argc, char *argv[])
     Info << "Create mesh for time = " << runTime.timeName() <<  " region "
          << meshRegion << endl;
 
-    fvMesh/*WithDual*/ mesh
+    fvMesh mesh
     (
         Foam::IOobject
         (
@@ -408,18 +407,6 @@ int main(int argc, char *argv[])
                         << exit(FatalError);
                     }
                 }
-//                else if(fieldsToPlot[ifield].plotType() == FieldToPlot::ADVECTED_CONTOURS)
-//                {
-//                    const TRiSKData& triskData = TRiSKData::New(mesh);
-//                    const fvMesh& dualMesh = triskData.dualMesh();    
-//                    contourList cf(mesh, dualMesh, triskData, 0, dimless);
-//                    scalar colourMin = fieldsToPlot[ifield].min();
-//                    scalar colourMax = fieldsToPlot[ifield].max();
-//                    scalar colourStep = fieldsToPlot[ifield].delta();
-//                    {
-//#                       include "advectedContours.H"
-//                    }
-//                }
                 else if (fieldsToPlot[ifield].plotType() == FieldToPlot::MESH)
                 {
                     if (plotAllCells)

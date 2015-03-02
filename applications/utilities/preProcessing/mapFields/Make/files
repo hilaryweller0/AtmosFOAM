@@ -1,4 +1,0 @@
-mapLagrangian.C
-mapFields.C
-
-EXE = $(FOAM_USER_APPBIN)/mapFields

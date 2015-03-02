@@ -23,17 +23,15 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "CentredFitSGradData.H"
+#include "CentredFitSnGradDataUser.H"
 #include "surfaceFields.H"
-#include "volFields.H"
-#include "SVD.H"
-#include "syncTools.H"
+#include <Eigen/SVD>
 #include "extendedCentredCellToFaceStencil.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
 template<class Polynomial>
-Foam::CentredFitSGradData<Polynomial>::CentredFitSGradData
+Foam::CentredFitSnGradDataUser<Polynomial>::CentredFitSnGradDataUser
 (
     const fvMesh& mesh,
     const extendedCentredCellToFaceStencil& stencil,
@@ -43,29 +41,25 @@ Foam::CentredFitSGradData<Polynomial>::CentredFitSGradData
 :
     FitData
     <
-        CentredFitSGradData<Polynomial>,
+        CentredFitSnGradDataUser<Polynomial>,
         extendedCentredCellToFaceStencil,
         Polynomial
     >
     (
         mesh, stencil, true, linearLimitFactor, centralWeight
     ),
-    delta_(mesh.delta()),
     coeffs_(mesh.nFaces())
 {
     if (debug)
     {
-        Info<< "Contructing CentredFitSGradData<Polynomial>" << endl;
+        Info<< "Contructing CentredFitSnGradDataUser<Polynomial>" << endl;
     }
 
     calcFit();
-    
-//    Info << "CentredFitSGradData<Polynomial>::CentredFitSGradData() :"
-//         << "coeffs = " << coeffs_ << endl;
 
     if (debug)
     {
-        Info<< "CentredFitSGradData<Polynomial>::CentredFitSGradData() :"
+        Info<< "CentredFitSnGradDataUser<Polynomial>::CentredFitSnGradDataUser() :"
             << "Finished constructing polynomialFit data"
             << endl;
     }
@@ -75,70 +69,7 @@ Foam::CentredFitSGradData<Polynomial>::CentredFitSGradData
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Polynomial>
-void Foam::CentredFitSGradData<Polynomial>::findFaceDirs
-(
-    vector& idir,        // value changed in return
-    vector& jdir,        // value changed in return
-    vector& kdir,        // value changed in return
-    const label facei
-)
-{
-    const fvMesh& mesh = this->mesh();
-
-    idir = delta_[facei];
-    idir /= mag(idir);
-
-    {
-        if (mesh.nGeometricD() <= 2) // find the normal direction
-        {
-            if (mesh.geometricD()[0] == -1)
-            {
-                kdir = vector(1, 0, 0);
-            }
-            else if (mesh.geometricD()[1] == -1)
-            {
-                kdir = vector(0, 1, 0);
-            }
-            else
-            {
-                kdir = vector(0, 0, 1);
-            }
-        }
-        else // 3D so find a direction in the plane of the face
-        {
-            const face& f = mesh.faces()[facei];
-            kdir = mesh.points()[f[0]] - mesh.faceCentres()[facei];
-        }
-    }
-//    else //Spherical geometry so kdir is the radial direction
-//    {
-//        kdir = mesh.faceCentres()[facei];
-//    }
-
-    if (mesh.nGeometricD() == 3)
-    {
-        // Remove the idir component from kdir and normalise
-        kdir -= (idir & kdir)*idir;
-
-        scalar magk = mag(kdir);
-
-        if (magk < SMALL)
-        {
-            FatalErrorIn("findFaceDirs(..)") << " calculated kdir = zero"
-                << exit(FatalError);
-        }
-        else
-        {
-            kdir /= magk;
-        }
-    }
-
-    jdir = kdir ^ idir;
-}
-
-
-template<class Polynomial>
-void Foam::CentredFitSGradData<Polynomial>::calcFit
+void Foam::CentredFitSnGradDataUser<Polynomial>::calcFit
 (
     scalarList& coeffsi,
     const List<point>& C,
@@ -150,7 +81,7 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
     vector idir(1,0,0);
     vector jdir(0,1,0);
     vector kdir(0,0,1);
-    findFaceDirs(idir, jdir, kdir, facei);
+    this->findFaceDirs(idir, jdir, kdir, facei);
 
     // Setup the point weights
     scalarList wts(C.size(), scalar(1));
@@ -167,7 +98,8 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
     scalar scale = 1;
 
     // Matrix of the polynomial components
-    scalarRectangularMatrix B(C.size(), this->minSize(), scalar(0));
+//    scalarRectangularMatrix B(C.size(), this->minSize(), scalar(0));
+    Eigen::MatrixXd B = Eigen::MatrixXd::Zero(this->minSize(), C.size());
 
     forAll(C, ip)
     {
@@ -186,14 +118,15 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
         // Scale the radius vector
         d /= scale;
 
-        Polynomial::addCoeffs(B[ip], d, wts[ip], this->dim());
+        //Polynomial::addCoeffs(B[ip], d, wts[ip], this->dim());
+        Polynomial::addCoeffs(&B(0,ip), d, wts[ip], this->dim());
     }
 
     // Additional weighting for constant and linear terms
-    for (label i = 0; i < B.n(); i++)
+    for (label i = 0; i < B.cols(); i++)
     {
-        B[i][0] *= wts[0];
-        B[i][1] *= wts[0];
+        B(0,i) *= wts[0];
+        B(1,i) *= wts[0];
     }
 
     // Set the fit
@@ -203,22 +136,44 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
     {
-        SVD svd(B, SMALL);
+        Eigen::JacobiSVD<Eigen::MatrixXd> svd
+        (
+            B, Eigen::ComputeThinU | Eigen::ComputeThinV
+        );
+        Eigen::VectorXd pickElt1 = Eigen::ArrayXd::Zero(B.rows());
+        pickElt1[1] = 1;
+        Eigen::VectorXd Binv1 = svd.solve(pickElt1);
+    
+//        if (facei == 4 || facei == 5)
+//        {
+////            Info << "Face " << facei
+////                 << "\nB = " << B
+////                 << "\nsingular values " << svd.S() << endl
+////                 << "\nsvd.VSinvUt() = " << svd.VSinvUt() << endl;
+//            cout << "Eigen B =" << B << '\n';
+//            cout << "Eigen S =" << svd.singularValues() << '\n';
+////            cout << "Eigen VSinvUt = " << Binv << '\n';
+//            cout << "Eigen Binv1 = " << Binv1 << '\n';
+//        }
 
         for (label i=0; i<stencilSize; i++)
         {
-            coeffsi[i] = wts[1]*wts[i]*svd.VSinvUt()[1][i]/scale;
+            //coeffsi[i] = wts[1]*wts[i]*svd.VSinvUt()[1][i]/scale;
+            //coeffsi[i] = wts[1]*wts[i]*Binv(i,1)/scale;
+            coeffsi[i] = wts[1]*wts[i]*Binv1(i)/scale;
         }
 
         goodFit =
-        (
-            mag(wts[0]*wts[0]*svd.VSinvUt()[0][0] - wLin)
+/*        (
+//            mag(wts[0]*wts[0]*svd.VSinvUt()[0][0] - wLin)
+            mag(wts[0]*wts[0]*Binv(0,0) - wLin)
           < this->linearLimitFactor()*wLin)
-         && (mag(wts[0]*wts[1]*svd.VSinvUt()[0][1] - (1 - wLin)
+//         && (mag(wts[0]*wts[1]*svd.VSinvUt()[0][1] - (1 - wLin)
+         && (mag(wts[0]*wts[1]*Binv(1,0) - (1 - wLin)
         ) < this->linearLimitFactor()*(1 - wLin))
-         && coeffsi[0] < 0 && coeffsi[1] > 0
-         && mag(coeffsi[0] + deltaCoeff) < 0.5*deltaCoeff
-         && mag(coeffsi[1] - deltaCoeff) < 0.5*deltaCoeff;
+         &&*/ coeffsi[0] < 0 && coeffsi[1] > 0
+         /*&& mag(coeffsi[0] + deltaCoeff) < 0.5*deltaCoeff
+         && mag(coeffsi[1] - deltaCoeff) < 0.5*deltaCoeff*/;
 
         if (!goodFit)
         {
@@ -227,40 +182,53 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
 
             WarningIn
             (
-                "CentredFitSGradData<Polynomial>::calcFit"
+                "CentredFitSnGradDataUser<Polynomial>::calcFit"
                 "(const List<point>& C, const label facei"
             )   << "Cannot fit face " << facei << " iteration " << iIt
                 << " with sum of weights " << sum(coeffsi) << nl
                 << "    Weights " << coeffsi << nl
                 << "    Linear weights " << wLin << " " << 1 - wLin << nl
-                << "    deltaCoeff " << deltaCoeff << nl
-                << "    sing vals " << svd.S() << nl
+                << "    deltaCoeff " << deltaCoeff << /*nl
+                << "    sing vals " << svd.singularValues() << nl
                 << "Components of goodFit:\n"
-                << "    wts[0]*wts[0]*svd.VSinvUt()[0][0] = "
-                << wts[0]*wts[0]*svd.VSinvUt()[0][0] << nl
-                << "    wts[0]*wts[1]*svd.VSinvUt()[0][1] = "
-                << wts[0]*wts[1]*svd.VSinvUt()[0][1]
-                << " dim = " << this->dim() << endl;
+//                << "    wts[0]*wts[0]*svd.VSinvUt()[0][0] = "
+//                << wts[0]*wts[0]*svd.VSinvUt()[0][0] << nl
+//                << "    wts[0]*wts[1]*svd.VSinvUt()[0][1] = "
+//                << wts[0]*wts[1]*svd.VSinvUt()[0][1]
+                << "    wts[0]*wts[0]*Binv(0,0) = "
+                << wts[0]*wts[0]*Binv(0,0) << nl
+                << "    wts[0]*wts[1]*Binv(1,0) = "
+                << wts[0]*wts[1]*Binv(1,0)
+                << " dim = " << this->dim() << */endl;
 
             wts[0] *= 10;
             wts[1] *= 10;
 
-            for (label j = 0; j < B.m(); j++)
+            for (label j = 0; j < B.rows(); j++)
             {
-                B[0][j] *= 10;
-                B[1][j] *= 10;
+                B(j,0) *= 10;
+                B(j,1) *= 10;
             }
 
-            for (label i = 0; i < B.n(); i++)
+            for (label i = 0; i < B.cols(); i++)
             {
-                B[i][0] *= 10;
-                B[i][1] *= 10;
+                B(0,i) *= 10;
+                B(1,i) *= 10;
             }
         }
     }
+    
+//    if (facei == 4 || facei == 5)
+//    {
+//        Info << "Face " << facei << " coeffs = " << coeffsi
+//             << "\ndeltaCoeff = " << deltaCoeff << endl;
+//    }
 
     if (goodFit)
     {
+//        Info << "Face " << facei << " has good fit has coefficients " << coeffsi
+//             << nl << "deltaCoeff = " << deltaCoeff << nl;
+    
         // Remove the uncorrected coefficients
         coeffsi[0] += deltaCoeff;
         coeffsi[1] -= deltaCoeff;
@@ -269,18 +237,23 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit
     {
         WarningIn
         (
-            "CentredFitSGradData<Polynomial>::calcFit(..)"
+            "CentredFitSnGradDataUser<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << facei
             << "    Coefficients = " << coeffsi
             << ", reverting to uncorrected." << endl;
 
         coeffsi = 0;
     }
+//    if (facei == 4 || facei == 5)
+//    {
+//        Info << "Face " << facei << " coeffs = " << coeffsi
+//             << "\ndeltaCoeff = " << deltaCoeff << endl;
+//    }
 }
 
 
 template<class Polynomial>
-void Foam::CentredFitSGradData<Polynomial>::calcFit()
+void Foam::CentredFitSnGradDataUser<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 
@@ -293,7 +266,7 @@ void Foam::CentredFitSGradData<Polynomial>::calcFit()
     // find the fit coefficients for every face in the mesh
 
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
-    const surfaceScalarField& dC = mesh.deltaCoeffs();
+    const surfaceScalarField& dC = mesh.nonOrthDeltaCoeffs();
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {

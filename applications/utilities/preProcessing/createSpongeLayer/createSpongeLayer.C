@@ -72,6 +72,15 @@ int main(int argc, char *argv[])
         envProperties.lookupOrDefault<scalar>("xSpongeEnd", scalar(0))
     );
     const scalar xSpongeLength = mag(xSpongeCentre - xSpongeEnd);
+    const scalar x2SpongeCentre
+    (
+        envProperties.lookupOrDefault<scalar>("x2SpongeCentre", scalar(0))
+    );
+    const scalar x2SpongeEnd
+    (
+        envProperties.lookupOrDefault<scalar>("x2SpongeEnd", scalar(0))
+    );
+    const scalar x2SpongeLength = mag(x2SpongeCentre - x2SpongeEnd);
         
     Info<< "Creating muSponge\n" << endl;
     surfaceScalarField muSponge
@@ -93,6 +102,7 @@ int main(int argc, char *argv[])
             const scalar z = -(mesh.Cf()[faceI] & ghat.value());
             // x distance to x sponge centre
             const scalar xDist = mag(mesh.Cf()[faceI].x() - xSpongeCentre);
+            const scalar x2Dist = mag(mesh.Cf()[faceI].x() - x2SpongeCentre);
             
             // set the sponge value if the height is above sponge base
             if (z > zB)
@@ -112,6 +122,10 @@ int main(int argc, char *argv[])
             {
                 muSponge[faceI] += muBar
                     *sqr(Foam::sin(0.5*pi*(xSpongeLength-xDist)/xSpongeLength));
+            } else if (x2Dist <= x2SpongeLength)
+            {
+                muSponge[faceI] += muBar
+                    *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
             }
         }
     }   

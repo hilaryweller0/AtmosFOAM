@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2013 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,45 +21,31 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Global
-    CourantNo
-
-Description
-    Calculates and outputs the mean and maximum Courant Numbers and Ndt
-
 \*---------------------------------------------------------------------------*/
 
-scalar CoNum = 0.0;
-scalar meanCoNum = 0.0;
-scalar maxNdt = 0.0;
+#include "CentredFitSnGradSchemeUser.H"
+#include "linearFitPolynomial.H"
+#include "centredFECCellToFaceStencilObject.H"
 
-if (mesh.nInternalFaces())
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
 {
-    scalarField sumPhi
+    defineTemplateTypeNameAndDebug
     (
-        fvc::surfaceSum(mag(U))().internalField()
-      / rho.internalField()
+        CentredFitSnGradDataUser<linearFitPolynomial>,
+        0
     );
 
-    CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
-
-    meanCoNum =
-        0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
-
-    volScalarField Ndt
-    (
-        "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(thetaf))/theta))
-    );
-    maxNdt = gMax(Ndt);
+    namespace fv
+    {
+        makeCentredFitSnGradSchemeUser
+        (
+            linearFitUser,
+            linearFitPolynomial,
+            centredFECCellToFaceStencilObject
+        );
+    }
 }
-
-Info<< "Courant Number mean: " << meanCoNum
-    << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
-
-courantFile << runTime.timeName() << ' '
-            << meanCoNum << ' '
-            << CoNum << ' '
-            << maxNdt << endl;
 
 // ************************************************************************* //

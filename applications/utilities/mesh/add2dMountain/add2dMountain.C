@@ -1,26 +1,132 @@
-/*---------------------------------------------------------------------------*\
-Date started: 10/05/2013
-
-Moves the grid points.
-
-\*---------------------------------------------------------------------------*/
-
 #include "fvCFD.H"
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
 #include "HashTable.H"
-//#include "doubleScalar.H"
+#include "fvMeshSubset.H"
 #include <cmath>
 
 using namespace Foam::constant::mathematical;
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+typedef scalar (*SmoothMountainFunction)(scalar, scalar, scalar);
+typedef scalar (*FineMountainFunction)(scalar, scalar);
+
+class Mountain
+{
+    public:
+    Mountain(
+            const scalar zt,
+            const scalar a,
+            const scalar hm,
+            const scalar lambda,
+            const SmoothMountainFunction smoothMountain,
+            const FineMountainFunction fineMountain)
+        :
+            zt(zt),
+            a(a),
+            hm(hm),
+            lambda(lambda),
+            smoothMountain(smoothMountain),
+            fineMountain(fineMountain)
+    {}
+
+    scalar heightAt(const scalar x) const
+    {
+        return smoothMountain(x,a,hm) * fineMountain(x,lambda);
+    }
+
+    private:
+    const scalar zt; // top of movement of levels
+    const scalar a; // horizontal mountain scale
+    const scalar hm; // Maximum mountain height
+    const scalar lambda; // horizontal scale in Schar mountain width
+    const SmoothMountainFunction smoothMountain;
+    const FineMountainFunction fineMountain;
+};
+
+int roundUp(int numToRound, int multiple) 
+{
+   return (numToRound + multiple - 1) / multiple * multiple;
+}
+
+void badCoordinateSystem(const word& coordSysName)
+{
+        FatalErrorIn("add2dMountain")
+            << "coordSys must be one of BTF, HTF, SLEVE, SNAP_NEAREST, or SNAP_BELOW. Not "
+            << coordSysName << exit(FatalError);
+}
+
+/* For each column of fixed x value, find the point whose z value is closest to h.
+   Update those points to have a z value of h.
+ */
+void snapNearestPointsToSurface(
+        IOField<point>& newPoints,
+        const Mountain& mountain)
+{
+	HashTable<int, scalar> minDistances;
+	HashTable<int, scalar> closestZcoords;
+
+	forAll(newPoints, ip)
+	{
+	    int x = roundUp(newPoints[ip].x(), 10); // FIXME: this hashtable method is dubious because it's not safe to compare doubles for equality
+	    scalar z = newPoints[ip].z();
+	    scalar h = mountain.heightAt(x);
+	    scalar distance = abs(z - h);
+	    
+	    if (!minDistances.found(x) || distance < minDistances[x])
+	    {
+            minDistances.set(x, distance);
+            closestZcoords.set(x, z);
+	    }
+	}
+
+	forAll(newPoints, ip)
+	{
+	    int x = roundUp(newPoints[ip].x(), 10);
+	    scalar z = newPoints[ip].z();
+	    if (closestZcoords[x] == z)
+	    {
+		    newPoints[ip].z() = mountain.heightAt(x);
+	    }
+	}
+}
+
+void snapPointsBelowSurface(
+        IOField<point>& newPoints,
+        const Mountain& mountain,
+        const scalar dz)
+{
+	forAll(newPoints, pointIdx)
+	{
+        scalar x = newPoints[pointIdx].x();
+        scalar z = newPoints[pointIdx].z();
+        scalar h = mountain.heightAt(x);
+        if (z < h && z > h-dz)
+        {
+            newPoints[pointIdx].z() = h;
+        }
+        else if (z < h && z > h-2*dz)
+        {
+            newPoints[pointIdx].z() = h-0.01*dz;
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"
 #   include "createTime.H"
-#   include "createMesh.H"
+
+    Foam::fvMesh mesh
+    (
+        Foam::IOobject
+        (
+            Foam::fvMesh::defaultRegion,
+            runTime.constant(),
+            runTime,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
 
     IOdictionary initDict
     (
@@ -66,30 +172,21 @@ int main(int argc, char *argv[])
       <<"mountainType should be one of ScharExp, ScharCos, BottaKlein or AgnessiWitch"
          << " not " << mountainName << exit(FatalError);
     }
-    
+
     // Get which coord system to use
-    enum coordSysType{BTF, HTF, SLEVE, SNAP, NONE};
+    enum coordSysType{BTF, HTF, SLEVE, SNAP_NEAREST, SNAP_BELOW, NONE};
     const word coordSysName(initDict.lookup("coordSys"));
     const coordSysType coordSys = coordSysName == "BTF" ? BTF :
                                   coordSysName == "HTF" ? HTF :
                                   coordSysName == "SLEVE" ? SLEVE : 
-				  coordSysName == "SNAP" ? SNAP : NONE;
-    if (coordSys == NONE)
-    {
-        FatalErrorIn("ScharMountain")
-            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
-            << coordSysName << exit(FatalError);
-    }
+                                  coordSysName == "SNAP_NEAREST" ? SNAP_NEAREST : 
+                                  coordSysName == "SNAP_BELOW" ? SNAP_BELOW : NONE;
+    if (coordSys == NONE) badCoordinateSystem(coordSysName);
     
     // Declare and read in constants
-    // top of movement of levels
     const scalar zt(readScalar(initDict.lookup("zt")));
-    // horizontal mountain scale
     const scalar a(readScalar(initDict.lookup("a")));
-    // Maximum mountain height
     const scalar hm(readScalar(initDict.lookup("hm")));
-
-    // horizontal scale in Schar mountain width
     const scalar lambda(initDict.lookupOrDefault<scalar>("lambda", scalar(0)));
     if
     (
@@ -101,6 +198,8 @@ int main(int argc, char *argv[])
             << "if mountain type is Schar, must specify lambda"
             << exit(FatalError);
     }
+
+    Mountain mountain(zt, a, hm, lambda, smoothMountain, fineMountain);
     
     // Calculate new points
     switch (coordSys)
@@ -163,44 +262,19 @@ int main(int argc, char *argv[])
         }
     }break;
 
-    case SNAP:
-    {
-       /* For each column of fixed x value, find the point whose z value is closest to h.
-           Update those points to have a z value of h.
-         */
-        HashTable<scalar, scalar> minDistances;
-        HashTable<scalar, scalar> closestZcoords;
+    case SNAP_NEAREST:
+        snapNearestPointsToSurface(newPoints, mountain);
+        break;
 
-        forAll(newPoints, ip)
+    case SNAP_BELOW:
         {
-            scalar x = newPoints[ip].x();
-            scalar z = newPoints[ip].z();
-            scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-            scalar distance = abs(z - h);
-            
-            if (!minDistances.found(x) || distance < minDistances[x])
-            {
-                minDistances.set(x, distance);
-                closestZcoords.set(x, z);
-            }
+            const scalar dz(readScalar(initDict.lookup("SNAP_dz")));
+            snapPointsBelowSurface(newPoints, mountain, dz);
         }
-
-        forAll(newPoints, ip)
-        {
-            scalar x = newPoints[ip].x();
-            scalar z = newPoints[ip].z();
-            if (closestZcoords[x] == z)
-            {
-                newPoints[ip].z() = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-            }
-        }
-    }
-    break;
+        break;
     
     default:
-        FatalErrorIn("add2dMountain")
-            << "coordSys must be one of BTF, HTF, SLEVE, or SNAP. Not "
-            << coordSysName << exit(FatalError);
+        badCoordinateSystem(coordSysName);
     }
 
     newPoints.write();
