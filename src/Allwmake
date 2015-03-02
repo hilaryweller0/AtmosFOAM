@@ -1,5 +1,6 @@
 #!/bin/sh
 cd ${0%/*} || exit 1    # run from this directory
+makeType=${1:-libso}
 
 [ -n "$FOAM_EXT_LIBBIN" ] || {
     echo "Error: FOAM_EXT_LIBBIN not set"
@@ -7,5 +8,4 @@ cd ${0%/*} || exit 1    # run from this directory
     exit 1
 }
 
-src/Allwmake $*
-applications/Allwmake $*
+wmake $makeType ExnerTheta
