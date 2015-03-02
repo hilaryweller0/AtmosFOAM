@@ -1,0 +1,5 @@
+/*primitiveMesh/primitiveMeshCellCentresAndVols.C*/
+/*surfaceInterpolation/overrideDeltaCoeffs.C*/
+Hops.C
+
+LIB = $(FOAM_USER_LIBBIN)/libHops
