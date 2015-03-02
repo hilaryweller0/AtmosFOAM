@@ -7,5 +7,5 @@ cd ${0%/*} || exit 1    # run from this directory
     exit 1
 }
 
-wmake all utilities $*
-#wmake all solvers $*
+
+applications/Allwmake $*
