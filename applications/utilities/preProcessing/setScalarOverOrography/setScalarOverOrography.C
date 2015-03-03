@@ -26,6 +26,10 @@ Application
     setScalarOverOrography
 
 Description
+    This utility is DEPRECATED.
+    To set a horizontal velocity field, use setHorizontalVelocityField.
+    To set a radial tracer field, use setRadialTracer.
+
     Set the velocity, U, and the initial scalar, T for scalar transport over
     orography
 
@@ -75,6 +79,10 @@ int main(int argc, char *argv[])
 #   include "createMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    Info << "This utility is DEPRECATED." << endl;
+    Info << "To set a horizontal velocity field, use setHorizontalVelocityField." << endl;
+    Info << "To set a radial tracer field, use setRadialTracer." << endl << endl;
+
     Info << "Reading initial conditions" << endl;
 
     IOdictionary initDict
