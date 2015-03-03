@@ -39,8 +39,8 @@ class VelocityProfile
     VelocityProfile(const IOdictionary& dict)
         :
             u0(readScalar(dict.lookup("maxVelocity"))),
-            z1(readScalar(dict.lookup("maxVelocityHeight"))),
-            z2(readScalar(dict.lookup("zeroVelocityHeight")))
+            z1(readScalar(dict.lookup("zeroVelocityHeight"))),
+            z2(readScalar(dict.lookup("maxVelocityHeight")))
     {}
 
     template<class Type, template<class> class PatchField, class GeoMesh>
