@@ -1,3 +1,4 @@
+*.swp
 *.dep
 lnInclude
 linux64GccDPOpt
