@@ -23,14 +23,6 @@ int main(int argc, char *argv[])
         )
     );
 
-    surfaceVectorField Uf
-    (
-        IOobject("Uf", runTime.timeName(), mesh),
-        mesh,
-        dimensionedVector("Uf", dimVelocity, vector(0,0,0)),
-        "fixedValue"
-    );
-
     const scalar u0(readScalar(dict.lookup("maxVelocity")));
     const scalar H(readScalar(dict.lookup("domainHeight")));
     const scalar a(readScalar(dict.lookup("mountainHalfWidth")));
@@ -42,6 +34,14 @@ int main(int argc, char *argv[])
     const VelocityField velocityField(profile);
 
     Info << "Creating velocity field Uf" << endl;
+    surfaceVectorField Uf
+    (
+        IOobject("Uf", runTime.timeName(), mesh),
+        mesh,
+        dimensionedVector("Uf", dimVelocity, vector(0,0,0)),
+        "fixedValue"
+    );
+
     velocityField.applyTo(Uf);
 
     Uf.write();

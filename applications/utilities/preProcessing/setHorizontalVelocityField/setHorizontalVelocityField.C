@@ -58,6 +58,9 @@ int main(int argc, char *argv[])
     const scalar z1(readScalar(dict.lookup("zeroVelocityHeight")));
     const scalar z2(readScalar(dict.lookup("maxVelocityHeight")));
 
+    const HorizontalVelocityProfile profile(u0, z1, z2);
+    const VelocityField velocityField(profile);
+
     surfaceVectorField Uf
     (
         IOobject("Uf", runTime.timeName(), mesh),
@@ -65,9 +68,6 @@ int main(int argc, char *argv[])
         dimensionedVector("Uf", dimVelocity, vector(0,0,0)),
         "fixedValue"
     );
-
-    const HorizontalVelocityProfile profile(u0, z1, z2);
-    const VelocityField velocityField(profile);
 
     Info << "Creating velocity field Uf" << endl;
     velocityField.applyTo(Uf);
