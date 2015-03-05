@@ -2,7 +2,7 @@
 #include "fvCFD.H"
 
 SchaerCosVelocityProfile::SchaerCosVelocityProfile(
-        SchaerCosMountain& mountain,
+        const SchaerCosMountain& mountain,
         const scalar u0,
         const scalar H) : 
     mountain(mountain),

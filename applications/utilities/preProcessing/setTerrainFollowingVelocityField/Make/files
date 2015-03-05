@@ -1,6 +1,5 @@
 setTerrainFollowingVelocityField.C
 Mountain.C
-VelocityField.C
 VelocityProfile.C
 
 EXE = $(FOAM_USER_APPBIN)/setTerrainFollowingVelocityField

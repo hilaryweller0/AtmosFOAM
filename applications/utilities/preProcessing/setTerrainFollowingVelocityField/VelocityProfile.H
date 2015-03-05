@@ -11,10 +11,10 @@ class VelocityProfile
     virtual ~VelocityProfile() {};
 };
 
-class SchaerCosVelocityProfile
+class SchaerCosVelocityProfile : public VelocityProfile
 {
     public:
-    SchaerCosVelocityProfile(SchaerCosMountain& mountain, const scalar u0, const scalar H);
+    SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
     private:
     const SchaerCosMountain& mountain;
