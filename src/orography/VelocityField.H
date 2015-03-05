@@ -15,13 +15,14 @@ class VelocityField
         applyToInternalField(field);
         applyToBoundary("inlet", field);
         applyToBoundary("outlet", field);
+        applyToBoundary("top", field);
+        applyToBoundary("ground", field);
     }
 
     private:
     const VelocityProfile& profile;
 
-    template<class Type>
-    void applyToInternalField(GeometricField<Type, fvsPatchField, surfaceMesh>& field) const
+    void applyToInternalField(surfaceVectorField& field) const
     {
         forAll(field, faceI)
         {
@@ -30,8 +31,7 @@ class VelocityField
         }
     }
 
-    template<class Type>
-    void applyToInternalField(GeometricField<Type, fvPatchField, volMesh>& field) const
+    void applyToInternalField(volVectorField& field) const
     {
         forAll(field, cellI)
         {
@@ -40,35 +40,18 @@ class VelocityField
         }
     }
 
-    template<class Type, template<class> class PatchField, class GeoMesh>
+    template<template<class> class PatchField, class GeoMesh>
     void applyToBoundary
     (
-        const word name, GeometricField<Type, PatchField, GeoMesh>& field
+        const word name, GeometricField<vector, PatchField, GeoMesh>& field
     ) const
     {
-        label boundaryI = findBoundaryPatchIndex(field.mesh(), name);
+        const label boundaryI = field.mesh().boundaryMesh().findPatchID(name);
         forAll(field.boundaryField()[boundaryI], cellI)
         {
             const point& face = field.mesh().Cf().boundaryField()[boundaryI][cellI];
             field.boundaryField()[boundaryI][cellI] = profile.velocityAt(face);
         }
-    }
-
-    label findBoundaryPatchIndex(const fvMesh& mesh, const word& name) const
-    {
-        forAll(mesh.boundaryMesh(), patchI)
-        {
-            if (mesh.boundaryMesh()[patchI].name() == name)
-            {
-                return patchI;
-            }
-        }
-        FatalErrorIn("VelocityField")
-            << " no boundary called " << name << ". The boundaries are called "
-            << mesh.boundaryMesh().names()
-            << exit(FatalError);
-
-        return -1;
     }
 };
 
