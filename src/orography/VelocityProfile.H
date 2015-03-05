@@ -7,6 +7,7 @@ class VelocityProfile
 {
     public:
     virtual vector velocityAt(const point& p) const = 0;
+    virtual scalar streamFunctionAt(const point& p) const = 0;
     virtual ~VelocityProfile() {};
 };
 
