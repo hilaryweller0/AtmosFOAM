@@ -10,6 +10,7 @@ class SchaerCosVelocityProfile : public VelocityProfile
     public:
     SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
+    virtual scalar streamFunctionAt(const point& p) const;
     private:
     const SchaerCosMountain& mountain;
     const scalar u0;

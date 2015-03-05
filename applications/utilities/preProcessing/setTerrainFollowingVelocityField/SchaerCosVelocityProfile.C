@@ -27,3 +27,8 @@ vector SchaerCosVelocityProfile::velocityAt(const point& p) const
         return vector(0,0,0);
     }
 }
+
+scalar SchaerCosVelocityProfile::streamFunctionAt(const point& p) const 
+{
+    return 0; // TODO
+}
