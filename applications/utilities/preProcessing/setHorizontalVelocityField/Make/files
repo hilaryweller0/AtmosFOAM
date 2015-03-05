@@ -1,3 +1,4 @@
 setHorizontalVelocityField.C
+HorizontalVelocityProfile.C
 
 EXE = $(FOAM_USER_APPBIN)/setHorizontalVelocityField
