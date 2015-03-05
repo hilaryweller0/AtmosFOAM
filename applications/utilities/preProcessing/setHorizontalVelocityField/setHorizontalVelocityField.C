@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 #   include "createMesh.H"
+#   include "createFields.H"
     Info << "Reading velocityFieldDict" << endl;
 
     IOdictionary dict
@@ -61,30 +62,24 @@ int main(int argc, char *argv[])
     const HorizontalVelocityProfile profile(u0, z1, z2);
     const VelocityField velocityField(profile);
 
-    surfaceVectorField Uf
-    (
-        IOobject("Uf", runTime.timeName(), mesh),
-        mesh,
-        dimensionedVector("Uf", dimVelocity, vector(0,0,0)),
-        "fixedValue"
-    );
-
     Info << "Creating velocity field Uf" << endl;
     velocityField.applyTo(Uf);
-
     Uf.write();
 
-    volVectorField U
-    (
-        IOobject("U", runTime.timeName(), mesh),
-        mesh,
-        dimensionedVector("U", dimVelocity, vector(0,0,0)),
-        "fixedValue"
-    );
+    Info << "Creating flux field, phi" << endl;
+    velocityField.applyTo(phi);
+    phi.write();
+
+    Info << "Calculating the divergence field to check that it is zero" << endl;
+    volScalarField divu("divu", fvc::div(phi));
+    divu.write();
+
+    Info << "Correcting Uf based on the flux" << endl;
+    Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+    Uf.write();
 
     Info << "Creating velocity field U" << endl;
     velocityField.applyTo(U);
-
     U.write();
 }
 

@@ -42,7 +42,7 @@ class VelocityField
     //
     //- The flux field from the streamfunction by application of Stokes' theorem
     //- for the internal flux field
-    void applyToInternalField(surfaceScalarField& phi)
+    void applyToInternalField(surfaceScalarField& phi) const
     {
         const fvMesh& mesh = phi.mesh();
         forAll(phi, faceI)
@@ -80,7 +80,7 @@ class VelocityField
     
     //- The flux field from the streamfunction by application of Stokes' theorem
     //- for the boundary
-    void applyToBoundary(const word name, surfaceScalarField& phi)
+    void applyToBoundary(const word name, surfaceScalarField& phi) const
     {
         const fvMesh& mesh = phi.mesh();
         const label patchI = mesh.boundaryMesh().findPatchID(name);
