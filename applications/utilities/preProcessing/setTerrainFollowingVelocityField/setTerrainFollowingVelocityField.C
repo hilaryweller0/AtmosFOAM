@@ -32,9 +32,9 @@ int main(int argc, char *argv[])
 
     const scalar u0(readScalar(dict.lookup("maxVelocity")));
     const scalar H(readScalar(dict.lookup("domainHeight")));
-    const scalar a(readScalar(dict.lookup("halfWidth")));
+    const scalar a(readScalar(dict.lookup("mountainHalfWidth")));
     const scalar h0(readScalar(dict.lookup("mountainPeakHeight")));
-    const scalar lambda(readScalar(dict.lookup("wavelength")));
+    const scalar lambda(readScalar(dict.lookup("mountainWavelength")));
 
     const SchaerCosMountain mountain(a, h0, lambda);
     const SchaerCosVelocityProfile profile(mountain, u0, H);
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
     Uf.write();
 
-    /*volVectorField U
+    volVectorField U
     (
         IOobject("U", runTime.timeName(), mesh),
         mesh,
@@ -57,5 +57,4 @@ int main(int argc, char *argv[])
     velocityField.applyTo(U);
 
     U.write();
-    */
 }
