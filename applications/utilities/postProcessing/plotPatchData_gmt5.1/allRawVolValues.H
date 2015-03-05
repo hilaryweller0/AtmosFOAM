@@ -38,7 +38,14 @@ scalar maxSsf = 0;
             colourMax = maxSsf;
         }
         
-        colourStep = max((colourMax - colourMin)/22., VSMALL);
+        colourStep = (colourMax - colourMin)/22.;
+        scalar range = colourMax-colourMin;
+        if (range/colourMax < 5e-4)
+        {
+            colourMin -= 1;
+            colourMax += 1;
+            colourStep = 1;
+        }
     }
 
     // Set the centre point and valid distance for Orthographic projection

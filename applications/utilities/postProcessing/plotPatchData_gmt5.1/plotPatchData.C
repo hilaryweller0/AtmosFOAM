@@ -111,11 +111,15 @@ int main(int argc, char *argv[])
 
         // create output file
         fileName epsFile = epsFileName != args.additionalArgs()[0]
-                         ? epsFileName + ".eps"
+                         ? epsFileName + ".ps"
                          : args.rootPath() / args.caseName() / runTime.timeName()
-                           / epsFileName + ".eps";
+                           / epsFileName + ".ps";
+        fileName pdfFile = epsFileName != args.additionalArgs()[0]
+                         ? epsFileName + ".pdf"
+                         : args.rootPath() / args.caseName() / runTime.timeName()
+                           / epsFileName + ".pdf";
 
-        Info << "Creating " << epsFile << endl;
+        Info << "Creating " << pdfFile << endl;
 
         if ( !overlay)
         {
@@ -455,6 +459,9 @@ int main(int argc, char *argv[])
             }
         }
 
+        // Add boundary
+#       include "addBoundary.H"
+
         // Add annotations
 #       include "annotate.H"
 
@@ -470,15 +477,13 @@ int main(int argc, char *argv[])
             
             if (!overlay)
             {
-                // convert to eps and remove ps file
-                systemCall = "ps2eps -f -q " + epsFile;
+                // convert to pdf and remove ps file
+                systemCall = "ps2pdf " + epsFile + " " + pdfFile + ".pdf";
+                systemVerbose(systemCall);
+                systemCall = "pdfcrop " + pdfFile + ".pdf " + pdfFile;
                 systemVerbose(systemCall);
     
-                systemCall = "mv " + epsFile + ".eps " + epsFile;
-                systemVerbose(systemCall);
-            
-                // give the file a postscript title
-                systemCall = "pstitle " + epsFile + " " + epsFile;
+                systemCall = "rm " + pdfFile + ".pdf " + epsFile;
                 systemVerbose(systemCall);
             }
         }

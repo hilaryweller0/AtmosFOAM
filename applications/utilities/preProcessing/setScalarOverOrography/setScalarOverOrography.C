@@ -26,12 +26,8 @@ Application
     setScalarOverOrography
 
 Description
-    This utility is DEPRECATED.
-    To set a horizontal velocity field, use setHorizontalVelocityField.
-    To set a radial tracer field, use setRadialTracer.
-
-    Set the velocity, U, and the initial scalar, T for scalar transport over
-    orography
+    Set the initial scalar, T for scalar transport over orography for any time
+    or for all of the times in the case directory.
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,93 +37,61 @@ Description
 
 using namespace Foam::constant::mathematical;
 
-scalar ScharCos(const scalar x, const scalar a) {
-    return sqr(Foam::cos(M_PI*x/a));
-}
-
-scalar ScharCosSmooth(const scalar x, const scalar a, const scalar hm) {
-    scalar h = 0;
-    if (mag(x) < a)
-    {
-        h = hm*sqr(Foam::cos(0.5*M_PI*x/a));
-    }
-    return h;
-}
-
-Foam::scalar ScharExp(const scalar x, const scalar a, const scalar hm)
-{
-    return hm*Foam::exp(-sqr(x/a));
-}
-
-scalar height_schaerCos(scalar x, scalar a, scalar hm, scalar lambda) {
-    return ScharCosSmooth(x, a, hm) * ScharCos(x, lambda);
-}
-
-scalar height_schaerExp(scalar x, scalar a, scalar hm, scalar lambda) {
-    return ScharExp(x, a, hm) * ScharCos(x, lambda);
-}
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addOption("x0", "int", "specify horizontal placement of tracer, overrides x0 specified in initialConditions dictionary");
-    Foam::argList::addBoolOption("withoutWindField", "omit wind field U from output");
-    Foam::argList::addOption("tracerFieldFileName", "filename", "specify the name of the tracer field file name (default 'T')");
+    #include "addTimeOptions.H"
+    Foam::argList::addOption
+    (
+        "tracerFieldFileName", "filename", 
+        "specify the name of the tracer field file name (default 'T')"
+    );
 #   include "setRootCase.H"
 #   include "createTime.H"
+    // Get times list
+    instantList Times = runTime.times();
+    if (Times.size() == 1 && !args.optionFound("constant"))
+    {
+        Times.append(instant(scalar(0)));
+    }
+
+    // set startTime and endTime depending on -time and -latestTime options
+    #include "checkTimeOptions.H"
+
+    runTime.setTime(Times[startTime], startTime);
 #   include "createMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    Info << "This utility is DEPRECATED." << endl;
-    Info << "To set a horizontal velocity field, use setHorizontalVelocityField." << endl;
-    Info << "To set a radial tracer field, use setRadialTracer." << endl << endl;
-
     Info << "Reading initial conditions" << endl;
 
     IOdictionary initDict
     (
         IOobject
         (
-            "initialConditions",
-            mesh.time().constant(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
+            "setScalarOverOrographyDict", runTime.constant(), mesh,
+            IOobject::MUST_READ
         )
     );
+    IOdictionary velocityDict
+    (
+        IOobject("velocityFieldDict", runTime.constant(), mesh, IOobject::MUST_READ)
+    );
     
-    // Maximum wind speed
-    const scalar u0(readScalar(initDict.lookup("u0")));
-    // Height at which the winds attains its maximum value
-    const scalar z2(readScalar(initDict.lookup("z2")));
-    // Height below which the winds are zero
-    const scalar z1(readScalar(initDict.lookup("z1")));
     // Initial maximum tracer value
     const scalar rho0(readScalar(initDict.lookup("rho0")));
     // Initial tracer position
-    scalar x0(readScalar(initDict.lookup("x0")));
+    const scalar x0(readScalar(initDict.lookup("x0")));
     const scalar z0(readScalar(initDict.lookup("z0")));
     // Half widths
     const scalar Ax(readScalar(initDict.lookup("Ax")));
     const scalar Az(readScalar(initDict.lookup("Az")));
-    string tracerFieldFileName = "T";
-    if (args.options().found("tracerFieldFileName")) {
-        tracerFieldFileName = args.options()["tracerFieldFileName"];
-    }
+    // Maximum wind speed
+    const scalar u0(readScalar(velocityDict.lookup("maxVelocity")));
 
-    if (args.options().found("x0")) {
-        x0 = readScalar(IStringStream(args.options()["x0"])());
-    }
+    const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
+                                       args.options()["tracerFieldFileName"] : "T";
 
-    enum windFieldType{LINEAR, BTF};
-    const word windFieldName(initDict.lookupOrDefault<word>("windFieldType", "LINEAR"));
-    const windFieldType windField = windFieldName == "BTF" ? BTF : LINEAR;
-
-    enum mountainType{SCHAER_COS, SCHAER_EXP};
-    const word mountainTypeName(initDict.lookupOrDefault<word>("mountainType", "SCHAER_COS"));
-    const mountainType mountain = mountainTypeName == "SCHAER_EXP" ? SCHAER_EXP : SCHAER_COS;
-    
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
     (
@@ -137,92 +101,33 @@ int main(int argc, char *argv[])
         "zeroGradient"
     );
     
-    if (!args.options().found("withoutWindField")) {
-        volVectorField U
-        (
-            IOobject("U", runTime.timeName(), mesh),
-            mesh,
-            dimensionedVector("U", dimVelocity, vector(0,0,0)),
-            "zeroGradient"
-        );
+    // Set the tracer for each time specified
+    for (label i=startTime; i<endTime; i++)
+    {
+        runTime.setTime(Times[i], i);
 
-        if (windField == LINEAR) {
-            Info << "Creating initial linear wind field U" << endl;
-            forAll(T, cellI) {
-                const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
+        Info<< "Time = " << runTime.timeName() << endl;
 
-                if (c.z() > z1 && c.z() < z2) { // region of changing wind speed
-                    U[cellI] = vector(u0*pow((Foam::sin(M_PI/2*(c.z()-z1)/(z2-z1))),2), 0, 0 );
-                } else if (c.z() >= z2) { // region of constant max wind speed
-                    U[cellI] = vector(u0, 0, 0);
-                }
+        // Calculating T
+        forAll(T, cellI)
+        {
+            const point& c = mesh.C()[cellI];
+            
+            // Centre of the tracer for this time step
+            scalar x0t = x0 + u0*runTime.value();
+        
+            // Define r as used in the initial tracer field
+            scalar r = Foam::sqrt(sqr((c.x()-x0t)/Ax)+sqr((c.z()-z0)/Az));
+        
+            if (r <= 1)
+            {
+                T[cellI] = rho0*sqr(Foam::cos(M_PI*r/2));
             }
-        } else {
-            const scalar zt(readScalar(initDict.lookup("zt")));
-            const scalar a(readScalar(initDict.lookup("a")));
-            const scalar hm(readScalar(initDict.lookup("hm")));
-            const scalar lambda(initDict.lookupOrDefault<scalar>("lambda", scalar(0)));
-            Info << "Creating initial BTF wind field U" << endl;
-
-            if (mountain == SCHAER_COS) {
-		    forAll(T, cellI) {
-			const point& c = mesh.C()[cellI];
-
-			scalar x = c.x();
-			scalar z = c.z();
-			scalar h = height_schaerCos(x, a, hm, lambda);
-			scalar u = zt / (zt - h);
-
-			scalar dhdx = - hm * pi * (1/(2*a)*pow(Foam::cos(pi * x/lambda), 2) * Foam::sin(pi*x/a) +
-				pow(Foam::cos(pi * x / (2.0*a)), 2) * Foam::sin(2.0*pi*x/lambda)/lambda);
-
-			if (x < -a || x > a) {
-			    dhdx = 0.0;
-			}
-			scalar w = zt * dhdx * (zt - z) / pow(zt - h, 2);
-
-			if (c.z() >= h) {
-			    U[cellI] = vector(u*u0, 0, w*u0);
-			}
-		    }
-            } else {
-		    Info << zt << ' ' << a << ' ' << hm << ' ' << lambda << endl;
-		    forAll(T, cellI) {
-			const point& c = mesh.C()[cellI];
-
-			scalar x = c.x();
-			scalar z = c.z();
-			scalar h = height_schaerExp(x, a, hm, lambda);
-			scalar u = zt / (zt - h);
-
-			scalar dhdx = - 2.0 * hm * Foam::exp(-pow(x/a, 2)) * Foam::cos(pi * x / lambda) * (
-				pi * Foam::sin(pi*x/lambda)/lambda + x * Foam::cos(pi * x / lambda) / pow(a,2));
-
-			scalar w = zt * dhdx * (zt - z) / pow(zt - h, 2);
-
-			if (c.z() >= h) {
-			    U[cellI] = vector(u*u0, 0, w*u0);
-			}
-		    }
-            }
+            else T[cellI] = 0;
         }
-
-    	U.write();
+        T.correctBoundaryConditions();
+        T.write();
     }
-        
-    // Loop through all T and set correct values depending on location
-    forAll(T, cellI) {
-        const point& c = mesh.C()[cellI]; // Gets the mesh values from mesh.C
-        
-        // Define r as used in the initial tracer field
-        double r = Foam::sqrt(pow((c.x()-x0)/Ax,2)+pow((c.z()-z0)/Az,2));
-        
-        if (r<=1) {
-            T[cellI] = rho0*pow(Foam::cos(M_PI*r/2),2);
-        }       
-    };
-    
-    T.write();
     
     Info<< "End\n" << endl;
     
