@@ -1,15 +1,9 @@
-#ifndef VELOCITY_PROFILE_H
-#define VELOCITY_PROFILE_H
+#ifndef SCHAER_COS_VELOCITY_PROFILE_H
+#define SCHAER_COS_VELOCITY_PROFILE_H
 
 #include "fvCFD.H"
+#include "VelocityProfile.H"
 #include "Mountain.H"
-
-class VelocityProfile
-{
-    public:
-    virtual vector velocityAt(const point& p) const = 0;
-    virtual ~VelocityProfile() {};
-};
 
 class SchaerCosVelocityProfile : public VelocityProfile
 {

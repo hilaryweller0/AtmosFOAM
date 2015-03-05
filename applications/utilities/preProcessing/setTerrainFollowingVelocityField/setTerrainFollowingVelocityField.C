@@ -1,6 +1,7 @@
 #include "fvCFD.H"
 #include "Mountain.H"
 #include "VelocityProfile.H"
+#include "SchaerCosVelocityProfile.H"
 #include "VelocityField.H"
 
 int main(int argc, char *argv[])
