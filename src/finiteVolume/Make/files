@@ -7,6 +7,7 @@ interpolation/surfaceInterpolation/schemes/quadraticUpwindCFCFit/quadraticUpwind
 interpolation/surfaceInterpolation/schemes/linearQuadraticUpwindFit/linearQuadraticUpwindFit.C
 interpolation/surfaceInterpolation/schemes/biLinearUpwindFit/biLinearUpwindFit.C
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
+interpolation/surfaceInterpolation/schemes/volumeWeighted/volumeWeighted.C
 
 interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C

@@ -218,6 +218,6 @@ systemCall = "pstext '" + tmpFile + "' -W"
 systemVerbose(systemCall);
 
 // delete temporary files
-//systemCall = "rm '" + tmpFile + "' ";
-//systemVerbose(systemCall);
+systemCall = "rm '" + tmpFile + "' ";
+systemVerbose(systemCall);
 }
