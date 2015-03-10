@@ -1,7 +1,7 @@
 EXE_INC = \
     -ggdb3 -O0 \
-    -Wno-old-style-cast \
-    -IlnInclude
+    -I$(LIB_SRC)/finiteVolume/lnInclude
 
 EXE_LIBS = \
     -lfiniteVolume
+
