@@ -38,3 +38,8 @@ scalar HorizontalVelocityProfile::streamFunctionAt(const point& p) const
     }
     else return -0.5*u0*(2*z - z2 - z1);
 }
+
+point HorizontalVelocityProfile::pointAtTime(const point& p0, const scalar t) const
+{
+    return point(p0.x() + u0 * t, 0, p0.z());
+}

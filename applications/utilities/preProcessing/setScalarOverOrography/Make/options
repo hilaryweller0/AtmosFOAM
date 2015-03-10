@@ -1,7 +1,9 @@
 EXE_INC = \
     -ggdb3 -O0 -DFULLDEBUG \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(FOAM_USER_SRC)/orography/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
+    -lOrography \
     -lfiniteVolume

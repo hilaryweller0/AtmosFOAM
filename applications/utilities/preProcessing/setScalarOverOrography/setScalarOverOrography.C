@@ -34,6 +34,7 @@ Description
 #include "fvCFD.H"
 #include "mathematicalConstants.H"
 #include "OFstream.H"
+#include "HorizontalVelocityProfile.H"
 
 using namespace Foam::constant::mathematical;
 
@@ -89,8 +90,14 @@ int main(int argc, char *argv[])
     // Maximum wind speed
     const scalar u0(readScalar(velocityDict.lookup("maxVelocity")));
 
+    const scalar z1(readScalar(velocityDict.lookup("zeroVelocityHeight")));
+    const scalar z2(readScalar(velocityDict.lookup("maxVelocityHeight")));
+
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
+
+
+    const HorizontalVelocityProfile velocityProfile(u0, z1, z2);
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
@@ -114,10 +121,10 @@ int main(int argc, char *argv[])
             const point& c = mesh.C()[cellI];
             
             // Centre of the tracer for this time step
-            scalar x0t = x0 + u0*runTime.value();
+            const point& advectedPt = velocityProfile.pointAtTime(point(x0, 0, z0), runTime.value());
         
             // Define r as used in the initial tracer field
-            scalar r = Foam::sqrt(sqr((c.x()-x0t)/Ax)+sqr((c.z()-z0)/Az));
+            scalar r = Foam::sqrt(sqr((c.x()-advectedPt.x())/Ax)+sqr((c.z()-advectedPt.z())/Az));
         
             if (r <= 1)
             {

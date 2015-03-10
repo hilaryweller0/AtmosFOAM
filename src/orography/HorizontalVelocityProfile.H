@@ -10,6 +10,7 @@ class HorizontalVelocityProfile : public VelocityProfile
     HorizontalVelocityProfile(const scalar u0, const scalar z1, const scalar z2);
     vector velocityAt(const point& p) const;
     scalar streamFunctionAt(const point& p) const;
+    point pointAtTime(const point& p0, const scalar t) const;
     private:
     const scalar u0;
     const scalar z1;

@@ -32,3 +32,8 @@ scalar SchaerCosVelocityProfile::streamFunctionAt(const point& p) const
 {
     return 0; // TODO
 }
+
+point SchaerCosVelocityProfile::pointAtTime(const point& p0, const scalar t) const
+{
+    return p0; // TODO
+}
