@@ -25,11 +25,8 @@ int main(int argc, char *argv[])
 
     const scalar u0(readScalar(dict.lookup("maxVelocity")));
     const scalar H(readScalar(dict.lookup("domainHeight")));
-    const scalar a(readScalar(dict.lookup("mountainHalfWidth")));
-    const scalar h0(readScalar(dict.lookup("mountainPeakHeight")));
-    const scalar lambda(readScalar(dict.lookup("mountainWavelength")));
 
-    const SchaerCosMountain mountain(a, h0, lambda);
+    const SchaerCosMountain mountain(dict);
     const SchaerCosVelocityProfile profile(mountain, u0, H);
     const VelocityField velocityField(profile);
 

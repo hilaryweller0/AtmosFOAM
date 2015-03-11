@@ -20,6 +20,15 @@ scalar SchaerSmoothMountain::heightAt(const scalar x) const
     return h;
 }
 
+SchaerCosMountain::SchaerCosMountain(const IOdictionary& dict) :
+    a(readScalar(dict.lookup("mountainHalfWidth"))),
+    h0(readScalar(dict.lookup("mountainPeakHeight"))),
+    lambda(readScalar(dict.lookup("mountainWavelength")))
+{
+    smooth = new SchaerSmoothMountain(a, h0);
+    fine = new SchaerCosFineMountain(lambda);
+}
+
 SchaerCosMountain::SchaerCosMountain(const scalar a, const scalar h0, const scalar lambda) :
     a(a), h0(h0), lambda(lambda)
 {

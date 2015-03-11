@@ -32,6 +32,7 @@ class SchaerSmoothMountain : public Mountain
 class SchaerCosMountain : public Mountain
 {
     public:
+    SchaerCosMountain(const IOdictionary& dict);
     SchaerCosMountain(const scalar a, const scalar h0, const scalar lambda);
     scalar heightAt(const scalar x) const;
     scalar gradientAt(const scalar x) const;
