@@ -1,4 +1,11 @@
 #include "HorizontalVelocityProfile.H"
+#include "fvCFD.H"
+
+HorizontalVelocityProfile::HorizontalVelocityProfile(const IOdictionary& dict) :
+    u0(readScalar(dict.lookup("maxVelocity"))),
+    z1(readScalar(dict.lookup("zeroVelocityHeight"))),
+    z2(readScalar(dict.lookup("maxVelocityHeight")))
+{};
 
 HorizontalVelocityProfile::HorizontalVelocityProfile(
         const scalar u0,

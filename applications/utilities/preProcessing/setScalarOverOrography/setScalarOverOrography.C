@@ -87,17 +87,12 @@ int main(int argc, char *argv[])
     // Half widths
     const scalar Ax(readScalar(initDict.lookup("Ax")));
     const scalar Az(readScalar(initDict.lookup("Az")));
-    // Maximum wind speed
-    const scalar u0(readScalar(velocityDict.lookup("maxVelocity")));
-
-    const scalar z1(readScalar(velocityDict.lookup("zeroVelocityHeight")));
-    const scalar z2(readScalar(velocityDict.lookup("maxVelocityHeight")));
 
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
 
 
-    const HorizontalVelocityProfile velocityProfile(u0, z1, z2);
+    const HorizontalVelocityProfile velocityProfile(velocityDict);
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
