@@ -55,11 +55,7 @@ int main(int argc, char *argv[])
         )
     );
 
-    const scalar u0(readScalar(dict.lookup("maxVelocity")));
-    const scalar z1(readScalar(dict.lookup("zeroVelocityHeight")));
-    const scalar z2(readScalar(dict.lookup("maxVelocityHeight")));
-
-    const HorizontalVelocityProfile profile(u0, z1, z2);
+    const HorizontalVelocityProfile profile(dict);
     const VelocityField velocityField(profile);
 
     Info << "Creating velocity field Uf" << endl;
