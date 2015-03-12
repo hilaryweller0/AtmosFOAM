@@ -1,3 +1,5 @@
 HorizontalVelocityProfile.C
+SchaerCosVelocityProfile.C
+Mountain.C
 
 LIB = $(FOAM_USER_LIBBIN)/libOrography
