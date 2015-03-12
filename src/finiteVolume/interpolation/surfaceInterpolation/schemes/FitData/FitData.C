@@ -26,7 +26,8 @@ License
 #include "FitData.H"
 #include "surfaceFields.H"
 #include "volFields.H"
-#include <Eigen/SVD>
+//#include <Eigen/SVD>
+#include "SVD.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
@@ -53,11 +54,11 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     minSize_(Polynomial::nTerms(dim_))
 {
     // Check input
-    if (linearLimitFactor <= SMALL || linearLimitFactor > 3)
+    if (linearLimitFactor <= SMALL || linearLimitFactor > 4)
     {
         FatalErrorIn("FitData<Polynomial>::FitData(..)")
             << "linearLimitFactor requested = " << linearLimitFactor
-            << " should be between zero and 3"
+            << " should be between zero and 4"
             << exit(FatalError);
     }
 }
@@ -140,20 +141,19 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     vector jdir(0,1,0);
     vector kdir(0,0,1);
     findFaceDirs(idir, jdir, kdir, facei);
+    
+    // Reference point
+    point p0 = this->mesh().faceCentres()[facei];
+
+    bool pureUpwind = sign((C[0]-p0) & (C[1]-p0)) > 0;
 
     // Setup the point weights
     scalarList wts(C.size(), scalar(1));
     wts[0] = centralWeight_;
-    if (linearCorrection_)
+    if (!pureUpwind)
     {
         wts[1] = centralWeight_;
     }
-
-    // Reference point
-    point p0 = this->mesh().faceCentres()[facei];
-
-    // Info<< "Face " << facei << " at " << p0 << " stencil points at:\n"
-    //     << C - p0 << endl;
 
     // p0 -> p vector in the face-local coordinate system
     vector d;
@@ -162,8 +162,8 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     scalar scale = 1;
 
     // Matrix of the polynomial components
-    //scalarRectangularMatrix B(C.size(), minSize_, scalar(0));
-    Eigen::MatrixXd B = Eigen::MatrixXd::Zero(this->minSize(), C.size());
+    scalarRectangularMatrix B(C.size(), minSize_, scalar(0));
+    //Eigen::MatrixXd B = Eigen::MatrixXd::Zero(this->minSize(), C.size());
 
     forAll(C, ip)
     {
@@ -185,18 +185,18 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         // Scale the radius vector
         d /= scale;
 
-        //Polynomial::addCoeffs(B[ip], d, wts[ip], dim_);
-        Polynomial::addCoeffs(&B(0,ip), d, wts[ip], dim_);
+        Polynomial::addCoeffs(B[ip], d, wts[ip], dim_);
+        //Polynomial::addCoeffs(&B(0,ip), d, wts[ip], dim_);
     }
 
-    // Additional weighting for constant and linear terms
-    //for (label i = 0; i < B.n(); i++)
-    for (label i = 0; i < B.cols(); i++)
+    // Additional weighting for constant (and linear) terms
+    for (label i = 0; i < B.n(); i++)
+    //for (label i = 0; i < B.cols(); i++)
     {
-//        B[i][0] *= wts[0];
-//        B[i][1] *= wts[0];
-        B(0,i) *= wts[0];
-        B(1,i) *= wts[0];
+        B[i][0] *= wts[0];
+        B[i][1] *= wts[0];
+//        B(0,i) *= wts[0];
+//        B(1,i) *= wts[0];
     }
 
     // Set the fit
@@ -206,22 +206,22 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
     {
-        //SVD svd(B, SMALL);
-        Eigen::JacobiSVD<Eigen::MatrixXd> svd
-        (
-            B, Eigen::ComputeThinU | Eigen::ComputeThinV
-        );
-        Eigen::VectorXd pickElt0 = Eigen::ArrayXd::Zero(B.rows());
-        pickElt0[0] = 1;
-        Eigen::VectorXd Binv0 = svd.solve(pickElt0);
+        SVD svd(B, SMALL);
+//        Eigen::JacobiSVD<Eigen::MatrixXd> svd
+//        (
+//            B, Eigen::ComputeThinU | Eigen::ComputeThinV
+//        );
+//        Eigen::VectorXd pickElt0 = Eigen::ArrayXd::Zero(B.rows());
+//        pickElt0[0] = 1;
+//        Eigen::VectorXd Binv0 = svd.solve(pickElt0);
 
         scalar maxCoeff = 0;
         label maxCoeffi = 0;
 
         for (label i=0; i<stencilSize; i++)
         {
-            //coeffsi[i] = wts[0]*wts[i]*svd.VSinvUt()[0][i];
-            coeffsi[i] = wts[0]*wts[i]*Binv0(i);
+            coeffsi[i] = wts[0]*wts[i]*svd.VSinvUt()[0][i];
+            //coeffsi[i] = wts[0]*wts[i]*Binv0(i);
             if (mag(coeffsi[i]) > maxCoeff)
             {
                 maxCoeff = mag(coeffsi[i]);
@@ -238,56 +238,72 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         }
         else
         {
-            // Upwind: weight on face is 1.
+            // Upwind: weight on face is 0
             goodFit =
                 (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
+             && coeffsi[0] >= coeffsi[1]
              && maxCoeffi <= 1;
         }
 
-        // if (goodFit && iIt > 0)
-        // {
-            // Info<< "FitData<Polynomial>::calcFit"
-            //     << "(const List<point>& C, const label facei" << nl
-            //     << "Can now fit face " << facei << " iteration " << iIt
-            //     << " with sum of weights " << sum(coeffsi) << nl
-            //     << "    Weights " << coeffsi << nl
-            //     << "    Linear weights " << wLin << " " << 1 - wLin << nl
-            //     << "    sing vals " << svd.S() << endl;
-        // }
+//         if ((goodFit && iIt > 1))
+//         {
+//             Info<< "FitData<Polynomial>::calcFit"
+//                 << "(const List<point>& C, const label facei" << nl
+//                 << "Can now fit face " << facei << " iteration " << iIt
+//                 << " with sum of weights " << sum(coeffsi) << nl
+//                 << "    Weights " << coeffsi << nl
+//                 << "    Linear weights " << wLin << " " << 1 - wLin << endl;
+//         }
 
         if (!goodFit) // (not good fit so increase weight in the centre and
                       //  weight for constant and linear terms)
         {
-            // if (iIt == 7)
-            // {
-            //     WarningIn
-            //     (
-            //         "FitData<Polynomial>::calcFit"
-            //         "(const List<point>& C, const label facei"
-            //     )   << "Cannot fit face " << facei << " iteration " << iIt
-            //         << " with sum of weights " << sum(coeffsi) << nl
-            //         << "    Weights " << coeffsi << nl
-            //         << "    Linear weights " << wLin << " " << 1 - wLin << nl
-            //         << "    sing vals " << svd.S() << endl;
-            // }
+//             if (iIt >= 6)
+//             {
+//                 WarningIn
+//                 (
+//                     "FitData<Polynomial>::calcFit"
+//                     "(const List<point>& C, const label facei"
+//                 )   << "Cannot fit face " << facei << " iteration " << iIt
+//                     << " with sum of weights " << sum(coeffsi) << nl
+//                     << "    Weights " << coeffsi << nl
+//                     << "    Linear weights " << wLin << " " << 1-wLin <<endl;
+//             }
 
             wts[0] *= 10;
             if (linearCorrection_)
             {
                 wts[1] *= 10;
             }
-
-            for (label j = 0; j < B.rows(); j++)
+            else if (!pureUpwind && iIt == 0)
             {
-                B(j,0) *= 10;
-                B(j,1) *= 10;
+                wts[1] /= centralWeight_;
             }
 
-            for (label i = 0; i < B.cols(); i++)
+            for (label j = 0; j < B.m(); j++)
             {
-                B(0,i) *= 10;
-                B(1,i) *= 10;
+                B[0][j] *= 10;
+                if (linearCorrection_) B[1][j] *= 10;
+                else if (!pureUpwind && iIt == 0) B[1][j] /= centralWeight_;
             }
+
+            for (label i = 0; i < B.n(); i++)
+            {
+                B[i][0] *= 10;
+                B[i][1] *= 10;
+            }
+
+//            for (label j = 0; j < B.rows(); j++)
+//            {
+//                B(j,0) *= 10;
+//                B(j,1) *= 10;
+//            }
+//
+//            for (label i = 0; i < B.cols(); i++)
+//            {
+//                B(0,i) *= 10;
+//                B(1,i) *= 10;
+//            }
         }
     }
 
@@ -314,11 +330,17 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
                 "FitData<Polynomial>::calcFit(..)"
             )   << "Could not fit face " << facei
                 << "    Weights = " << coeffsi
-                << ", reverting to linear." << nl
+                << ", reverting to upwind/linear." << nl
                 << "    Linear weights " << wLin << " " << 1 - wLin << endl;
         // }
 
         coeffsi = 0;
+        
+        if (linearCorrection_)
+        {
+            coeffsi[0] = 1-wLin;
+            coeffsi[1] = -(1-wLin);
+        }
     }
 }
 

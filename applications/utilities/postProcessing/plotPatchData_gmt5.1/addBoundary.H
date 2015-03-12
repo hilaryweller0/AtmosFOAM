@@ -121,7 +121,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 }
 
 // plot boundary
-systemCall = "psxy '" + tmpFile + "' -W"
+systemCall = "psxy '" + tmpFile + "' -Sp2p"
                       + " -J -R -h1 -K -O >>" + epsFile;
 systemVerbose(systemCall);
 

@@ -17,32 +17,21 @@ License
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
     FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
     for more details.
-
+O
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
-#include "UpwindCorrFitScheme.H"
-#include "cubicUpwindCPCFitPolynomial.H"
 #include "upwindCPCCellToFaceStencilNewObject.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
 namespace Foam
 {
-    defineTemplateTypeNameAndDebug
-    (
-        UpwindCorrFitData<cubicUpwindCPCFitPolynomial>,
-        0
-    );
-
-    makeUpwindCorrFitSurfaceInterpolationScheme
-    (
-        cubicUpwindCPCFit,
-        cubicUpwindCPCFitPolynomial,
-        upwindCPCCellToFaceStencilNewObject
-    );
+    defineTypeNameAndDebug(upwindCPCCellToFaceStencilNewObject, 0);
 }
+
 
 // ************************************************************************* //
