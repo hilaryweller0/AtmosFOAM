@@ -23,6 +23,10 @@ const word projection2D(gmtDict.lookup("projection2D"));
 const List<FieldToPlot> fieldsToPlot(gmtDict.lookup("FieldsToPlot"));
 
 // Optional
+const bool plotBoundaryDots = gmtDict.lookupOrDefault<bool>
+(
+    "plotBoundaryDots", true
+);
 const word patchName = gmtDict.found("patch") ?
                        word(gmtDict.lookup("patch")) : "";
 const word boundaryPatchName = gmtDict.lookupOrDefault<word>("boundaryPatch", "");
