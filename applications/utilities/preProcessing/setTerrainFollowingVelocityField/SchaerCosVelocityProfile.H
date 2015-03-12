@@ -8,6 +8,7 @@
 class SchaerCosVelocityProfile : public VelocityProfile
 {
     public:
+    SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const IOdictionary& dict);
     SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
     scalar streamFunctionAt(const point& p) const;

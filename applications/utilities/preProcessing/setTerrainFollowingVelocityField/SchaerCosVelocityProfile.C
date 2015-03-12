@@ -1,6 +1,13 @@
 #include "SchaerCosVelocityProfile.H"
 #include "fvCFD.H"
 
+SchaerCosVelocityProfile::SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const IOdictionary& dict) :
+    mountain(mountain),
+    u0(readScalar(dict.lookup("maxVelocity"))),
+    H(readScalar(dict.lookup("domainHeight")))
+{};
+
+
 SchaerCosVelocityProfile::SchaerCosVelocityProfile(
         const SchaerCosMountain& mountain,
         const scalar u0,

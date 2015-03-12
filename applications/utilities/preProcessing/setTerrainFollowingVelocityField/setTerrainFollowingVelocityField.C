@@ -23,11 +23,8 @@ int main(int argc, char *argv[])
         )
     );
 
-    const scalar u0(readScalar(dict.lookup("maxVelocity")));
-    const scalar H(readScalar(dict.lookup("domainHeight")));
-
     const SchaerCosMountain mountain(dict);
-    const SchaerCosVelocityProfile profile(mountain, u0, H);
+    const SchaerCosVelocityProfile profile(mountain, dict);
     const VelocityField velocityField(profile);
 
     Info << "Creating velocity field Uf" << endl;
