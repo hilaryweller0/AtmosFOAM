@@ -35,6 +35,8 @@ Description
 #include "mathematicalConstants.H"
 #include "OFstream.H"
 #include "HorizontalVelocityProfile.H"
+#include "SchaerCosVelocityProfile.H"
+#include "Mountain.H"
 
 using namespace Foam::constant::mathematical;
 
@@ -91,8 +93,16 @@ int main(int argc, char *argv[])
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
 
+    const word velocityProfileWord(velocityDict.lookupOrDefault<word>("velocityProfile", "HORIZONTAL"));
 
-    const HorizontalVelocityProfile velocityProfile(velocityDict);
+    VelocityProfile* velocityProfile;
+
+    if (velocityProfileWord == "HORIZONTAL") {
+        velocityProfile = new HorizontalVelocityProfile(velocityDict);
+    } else if (velocityProfileWord == "SCHAER_COS") {
+        const SchaerCosMountain* mountain = new SchaerCosMountain(velocityDict);
+        velocityProfile = new SchaerCosVelocityProfile(*mountain, velocityDict);
+    }
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
@@ -116,7 +126,7 @@ int main(int argc, char *argv[])
             const point& c = mesh.C()[cellI];
             
             // Centre of the tracer for this time step
-            const point& advectedPt = velocityProfile.pointAtTime(point(x0, 0, z0), runTime.value());
+            const point& advectedPt = velocityProfile->pointAtTime(point(x0, 0, z0), runTime.value());
         
             // Define r as used in the initial tracer field
             scalar r = Foam::sqrt(sqr((c.x()-advectedPt.x())/Ax)+sqr((c.z()-advectedPt.z())/Az));

@@ -37,10 +37,10 @@ class SchaerCosMountain : public Mountain
     scalar heightAt(const scalar x) const;
     scalar gradientAt(const scalar x) const;
     ~SchaerCosMountain();
-    private:
     const scalar a;
     const scalar h0;
     const scalar lambda;
+    private:
     SchaerSmoothMountain *smooth;
     SchaerCosFineMountain *fine;
 };

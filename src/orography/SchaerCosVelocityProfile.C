@@ -42,5 +42,19 @@ scalar SchaerCosVelocityProfile::streamFunctionAt(const point& p) const
 
 point SchaerCosVelocityProfile::pointAtTime(const point& p0, const scalar t) const
 {
-    return p0; // TODO
+    // TODO: worry about z over mountain
+    scalar distanceToMountainStart = -mountain.a - p0.x();
+    scalar timeToMountainStart = distanceToMountainStart / u0;
+    scalar timeToCrossMountain = 4850.0; // TODO: calculate this from the big equation
+    scalar timeAfterMountainEnd = t - timeToCrossMountain - timeToMountainStart;
+
+    if (t <= timeToMountainStart) {
+        // point not yet over mountain
+        return point(p0.x() + u0 * t, 0, p0.z());
+    } else if (t >= timeToMountainStart + timeToCrossMountain) {
+        return point(p0.x() + distanceToMountainStart + 2.0*mountain.a + u0 * timeAfterMountainEnd, 0, p0.z());
+    } else {
+        // TODO: point is somewhere over the mountain, need to calculate this from the big equation
+        return p0;
+    }
 }
