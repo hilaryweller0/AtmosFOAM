@@ -40,3 +40,13 @@
         ),
         Uf & mesh.Sf()
     );
+
+    // Ensure no flow over walls
+    for(label iBC = 0; iBC < mesh.boundary().size(); iBC++)
+    {
+        if (mesh.boundary()[iBC].type() == "wall")
+        {
+            phi.boundaryField()[iBC] = 0;
+        }
+    }
+
