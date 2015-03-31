@@ -38,7 +38,7 @@ vector SchaerCosVelocityProfile::velocityAt(const point& p) const
 scalar SchaerCosVelocityProfile::streamFunctionAt(const point& p) const 
 {
     scalar h = mountain.heightAt(p.x());
-    return H * (p.z() - h) / (H - h);
+    return -u0 * H * (p.z() - h) / (H - h); // TODO: not sure why I need a negative in front here
 }
 
 point SchaerCosVelocityProfile::pointAtTime(const point& p0, const scalar t) const

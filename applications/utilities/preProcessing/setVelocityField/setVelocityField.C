@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    setHorizontalVelocityField
+    setVelocityField
 
 Description
     Sets the horizontal velocity field for the 
@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
         )
     );
 
-    const HorizontalVelocityProfile profile(dict);
-    const VelocityField velocityField(profile);
+    VelocityProfile* profile = VelocityProfile::lookup(dict);
+    const VelocityField velocityField(*profile);
 
     Info << "Creating velocity field Uf" << endl;
     velocityField.applyTo(Uf);
