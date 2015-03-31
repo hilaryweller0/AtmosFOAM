@@ -34,6 +34,7 @@ Description
 #include "fvCFD.H"
 #include "mathematicalConstants.H"
 #include "OFstream.H"
+#include "VelocityProfile.H"
 #include "HorizontalVelocityProfile.H"
 #include "SchaerCosVelocityProfile.H"
 #include "Mountain.H"
@@ -93,16 +94,7 @@ int main(int argc, char *argv[])
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
 
-    const word velocityProfileWord(velocityDict.lookupOrDefault<word>("velocityProfile", "HORIZONTAL"));
-
-    VelocityProfile* velocityProfile;
-
-    if (velocityProfileWord == "HORIZONTAL") {
-        velocityProfile = new HorizontalVelocityProfile(velocityDict);
-    } else if (velocityProfileWord == "SCHAER_COS") {
-        const SchaerCosMountain* mountain = new SchaerCosMountain(velocityDict);
-        velocityProfile = new SchaerCosVelocityProfile(*mountain, velocityDict);
-    }
+    VelocityProfile* velocityProfile = VelocityProfile::lookup(velocityDict);
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
