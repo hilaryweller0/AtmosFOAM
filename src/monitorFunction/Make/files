@@ -1,0 +1,6 @@
+monitorFunction.C
+monitorFunctionTanh.C
+monitorFunctionSech.C
+monitorFunctionMapped.C
+
+LIB = $(FOAM_USER_LIBBIN)/libmonitorFunction

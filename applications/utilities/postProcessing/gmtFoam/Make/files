@@ -1,0 +1,4 @@
+gmtFoam.C
+FieldToPlot.C
+
+EXE = $(FOAM_USER_APPBIN)/gmtFoam

@@ -207,8 +207,8 @@ int main(int argc, char *argv[])
     case BTF:
         forAll(newPoints, ip)
         {
-            scalar x = newPoints[ip].x();
-            scalar z = newPoints[ip].z();
+            const scalar x = newPoints[ip].x();
+            const scalar z = newPoints[ip].z();
             if (z < zt)
             {
                 scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
@@ -223,8 +223,8 @@ int main(int argc, char *argv[])
         const scalar zh(readScalar(initDict.lookup("HTF_scaleHeight")));
         forAll(newPoints, ip)
         {
-            scalar x = newPoints[ip].x();
-            scalar z = newPoints[ip].z();
+            const scalar x = newPoints[ip].x();
+            const scalar z = newPoints[ip].z();
             scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
             if (z < zh && z < zt)
             {
@@ -245,7 +245,7 @@ int main(int argc, char *argv[])
             scalar z = newPoints[ip].z();
             if (z < zt)
             {
-                scalar x = newPoints[ip].x();
+                const scalar x = newPoints[ip].x();
                 h[0] = 0.5*smoothMountain(x,a,hm);
                 h[1] = 2*h[0]*fineMountain(x,lambda) - h[0];
                 for(int i = 0; i < 2; i++)

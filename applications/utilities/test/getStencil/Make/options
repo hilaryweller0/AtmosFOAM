@@ -1,0 +1,9 @@
+EXE_INC = \
+    -ggdb3 -O0 \
+    -Wno-old-style-cast \
+    -I$(LIB_SRC)/finiteVolume/lnInclude
+
+EXE_LIBS = \
+    -lOpenFOAM \
+    -lfiniteVolume
+
