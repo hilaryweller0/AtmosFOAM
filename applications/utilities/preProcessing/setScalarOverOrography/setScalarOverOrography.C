@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
             IOobject::MUST_READ
         )
     );
+    
     IOdictionary velocityDict
     (
         IOobject("velocityFieldDict", runTime.constant(), mesh, IOobject::MUST_READ)
@@ -94,6 +95,7 @@ int main(int argc, char *argv[])
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
 
+    // Comment from Hilary: why are you using a pointer here?
     VelocityProfile* velocityProfile = VelocityProfile::lookup(velocityDict);
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;

@@ -164,6 +164,42 @@ inline scalar sphTriDistAngle(const point& a, const point& b, const point& c)
     return 0.5*AB*AC*mag(ab ^ ac);
 }
 
+// exponential map to map a point xi on the surface of a sphere a distance
+// |map| in direction map to another point on the sphere
+inline vector expMapOnSphere(const vector& xi, const vector& map)
+{
+    scalar r = mag(xi);
+    if (r < SMALL) return vector::zero;
+    scalar theta = mag(map)/r;
+    if (theta < SMALL) return xi;
+    
+    vector e = unitVector(xi ^ map);
+    tensor transform = tensor::I*cos(theta)
+                     + (1 - cos(theta))*(e*e)
+                     + tensor(0,  -e[2],e[1],
+                              e[2],0,  -e[0],
+                             -e[1],e[0],0)*sin(theta);
+    
+    return transform & xi;
+    
+//    tensor transform(xi, map, (xi ^ map));
+//    vector x = sqr(r)*(inv(transform)&vector(cos(theta), theta*sin(theta), 0));
+//    vector check = (transform & x);
+//    
+//    Info << "\nMapping point " << xi << " with map " << map
+//         << nl << " with transform " << transform << " r = " << r
+//         << " theta = " << theta << nl << " to point "
+//         << x << " with radius " << mag(x)
+//         << nl << "det(transform) = " << det(transform)
+//         << " check = " << check << " RHS = " 
+//         << sqr(r)*vector(cos(theta), theta*sin(theta), 0)
+//         << nl << "inv(transform) = " << inv(transform)
+//         << nl << "inv(transform) * transform = "
+//         << inv(transform) & transform << nl;
+//    
+//    return r*(inv(transform)&vector(cos(theta), theta*sin(theta), 0));
+}
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

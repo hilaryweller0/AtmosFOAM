@@ -31,7 +31,6 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include <cmath>
 #include "fvCFD.H"
 #include "argList.H"
 #include "OFstream.H"

@@ -3,6 +3,7 @@ EXE_INC = \
     -Wno-old-style-cast \
     -IlnInclude \
     -I$(WM_THIRD_PARTY_DIR)/eigen-eigen-ffa86ffb5570 \
+    -I$(ATMOSFOAM_SRC)/sampling/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/triSurface/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude

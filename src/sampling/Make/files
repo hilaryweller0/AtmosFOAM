@@ -1,0 +1,8 @@
+/* Modified from standard sampling library */
+
+meshToMeshInterpolation/meshToMesh/meshToMesh.C
+meshToMeshInterpolation/meshToMesh/calcMethod/linFit/linFitMethod.C
+
+LIB = $(FOAM_USER_LIBBIN)/libsamplingUser
+
+

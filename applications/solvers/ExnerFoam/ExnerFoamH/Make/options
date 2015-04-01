@@ -1,7 +1,7 @@
 EXE_INC = \
     -ggdb3 -O0 \
-    -I$(FOAM_USER_SRC)/Hops/lnInclude \
-    -I$(FOAM_USER_SRC)/ExnerTheta/lnInclude \
+    -I$(ATMOSFOAM_SRC)/Hops/lnInclude \
+    -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude
 
