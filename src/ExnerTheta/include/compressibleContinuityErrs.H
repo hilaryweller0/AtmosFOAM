@@ -55,25 +55,6 @@ Description
     Info << "Maximum rho difference fraction = "
          //<< max(mag(rhoDiff.internalField()/rho.internalField())) << endl;
          << max(mag(rhoDiff/rho)).value() << endl;
-
-//    // Finding location of maximum U and Co there
-//    scalar Umax = 0;
-//    label cellMax = -1;
-//    forAll(U, cellI)
-//    {
-//        if (mag(U[cellI]) > Umax)
-//        {
-//            Umax = mag(U[cellI]);
-//            cellMax = cellI;
-//        }
-//    }
-//    Info << "Max U " << Umax << " at " << cellMax << " rho = " << rho[cellMax]
-//         << " V = " << mesh.V()[cellMax] << "\nFaces, areas and fluxes:\n";
-//    for(label i = 0; i < mesh.cells()[cellMax].size(); i++)
-//    {
-//        label faceI = mesh.cells()[cellMax][i];
-//        Info << faceI << "  " << mag(mesh.Sf()[faceI]) << "  " << phi[faceI] << nl;
-//    }
 }
 
 // ************************************************************************* //
