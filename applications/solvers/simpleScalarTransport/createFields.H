@@ -16,7 +16,7 @@
 
     Info<< "Reading field U\n" << endl;
 
-    volVectorField U
+    const volVectorField U
     (
         IOobject
         (
@@ -29,16 +29,16 @@
         mesh
     );
 
-surfaceScalarField phi
-(
-    IOobject
+    surfaceScalarField phi
     (
-        "phi",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    linearInterpolate(U) & mesh.Sf()
-);
+        IOobject
+        (
+            "phi",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        linearInterpolate(U) & mesh.Sf()
+    );
 

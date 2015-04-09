@@ -39,8 +39,7 @@ scalar maxSsf = 0;
         }
         
         colourStep = (colourMax - colourMin)/22.;
-        scalar range = colourMax-colourMin;
-        if (range/colourMax < 5e-4)
+        if (colourMax-colourMin < 5e-4)
         {
             colourMin -= 1;
             colourMax += 1;

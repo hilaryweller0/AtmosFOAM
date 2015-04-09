@@ -51,6 +51,8 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         solve(fvm::ddt(T) + fvc::div(phi, T));
+        
+        Info << "Max T = " << max(T) << " min T = " << min(T) << endl;
 
         runTime.write();
     }

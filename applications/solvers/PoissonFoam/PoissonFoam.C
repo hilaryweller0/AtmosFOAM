@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     const dictionary& solutionDict =
         mesh.solutionDict().subDict("potentialFlow");
 
-    const int nCorr = solutionDict.lookupOrDefault<int>("nCorrectors", 0);
+    const int nCorr = solutionDict.lookupOrDefault<int>("nCorrectors", 1);
     const label TRefCell = solutionDict.lookupOrDefault<label>
     (
         "referenceCell", 0

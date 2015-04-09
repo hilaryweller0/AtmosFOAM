@@ -90,6 +90,9 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << flush << nl;
 
+        // Calculate the source terms for the MA equation
+        source = detHess - equiDistMean/monitorNew;
+
         // calculate boostLaplacian to achieve stability
         boostLaplacian = max
         (
@@ -97,16 +100,16 @@ int main(int argc, char *argv[])
             4*max(scalar(0.25), max(mag(source.internalField())))
         );
 
-        // Setup and solve the Poisson equation for Phi
+        // Setup and solve the MA eqn (expressed as a Poisson equation)
         fvScalarMatrix PhiEqn
         (
             boostLaplacian*fvm::laplacian(Phi)
-          - boostLaplacian*del2Phi
+          - boostLaplacian*fvc::laplacian(Phi)
           + source
         );
         PhiEqn.setReference(0, scalar(0));
         solverPerformance sp = PhiEqn.solve();
-        converged = sp.nIterations() == 0;
+        converged = sp.nIterations() <= 1;
 
         // Calculate the gradient of Phi at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -130,13 +133,10 @@ int main(int argc, char *argv[])
         }
         // Geometric version of the Hessian
         volRatio.internalField() =rMesh.V()/mesh.V();
-        volRatio.correctBoundaryConditions();
         
         // combine the finite difference and geometric Hessian
-        detHess = (1-HessianVolumeRatio)*detHess + HessianVolumeRatio*volRatio;
-
-        // Calculate the laplacian
-        del2Phi = fvc::laplacian(Phi);
+        detHess = (1-HessianVolumeRatio)*detHess
+                + HessianVolumeRatio*volRatio;
 
         // map to or calculate the monitor function on the new mesh
         monitorR = monitorFunc().map(rMesh, monitor);
@@ -147,28 +147,16 @@ int main(int argc, char *argv[])
         equiDistMean = fvc::domainIntegrate(detHess)
                        /fvc::domainIntegrate(1/monitorNew);
 
-        // Calculate the equidistribution for post processing
-        equidist = detHess - equiDistMean/monitorNew;
-        equidistVol = volRatio - equiDistMean/monitorNew;
-        
         // Smooth the monitor function for the source term
         //monitorNew += 0.25*fvc::laplacian(sqr(1/mesh.deltaCoeffs()), monitorNew);
         //monitorNew += 0.25*fvc::laplacian(sqr(1/mesh.deltaCoeffs()), monitorNew);
         
-        // Calculate the source terms for the phi equation
-        equiDistMean = fvc::domainIntegrate(detHess)
-                       /fvc::domainIntegrate(1/monitorNew);
-        source = detHess - equiDistMean/monitorNew;
-
         Info << "Time = " << runTime.timeName()
-             << " determinant goes from " << min(detHess).value()
-             << " to " << max(detHess).value()
-             << " equidist goes from "
-             << min(equidist.internalField())
-             << " to " << max(equidist.internalField())
+             << " source goes from "
+             << min(source.internalField())
+             << " to " << max(source.internalField())
              << " cell volumes go from " << min(rMesh.V()).value() << " to "
-             << max(rMesh.V()).value() << " ratio = "
-             << (max(rMesh.V())/min(rMesh.V())).value()
+             << max(rMesh.V()).value()
              << " boostLaplacian = " << boostLaplacian << endl;
 
         if (converged)
