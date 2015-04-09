@@ -14,6 +14,7 @@ class SchaerCosVelocityProfile : public VelocityProfile
     scalar streamFunctionAt(const point& p) const;
     point pointAtTime(const point& p0, const scalar t) const;
     private:
+    scalar timeToCrossMountain() const;
     const SchaerCosMountain& mountain;
     const scalar u0;
     const scalar H;

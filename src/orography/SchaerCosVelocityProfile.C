@@ -46,16 +46,28 @@ point SchaerCosVelocityProfile::pointAtTime(const point& p0, const scalar t) con
     // TODO: worry about z over mountain
     scalar distanceToMountainStart = -mountain.a - p0.x();
     scalar timeToMountainStart = distanceToMountainStart / u0;
-    scalar timeToCrossMountain = 4850.0; // TODO: calculate this from the big equation
-    scalar timeAfterMountainEnd = t - timeToCrossMountain - timeToMountainStart;
+    scalar timeAfterMountainEnd = t - timeToCrossMountain() - timeToMountainStart;
 
     if (t <= timeToMountainStart) {
         // point not yet over mountain
         return point(p0.x() + u0 * t, 0, p0.z());
-    } else if (t >= timeToMountainStart + timeToCrossMountain) {
+    } else if (t >= timeToMountainStart + timeToCrossMountain()) {
+        // point has passed over mountain
         return point(p0.x() + distanceToMountainStart + 2.0*mountain.a + u0 * timeAfterMountainEnd, 0, p0.z());
     } else {
         // TODO: point is somewhere over the mountain, need to calculate this from the big equation
         return p0;
     }
+}
+
+scalar SchaerCosVelocityProfile::timeToCrossMountain() const
+{
+    const scalar x = 2.0 * mountain.a;
+    const scalar alpha = M_PI/mountain.lambda;
+    const scalar beta = M_PI/(2.0 * mountain.a);
+
+    return x / u0 - mountain.h0/(4.0 * u0 * H) * 
+        (x + 0.25*(Foam::sin(2.0 * (alpha + beta) * x) / (alpha + beta) +
+         Foam::sin(2.0 * (alpha - beta) * x) / (alpha - beta)) +
+         0.5 * (Foam::sin(2.0*alpha*x)/alpha + Foam::sin(2.0*beta*x)/beta));
 }
