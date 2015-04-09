@@ -1,0 +1,189 @@
+#!/bin/bash -e
+
+# source in input files
+for file in $*; do
+    if [ -a $file ]; then
+        . $file
+    fi
+done
+
+# check inputs and set defaults
+if [ "$inputFiles" == "" ]; then
+    echo usage: gmtPlot [sourceFiles]
+    echo Environment variables can be set before calling gmpPlot
+    echo or set in the source Files. Format:
+    echo inputFiles=\(space separated file names\)
+    echo The followind variables can also be set:
+    echo outFile=fileName.eps
+    echo col=n or col=\(n m o p q\)
+    echo colx=1 \(column for the x axis\)
+    echo legends=\(legend strings in double quotes\)
+    echo pens=\(psxy pen types in double quotes\)
+    echo symbols=\(psxy symbol types in double quotes\) \(optional\)
+    echo spens=\(psxy pen types in double quotes for the symbols\) \(optional\)
+    echo xlabel='x label'
+    echo ylabel='y label'
+    echo xmin=0
+    echo xmax=40
+    echo dx=5
+    echo ddx=1          \(number of ticks\)
+    echo dxg=0          \(x grid spacing\)
+    echo ymin=-0.004
+    echo ymax=1e-4
+    echo dy=1e-3
+    echo ddy=1          \(number of ticks\)
+    echo dyg=0          \(y grid spacing\)
+    echo xscale="/86400"
+    echo yscale="*1"
+    echo legPos=x10/10
+    echo nSkip=0        \(number of lines of input files to skip\)
+    echo projection=X15c/10c
+    echo or for a log-log plot use 
+    echo projection=X15cl/10cl
+    echo gv=1 or 0 \(display the outFile with gv or not\)
+    exit
+fi
+
+# setup defaults if necessary
+minMax=`gmtinfo -C ${inputFiles[0]}`
+
+if [ "$col" == "" ]; then col=2; fi
+if [ "$colx" == "" ]; then colx=1; fi
+if [ "$pens" == "" ] && [ "$spens" == "" ]; then
+    pens=("1,black," "1,black,5_5:" "1,black,2_4_10_4:"
+          "1,blue," "1,blue,5_5:" "1,blue,2_4_10_4:"
+          "1,red," "1,red,5_5:" "1,red,2_4_10_4:"
+          "1,cyan," "1,cyan,5_5:" "1,cyan,2_4_10_4:"
+          "1,magenta," "1,magenta,5_5:" "1,magenta,2_4_10_4:"
+          "1,green," "1,green,5_5:" "1,green,2_4_10_4:"
+          "1,brown," "1,brown,5_5:" "1,brown,2_4_10_4:"
+          "1,darkgrey," "1,darkgrey,5_5:" "1,darkgrey,2_4_10_4:"
+          "1,purple," "1,purple,5_5:" "1,purple,2_4_10_4:")
+fi
+if [ "$spens" == "" ]; then
+    spens=(${pens[*]})
+fi
+if [ "$xscale" == "" ]; then
+    xscale="*1"
+fi
+if [ "$yscale" == "" ]; then
+    yscale="*1"
+fi
+if [ "$xmin" == "" ]; then
+    xmin=`echo $minMax | awk '{ print $1'$xscale' }'`
+fi
+if [ "$xmax" == "" ]; then
+    xmax=`echo $minMax | awk '{ print $2'$xscale' }'`
+    echo x goes from $xmin to $xmax
+fi
+if [ "$ymin" == "" ]; then
+    ymin=`echo $minMax | awk '{ print $3'$yscale' }'`
+fi
+if [ "$ymax" == "" ]; then
+    ymax=`echo $minMax | awk '{ print $4'$yscale' }'`
+    echo y goes from $ymin to $ymax
+fi
+if [ "$dx" == "" ];   then dx=`echo $xmin $xmax | awk '{print ($2-$1)/8}'`; fi
+if [ "$ddx" == "" ];   then ddx=$dx; fi
+if [ "$dy" == "" ];   then dy=`echo $ymin $ymax | awk '{print ($2-$1)/8}'`; fi
+if [ "$ddy" == "" ];   then ddy=$dy; fi
+if [ "$legPos" == "" ]; then legPos=x1/1; fi
+if [ "$nSkip" == "" ]; then nSkip=0; fi
+if [ "$outFile" == "" ]; then outFile=$1.eps; fi
+if [ "$projection" == "" ]; then projection=X15c/10c; fi
+#if [ "$dxg" == "" ]; then dxg=`echo $xmin $xmax | awk '{print $2-$1}'`; fi
+#if [ "$dyg" == "" ]; then dyg=`echo $ymin $ymax | awk '{print $2-$1}'`; fi
+if [ "$dxg" == "" ]; then dxg=0; fi
+if [ "$dyg" == "" ]; then dyg=0; fi
+if [ "$gv" == "" ]; then gv=1; fi
+
+# plot data
+echo creating $outFile
+gmtset MAP_FRAME_AXES WeSn
+psbasemap -J$projection -R$xmin/$xmax/$ymin/$ymax \
+          -Ba${dx}f${ddx}g${dxg}:"${xlabel}":/a${dy}f${ddy}g${dyg}:"${ylabel}": \
+           -K > $outFile
+i=0
+while  [ $i != ${#inputFiles[*]} ]; do
+    inFile=${inputFiles[$i]}
+
+    if [ ${#yscale[*]} -gt $i ]; then ysc=${yscale[$i]};
+    else ysc=${yscale[0]}; fi
+
+    if [ ${#col[*]} -gt $i ]; then c=${col[$i]};
+    else c=$col; fi
+    
+    if [ ${#colx[*]} -gt $i ]; then cx=${colx[$i]};
+    else cx=$colx; fi
+    
+    awk '{
+            if \
+            ( \
+                $1 == 1*$1 \
+             && $'$c''$ysc' >= '$ymin' \
+             && $'$cx''$xscale' >= '$xmin' \
+            ) \
+            {
+                print $'$cx''$xscale', $'$c''$ysc'\
+            }
+            else { print $'$cx''$xscale', "-inf" }
+        }' $inFile > $outFile.tmp
+    if [ ${#symbols[*]} -gt $i ]; then
+        psxy -J -R -A -h$nSkip -S${symbols[$i]} -W${spens[$i]} $outFile.tmp -K -O \
+             >>$outFile
+    fi
+    if [ ${#pens[*]} -gt $i ]; then
+        psxy -J -R -A -h$nSkip -W${pens[$i]} $outFile.tmp -K -O >> $outFile
+    fi
+    let i=$i+1
+done
+rm $outFile.tmp
+
+i=0
+rm -f ${outFile}.legends.dat
+# plot line legends if no symbols
+if [ ${#pens[*]} -ge 1 ] && [ ${#legends[*]} -ge 1 ]; then
+    while [ $i != ${#legends[*]} ] && [ $i != ${#inputFiles[*]} ]; do
+        if [ "${legends[$i]}" != "" ]; then
+            echo "S 0.4c - 1c - ${pens[$i]} 1c ${legends[$i]}" \
+                >> ${outFile}.legends.dat
+        fi
+        let i=$i+1
+    done
+fi
+# plot line legends if given
+if [ -a ${outFile}.legends.dat ]; then
+    gmtset IO_N_HEADER_RECS = 0
+    pslegend ${outFile}.legends.dat -D$legPos/15c/7c/TL -O -K >> $outFile
+    rm ${outFile}.legends.dat
+fi
+
+i=0
+if [ ${#symbols[*]} -ge ${#legends[*]} ]; then
+    while [ $i != ${#legends[*]} ] && [ $i != ${#inputFiles[*]} ]; do
+        if [ "${legends[$i]}" != "" ]; then
+            s=`echo ${symbols[$i]} | cut -c1`
+            z=`echo ${symbols[$i]} | cut -c2-11`            
+            echo "S $z $s $z - ${spens[$i]} 1c ${legends[$i]}" \
+                >> ${outFile}.legends.dat
+        fi
+        let i=$i+1
+    done
+fi
+
+# plot symbol legends if given
+if [ -a ${outFile}.legends.dat ]; then
+    gmtset IO_N_HEADER_RECS = 0
+    pslegend ${outFile}.legends.dat -D$legPos/15c/7c/TL -O -K >> $outFile
+    rm ${outFile}.legends.dat
+fi
+
+echo "" | psxy -J -R -W -O >>$outFile
+
+pstitle $outFile $outFile
+ps2eps -f $outFile > /dev/null 2>&1
+\mv $outFile.eps $outFile
+if [ $gv != 0 ]; then 
+    gv $outFile &
+fi
+
