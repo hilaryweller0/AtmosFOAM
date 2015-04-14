@@ -14,6 +14,12 @@ fileName tmpFile = args.rootPath() / args.caseName()
         colourMax = max(ssf);
         colourStep = 0.1*(colourMax - colourMin);
     }
+    if (colourMax-colourMin < 5e-4)
+    {
+        colourMin -= 1;
+        colourMax += 1;
+        colourStep = 1;
+    }
 
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
