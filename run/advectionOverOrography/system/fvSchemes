@@ -26,6 +26,7 @@ divSchemes
 {
     default         none;
     div(phi,T)      Gauss midPoint;
+    div(phi,T_0)    Gauss midPoint;
 }
 
 interpolationSchemes

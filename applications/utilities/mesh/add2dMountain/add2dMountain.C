@@ -147,22 +147,6 @@ int main(int argc, char *argv[])
         mesh.points()
     );
     
-    // New cell volumes based on the finite difference Jacobian
-    // (Currently only implemented for BTF)
-    IOField<scalar> V
-    (
-        IOobject("V", mesh.time().constant(), "polyMesh", mesh),
-        mesh.V()
-    );
-    
-    // Jacobian (only for BTF)
-    volScalarField J
-    (
-        IOobject("J", mesh.time().constant(), "polyMesh", mesh),
-        mesh,
-        dimensionedScalar("J", dimless, 1)
-    );
-    
     // Mountain function type
     const word mountainName(initDict.lookup("mountainType"));
     // Declare function pointers to smooth and hi res mountains
@@ -231,22 +215,6 @@ int main(int argc, char *argv[])
                 newPoints[ip].z() += h*(1 - z/zt);
             }
         }
-        // Correct the cell volumes based on the Jacobian of the transform
-        forAll(V, cellI)
-        {
-            const scalar x = mesh.C()[cellI].x();
-            const scalar z = mesh.C()[cellI].z();
-            if (z < zt)
-            {
-                scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-                // The inverse Jacobian of the transform
-                scalar invJ = 1 - h/zt;
-                J[cellI] = 1/invJ;
-                V[cellI] *= invJ;
-            }
-        }
-        V.write();
-        J.write();
         break;
         
     case HTF:
@@ -263,20 +231,6 @@ int main(int argc, char *argv[])
                 newPoints[ip].z() += h*pow(Foam::cos(0.5*M_PI*z/zh),6);
             }
         }
-//        // Correct the cell volumes based on the Jacobian of the transform
-//        forAll(V, cellI)
-//        {
-//            const scalar x = mesh.C()[cellI].x();
-//            const scalar z = mesh.C()[cellI].z();
-//            if (z < zt)
-//            {
-//                scalar h = smoothMountain(x,a,hm) * fineMountain(x,lambda);
-//                // The inverse Jacobian of the transform
-//                scalar invJ = -h*6*0.5*M_PI/zh*pow(Foam::cos(0.5*M_PI*z/zh),5)
-//                              *Foam::sin(0.5*M_PI*z/zh)
-//                V[cellI] *= invJ;
-//            }
-//        }
     }break;
     
     case SLEVE:
