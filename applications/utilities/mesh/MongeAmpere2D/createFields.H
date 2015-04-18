@@ -37,13 +37,6 @@ volScalarField detHess
     mesh,
     dimensionedScalar("", dimless, scalar(1))
 );
-// laplacian of Phi
-volScalarField del2Phi
-(
-    IOobject("del2Phi", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    fvc::laplacian(Phi)
-);
 
 // the volume ratio between old and new meshes (the geometric Hessian)
 volScalarField volRatio
@@ -54,7 +47,6 @@ volScalarField volRatio
 );
 volRatio.internalField() = 1;
 volRatio.correctBoundaryConditions();
-volRatio.write();
 
 // The original monitor function on the old mesh
 const volScalarField monitor
@@ -71,7 +63,7 @@ volScalarField monitorNew("monitorNew", monitor);
 // The monitor function on the new mesh
 volScalarField monitorR
 (
-    IOobject("monitorR", runTime.timeName(), rMesh,
+    IOobject("monitor", runTime.timeName(), rMesh,
              IOobject::NO_READ, IOobject::AUTO_WRITE),
     monitorFunc().map(rMesh, monitor)
 );
@@ -81,23 +73,7 @@ monitorNew.internalField() = monitorR.internalField();
 dimensionedScalar equiDistMean = fvc::domainIntegrate(detHess)
                                  /fvc::domainIntegrate(1/monitorNew);
 
-// Diagnositic of equidistribution
-volScalarField equidist
-(
-    IOobject("equidist", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    detHess - equiDistMean/monitor
-);
-
-// Equidistribution w.r.t. the changes in cell volume (another diagnostic)
-volScalarField equidistVol
-(
-    IOobject("equidistVol", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    volRatio - equiDistMean/monitor
-);
-
-// Source term for post processing
+// Source term
 volScalarField source
 (
     IOobject("source", runTime.timeName(), rMesh,

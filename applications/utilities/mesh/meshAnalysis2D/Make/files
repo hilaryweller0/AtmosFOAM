@@ -1,3 +1,4 @@
 meshAnalysis2D.C
 
 EXE = $(FOAM_USER_APPBIN)/meshAnalysis2D
+
