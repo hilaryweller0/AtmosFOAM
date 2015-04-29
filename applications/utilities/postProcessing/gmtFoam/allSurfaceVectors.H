@@ -161,7 +161,7 @@ scalar maxMagU = 0;
 systemCall = "psxy '" + tmpFile + "' -J -R -h1 -Sv0.3c+s+e"
                   +"+n" + stringScalar(0.3) //100./vectorScale)
                   + " -W" + fieldsToPlot[ifield].colourScale()
-                //  + " -G" + fieldsToPlot[ifield].colourScale()
+                  + " -G" + fieldsToPlot[ifield].colourScale()
                   + " -O -K >> " + epsFile;
 systemVerbose(systemCall);
 
