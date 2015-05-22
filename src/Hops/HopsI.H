@@ -64,7 +64,7 @@ inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFluxOffDiag
 {
     if (V.mesh() != mesh_)
     {
-        FatalErrorIn("Hops::ddirToFlux") << " called for field " << V.name()
+        FatalErrorIn("Hops::ddirToFluxOffDiag") << " called for field " << V.name()
             << " which has a different mesh to Hops"
             << exit(FatalError);
     }
@@ -104,6 +104,38 @@ inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFluxOffDiag
     
     // Take dot product in Sf direction and remove central delta component
     U = uf & (mesh_.Sf() - delta()*Hdiag());
+    
+    return tU;
+}
+
+inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFluxCorr
+(
+    const surfaceScalarField& V
+) const
+{
+    if (V.mesh() != mesh_)
+    {
+        FatalErrorIn("Hops::ddirToFluxCorr") << " called for field " << V.name()
+            << " which has a different mesh to Hops"
+            << exit(FatalError);
+    }
+
+    tmp<surfaceScalarField> tU
+    (
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                "ddirToFlux(" + V.name() + ')',
+                V.instance(),
+                V.db()
+            ),
+            ddirToFlux(V)
+        )
+    );
+    
+    // Remove uncorrected components
+    tU() -= V*mesh_.magSf()/mag(delta());
     
     return tU;
 }

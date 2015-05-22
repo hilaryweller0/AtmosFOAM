@@ -32,14 +32,19 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "Hops.H"
+//#include "fvcFaceToCell.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scalar entropy(const volScalarField& theta, const volScalarField& rho) {
-    return gSum(fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field()));
+scalar entropy(const volScalarField& theta, const volScalarField& rho)
+{
+    return gSum
+    (
+        fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field())
+    );
 }
 
 scalar variance(const volScalarField& field) {
@@ -117,19 +122,21 @@ int main(int argc, char *argv[])
                 (
                     rho.oldTime()*theta.oldTime()
                   - (1-offCentre)*dt*divUtheta.oldTime()
-                )/(rho.oldTime() - (1-offCentre)*dt*divU),
+                )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
                 "interpolate(theta)"
             );
+//            thetaf.oldTime() = fvc::interpolate(theta)
+//                            - (1-offCentre)*dt*(Uf & fvc::interpolate(fvc::grad(theta)));
         }
 
-        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
+            #include "rhoEqn.H"
             #include "rhoThetaEqn.H"
-
-            // Exner and momentum equations
             #include "exnerEqn.H"
         }
         
+        #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
         
         // Updates for next time step
@@ -155,7 +162,8 @@ int main(int argc, char *argv[])
         entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
         thetaVariance = variance(theta);
         thetaRhoVariance = variance(theta*rho);
-        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = " << entropyError << endl;
+        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = "
+             << entropyError << endl;
         #include "energy.H"
 
         runTime.write();

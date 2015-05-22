@@ -112,6 +112,12 @@ public:
                 const surfaceScalarField& V
             ) const;
             
+            //- correction terms of H
+            inline tmp<surfaceScalarField> ddirToFluxCorr
+            (
+                const surfaceScalarField& V
+            ) const;
+            
             inline tmp<volVectorField> reconstructd
             (
                 const surfaceScalarField& V
