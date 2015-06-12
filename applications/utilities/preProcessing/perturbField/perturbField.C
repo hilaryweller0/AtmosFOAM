@@ -25,7 +25,8 @@ Application
     perturbField
 
 Description
-    Sets up initial conditions.
+    Sets up initial conditions for theta for the perturbation specified
+    by skamarock-klemp1994
 
 \*---------------------------------------------------------------------------*/
 
@@ -49,20 +50,17 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    // TODO: get constants from dictionary
+    scalar d_theta_0 = 10e-2;
+    scalar H = 10e3;
+    scalar x_c = 0;
+    scalar a = 5e3;
+
     forAll(theta, cellI)
     {
         const point& c = mesh.C()[cellI];
-        scalar i = (c.z() - 250.0) / 1000.0;
-        i = fabs(i - trunc(i));
-        bool odd = (i > 0.49 && i < 0.51);
-        
-        if (odd) {
-            theta[cellI] += 20.0;
-        }
-        else 
-        {
-            theta[cellI] -= 20.0;
-        }
+        theta[cellI] += d_theta_0 * Foam::sin(constant::mathematical::pi * c.z() / H) / 
+            (1 + pow(c.x() - x_c, 2) / (a*a));
     };
 
     theta.write();
