@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     );
 
     // TODO: get constants from dictionary
-    scalar d_theta_0 = 10e-2;
+    scalar d_theta_0 = 1e-2;
     scalar H = 10e3;
     scalar x_c = 0;
     scalar a = 5e3;
