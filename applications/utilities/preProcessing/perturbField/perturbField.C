@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 #   include "createTime.H"
 #   include "createMesh.H"
+
     volScalarField theta
     (
         IOobject
@@ -50,11 +51,22 @@ int main(int argc, char *argv[])
         mesh
     );
 
-    // TODO: get constants from dictionary
-    scalar d_theta_0 = 1e-2;
-    scalar H = 10e3;
-    scalar x_c = 0;
-    scalar a = 5e3;
+    IOdictionary dict
+    (
+        IOobject
+        (
+            "perturbFieldDict",
+            mesh.time().constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        )
+    );
+
+    const scalar d_theta_0(readScalar(dict.lookup("amplitude")));
+    const scalar H(readScalar(dict.lookup("height")));
+    const scalar x_c(readScalar(dict.lookup("x_centre")));
+    const scalar a(readScalar(dict.lookup("halfWidth")));
 
     forAll(theta, cellI)
     {
