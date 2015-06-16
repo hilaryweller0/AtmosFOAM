@@ -106,7 +106,7 @@ void Foam::extendedUpwindCellToFaceStencilNew::selectOppositeFaces
 void Foam::extendedUpwindCellToFaceStencilNew::transportStencil
 (
     const boolList& nonEmptyFace,
-    const cellToFaceStencil& faceStencil,
+    const labelListList& faceStencil,
     const scalar minOpposedness,
     const label faceI,
     const label cellI,
@@ -164,9 +164,18 @@ void Foam::extendedUpwindCellToFaceStencilNew::transportStencil
         }
         else
         {
-            const label& globalCellI = faceStencil.globalNumbering().toGlobal(cellI);
-            transportedStencil[n++] = globalCellI;
-            transportedStencil[n++] = globalCellI == globalOwn ? globalNei : globalOwn;
+            label localOwn = mesh_.faceOwner()[faceI];
+
+            if (cellI == localOwn)
+            {
+                transportedStencil[n++] = globalOwn;
+                transportedStencil[n++] = globalNei;
+            }
+            else
+            {
+                transportedStencil[n++] = globalNei;
+                transportedStencil[n++] = globalOwn;
+            }
         }
 
         forAllConstIter(labelHashSet, faceStencilSet, iter)
@@ -212,7 +221,7 @@ void Foam::extendedUpwindCellToFaceStencilNew::transportStencil
 
 void Foam::extendedUpwindCellToFaceStencilNew::transportStencils
 (
-    const cellToFaceStencil& faceStencil,
+    const labelListList& faceStencil,
     const scalar minOpposedness,
     labelListList& ownStencil,
     labelListList& neiStencil
