@@ -99,7 +99,7 @@ class extendedUpwindCellToFaceStencilNew
         void transportStencil
         (
             const boolList& nonEmptyFace,
-            const labelListList& faceStencil,
+            const cellToFaceStencil& faceStencil,
             const scalar minOpposedness,
             const label faceI,
             const label cellI,
@@ -113,7 +113,7 @@ class extendedUpwindCellToFaceStencilNew
         //- Transport (centred) face stencil to 'opposite' faces.
         void transportStencils
         (
-            const labelListList& faceStencil,
+            const cellToFaceStencil& faceStencil,
             const scalar minOpposedness,
             labelListList& ownStencil,
             labelListList& neiStencil
