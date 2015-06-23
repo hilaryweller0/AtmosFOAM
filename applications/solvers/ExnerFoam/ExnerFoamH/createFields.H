@@ -1,3 +1,9 @@
+surfaceScalarField gUnitNormal
+(
+    IOobject("gUnitNormal", runTime.timeName(), mesh),
+    ghat & (mesh.Sf() / mesh.magSf())
+);
+
 // Read in prognostic variables
 Info<< "Reading field Uf\n" << endl;
 surfaceVectorField Uf
@@ -47,7 +53,15 @@ surfaceScalarField thetaf
     IOobject("thetaf", runTime.timeName(), mesh),
     fvc::interpolate(theta)
 );
-thetaf.oldTime();
+thetaf.oldTime(); // TODO: what does this do?
+
+surfaceScalarField bf
+(
+    IOobject("bf", runTime.timeName(), mesh),
+    thetaf * gUnitNormal
+);
+
+volVectorField b = fvc::reconstruct(bf);
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
