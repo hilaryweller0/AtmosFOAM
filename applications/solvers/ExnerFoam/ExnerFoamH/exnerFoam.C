@@ -32,46 +32,12 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "Hops.H"
-//#include "fvcFaceToCell.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scalar entropy(const volScalarField& theta, const volScalarField& rho)
-{
-    return gSum
-    (
-        fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field())
-    );
-}
-
-scalar variance(const volScalarField& field) {
-    scalar totalVolume = 0;
-    scalar average = 0;
-
-    forAll(field.mesh().cells(), cellI)
-    {
-        scalar value = field[cellI];
-        scalar cellVolume = field.mesh().V()[cellI];
-        totalVolume += cellVolume;
-        average += value*cellVolume;
-    }
-
-    average /= totalVolume;
-
-    scalar variance = 0;
-    forAll(field.mesh().cells(), cellI)
-    {
-	scalar value = field[cellI];
-	scalar cellVolume = field.mesh().V()[cellI];
-	variance += pow(value - average, 2) * cellVolume;
-    }
-
-    variance /= totalVolume;
-    return variance;
-}
 
 int main(int argc, char *argv[])
 {
@@ -87,9 +53,6 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
-    const scalar initEntropy = entropy(theta, rho);
-    scalar thetaVariance = variance(theta);
-    scalar thetaRhoVariance = variance(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
@@ -125,8 +88,6 @@ int main(int argc, char *argv[])
                 )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
                 "interpolate(theta)"
             );
-//            thetaf.oldTime() = fvc::interpolate(theta)
-//                            - (1-offCentre)*dt*(Uf & fvc::interpolate(fvc::grad(theta)));
         }
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
@@ -139,16 +100,7 @@ int main(int argc, char *argv[])
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
         
-        // Updates for next time step
-//        if (Charney-Phillips)
-//        {
-//            thetaf -= dt*offCentre*V/(rhof*H.magd())*fvc::snGrad(theta);
-//            theta = fvc::faceToCell(thetaf);
-//        }
-//        else
-        {
-            thetaf = fvc::interpolate(theta);
-        }
+        thetaf = fvc::interpolate(theta);
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
               - muSponge*V;
         divU = fvc::div(U);
@@ -159,11 +111,7 @@ int main(int argc, char *argv[])
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
                                         - initHeat;
         normalisedHeatDiff = (totalHeatDiff/initHeat).value();
-        entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
-        thetaVariance = variance(theta);
-        thetaRhoVariance = variance(theta*rho);
-        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = "
-             << entropyError << endl;
+        Info << "Heat error = " << normalisedHeatDiff << endl;
         #include "energy.H"
 
         runTime.write();
