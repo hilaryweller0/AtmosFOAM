@@ -18,9 +18,6 @@
        << energyDiffNorm.value() << "  "
        << max(Uf.component(vector::Z)).value() << "  "
        << max(theta).value() << " "
-       << normalisedHeatDiff << " "
-       << entropyError << " "
-       << thetaVariance << " "
-       << thetaRhoVariance << endl;
+       << normalisedHeatDiff << endl;
 }
 
