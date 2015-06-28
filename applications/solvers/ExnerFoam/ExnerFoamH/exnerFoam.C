@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
         {
             #include "rhoEqn.H"
             b = fvc::reconstruct(bf * mesh.magSf());
-            theta = b & ghat.value(); // naughty hack to work around dimension checks!
+            theta = b & ghat;
             #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
         }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
         #include "rhoEqn.H"
         //#include "rhoThetaEqn.H"
         
-        thetaf = fvc::interpolate(theta);
+        //thetaf = fvc::interpolate(theta);
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
               - muSponge*V;
         divU = fvc::div(U);

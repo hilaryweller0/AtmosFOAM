@@ -6,8 +6,12 @@
     surfaceScalarField G("G", 1+offCentre*dt*muSponge);
 
     vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
-    // FIXME: don't use thetaf.oldTime(), recalculate it from bf.oldTime()
-    thetaf = thetaf.oldTime() - dt*(Uf & H.delta())/H.magd() * fvc::snGrad(theta) - dt*(vperp & fvc::interpolate(fvc::grad(theta)));
+    // Use b & ghat here rather than theta because theta has already been advected
+    surfaceScalarField oldThetaF = mag(bf.oldTime()) + fvc::interpolate(b.oldTime() & ghat) * (1.0 - mag(gUnitNormal));
+
+    thetaf = oldThetaF
+	- dt*(Uf & H.delta())/H.magd() * fvc::snGrad(b & ghat) 
+	- dt*(vperp & fvc::interpolate(fvc::grad(b & ghat)));
     bf = thetaf * gUnitNormal;
     G = 1/G;
 
