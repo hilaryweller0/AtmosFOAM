@@ -63,7 +63,6 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
-    const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -77,28 +76,18 @@ int main(int argc, char *argv[])
 
         // update old time variables for Crank-Nicholson
         V.oldTime() += (1-offCentre)*dt*dVdt;
-        // Old part of theta change (before any variables are updated)
-        if (SIgravityWaves)
-        {
-            thetaf.oldTime() = fvc::interpolate
-            (
-                (
-                    rho.oldTime()*theta.oldTime()
-                  - (1-offCentre)*dt*divUtheta.oldTime()
-                )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
-                "interpolate(theta)"
-            );
-        }
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
+            b = fvc::reconstruct(bf * mesh.magSf());
+            theta = b & ghat.value(); // naughty hack to work around dimension checks!
             #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
         }
         
         #include "rhoEqn.H"
-        #include "rhoThetaEqn.H"
+        //#include "rhoThetaEqn.H"
         
         thetaf = fvc::interpolate(theta);
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)

@@ -50,18 +50,25 @@ volScalarField theta
 // Old part of theta change (and theta on the face)
 surfaceScalarField thetaf
 (
-    IOobject("thetaf", runTime.timeName(), mesh),
+    IOobject
+    (
+        "thetaf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
     fvc::interpolate(theta)
 );
-thetaf.oldTime(); // TODO: what does this do?
 
 surfaceScalarField bf
 (
     IOobject("bf", runTime.timeName(), mesh),
     thetaf * gUnitNormal
 );
+bf.oldTime();
 
-volVectorField b = fvc::reconstruct(bf);
+volVectorField b = fvc::reconstruct(bf * mesh.magSf());
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
@@ -147,7 +154,7 @@ surfaceScalarField Vu
 );
 
 // Perpendicular component of the momentum
-//surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
+surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
 
 // Rates of change for Crank-Nicholson
 surfaceScalarField dVdt

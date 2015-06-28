@@ -5,21 +5,11 @@
 
     surfaceScalarField G("G", 1+offCentre*dt*muSponge);
 
-    if (SIgravityWaves)
-    {
-        G =1/(G - sqr(dt*offCentre)*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner));
-        thetaf = thetaf.oldTime()
-               - offCentre*dt*
-                 (
-                    (Uf & fvc::interpolate(fvc::grad(theta)))
-                 - 0.5*V/(rhof*H.magd())*fvc::snGrad(theta)
-                 );
-    }
-    else
-    {
-        thetaf = fvc::interpolate(theta);
-        G = 1/G;
-    }
+    vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
+    // FIXME: don't use thetaf.oldTime(), recalculate it from bf.oldTime()
+    thetaf = thetaf.oldTime() - dt*(Uf & H.delta())/H.magd() * fvc::snGrad(theta) - dt*(vperp & fvc::interpolate(fvc::grad(theta)));
+    bf = thetaf * gUnitNormal;
+    G = 1/G;
 
     for (int corr=0; corr<nCorr; corr++)
     {
