@@ -14,22 +14,12 @@ volScalarField Exner
     Exner_init
 );
 
-Info<< "Reading theta\n" << endl;
-const volScalarField theta
+Info<< "Reading thetaf\n" << endl;
+const surfaceScalarField thetaf
 (
-    IOobject("theta", runTime.timeName(), mesh, IOobject::MUST_READ),
+    IOobject("thetaf", runTime.timeName(), mesh, IOobject::MUST_READ),
     mesh
 );
-
-const surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
-
-//Info<< "Creating field rho\n" << endl;
-//volScalarField rho
-//(
-//    IOobject("rho", runTime.timeName(), mesh),
-//    pRef/(R*theta)*pow(Exner, (1-kappa)/kappa)
-//);
-//surfaceScalarField rhof = fvc::interpolate(rho);
 
 surfaceScalarField U
 (
