@@ -1,3 +1,4 @@
 setTheta.C
+ThermalProfile.C
 
 EXE = $(FOAM_USER_APPBIN)/setTheta
