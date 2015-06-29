@@ -33,20 +33,7 @@ volScalarField Exner
     mesh
 );
 
-Info<< "Reading field theta\n" << endl;
-volScalarField theta
-(
-    IOobject
-    (
-        "theta",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-
+Info<< "Reading field thetaf\n" << endl;
 surfaceScalarField thetaf
 (
     IOobject
@@ -54,10 +41,10 @@ surfaceScalarField thetaf
         "thetaf",
         runTime.timeName(),
         mesh,
-        IOobject::READ_IF_PRESENT,
+        IOobject::MUST_READ,
         IOobject::AUTO_WRITE
     ),
-    fvc::interpolate(theta)
+    mesh
 );
 thetaf.write();
 
@@ -69,6 +56,12 @@ surfaceScalarField bf
 bf.oldTime();
 
 volVectorField b = fvc::reconstruct(bf * mesh.magSf());
+
+volScalarField theta
+(
+    IOobject("theta", runTime.timeName(), mesh),
+    b & ghat
+);
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
