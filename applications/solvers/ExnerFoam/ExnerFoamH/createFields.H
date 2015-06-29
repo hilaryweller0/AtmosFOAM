@@ -47,7 +47,6 @@ volScalarField theta
     mesh
 );
 
-// Old part of theta change (and theta on the face)
 surfaceScalarField thetaf
 (
     IOobject
@@ -60,6 +59,7 @@ surfaceScalarField thetaf
     ),
     fvc::interpolate(theta)
 );
+thetaf.write();
 
 surfaceScalarField bf
 (
@@ -133,7 +133,6 @@ surfaceScalarField U
         IOobject::AUTO_WRITE
     ),
     rhof*(Uf & mesh.Sf())
-//    phiUBCs
 );
 
 Info << "Calculating V mass circulation field\n" << endl;
@@ -141,7 +140,6 @@ surfaceScalarField V
 (
     IOobject("V", runTime.timeName(), mesh),
     rhof*(Uf & H.delta())
-//    phiUBCs
 );
 V.oldTime();
 
