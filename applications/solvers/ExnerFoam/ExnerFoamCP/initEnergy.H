@@ -1,7 +1,7 @@
 Info << "Initialising total energy file energy.dat\n" << endl;
 
 OFstream es(args.rootPath() / args.caseName() / "energy.dat");
-es << "#time   KE       internal potential normalisedEnergy  max w max theta heatError entropyError thetaVariance thetaRhoVariance"
+es << "#time   KE       internal potential normalisedEnergy  max w max theta heatError"
    << endl;
 
 dimensionedScalar Vtot = sum(mesh.V());
@@ -29,4 +29,3 @@ const dimensionedScalar potentialInitTot = fvc::domainIntegrate(potentialEnergy)
 
 const dimensionedScalar energyInitTot = KEInitTot + internalInitTot + potentialInitTot;
 scalar normalisedHeatDiff = 0;
-scalar entropyError = 0;

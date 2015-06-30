@@ -1,3 +1,9 @@
+surfaceScalarField gUnitNormal
+(
+    IOobject("gUnitNormal", runTime.timeName(), mesh),
+    ghat & (mesh.Sf() / mesh.magSf())
+);
+
 // Read in prognostic variables
 Info<< "Reading field Uf\n" << endl;
 surfaceVectorField Uf
@@ -27,12 +33,12 @@ volScalarField Exner
     mesh
 );
 
-Info<< "Reading field theta\n" << endl;
-volScalarField theta
+Info<< "Reading field thetaf\n" << endl;
+surfaceScalarField thetaf
 (
     IOobject
     (
-        "theta",
+        "thetaf",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -40,14 +46,22 @@ volScalarField theta
     ),
     mesh
 );
+thetaf.write();
 
-// Old part of theta change (and theta on the face)
-surfaceScalarField thetaf
+surfaceScalarField bf
 (
-    IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(theta)
+    IOobject("bf", runTime.timeName(), mesh),
+    thetaf * gUnitNormal
 );
-thetaf.oldTime();
+bf.oldTime();
+
+volVectorField b = fvc::reconstruct(bf * mesh.magSf());
+
+volScalarField theta
+(
+    IOobject("theta", runTime.timeName(), mesh),
+    b & ghat
+);
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
@@ -112,7 +126,6 @@ surfaceScalarField U
         IOobject::AUTO_WRITE
     ),
     rhof*(Uf & mesh.Sf())
-//    phiUBCs
 );
 
 Info << "Calculating V mass circulation field\n" << endl;
@@ -120,7 +133,6 @@ surfaceScalarField V
 (
     IOobject("V", runTime.timeName(), mesh),
     rhof*(Uf & H.delta())
-//    phiUBCs
 );
 V.oldTime();
 
@@ -133,7 +145,7 @@ surfaceScalarField Vu
 );
 
 // Perpendicular component of the momentum
-//surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
+surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
 
 // Rates of change for Crank-Nicholson
 surfaceScalarField dVdt
