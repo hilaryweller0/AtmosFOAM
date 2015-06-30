@@ -7,7 +7,11 @@
 
     vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
     // Use b & ghat here rather than theta because theta has already been advected
-    surfaceScalarField oldThetaF = mag(bf.oldTime()) + fvc::interpolate(b.oldTime() & ghat) * (1.0 - mag(gUnitNormal));
+    surfaceScalarField recons("recons", 1.0 - mag(gUnitNormal));
+    recons.write();
+
+    surfaceScalarField oldThetaF = mag(bf.oldTime()) + fvc::interpolate(b.oldTime() & ghat) * (1.0 - mag(gUnitNormal)); // FIXME: this is generating values about 0.004 too large on vertical faces
+    oldThetaF.write();
 
     thetaf = oldThetaF
 	- dt*(Uf & H.delta())/H.magd() * fvc::snGrad(b & ghat) 

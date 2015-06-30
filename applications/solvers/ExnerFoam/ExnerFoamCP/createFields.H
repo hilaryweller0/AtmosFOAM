@@ -46,20 +46,34 @@ surfaceScalarField thetaf
     ),
     mesh
 );
-thetaf.write();
 
 surfaceScalarField bf
 (
-    IOobject("bf", runTime.timeName(), mesh),
+    IOobject
+    (
+        "bf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
     thetaf * gUnitNormal
 );
+bf.write();
 bf.oldTime();
 
 volVectorField b = fvc::reconstruct(bf * mesh.magSf());
 
 volScalarField theta
 (
-    IOobject("theta", runTime.timeName(), mesh),
+    IOobject
+    (
+        "theta",
+        runTime.timeName(), 
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
     b & ghat
 );
 
