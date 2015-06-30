@@ -15,11 +15,23 @@ volScalarField Exner
 );
 
 Info<< "Reading thetaf\n" << endl;
-const surfaceScalarField thetaf
+surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh, IOobject::MUST_READ),
     mesh
 );
+
+if (!args.options().found("noInterpolate"))
+{
+    Info<< "Reading theta\n" << endl;
+    const volScalarField theta
+    (
+        IOobject("theta", runTime.timeName(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+
+    thetaf = fvc::interpolate(theta);
+}
 
 surfaceScalarField U
 (
@@ -34,7 +46,6 @@ forAll(mesh.boundaryMesh(), patchi)
 {
     if (mesh.boundaryMesh()[patchi].name() == "top")
     {
-//        ExnerBCs[patchi] = "fixedValue";
         topBC = patchi;
     }
     else if (mesh.boundaryMesh()[patchi].name() == "ground")
@@ -49,16 +60,4 @@ if (groundBC == -1 || topBC == -1)
         << mesh.boundaryMesh().names()
         << exit(FatalError);
 }
-
-//// Set field which is zero on vertical faces
-//surfaceScalarField horiz
-//(
-//    IOobject("horiz", runTime.constant(), mesh),
-//    mesh,
-//    dimensionedScalar("", dimless, scalar(1))
-//);
-//forAll(horiz, faceI)
-//{
-//    if (mag(mesh.Sf()[faceI] & g.value()) > SMALL) horiz[faceI] = 0.1;
-//}
 

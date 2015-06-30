@@ -38,6 +38,7 @@ Description
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addBoolOption("noInterpolate", "read thetaf directly instead of interpolating from theta");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -68,6 +69,10 @@ int main(int argc, char *argv[])
         innerConverged = false;
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
+//            rho = pRef/(R*theta)*pow(Exner, (1-kappa)/kappa);
+//            rhof = fvc::interpolate(rho);
+            //U = H.ddirToFlux(gd)
+            //  - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
             U = H.Hdiag()*gd;
             fvScalarMatrix ExnerEqn
             (
@@ -78,7 +83,10 @@ int main(int argc, char *argv[])
                     Exner
                 )
             );
+            //ExnerEqn.relax(0.85);
             innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
+            //Exner = mag(Exner);
+
     	}
     	scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -95,6 +103,8 @@ int main(int argc, char *argv[])
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
         Exner.boundaryField()[topBC] == topBCval;
+    	
+        //Exner.write();
 	}
 
 	// Change the top boundary type to be fixedFluxBuoyantExner
