@@ -51,6 +51,19 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    surfaceScalarField thetaf
+    (
+        IOobject
+        (
+            "thetaf",
+            runTime.timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh
+    );
+
     IOdictionary dict
     (
         IOobject
@@ -68,12 +81,42 @@ int main(int argc, char *argv[])
     const scalar x_c(readScalar(dict.lookup("x_centre")));
     const scalar a(readScalar(dict.lookup("halfWidth")));
 
+    // theta
     forAll(theta, cellI)
     {
-        const point& c = mesh.C()[cellI];
-        theta[cellI] += d_theta_0 * Foam::sin(constant::mathematical::pi * c.z() / H) / 
-            (1 + pow(c.x() - x_c, 2) / (a*a));
+        const point& p = mesh.C()[cellI];
+        theta[cellI] += d_theta_0 * Foam::sin(constant::mathematical::pi * p.z() / H) / 
+            (1 + pow(p.x() - x_c, 2) / (a*a));
+    };
+    forAll(theta.boundaryField(), patchI)
+    {
+        fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
+        forAll(thetap, faceI)
+        {
+            const point& p = mesh.C()[faceI];
+            thetap[faceI] += d_theta_0 * Foam::sin(constant::mathematical::pi * p.z() / H) / 
+                (1 + pow(p.x() - x_c, 2) / (a*a));
+        }
     };
 
     theta.write();
+
+    // thetaf
+    forAll(thetaf, faceI)
+    {
+        const point& p = mesh.Cf()[faceI];
+        thetaf[faceI] += d_theta_0 * Foam::sin(constant::mathematical::pi * p.z() / H) / 
+                (1 + pow(p.x() - x_c, 2) / (a*a));
+    }
+    forAll(thetaf.boundaryField(), patchI)
+    {
+        fvsPatchField<scalar>& thetap = thetaf.boundaryField()[patchI];
+        forAll(thetap, faceI)
+        {
+            const point& p = mesh.Cf()[faceI];
+            thetap[faceI] += d_theta_0 * Foam::sin(constant::mathematical::pi * p.z() / H) / 
+                (1 + pow(p.x() - x_c, 2) / (a*a));
+        }
+    }
+    thetaf.write();
 }
