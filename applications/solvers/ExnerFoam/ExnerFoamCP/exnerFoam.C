@@ -87,7 +87,6 @@ int main(int argc, char *argv[])
         }
         
         #include "rhoEqn.H"
-        //#include "rhoThetaEqn.H"
         
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
               - muSponge*V;
