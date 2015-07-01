@@ -76,6 +76,7 @@ volScalarField theta
     ),
     b & ghat
 );
+theta.write();
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
