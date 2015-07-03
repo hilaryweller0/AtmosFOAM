@@ -1,9 +1,3 @@
-surfaceScalarField gUnitNormal
-(
-    IOobject("gUnitNormal", runTime.timeName(), mesh),
-    ghat & (mesh.Sf() / mesh.magSf())
-);
-
 // Read in prognostic variables
 Info<< "Reading field Uf\n" << endl;
 surfaceVectorField Uf
@@ -63,6 +57,7 @@ bf.write();
 bf.oldTime();
 
 volVectorField b = fvc::reconstruct(bf * mesh.magSf());
+b.oldTime();
 
 volScalarField theta
 (

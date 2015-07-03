@@ -79,8 +79,8 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
-            b = fvc::reconstruct(bf * mesh.magSf());
-            theta = b & ghat;
+            b.oldTime() = fvc::reconstruct(bf.oldTime() * mesh.magSf());
+            theta.oldTime() = b.oldTime() & ghat;
 
             #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
