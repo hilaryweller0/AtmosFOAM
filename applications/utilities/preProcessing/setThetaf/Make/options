@@ -1,0 +1,11 @@
+EXE_INC = \
+    -ggdb3 -O0 \
+    -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lExnerTheta \
+    -lspecie \
+    -lfiniteVolume

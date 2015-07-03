@@ -23,10 +23,10 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    setTheta
+    setThetaf
 
 Description
-    Set theta based on an array of Brunt Vailsalla frequencies for different
+    Set thetaf based on an array of Brunt Vailsalla frequencies for different
     layers
 
 \*---------------------------------------------------------------------------*/
@@ -47,49 +47,32 @@ int main(int argc, char *argv[])
 
     ThermalProfile profile(envProperties, g, T0);
         
-    Info<< "Reading theta_init\n" << endl;
-    volScalarField theta_init
+    Info<< "Reading thetaf_init\n" << endl;
+    surfaceScalarField thetaf_init
     (
-        IOobject("theta_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
 
-    Info<< "Creating theta\n" << endl;
-    volScalarField theta
+    surfaceScalarField thetaf
     (
-        IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
-        theta_init
+        IOobject("thetaf", runTime.timeName(), mesh, IOobject::NO_READ),
+        thetaf_init
     );
 
-    forAll(theta, cellI)
+    forAll(thetaf, faceI)
     {
-        theta[cellI] = profile.thetaAt(mesh.C()[cellI]);
+        thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
     }
-    forAll(theta.boundaryField(), patchI)
+    forAll(thetaf.boundaryField(), patchI)
     {
-        fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
-        forAll(thetap, facei)
+        fvsPatchField<scalar>& thetap = thetaf.boundaryField()[patchI];
+        forAll(thetap, faceI)
         {
-            thetap[facei] = profile.thetaAt(mesh.C().boundaryField()[patchI][facei]);
+            thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
         }
     }
-    theta.write();
-
-    surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
-
-    volScalarField BruntFreq
-    (
-        IOobject("BruntFreq", runTime.timeName(), mesh),
-        Foam::sqrt(-(g & fvc::grad(thetaf))/theta)
-    );
-    BruntFreq.write();
-
-    surfaceScalarField BruntFreq2f
-    (
-        IOobject("BruntFreq2f", runTime.timeName(), mesh),
-        -(g & mesh.delta())/mag(mesh.delta())*fvc::snGrad(theta)/thetaf
-    );
-    BruntFreq2f.write();
+    thetaf.write();
 
     Info<< "End\n" << endl;
 
