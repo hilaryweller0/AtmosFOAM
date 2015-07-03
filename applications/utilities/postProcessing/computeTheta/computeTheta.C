@@ -79,5 +79,19 @@ int main(int argc, char *argv[])
     surfaceScalarField computedThetaf("computedThetaf", mag(bf) + fvc::interpolate(b & ghat) * (1.0 - mag(gUnitNormal)));
     computedThetaf.write();
 
+    volScalarField computedTheta
+    (
+        IOobject
+        (
+            "computedTheta",
+            runTime.timeName(), 
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        b & ghat
+    );
+    computedTheta.write();
+
     return EXIT_SUCCESS;
 }
