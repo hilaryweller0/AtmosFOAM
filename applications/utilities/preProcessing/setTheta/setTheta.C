@@ -54,6 +54,7 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    // theta
     Info<< "Creating theta\n" << endl;
     volScalarField theta
     (
@@ -75,7 +76,21 @@ int main(int argc, char *argv[])
     }
     theta.write();
 
+    // thetaf
     surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
+    forAll(thetaf, faceI)
+    {
+        thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
+    }
+    forAll(thetaf.boundaryField(), patchI)
+    {
+        fvsPatchField<scalar>& thetap = thetaf.boundaryField()[patchI];
+        forAll(thetap, faceI)
+        {
+            thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
+        }
+    }
+    thetaf.write();
 
     volScalarField BruntFreq
     (
