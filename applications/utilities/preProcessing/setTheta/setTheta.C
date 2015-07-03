@@ -54,6 +54,13 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    Info<< "Reading thetaf_init\n" << endl;
+    surfaceScalarField thetaf_init
+    (
+        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+
     // theta
     Info<< "Creating theta\n" << endl;
     volScalarField theta
@@ -77,7 +84,7 @@ int main(int argc, char *argv[])
     theta.write();
 
     // thetaf
-    surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
+    surfaceScalarField thetaf("thetaf", thetaf_init);
     forAll(thetaf, faceI)
     {
         thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
