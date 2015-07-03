@@ -1,3 +1,4 @@
+ThermalProfile.C
 BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libExnerTheta
