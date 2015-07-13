@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
         fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
         forAll(thetap, facei)
         {
-            thetap[facei] = profile.thetaAt(mesh.C().boundaryField()[patchI][facei]);
+            thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
         }
     }
     theta.write();
