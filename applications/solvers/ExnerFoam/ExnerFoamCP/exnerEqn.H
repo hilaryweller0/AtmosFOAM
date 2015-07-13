@@ -5,13 +5,13 @@
 
     surfaceScalarField G("G", 1+offCentre*dt*muSponge);
 
-    vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
+    vperp = Uf - (V/rhof)*H.delta()/sqr(H.magd());
     // Use b & ghat here rather than theta because theta has already been advected
     surfaceScalarField oldThetaF = mag(bf.oldTime()) + fvc::interpolate(b.oldTime() & ghat) * (1.0 - mag(gUnitNormal));
 
     b = fvc::reconstruct(bf * mesh.magSf());
     thetaf = oldThetaF
-        - dt*(Uf & H.delta())/H.magd() * fvc::snGrad(b & ghat)  // use V directly, not Uf (which is interped)
+        - dt*(V/rhof)/H.magd() * fvc::snGrad(b & ghat)  // use V directly, not Uf (which is interped)
         - dt*(vperp & fvc::interpolate(fvc::grad(b & ghat)));
     bf = thetaf * gUnitNormal;
     G = 1/G;
