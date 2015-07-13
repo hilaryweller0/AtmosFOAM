@@ -84,17 +84,6 @@ int main(int argc, char *argv[])
 
             #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
-
-            theta.correctBoundaryConditions();
-            forAll(mesh.boundaryMesh(), patchI)
-            {
-                    fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
-                    fvsPatchField<scalar>& thetafp = thetaf.boundaryField()[patchI];
-                    forAll(thetap, faceI)
-                    {
-                        thetafp[faceI] = thetap[faceI];
-                    }
-            }
         }
         
         #include "rhoEqn.H"
