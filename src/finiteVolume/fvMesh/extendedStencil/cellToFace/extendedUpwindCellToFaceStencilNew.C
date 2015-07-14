@@ -164,8 +164,18 @@ void Foam::extendedUpwindCellToFaceStencilNew::transportStencil
         }
         else
         {
-            transportedStencil[n++] = cellI;
-            transportedStencil[n++] = cellI == globalOwn ? globalNei : globalOwn;
+            label localOwn = mesh_.faceOwner()[faceI];
+
+            if (cellI == localOwn)
+            {
+                transportedStencil[n++] = globalOwn;
+                transportedStencil[n++] = globalNei;
+            }
+            else
+            {
+                transportedStencil[n++] = globalNei;
+                transportedStencil[n++] = globalOwn;
+            }
         }
 
         forAllConstIter(labelHashSet, faceStencilSet, iter)
