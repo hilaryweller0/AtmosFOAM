@@ -38,6 +38,7 @@ Description
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addBoolOption("noInterpolate", "read thetaf directly instead of interpolating from theta");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"

@@ -53,7 +53,6 @@ Description
         << endl;
     
     Info << "Maximum rho difference fraction = "
-         //<< max(mag(rhoDiff.internalField()/rho.internalField())) << endl;
          << max(mag(rhoDiff/rho)).value() << endl;
 }
 

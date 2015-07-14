@@ -33,6 +33,7 @@ Description
 
 #include "fvCFD.H"
 #include "ExnerTheta.H"
+#include "ThermalProfile.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,17 +44,8 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
-    // The Brunt Vaiasalla freqencies for the different layers
-    const scalarList Brunt(envProperties.lookup("BruntVaisallaFreq"));
-    // The extents of the different layers (size one greater)
-    const scalarList zN(envProperties.lookup("zN"));
-    if (Brunt.size()+1 != zN.size())
-    {
-        FatalErrorIn("setTheta")
-            << " size of BruntVaisallaFreq in environmentalProperties should be"
-            << " one smaller than the size of zN"
-            << exit(FatalError);
-    }
+
+    ThermalProfile profile(envProperties, g, T0);
         
     Info<< "Reading theta_init\n" << endl;
     volScalarField theta_init
@@ -62,75 +54,49 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    Info<< "Reading thetaf_init\n" << endl;
+    surfaceScalarField thetaf_init
+    (
+        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+
+    // theta
     Info<< "Creating theta\n" << endl;
     volScalarField theta
     (
         IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
         theta_init
     );
-   
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    // Loop over the different layers and set theta
     forAll(theta, cellI)
     {
-        const scalar z = mesh.C()[cellI].z();
-        bool found = false;
-        scalar theta0 = T0.value();
-        for(label il = 0; il < Brunt.size(); il++)
-        {
-            if (z >= zN[il] && z < zN[il+1])
-            {
-                theta[cellI] = theta0*Foam::exp
-                (
-                    sqr(Brunt[il])/mag(g.value())*(z-zN[il])
-                );
-                found = true;
-            }
-            theta0 *= Foam::exp
-                (sqr(Brunt[il])/mag(g.value())*(zN[il+1]-zN[il]));
-        }
-        if (!found)
-        {
-            FatalErrorIn("setTheta") << " cell " << cellI
-                << " with height " << z << " not found in levels "
-                << zN << exit(FatalError);
-        }
+        theta[cellI] = profile.thetaAt(mesh.C()[cellI]);
     }
     forAll(theta.boundaryField(), patchI)
     {
         fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
         forAll(thetap, facei)
         {
-            const scalar z = mesh.C().boundaryField()[patchI][facei].z();
-            bool found = false;
-            scalar theta0 = T0.value();
-            for(label il = 0; il < Brunt.size(); il++)
-            {
-                if (z >= zN[il] && z < zN[il+1])
-                {
-                    thetap[facei] = theta0*Foam::exp
-                    (
-                        sqr(Brunt[il])/mag(g.value())*(z-zN[il])
-                    );
-                    found = true;
-                }
-                theta0 *= Foam::exp
-                    (sqr(Brunt[il])/mag(g.value())*(zN[il+1]-zN[il]));
-            }
-            if (!found)
-            {
-                FatalErrorIn("setTheta") << " boundary face " << facei
-                    << " with height " << z << " not found in levels "
-                    << zN << exit(FatalError);
-            }                
+            thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
         }
-        
     }
-
     theta.write();
 
-    surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
+    // thetaf
+    surfaceScalarField thetaf("thetaf", thetaf_init);
+    forAll(thetaf, faceI)
+    {
+        thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
+    }
+    forAll(thetaf.boundaryField(), patchI)
+    {
+        fvsPatchField<scalar>& thetap = thetaf.boundaryField()[patchI];
+        forAll(thetap, faceI)
+        {
+            thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
+        }
+    }
     thetaf.write();
 
     volScalarField BruntFreq
