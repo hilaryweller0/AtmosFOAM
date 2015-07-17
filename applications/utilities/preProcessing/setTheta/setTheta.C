@@ -58,8 +58,8 @@ int main(int argc, char *argv[])
     Info<< "Reading thetaf_init\n" << endl;
     surfaceScalarField thetaf_init
     (
-        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::MUST_READ),
-        mesh
+        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        linearInterpolate(theta_init)
     );
 
     // thetaf
