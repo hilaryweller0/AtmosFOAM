@@ -236,23 +236,13 @@ int main(int argc, char *argv[])
                 }
                 else if (fieldHeader.headerClassName()=="pointScalarField")
                 {
-                    if
-                    (
-                fieldsToPlot[ifield].plotType() == FieldToPlot::FILLED_CONTOURS
-                        && !plotAllCells
-                    )
+                    if (!plotAllCells)
                     {
 #                       include "filledPointContours.H"
                     }
                     else
                     {
-                        FatalErrorIn("gmtFoam")
-                        << fieldsToPlot[ifield].plotType()
-                        << " is not a valid plot type for pointScalarField "
-                        << fieldsToPlot[ifield].name()
-                        << ". Valid types are filledContours and "
-                        << "you must specify a valid patch to plot on"
-                        << exit(FatalError);
+#                       include "allFilledPointContours.H"
                     }
                 }
                 else if (fieldHeader.headerClassName()=="volVectorField")
@@ -310,12 +300,7 @@ int main(int argc, char *argv[])
                     }
                     else
                     {
-                            FatalErrorIn("gmtFoam")
-                            << fieldsToPlot[ifield].plotType()
-                            << " is not a valid plot type for vectorField "
-                            << fieldsToPlot[ifield].name()
-                            << ". Valid types are vectorEndPoints"
-                            << exit(FatalError);
+                            #include "pointField.H"
                     }
                 }
                 else if(fieldHeader.headerClassName()=="surfaceVectorField")

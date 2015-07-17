@@ -56,7 +56,7 @@ surfaceScalarField bf
 bf.write();
 bf.oldTime();
 
-volVectorField b = fvc::reconstruct(bf * mesh.magSf());
+volVectorField b("b", fvc::reconstruct(bf * mesh.magSf()));
 b.oldTime();
 
 // theta is read from disk to pick up the boundary patch types
@@ -67,12 +67,11 @@ volScalarField theta
         "theta",
         runTime.timeName(), 
         mesh,
-        IOobject::MUST_READ,
+        IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    mesh
+    b & ghat
 );
-theta = b & ghat;
 theta.write();
 
 // Reading in the sponge layer coefficients (if present)

@@ -39,6 +39,7 @@ Description
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addBoolOption("CP", "Set thetaf and reconstruct theta from thetaf for Charney-Phillips Staggering");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -61,28 +62,6 @@ int main(int argc, char *argv[])
         mesh
     );
 
-    // theta
-    Info<< "Creating theta\n" << endl;
-    volScalarField theta
-    (
-        IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
-        theta_init
-    );
-
-    forAll(theta, cellI)
-    {
-        theta[cellI] = profile.thetaAt(mesh.C()[cellI]);
-    }
-    forAll(theta.boundaryField(), patchI)
-    {
-        fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
-        forAll(thetap, facei)
-        {
-            thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
-        }
-    }
-    theta.write();
-
     // thetaf
     surfaceScalarField thetaf("thetaf", thetaf_init);
     forAll(thetaf, faceI)
@@ -97,6 +76,46 @@ int main(int argc, char *argv[])
             thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
         }
     }
+
+    // theta
+    Info<< "Creating theta\n" << endl;
+    volScalarField theta
+    (
+        IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
+        theta_init
+    );
+
+    // theta is either recontructed from thetaf (CP staggering) or
+    // calculated from the analytic profile
+    if (args.options().found("CP"))
+    {
+        // Creating bouyancy variables for reconstructing theta
+        surfaceScalarField bf("bf", thetaf * gUnitNormal);
+        volVectorField b("b", fvc::reconstruct(bf * mesh.magSf()));
+    
+        // Correct thetaf and theta based on b and bf
+        thetaf = mag(bf)
+               + fvc::interpolate(b & ghat) * (1.0 - mag(gUnitNormal));
+
+        theta = b & ghat;
+    }
+    else // Lorenz staggering so calculate theta from analytic profile
+    {
+        forAll(theta, cellI)
+        {
+            theta[cellI] = profile.thetaAt(mesh.C()[cellI]);
+        }
+        forAll(theta.boundaryField(), patchI)
+        {
+            fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
+            forAll(thetap, facei)
+            {
+                thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
+            }
+        }
+    }
+
+    theta.write();
     thetaf.write();
 
     volScalarField BruntFreq

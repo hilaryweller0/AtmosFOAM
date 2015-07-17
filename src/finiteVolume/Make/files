@@ -1,6 +1,3 @@
-interpolation/approxTypes/approxType.C
-interpolation/approxTypes/rbfFit.C
-
 interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
 interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
 interpolation/surfaceInterpolation/schemes/biQuadraticUpwindFit/biQuadraticUpwindFit.C
@@ -11,16 +8,6 @@ interpolation/surfaceInterpolation/schemes/linearQuadraticUpwindFit/linearQuadra
 interpolation/surfaceInterpolation/schemes/biLinearUpwindFit/biLinearUpwindFit.C
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
 interpolation/surfaceInterpolation/schemes/APVM/APVM.C
-interpolation/surfaceInterpolation/schemes/oneDQuadraticUpwindFit/oneDQuadraticUpwindFit.C
-interpolation/surfaceInterpolation/schemes/oneDCubicUpwindFit/oneDCubicUpwindFit.C
-
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly1_departurePoint.C
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly1p5_departurePoint.C
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly2_departurePoint.C
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly2p5_departurePoint.C
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly3_departurePoint.C
-interpolation/surfaceInterpolation/schemes/departurePointSchemes/poly3p5_departurePoint.C
-interpolation/surfaceInterpolation/schemes/volumeWeighted/volumeWeighted.C
 
 interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C

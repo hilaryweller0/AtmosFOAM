@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T
     (
-        IOobject(tracerFieldFileName, runTime.timeName(), mesh),
+        IOobject(tracerFieldFileName, runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
         dimensionedScalar(tracerFieldFileName, dimless, scalar(0)),
         "zeroGradient"

@@ -63,11 +63,12 @@ volScalarField monitorNew("monitorNew", monitor);
 // The monitor function on the new mesh
 volScalarField monitorR
 (
-    IOobject("monitor", runTime.timeName(), rMesh,
+    IOobject("monitorR", runTime.timeName(), rMesh,
              IOobject::NO_READ, IOobject::AUTO_WRITE),
     monitorFunc().map(rMesh, monitor)
 );
 monitorNew.internalField() = monitorR.internalField();
+monitorNew.write();
 
 // The mean equidistribution, c
 dimensionedScalar equiDistMean = fvc::domainIntegrate(detHess)

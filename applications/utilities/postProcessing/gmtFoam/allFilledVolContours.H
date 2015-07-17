@@ -20,7 +20,7 @@ scalar maxVf = 0;
         colourMax = maxVf;
         colourStep = 0.1*(colourMax - colourMin);
     }
-    if (colourMax-colourMin < 5e-4)
+    if (colourMax-colourMin < 5e-6)
     {
         colourMin -= 1;
         colourMax += 1;

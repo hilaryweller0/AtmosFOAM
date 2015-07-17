@@ -7,11 +7,25 @@ mkdir -p constant/rMesh
 cp -r constant/polyMesh constant/rMesh
 
 # solve Monge Ampere, pipting the output to a log file
-MongeAmpere2D | tee log
+touch log
+tail -f log &
+MongeAmpere2D >& log
+pkill tail
 
 # The numerical solution, Phi, on the old mesh is now in the time
 # directories, the points of the new mesh for each itereation is in
 # rMesh/polyMesh for each time step
+
+# find the final time (for the new mesh)
+export time=`ls $case | sort -n | tail -1`
+
+# Plot the solution of the MA equation and its gradient on the old mesh
+gmtFoam -time $time Phi
+evince $time/Phi.pdf &
+
+# Plot the monitor function on the new mesh
+gmtFoam -region rMesh -time $time monitor
+evince $time/monitor.pdf &
 
 # extract convergence diagnostics from the log file
 echo "#time minSource maxSource minVol maxVol ratio boostLaplacian" > MAconvergence.dat
@@ -30,17 +44,6 @@ gmtPlot plots/MAratios.gmt
 gmtPlot plots/boostLaplacian.gmt
 gmtPlot plots/MAresids.gmt
 gmtPlot plots/nIterations.gmt
-
-# find the final time (for the new mesh)
-export time=`ls $case | sort -n | tail -1`
-
-# Plot the solution of the MA equation and its gradient on the old mesh
-gmtFoam -time $time Phi
-evince $time/Phi.pdf &
-
-# Plot the monitor function on the new mesh
-gmtFoam -region rMesh -time $time monitor
-evince $time/monitor.pdf &
 
 # mesh analysis
 export time=`ls $case | sort -n | tail -1`

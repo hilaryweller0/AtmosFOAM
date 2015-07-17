@@ -77,7 +77,8 @@ public:
         MESH_RANGE,
         ADVECTED_CONTOURS,
         NUMBERED,
-        WRITECONTOURS
+        WRITECONTOURS,
+        DEFAULT
     };
 
     // Private data

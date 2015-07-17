@@ -35,7 +35,7 @@ Foam::FieldToPlot::FieldToPlot()
 :
     name_(),
     plotType_(),
-    minMaxDel_(),
+    minMaxDel_(scalar(0)),
     colourScale_()
 {}
 
@@ -61,7 +61,7 @@ Foam::FieldToPlot::FieldToPlot(Istream& is)
 :
     name_(),
     plotType_(),
-    minMaxDel_()
+    minMaxDel_(scalar(0))
 {
     operator>>(is, *this);
 }
@@ -101,6 +101,7 @@ const Foam::word Foam::FieldToPlot::plotTypeWord() const
          : plotType_ == ADVECTED_CONTOURS? "advectedContours"
          : plotType_ == NUMBERED        ? "numbered"
          : plotType_ == WRITECONTOURS   ? "writeContours"
+         : plotType_ == DEFAULT         ? "default"
          : "none";
 }
 
@@ -245,11 +246,15 @@ Foam::Istream& Foam::operator>>(Istream& is, FieldToPlot& ftp)
         is >> ftp.minMaxDel_[0] >> ftp.minMaxDel_[1] >> ftp.minMaxDel_[2]
             >> ftp.colourScale_;
     }
+    else if (plotType == "default")
+    {
+        ftp.plotType_ = FieldToPlot::DEFAULT;
+    }
     else
     {
         FatalErrorIn("Istream& operator>>(Istream&, FieldToPlot&)")
         << "Second element of FieldToPlot named " << ftp.name()
-        << " should be one of filledContours, solidContours, dashedContours, vectors, vectorContours, mesh, meshPoints, meshCentres, numbered, advectedContours, writeContours or rawValues but " << plotType << " given" << exit(FatalError);
+        << " should be one of filledContours, solidContours, dashedContours, vectors, vectorContours, mesh, meshPoints, meshCentres, numbered, advectedContours, writeContours, default or rawValues but " << plotType << " given" << exit(FatalError);
     }
 
     // Check state of IOstream
