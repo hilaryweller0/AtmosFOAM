@@ -1,0 +1,29 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X20c/8c";
+projection2D XZ;
+plotBoundaryDots false;
+
+FieldsToPlot
+(
+    [none mesh "grey"]
+    [Uf vectors 4e3 15 "black"]
+);
+
+boundaryMarks "1e6/2e3WSen";
+annotate "minMax 0.01 -0.01";
+
