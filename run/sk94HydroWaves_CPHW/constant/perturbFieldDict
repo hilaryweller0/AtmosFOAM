@@ -1,0 +1,13 @@
+FoamFile
+{
+    version     2.2;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      perturbFieldDict;
+}
+
+amplitude 1e-2;
+height 10e3;
+x_centre -1e6;
+halfWidth 100e3;

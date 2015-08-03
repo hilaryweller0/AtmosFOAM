@@ -92,12 +92,11 @@ int main(int argc, char *argv[])
         // Creating bouyancy variables for reconstructing theta
         surfaceScalarField bf("bf", thetaf * gUnitNormal);
         volVectorField b("b", fvc::reconstruct(bf * mesh.magSf()));
+        theta = b & ghat;
     
         // Correct thetaf and theta based on b and bf
         thetaf = mag(bf)
-               + fvc::interpolate(b & ghat) * (1.0 - mag(gUnitNormal));
-
-        theta = b & ghat;
+               + fvc::interpolate(theta) * (1.0 - mag(gUnitNormal));
     }
     else // Lorenz staggering so calculate theta from analytic profile
     {
