@@ -16,7 +16,7 @@ EXE_LIBS = \
     -lOpenFOAM \
     -lfiniteVolume \
     -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolumeUser \
+    -lfiniteVolumeAtmos \
     -ltriSurface \
     -lmeshTools \
     -lsampling \
