@@ -33,11 +33,18 @@ if (!args.options().found("noInterpolate"))
     thetaf = fvc::interpolate(theta);
 }
 
+// The flux, including only the gravity term
 surfaceScalarField U
 (
     IOobject("U", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar("U", dimensionSet(0,3,-2,0,0), scalar(0))
+    H.Hdiag()*gd
+);
+
+// The diffusion coefficiednt for the laplacian
+surfaceScalarField gradPcoeff
+(
+    IOobject("gradPcoeff", runTime.timeName(), mesh),
+    H.Hdiag()*Cp*thetaf*H.magd()/mesh.magSf()
 );
 
 label groundBC = -1;
