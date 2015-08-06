@@ -10,5 +10,6 @@ EXE_INC =  \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolume -lmeshTools -lsamplingUser -lsampling -lmonitorFunction
+    -lfiniteVolume -lmeshTools -lfiniteVolumeAtmos \
+    -lsampling -lmonitorFunction
 

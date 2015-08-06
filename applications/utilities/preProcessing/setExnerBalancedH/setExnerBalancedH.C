@@ -69,19 +69,10 @@ int main(int argc, char *argv[])
         innerConverged = false;
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
-//            rho = pRef/(R*theta)*pow(Exner, (1-kappa)/kappa);
-//            rhof = fvc::interpolate(rho);
-            //U = H.ddirToFlux(gd)
-            //  - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
-            U = H.Hdiag()*gd;
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian
-                (
-                    H.Hdiag()*Cp*thetaf*H.magd()/mesh.magSf(),
-                    Exner
-                )
+              - fvm::laplacian(gradPcoeff, Exner)
             );
             //ExnerEqn.relax(0.85);
             innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;

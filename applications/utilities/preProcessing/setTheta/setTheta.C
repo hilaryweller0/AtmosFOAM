@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
         // Creating bouyancy variables for reconstructing theta
         surfaceScalarField bf("bf", thetaf * gUnitNormal);
         volVectorField b("b", fvc::reconstruct(bf * mesh.magSf()));
-        theta = b & ghat;
+        // set theta at boundaries as well as interior
+        theta == (b & ghat);
     
         // Correct thetaf and theta based on b and bf
         thetaf = mag(bf)
