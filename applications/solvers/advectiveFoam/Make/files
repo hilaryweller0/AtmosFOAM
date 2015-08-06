@@ -1,3 +1,0 @@
-advectiveFoam.C
-
-EXE = $(FOAM_USER_APPBIN)/advectiveFoam
