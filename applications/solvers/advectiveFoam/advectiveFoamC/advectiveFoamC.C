@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 
         /*solve
         (
-            fvc::ddt(T)
+            fvm::ddt(T)
             + (U & fvc::grad(T))
             ==
             0
