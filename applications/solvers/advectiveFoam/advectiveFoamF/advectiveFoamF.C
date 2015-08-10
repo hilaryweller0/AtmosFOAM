@@ -51,7 +51,14 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        Tf = Tf.oldTime() - dt * (Uf & fvc::interpolate(fvc::grad(Tf)));
+        for (int corr=0; corr < 3; corr++)
+        {
+            Tf = Tf.oldTime() - 0.5*dt *
+            (
+                (Uf & fvc::interpolate(fvc::grad(Tf))) + 
+                (Uf & fvc::interpolate(fvc::grad(Tf.oldTime())))
+            );
+        }
         
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
              << max(Tf.internalField()) << endl;
