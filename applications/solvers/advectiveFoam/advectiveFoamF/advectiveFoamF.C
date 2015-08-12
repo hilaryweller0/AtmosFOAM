@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
+    #include "readEnvironmentalProperties.H"
     #include "createFields.H"
 
     Info<< "\nCalculating advection\n" << endl;
@@ -58,6 +59,11 @@ int main(int argc, char *argv[])
                 (Uf & fvc::interpolate(fvc::grad(Tf))) + 
                 (Uf & fvc::interpolate(fvc::grad(Tf.oldTime())))
             );
+
+	    bf = Tf * gUnitNormal;
+	    b = fvc::reconstruct(bf * mesh.magSf());
+	    T = b & ghat;
+	    Tf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(T, "T_from_b");
         }
         
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
