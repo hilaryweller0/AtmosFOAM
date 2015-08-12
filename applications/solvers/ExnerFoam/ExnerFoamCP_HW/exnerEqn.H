@@ -3,16 +3,13 @@
     rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
 
+    // FIXME: shouldn't we advect thetaf and reconstruct theta *before* we calculate Psi?
     // Hilary's version of theta advection on the face
-    vperp = Uf - (V/rhof)*H.delta()/sqr(H.magd());
-    theta = b & ghat;
-    thetaf = thetaf.oldTime()
-           - dt*V/(rhof*H.magd()) * fvc::snGrad(theta)
-           - dt*(vperp & fvc::interpolate(fvc::grad(theta)));
+    thetaf = thetaf.oldTime() - dt*(Uf & fvc::interpolate(fvc::grad(thetaf)));
     bf = thetaf * gUnitNormal;
     b = fvc::reconstruct(bf * mesh.magSf());
     theta = b & ghat;
-    thetaf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(theta);
+    thetaf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(theta, "thetaFromb");
 
     for (int corr=0; corr<nCorr; corr++)
     {
