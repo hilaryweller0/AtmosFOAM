@@ -29,18 +29,10 @@ scalar SchaerExpMountain::heightAt(const scalar x) const
     return smooth->heightAt(x) * fine->heightAt(x);
 }
 
-// FIXME: recalculate this
 scalar SchaerExpMountain::gradientAt(const scalar x) const
 {
-    if (x < -a || x > a)
-    {
-        return 0.0;
-    }
-    else
-    {
-        return - h0 * M_PI * (1/(2*a)*pow(Foam::cos(M_PI * x/lambda), 2) * Foam::sin(M_PI*x/a) +
-            pow(Foam::cos(M_PI * x / (2.0*a)), 2) * Foam::sin(2.0*M_PI*x/lambda)/lambda);
-    }
+    return - h0 * Foam::exp(-pow(x/a, 2)) * (M_PI/lambda * Foam::sin(2*M_PI*x/lambda) + 
+            2*x / pow(a, 2) * pow(Foam::cos(M_PI*x/lambda), 2));
 }
 
 // FIXME: recalculate this
