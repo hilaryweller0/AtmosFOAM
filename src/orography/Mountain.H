@@ -3,30 +3,48 @@
 
 #include "fvCFD.H"
 
-class Mountain
+class AbstractMountain
 {
     public:
     virtual scalar heightAt(const scalar x) const = 0;
-    virtual ~Mountain() {};
+    virtual ~AbstractMountain() {};
 };
 
-class SchaerCosFineMountain : public Mountain
+class SchaerFineMountain : public AbstractMountain
 {
     public:
-    SchaerCosFineMountain(const scalar lambda);
+    SchaerFineMountain(const scalar lambda);
     scalar heightAt(const scalar x) const;
     private:
     const scalar lambda;
 };
 
-class SchaerSmoothMountain : public Mountain
+class SchaerSmoothCosMountain : public AbstractMountain
 {
     public:
-    SchaerSmoothMountain(const scalar a, const scalar h0);
+    SchaerSmoothCosMountain(const scalar a, const scalar h0);
     scalar heightAt(const scalar x) const;
     private:
     const scalar a;
     const scalar h0;
+};
+
+class SchaerSmoothExpMountain : public AbstractMountain
+{
+    public:
+    SchaerSmoothExpMountain(const scalar a, const scalar h0);
+    scalar heightAt(const scalar x) const;
+    private:
+    const scalar a;
+    const scalar h0;
+};
+
+class Mountain : public AbstractMountain
+{
+    public:
+    virtual scalar gradientAt(const scalar x) const = 0;
+    virtual scalar timeToCross(const scalar u0, const scalar H) const = 0;
+    virtual scalar halfWidth() const = 0;
 };
 
 class SchaerCosMountain : public Mountain
@@ -36,13 +54,33 @@ class SchaerCosMountain : public Mountain
     SchaerCosMountain(const scalar a, const scalar h0, const scalar lambda);
     scalar heightAt(const scalar x) const;
     scalar gradientAt(const scalar x) const;
+    scalar timeToCross(const scalar u0, const scalar H) const;
+    scalar halfWidth() const;
     ~SchaerCosMountain();
+    private:
     const scalar a;
     const scalar h0;
     const scalar lambda;
+    SchaerSmoothCosMountain *smooth;
+    SchaerFineMountain *fine;
+};
+
+class SchaerExpMountain : public Mountain
+{
+    public:
+    SchaerExpMountain(const IOdictionary& dict);
+    SchaerExpMountain(const scalar a, const scalar h0, const scalar lambda);
+    scalar heightAt(const scalar x) const;
+    scalar gradientAt(const scalar x) const;
+    scalar timeToCross(const scalar u0, const scalar H) const;
+    scalar halfWidth() const;
+    ~SchaerExpMountain();
     private:
-    SchaerSmoothMountain *smooth;
-    SchaerCosFineMountain *fine;
+    const scalar a;
+    const scalar h0;
+    const scalar lambda;
+    SchaerSmoothExpMountain *smooth;
+    SchaerFineMountain *fine;
 };
 
 #endif

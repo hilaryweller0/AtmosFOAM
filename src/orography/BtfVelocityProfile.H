@@ -5,17 +5,16 @@
 #include "VelocityProfile.H"
 #include "Mountain.H"
 
-class SchaerCosVelocityProfile : public VelocityProfile
+class BtfVelocityProfile : public VelocityProfile
 {
     public:
-    SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const IOdictionary& dict);
-    SchaerCosVelocityProfile(const SchaerCosMountain& mountain, const scalar u0, const scalar H);
+    BtfVelocityProfile(const Mountain& mountain, const IOdictionary& dict);
+    BtfVelocityProfile(const Mountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
     scalar streamFunctionAt(const point& p) const;
     point pointAtTime(const point& p0, const scalar t) const;
     private:
-    scalar timeToCrossMountain() const;
-    const SchaerCosMountain& mountain;
+    const Mountain& mountain;
     const scalar u0;
     const scalar H;
 };

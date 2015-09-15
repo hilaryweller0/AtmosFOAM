@@ -1,6 +1,8 @@
 VelocityProfile.C
 HorizontalVelocityProfile.C
-SchaerCosVelocityProfile.C
+BtfVelocityProfile.C
 Mountain.C
+SchaerCosMountain.C
+SchaerExpMountain.C
 
 LIB = $(FOAM_USER_LIBBIN)/libOrography
