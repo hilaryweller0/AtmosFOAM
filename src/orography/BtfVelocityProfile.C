@@ -24,6 +24,12 @@ vector BtfVelocityProfile::velocityAt(const point& p) const
 
     scalar w = H * dhdx * (H - p.z()) / pow(H - h, 2);
 
+    // in the case that the domain is taller than the top of the coordinate transform (such as
+    // when a sponge layer is inserted at the top of the domain), we keep the flow purely horizontal
+    if (p.z() > H)
+    {
+        return vector(u0, 0, 0);
+    }
     if (p.z() >= h)
     {
         return vector(u0*u, 0, u0*w);
@@ -37,7 +43,14 @@ vector BtfVelocityProfile::velocityAt(const point& p) const
 scalar BtfVelocityProfile::streamFunctionAt(const point& p) const 
 {
     scalar h = mountain.heightAt(p.x());
-    return -u0 * H * (p.z() - h) / (H - h);
+    if (p.z() > H)
+    {
+        return -u0 * p.z();
+    }
+    else
+    {
+        return -u0 * (H * (p.z() - h) / (H - h));
+    }
 }
 
 point BtfVelocityProfile::pointAtTime(const point& p0, const scalar t) const
