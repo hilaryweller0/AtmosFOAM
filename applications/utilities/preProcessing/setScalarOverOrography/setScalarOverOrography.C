@@ -35,8 +35,6 @@ Description
 #include "mathematicalConstants.H"
 #include "OFstream.H"
 #include "VelocityProfile.H"
-#include "HorizontalVelocityProfile.H"
-#include "SchaerCosVelocityProfile.H"
 #include "Mountain.H"
 
 using namespace Foam::constant::mathematical;
