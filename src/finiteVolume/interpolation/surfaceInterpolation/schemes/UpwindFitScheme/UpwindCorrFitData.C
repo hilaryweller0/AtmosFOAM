@@ -76,6 +76,37 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 
+    const label debugFaceI = 1402;
+    volScalarField ownerWeights
+    (
+        IOobject
+        (
+            "ownerWeights",
+       	    mesh.time().constant(),
+       	    mesh,
+       	    IOobject::NO_READ,
+       	    IOobject::AUTO_WRITE
+        ),
+	mesh,
+	0.0,
+	"fixedValue"
+    );
+
+    volScalarField neiWeights
+    (
+        IOobject
+        (
+            "neiWeights",
+       	    mesh.time().constant(),
+       	    mesh,
+       	    IOobject::NO_READ,
+       	    IOobject::AUTO_WRITE
+        ),
+	mesh,
+	0.0,
+	"fixedValue"
+    );
+
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
     const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
 
@@ -103,6 +134,20 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             extendedUpwindCellToFaceStencilNew,
             Polynomial
         >::calcFit(owncoeffs_[facei], stencilPoints[facei], w[facei], facei);
+
+	if (facei == debugFaceI)
+	{
+		forAll(stencilPoints[facei], stencilI)
+		{
+			forAll(mesh.C(), cellI)
+			{
+				if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
+				{
+					ownerWeights[cellI] = owncoeffs_[facei][stencilI];
+				}
+			}
+		}
+	}
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -138,6 +183,8 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         }
     }
 
+    ownerWeights.write();
+
 
     // Neighbour stencil weights
     // ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -162,6 +209,20 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             extendedUpwindCellToFaceStencilNew,
             Polynomial
         >::calcFit(neicoeffs_[facei], stencilPoints[facei], w[facei], facei);
+
+	if (facei == debugFaceI)
+	{
+		forAll(stencilPoints[facei], stencilI)
+		{
+			forAll(mesh.C(), cellI)
+			{
+				if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
+				{
+					neiWeights[cellI] = neicoeffs_[facei][stencilI];
+				}
+			}
+		}
+	}
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -196,6 +257,8 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             }
         }
     }
+
+    neiWeights.write();
 }
 
 
