@@ -132,6 +132,7 @@ template<class FitDataType, class ExtendedStencil, class Polynomial>
 void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 (
     scalarList& coeffsi,
+    scalarList& wts,
     const List<point>& C,
     const scalar wLin,
     const label facei
@@ -148,7 +149,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     bool pureUpwind = sign((C[0]-p0) & (C[1]-p0)) > 0;
 
     // Setup the point weights
-    scalarList wts(C.size(), scalar(1));
     wts[0] = centralWeight_;
     if (!pureUpwind)
     {

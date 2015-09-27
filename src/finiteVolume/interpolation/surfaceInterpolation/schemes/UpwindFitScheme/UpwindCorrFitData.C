@@ -76,27 +76,12 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 
-    const label debugFaceI = 1402;
+    const label debugFaceI = 4388;
     volScalarField ownerWeights
     (
         IOobject
         (
             "ownerWeights",
-       	    mesh.time().constant(),
-       	    mesh,
-       	    IOobject::NO_READ,
-       	    IOobject::AUTO_WRITE
-        ),
-	mesh,
-	0.0,
-	"fixedValue"
-    );
-
-    volScalarField neiWeights
-    (
-        IOobject
-        (
-            "neiWeights",
        	    mesh.time().constant(),
        	    mesh,
        	    IOobject::NO_READ,
@@ -128,26 +113,27 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
     //Pout<< "-- Owner --" << endl;
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
+        scalarList wts(stencilPoints[facei].size(), scalar(1));
         FitData
         <
             UpwindCorrFitData<Polynomial>,
             extendedUpwindCellToFaceStencilNew,
             Polynomial
-        >::calcFit(owncoeffs_[facei], stencilPoints[facei], w[facei], facei);
+        >::calcFit(owncoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
 
-	if (facei == debugFaceI)
-	{
-		forAll(stencilPoints[facei], stencilI)
-		{
-			forAll(mesh.C(), cellI)
-			{
-				if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
-				{
-					ownerWeights[cellI] = owncoeffs_[facei][stencilI];
-				}
-			}
-		}
-	}
+        if (facei == debugFaceI)
+        {
+            forAll(stencilPoints[facei], stencilI)
+            {
+                forAll(mesh.C(), cellI)
+                {
+                    if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
+                    {
+                        ownerWeights[cellI] = wts[stencilI];
+                    }
+                }
+            }
+        }
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -169,6 +155,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 
             forAll(pw, i)
             {
+                scalarList wts(stencilPoints[facei].size(), scalar(1));
                 FitData
                 <
                     UpwindCorrFitData<Polynomial>,
@@ -176,7 +163,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                     Polynomial
                 >::calcFit
                 (
-                    owncoeffs_[facei], stencilPoints[facei], pw[i], facei
+                    owncoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
                 );
                 facei++;
             }
@@ -203,26 +190,13 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
     //Pout<< "-- Neighbour --" << endl;
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
+        scalarList wts(stencilPoints[facei].size(), scalar(1));
         FitData
         <
             UpwindCorrFitData<Polynomial>,
             extendedUpwindCellToFaceStencilNew,
             Polynomial
-        >::calcFit(neicoeffs_[facei], stencilPoints[facei], w[facei], facei);
-
-	if (facei == debugFaceI)
-	{
-		forAll(stencilPoints[facei], stencilI)
-		{
-			forAll(mesh.C(), cellI)
-			{
-				if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
-				{
-					neiWeights[cellI] = neicoeffs_[facei][stencilI];
-				}
-			}
-		}
-	}
+        >::calcFit(neicoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -244,6 +218,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 
             forAll(pw, i)
             {
+                scalarList wts(stencilPoints[facei].size(), scalar(1));
                 FitData
                 <
                     UpwindCorrFitData<Polynomial>,
@@ -251,14 +226,12 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                     Polynomial
                 >::calcFit
                 (
-                    neicoeffs_[facei], stencilPoints[facei], pw[i], facei
+                    neicoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
                 );
                 facei++;
             }
         }
     }
-
-    neiWeights.write();
 }
 
 

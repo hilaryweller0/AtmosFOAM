@@ -97,12 +97,13 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
     //Pout<< "-- Owner --" << endl;
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
+        scalarList wts(stencilPoints[facei].size(), scalar(1));
         FitData
         <
             UpwindFitData<Polynomial>,
             extendedUpwindCellToFaceStencil,
             Polynomial
-        >::calcFit(owncoeffs_[facei], stencilPoints[facei], w[facei], facei);
+        >::calcFit(owncoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -124,6 +125,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
 
             forAll(pw, i)
             {
+                scalarList wts(stencilPoints[facei].size(), scalar(1));
                 FitData
                 <
                     UpwindFitData<Polynomial>,
@@ -131,7 +133,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
                     Polynomial
                 >::calcFit
                 (
-                    owncoeffs_[facei], stencilPoints[facei], pw[i], facei
+                    owncoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
                 );
                 facei++;
             }
@@ -156,12 +158,13 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
     //Pout<< "-- Neighbour --" << endl;
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
+        scalarList wts(stencilPoints[facei].size(), scalar(1));
         FitData
         <
             UpwindFitData<Polynomial>,
             extendedUpwindCellToFaceStencil,
             Polynomial
-        >::calcFit(neicoeffs_[facei], stencilPoints[facei], w[facei], facei);
+        >::calcFit(neicoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
@@ -183,6 +186,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
 
             forAll(pw, i)
             {
+                scalarList wts(stencilPoints[facei].size(), scalar(1));
                 FitData
                 <
                     UpwindFitData<Polynomial>,
@@ -190,7 +194,7 @@ void Foam::UpwindFitData<Polynomial>::calcFit()
                     Polynomial
                 >::calcFit
                 (
-                    neicoeffs_[facei], stencilPoints[facei], pw[i], facei
+                    neicoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
                 );
                 facei++;
             }
