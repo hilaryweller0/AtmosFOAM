@@ -270,6 +270,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             }
         }
     }
+    neiWeights.write();
 }
 
 
