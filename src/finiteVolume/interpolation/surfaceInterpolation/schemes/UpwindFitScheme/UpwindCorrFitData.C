@@ -76,12 +76,28 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 
-    const label debugFaceI = 4388;
+    const label debugFaceI = 1401;
+    //const label debugFaceI = 1997;
     volScalarField ownerWeights
     (
         IOobject
         (
             "ownerWeights",
+       	    mesh.time().constant(),
+       	    mesh,
+       	    IOobject::NO_READ,
+       	    IOobject::AUTO_WRITE
+        ),
+	mesh,
+	0.0,
+	"fixedValue"
+    );
+
+    volScalarField neiWeights
+    (
+        IOobject
+        (
+            "neiWeights",
        	    mesh.time().constant(),
        	    mesh,
        	    IOobject::NO_READ,
@@ -129,7 +145,11 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                 {
                     if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
                     {
-                        ownerWeights[cellI] = wts[stencilI];
+                        ownerWeights[cellI] = owncoeffs_[facei][stencilI];
+                        if (stencilI == 0)
+                        {
+                            ownerWeights[cellI] += 1.0; // re-add upwind weight
+                        }
                     }
                 }
             }
@@ -197,6 +217,24 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             extendedUpwindCellToFaceStencilNew,
             Polynomial
         >::calcFit(neicoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
+
+        if (facei == debugFaceI)
+        {
+            forAll(stencilPoints[facei], stencilI)
+            {
+                forAll(mesh.C(), cellI)
+                {
+                    if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
+                    {
+                        neiWeights[cellI] = neicoeffs_[facei][stencilI];
+                        if (stencilI == 0)
+                        {
+                            neiWeights[cellI] += 1.0; // re-add upwind weight
+                        }
+                    }
+                }
+            }
+        }
 
         //Pout<< "    facei:" << facei
         //    << " at:" << mesh.faceCentres()[facei] << endl;
