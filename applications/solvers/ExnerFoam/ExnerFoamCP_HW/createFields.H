@@ -161,7 +161,7 @@ surfaceScalarField Vu
 );
 
 // Perpendicular component of the momentum
-surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
+//surfaceVectorField vperp("vperp", Uf - (Uf & H.delta())*H.delta()/sqr(H.magd()));
 
 // Rates of change for Crank-Nicholson
 surfaceScalarField dVdt
