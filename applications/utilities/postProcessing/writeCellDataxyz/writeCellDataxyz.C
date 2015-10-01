@@ -110,6 +110,16 @@ int main(int argc, char *argv[])
                    << mesh.C()[celli][2] << "  " << vf[celli] << endl;
             }
         }
+        else if (fieldHeader.headerClassName() == "surfaceScalarField")
+        {
+            surfaceScalarField sf(fieldHeader, mesh);
+
+            for(label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
+            {
+                os << mesh.Cf()[faceI][0] << "  " << mesh.Cf()[faceI][1] << "  "
+                   << mesh.Cf()[faceI][2] << "  " << sf[faceI] << endl;
+            }
+        }
         else if (fieldHeader.headerClassName() == "surfaceVectorField")
         {
             surfaceVectorField vf(fieldHeader, mesh);

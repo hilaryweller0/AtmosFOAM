@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
+    #include "readEnvironmentalProperties.H"
     #include "createFields.H"
 
     Info<< "\nCalculating advection\n" << endl;
@@ -51,18 +52,22 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        /*solve
-        (
-            fvc::ddt(T)
-            + (U & fvc::grad(T))
-            ==
-            0
-        );*/
-        T = T.oldTime() - dt * (U & fvc::grad(T));
-        T.correctBoundaryConditions();
+        for (int corr=0; corr < 3; corr++)
+        {
+            Tf = Tf.oldTime() - 0.5*dt *
+            (
+                (Uf & fvc::interpolate(fvc::grad(Tf))) + 
+                (Uf & fvc::interpolate(fvc::grad(Tf.oldTime())))
+            );
+
+	    bf = Tf * gUnitNormal;
+	    b = fvc::reconstruct(bf * mesh.magSf());
+	    T = b & ghat;
+	    Tf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(T, "T_from_b");
+        }
         
-        Info << " T goes from " << min(T.internalField()) << " to "
-             << max(T.internalField()) << endl;
+        Info << " Tf goes from " << min(Tf.internalField()) << " to "
+             << max(Tf.internalField()) << endl;
         runTime.write();
     }
 

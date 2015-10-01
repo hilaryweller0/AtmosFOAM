@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,45 +21,55 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Global
-    CourantNo
+Application
+    advectionFoam
 
 Description
-    Calculates and outputs the mean and maximum Courant Numbers and Ndt
+    Solves a transport equation for a passive scalar using explicit leap-frog
+    time-stepping or RK2
 
 \*---------------------------------------------------------------------------*/
 
-scalar CoNum = 0.0;
-scalar meanCoNum = 0.0;
-scalar maxNdt = 0.0;
+#include "fvCFD.H"
+#include "OFstream.H"
 
-if (mesh.nInternalFaces())
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+int main(int argc, char *argv[])
 {
-    scalarField sumPhi
-    (
-        fvc::surfaceSum(mag(U))().internalField()
-      / rho.internalField()
-    );
+    #include "setRootCase.H"
+    #include "createTime.H"
+    #include "createMesh.H"
+    #define dt runTime.deltaT()
+    #include "createFields.H"
 
-    CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
+    Info<< "\nCalculating advection\n" << endl;
 
-    meanCoNum =
-        0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+    #include "CourantNo.H"
 
-    volScalarField Ndt
-    (
-        "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(thetaf))/theta))
-    );
-    maxNdt = gMax(Ndt);
+    while (runTime.loop())
+    {
+        Info<< "Time = " << runTime.timeName() << nl << endl;
+
+        /*solve
+        (
+            fvm::ddt(T)
+            + (U & fvc::grad(T))
+            ==
+            0
+        );*/
+        T = T.oldTime() - dt * (U & fvc::grad(T));
+        T.correctBoundaryConditions();
+        
+        Info << " T goes from " << min(T.internalField()) << " to "
+             << max(T.internalField()) << endl;
+        runTime.write();
+    }
+
+    Info<< "End\n" << endl;
+
+    return 0;
 }
 
-Info<< "Courant Number mean: " << meanCoNum
-    << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
-
-courantFile << runTime.timeName() << ' '
-            << meanCoNum << ' '
-            << CoNum << ' '
-            << maxNdt << endl;
 
 // ************************************************************************* //

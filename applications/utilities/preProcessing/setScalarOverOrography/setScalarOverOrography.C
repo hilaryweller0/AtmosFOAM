@@ -35,8 +35,6 @@ Description
 #include "mathematicalConstants.H"
 #include "OFstream.H"
 #include "VelocityProfile.H"
-#include "HorizontalVelocityProfile.H"
-#include "SchaerCosVelocityProfile.H"
 #include "Mountain.H"
 
 using namespace Foam::constant::mathematical;
@@ -106,6 +104,15 @@ int main(int argc, char *argv[])
         dimensionedScalar(tracerFieldFileName, dimless, scalar(0)),
         "zeroGradient"
     );
+
+    Info << "Creating initial tracer field " << (tracerFieldFileName + "f") << endl;
+    surfaceScalarField Tf
+    (
+        IOobject(tracerFieldFileName + "f", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+        mesh,
+        dimensionedScalar(tracerFieldFileName + "f", dimless, scalar(0)),
+        "fixedValue"
+    );
     
     // Set the tracer for each time specified
     for (label i=startTime; i<endTime; i++)
@@ -113,15 +120,14 @@ int main(int argc, char *argv[])
         runTime.setTime(Times[i], i);
 
         Info<< "Time = " << runTime.timeName() << endl;
+            // Centre of the tracer for this time step
+        const point& advectedPt = velocityProfile->pointAtTime(point(x0, 0, z0), runTime.value());
 
         // Calculating T
         forAll(T, cellI)
         {
             const point& c = mesh.C()[cellI];
             
-            // Centre of the tracer for this time step
-            const point& advectedPt = velocityProfile->pointAtTime(point(x0, 0, z0), runTime.value());
-        
             // Define r as used in the initial tracer field
             scalar r = Foam::sqrt(sqr((c.x()-advectedPt.x())/Ax)+sqr((c.z()-advectedPt.z())/Az));
         
@@ -133,6 +139,22 @@ int main(int argc, char *argv[])
         }
         T.correctBoundaryConditions();
         T.write();
+
+        // Calculating Tf
+        forAll(Tf, faceI)
+        {
+            const point& c = mesh.Cf()[faceI];
+            
+            // Define r as used in the initial tracer field
+            scalar r = Foam::sqrt(sqr((c.x()-advectedPt.x())/Ax)+sqr((c.z()-advectedPt.z())/Az));
+        
+            if (r <= 1)
+            {
+                Tf[faceI] = rho0*sqr(Foam::cos(M_PI*r/2));
+            }
+            else Tf[faceI] = 0;
+        }
+        Tf.write();
     }
     
     Info<< "End\n" << endl;
