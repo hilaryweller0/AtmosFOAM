@@ -97,6 +97,7 @@ scalar maxSsf = 0;
         
         if (plotCell)
         {
+            if (!plotZeroValuePolys && mag(ssf[celli]) < 1e-14) continue;
             for(label faci = 0; faci < mesh.cells()[celli].size(); faci++)
             {
                 bool plotFace = true;

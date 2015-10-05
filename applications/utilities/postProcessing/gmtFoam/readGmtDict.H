@@ -27,6 +27,7 @@ const bool plotBoundaryDots = gmtDict.lookupOrDefault<bool>
 (
     "plotBoundaryDots", true
 );
+const bool plotZeroValuePolys = gmtDict.lookupOrDefault<bool>("plotZeroValuePolys", true);
 const word patchName = gmtDict.found("patch") ?
                        word(gmtDict.lookup("patch")) : "";
 const word boundaryPatchName = gmtDict.lookupOrDefault<word>("boundaryPatch", "");
