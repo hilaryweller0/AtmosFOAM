@@ -11,6 +11,7 @@ class ThermalProfile
             const dimensionedVector g,
             const dimensionedScalar T0);
     scalar thetaAt(const point& p) const;
+    vector thetaGradAt(const point& p) const;
 
     private:
     const dimensionedVector g;

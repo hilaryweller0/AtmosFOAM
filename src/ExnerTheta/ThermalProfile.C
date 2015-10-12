@@ -41,3 +41,22 @@ scalar ThermalProfile::thetaAt(const point& p) const
     return -1;
 }
 
+vector ThermalProfile::thetaGradAt(const point& p) const
+{
+    const scalar z = p.z();
+    const scalar theta0 = T0.value();
+
+    for (label il = 0; il < nLayers.size(); il++)
+    {
+        if (z >= zLayers[il] && z < zLayers[il+1])
+        {
+            const scalar N2 = sqr(nLayers[il]);
+            const scalar gmag = mag(g).value();
+            const scalar dtheta_dz = theta0 * N2 / gmag * Foam::exp(N2 / gmag * z);
+            return vector(0, 0, dtheta_dz);
+        }
+    }
+    FatalErrorIn("ThermalProfile") << "height " << z << " not found in levels "
+        << zLayers << exit(FatalError);
+    return vector(-1,-1,-1);
+}

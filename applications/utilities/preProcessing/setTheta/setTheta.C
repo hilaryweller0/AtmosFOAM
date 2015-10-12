@@ -34,6 +34,7 @@ Description
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "ThermalProfile.H"
+#include "fixedGradientFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -108,9 +109,21 @@ int main(int argc, char *argv[])
         forAll(theta.boundaryField(), patchI)
         {
             fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
-            forAll(thetap, facei)
+            if (thetap.type() == "fixedGradient")
             {
-                thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
+                fixedGradientFvPatchField<scalar>& thetag = dynamic_cast<fixedGradientFvPatchField<scalar>& >(thetap);
+                forAll(thetag.gradient(), facei)
+                {
+                    const vectorField nf = thetap.patch().nf();
+                    thetag.gradient()[facei] = nf[facei] & profile.thetaGradAt(thetap.patch().Cf()[facei]);
+                }
+            }
+            else
+            {
+                forAll(thetap, facei)
+                {
+                    thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
+                }
             }
         }
     }
