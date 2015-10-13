@@ -65,19 +65,14 @@ int main(int argc, char *argv[])
     const SchaerExpMountain mountain(dict);
     const BTF btf(mountain, dict);
         
-    Info<< "Reading theta_init\n" << endl;
-    volScalarField theta_init
-    (
-        IOobject("theta_init", runTime.constant(), mesh, IOobject::MUST_READ),
-        mesh
-    );
 
     // theta
     Info<< "Creating theta\n" << endl;
     volScalarField theta
     (
-        IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
-        theta_init
+        IOobject("theta", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("theta", dimTemperature, 0.0)
     );
 
     forAll(theta, cellI)
