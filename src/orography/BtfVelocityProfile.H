@@ -1,5 +1,5 @@
-#ifndef SCHAER_COS_VELOCITY_PROFILE_H
-#define SCHAER_COS_VELOCITY_PROFILE_H
+#ifndef BTF_VELOCITY_PROFILE_H
+#define BTF_VELOCITY_PROFILE_H
 
 #include "fvCFD.H"
 #include "VelocityProfile.H"
