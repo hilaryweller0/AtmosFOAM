@@ -79,7 +79,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
             // Flux out of owner. Use upwind (= owner side) stencil.
             const List<Type>& stField = ownFld[faceI];
             const List<scalar>& stWeight = ownWeights[faceI];
-            if (faceI == debugFaceI) Info << "*** using owner side" << endl;
+            //if (faceI == debugFaceI) Info << "*** using owner side" << endl;
 
             forAll(stField, i)
             {
@@ -90,7 +90,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
         {
             const List<Type>& stField = neiFld[faceI];
             const List<scalar>& stWeight = neiWeights[faceI];
-            if (faceI == debugFaceI) Info << "*** using neighbour side" << endl;
+            //if (faceI == debugFaceI) Info << "*** using neighbour side" << endl;
 
             forAll(stField, i)
             {
