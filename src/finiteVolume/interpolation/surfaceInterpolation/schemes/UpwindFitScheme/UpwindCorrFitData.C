@@ -76,8 +76,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
 
-    const label debugFaceI = 1401;
-    //const label debugFaceI = 1997;
+    const label debugFaceI = 1798;
     volScalarField ownerWeights
     (
         IOobject
@@ -149,6 +148,22 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                         if (stencilI == 0)
                         {
                             ownerWeights[cellI] += 1.0; // re-add upwind weight
+                        }
+                    }
+                }
+                forAll(mesh.boundary(), patchI)
+                {
+                    const fvPatch& boundaryPatch = mesh.boundary()[patchI];
+                    fvPatchField<scalar>& weightsPatch = ownerWeights.boundaryField()[patchI];
+                    forAll(boundaryPatch.Cf(), boundaryFaceI)
+                    {
+                        if (boundaryPatch.Cf()[boundaryFaceI] == stencilPoints[facei][stencilI])
+                        {
+                            weightsPatch[boundaryFaceI] = owncoeffs_[facei][stencilI];
+                            if (stencilI == 0)
+                            {
+                                weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight
+                            }
                         }
                     }
                 }
@@ -230,6 +245,22 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                         if (stencilI == 0)
                         {
                             neiWeights[cellI] += 1.0; // re-add upwind weight
+                        }
+                    }
+                }
+                forAll(mesh.boundary(), patchI)
+                {
+                    const fvPatch& boundaryPatch = mesh.boundary()[patchI];
+                    fvPatchField<scalar>& weightsPatch = neiWeights.boundaryField()[patchI];
+                    forAll(boundaryPatch.Cf(), boundaryFaceI)
+                    {
+                        if (boundaryPatch.Cf()[boundaryFaceI] == stencilPoints[facei][stencilI])
+                        {
+                            weightsPatch[boundaryFaceI] = neicoeffs_[facei][stencilI];
+                            if (stencilI == 0)
+                            {
+                                weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight
+                            }
                         }
                     }
                 }
