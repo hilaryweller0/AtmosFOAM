@@ -132,6 +132,19 @@ int main(int argc, char *argv[])
                    << vf[faceI][1] << "  "
                    << vf[faceI][2] << endl;
             }
+            forAll(mesh.boundary(), patchI)
+            {
+                const fvPatch& patch = mesh.boundary()[patchI];
+                const fvsPatchField<vector>& boundaryField = vf.boundaryField()[patchI];
+                forAll(patch, faceI)
+                {
+                    os << patch.Cf()[faceI][0] << "  " << patch.Cf()[faceI][1] <<"  "
+                       << patch.Cf()[faceI][2] << "  "
+                       << boundaryField[faceI][0] << "  "
+                       << boundaryField[faceI][1] << "  "
+                       << boundaryField[faceI][2] << endl;
+                }
+            }
         }
         else if (fieldHeader.headerClassName() == "volVectorField")
         {
