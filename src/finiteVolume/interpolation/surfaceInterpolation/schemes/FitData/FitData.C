@@ -238,10 +238,21 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         }
         else
         {
+            // go through all coeffsi except the first, add up all positive coeffs
+            scalar positiveCoeffSum = 0;
+            forAll(coeffsi, i)
+            {
+                if (i > 0 && coeffsi[i] > 0)
+                {
+                    positiveCoeffSum += coeffsi[i];
+                }
+            }
+
             // Upwind: weight on face is 0
             goodFit =
                 (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
              && coeffsi[0] >= coeffsi[1]
+             && coeffsi[0] > positiveCoeffSum
              && maxCoeffi <= 1;
         }
 
