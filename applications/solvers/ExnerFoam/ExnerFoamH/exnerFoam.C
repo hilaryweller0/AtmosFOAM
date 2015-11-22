@@ -125,8 +125,6 @@ int main(int argc, char *argv[])
                 )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
                 "interpolate(theta)"
             );
-//            thetaf.oldTime() = fvc::interpolate(theta)
-//                            - (1-offCentre)*dt*(Uf & fvc::interpolate(fvc::grad(theta)));
         }
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
@@ -140,12 +138,6 @@ int main(int argc, char *argv[])
         #include "rhoThetaEqn.H"
         
         // Updates for next time step
-//        if (Charney-Phillips)
-//        {
-//            thetaf -= dt*offCentre*V/(rhof*H.magd())*fvc::snGrad(theta);
-//            theta = fvc::faceToCell(thetaf);
-//        }
-//        else
         {
             thetaf = fvc::interpolate(theta);
         }
