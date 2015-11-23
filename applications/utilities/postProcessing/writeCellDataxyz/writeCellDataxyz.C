@@ -109,6 +109,17 @@ int main(int argc, char *argv[])
                 os << mesh.C()[celli][0] << "  " << mesh.C()[celli][1] << "  "
                    << mesh.C()[celli][2] << "  " << vf[celli] << endl;
             }
+            forAll(mesh.boundary(), patchI)
+            {
+                const fvPatch& patch = mesh.boundary()[patchI];
+                const fvPatchField<scalar>& boundaryField = vf.boundaryField()[patchI];
+                forAll(patch, faceI)
+                {
+                    os << patch.Cf()[faceI][0] << "  " << patch.Cf()[faceI][1] <<"  "
+                       << patch.Cf()[faceI][2] << "  "
+                       << boundaryField[faceI] << endl;
+                }
+            }
         }
         else if (fieldHeader.headerClassName() == "surfaceScalarField")
         {
