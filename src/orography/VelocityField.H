@@ -13,10 +13,15 @@ class VelocityField
     void applyTo(GeometricField<Type, PatchField, GeoMesh>& field) const
     {
         applyToInternalField(field);
-        applyToBoundary("inlet", field);
-        applyToBoundary("outlet", field);
-        applyToBoundary("top", field);
-        applyToBoundary("ground", field);
+        
+        // Apply to boundaries
+        forAll(field.boundaryField(), patchI)
+        {
+            if (!isA<emptyPolyPatch>(field.mesh().boundaryMesh()[patchI]))
+            {
+                applyToBoundary(field, patchI);
+            }
+        }
     }
 
     private:
@@ -67,10 +72,10 @@ class VelocityField
     template<template<class> class PatchField, class GeoMesh>
     void applyToBoundary
     (
-        const word name, GeometricField<vector, PatchField, GeoMesh>& field
+        GeometricField<vector, PatchField, GeoMesh>& field,
+        const label boundaryI
     ) const
     {
-        const label boundaryI = field.mesh().boundaryMesh().findPatchID(name);
         forAll(field.boundaryField()[boundaryI], cellI)
         {
             const point& face = field.mesh().Cf().boundaryField()[boundaryI][cellI];
@@ -80,10 +85,9 @@ class VelocityField
     
     //- The flux field from the streamfunction by application of Stokes' theorem
     //- for the boundary
-    void applyToBoundary(const word name, surfaceScalarField& phi) const
+    void applyToBoundary(surfaceScalarField& phi, const label patchI) const
     {
         const fvMesh& mesh = phi.mesh();
-        const label patchI = mesh.boundaryMesh().findPatchID(name);
         scalarField& bf = phi.boundaryField()[patchI];
         forAll(bf, faceI)
         {

@@ -7,10 +7,8 @@
 
     if (SIgravityWaves)
     {
-        G =1/(G - sqr(dt*offCentre)*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner));
-        //vperp = Uf - (Uf & H.delta())*H.delta()/sqr(H.magd());
+        G ==1/(G - sqr(dt*offCentre)*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner));
         thetaf = thetaf.oldTime()
-               //- offCentre*dt*(vperp & fvc::interpolate(fvc::grad(theta)));
                - offCentre*dt*
                  (
                     (Uf & fvc::interpolate(fvc::grad(theta)))
@@ -20,7 +18,7 @@
     else
     {
         thetaf = fvc::interpolate(theta);
-        G = 1/G;
+        G == 1/G;
     }
 
     for (int corr=0; corr<nCorr; corr++)
@@ -41,21 +39,19 @@
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
         surfaceScalarField gradPcoeff = G*offCentre*Cp*dt
-                                        *rhof*thetaf/**H.magd()*/;
+                                        *rhof*thetaf;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
             U = H.ddirToFlux(V)
               - H.ddirToFluxCorr(gradPcoeff*fvc::snGrad(Exner)*H.magd());
-              //- H.ddirToFlux(gradPcoeff*fvc::snGrad(Exner)*H.magd())
-              //+ gradPcoeff*fvc::snGrad(Exner)*mesh.magSf();
 
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
               + (1-offCentre)*divU
               + offCentre*fvc::div(U)
-              - fvm::laplacian(offCentre*gradPcoeff/**H.Hdiag()/mesh.magSf()*/, Exner)
+              - fvm::laplacian(offCentre*gradPcoeff, Exner)
             );
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
@@ -72,15 +68,7 @@
                 U += ExnerEqn.flux()/offCentre;
                 V -= gradPcoeff*fvc::snGrad(Exner)*H.magd();
                 u = H.reconstructd(V)/rho;
-//                volVectorField uU("uU", fvc::reconstruct(U)/rho);
-//                uU.write();
-//                u.write();
-//                U.write();
-//                V.write();
-//                FatalErrorIn("") << exit(FatalError);
                 Uf = fvc::interpolate(u);
-                //thetaf -= dt*offCentre*V/(rhof*H.magd())*fvc::snGrad(theta);
-                //theta = fvc::faceToCell(thetaf);
             }
         }
     }
