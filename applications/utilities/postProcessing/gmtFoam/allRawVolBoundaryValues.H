@@ -45,7 +45,8 @@ scalar maxSsf = -VGREAT;
         fvPatchField<scalar>& patch = vf.boundaryField()[patchI];
         forAll(patch, faceI)
         {
-            face f = mesh.faces()[faceI]; // FIXME: not convinced this is correct
+            label patchOffset = mesh.boundary()[patchI].start();
+            face f = mesh.faces()[patchOffset + faceI];
             labelList f2(f.size()+1);
             forAll(f,ip) {f2[ip] = f[ip];}
             f2[f.size()] = f[0];
@@ -116,4 +117,4 @@ systemVerbose(systemCall);
 
 // delete temporary files
 systemCall = "rm colourScale.cpt '" + tmpFile + "' ";
-//systemVerbose(systemCall);
+systemVerbose(systemCall);
