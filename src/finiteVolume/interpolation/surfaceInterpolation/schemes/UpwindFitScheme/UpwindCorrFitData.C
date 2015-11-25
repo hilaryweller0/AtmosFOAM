@@ -75,7 +75,7 @@ template<class Polynomial>
 void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
-    const dictionary& debugDict = mesh.solutionDict().subDict("debug");
+    const dictionary& debugDict = mesh.solutionDict().subOrEmptyDict("debug");
 
     label debugFaceI = -1;
     debugDict.readIfPresent("interpolationWeightsFaceIndex", debugFaceI, false, false);
