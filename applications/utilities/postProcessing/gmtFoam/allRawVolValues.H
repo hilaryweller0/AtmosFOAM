@@ -5,8 +5,6 @@ bool autoscale = false;
 
 scalar minSsf = 0;
 scalar maxSsf = 0;
-//scalar l1 = 0;
-//scalar l2 = 0;
 {
     OFstream os(tmpFile);
     os << "#x    y    " << vf.name() << endl;
@@ -20,9 +18,6 @@ scalar maxSsf = 0;
 
     minSsf = min(ssf);
     maxSsf = max(ssf);
-//    scalar Vtot = sum(mesh.V()).value();
-//    l1 = sum(mag(ssf)*mesh.V())/Vtot;
-//    l2 = Foam::sqrt(sum(sqr(ssf)*mesh.V())/Vtot);
     if (colourMin == colourMax)
     {
         autoscale = true;
@@ -175,20 +170,6 @@ else
                   /stringScalar(-colourStep,3) + " > colourScale.cpt";
 }
 systemVerbose(systemCall);
-/*if (handEditColourScale != "false" && handEditColourScale != "none")
-{
-    if (handEditColourScale == "true")
-    {
-        systemCall = "vi colourScale.cpt";
-        systemVerbose(systemCall);
-    }
-    else
-    {
-        systemCall = handEditColourScale + " colourScale.cpt";
-        systemVerbose(systemCall);
-    }
-}
-*/
 // main colour plot
 systemCall = "psxy '" + tmpFile + "' -CcolourScale.cpt"
                            + " -J -R -h1 -L -O -K >> " + epsFile;
@@ -240,12 +221,10 @@ if (annotate == "minMax")
                + stringScalar(annotateY) + " 12 0 Times-Roman TL "
                + "min = " + stringScalar(minSsf,5)
                + "    max = " + stringScalar(maxSsf,5);
-//               + "    L@-1@- = " + stringScalar(l1,4)
-//               + "    L@-2@- = " + stringScalar(l2,4);
     systemCall += "' | pstext -J -R -h0 -N -O -K >>" + epsFile;
     systemVerbose(systemCall);
 }
 
 // delete temporary files
 systemCall = "rm colourScale.cpt '" + tmpFile + "' ";
-systemVerbose(systemCall);
+//systemVerbose(systemCall);

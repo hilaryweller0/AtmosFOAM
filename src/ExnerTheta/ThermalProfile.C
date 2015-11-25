@@ -37,7 +37,7 @@ scalar ThermalProfile::thetaAt(const point& p) const
             (sqr(nLayers[il])/mag(g.value())*(zLayers[il+1]-zLayers[il]));
     }
     FatalErrorIn("ThermalProfile") << "height " << z << " not found in levels "
-        << zLayers << exit(FatalError);
+        << zLayers << " at point " << p << exit(FatalError);
     return -1;
 }
 

@@ -75,13 +75,19 @@ template<class Polynomial>
 void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 {
     const fvMesh& mesh = this->mesh();
+    const dictionary& debugDict = mesh.solutionDict().subOrEmptyDict("debug");
 
-    const label debugFaceI = 1798;
+    label debugFaceI = -1;
+    debugDict.readIfPresent("interpolationWeightsFaceIndex", debugFaceI, false, false);
+
+    std::ostringstream ooss;
+    ooss << "ownerWeights" << debugFaceI;
+
     volScalarField ownerWeights
     (
         IOobject
         (
-            "ownerWeights",
+            ooss.str(),
        	    mesh.time().constant(),
        	    mesh,
        	    IOobject::NO_READ,
@@ -92,11 +98,14 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 	"fixedValue"
     );
 
+    std::ostringstream noss;
+    noss << "neiWeights" << debugFaceI;
+
     volScalarField neiWeights
     (
         IOobject
         (
-            "neiWeights",
+            noss.str(),
        	    mesh.time().constant(),
        	    mesh,
        	    IOobject::NO_READ,

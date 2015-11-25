@@ -220,6 +220,11 @@ int main(int argc, char *argv[])
 #                               include "rawVolValues.H"
                             }
                             break;
+                        case FieldToPlot::RAW_BOUNDARY_VALUES:
+                            {
+#                               include "allRawVolBoundaryValues.H"
+                            }
+                            break;
                         case FieldToPlot::WRITECONTOURS:
                             {
 #                           include "writeContours.H"
