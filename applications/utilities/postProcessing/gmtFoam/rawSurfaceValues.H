@@ -154,7 +154,7 @@ systemVerbose(systemCall);
 
 // main colour plot
 systemCall = "psxy '" + tmpFile + "' -CcolourScale.cpt"
-                           + " -J -R -h1 -W2pt -O -K >> " + epsFile;
+                           + " -J -R -h1 -W2p -O -K >> " + epsFile;
 systemVerbose(systemCall);
 
 // Plot legend

@@ -70,6 +70,7 @@ public:
         VECTOR_END_POINTS,
         VECTOR_CONTOURS,
         RAW_VALUES,
+        RAW_BOUNDARY_VALUES,
         RAW_FLUXES,
         MESH,
         MESHPOINTS,
