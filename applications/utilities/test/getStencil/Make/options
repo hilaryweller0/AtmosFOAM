@@ -4,6 +4,8 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude
 
 EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lfiniteVolumeAtmos \
     -lOpenFOAM \
     -lfiniteVolume
 

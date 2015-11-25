@@ -15,11 +15,12 @@ interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
 extendedStencil = fvMesh/extendedStencil
 
 cellToFace = $(extendedStencil)/cellToFace
+$(cellToFace)/globalIndexStencils/oneDCellToFaceStencil.C
+$(cellToFace)/globalIndexStencils/cellToFaceStencil.C
 $(cellToFace)/extendedUpwindCellToFaceStencilNew.C
 $(cellToFace)/MeshObjects/pureUpwindCPCCellToFaceStencilObject.C
 $(cellToFace)/MeshObjects/upwindOneDCellToFaceStencilObject.C
 $(cellToFace)/MeshObjects/upwindCPCCellToFaceStencilNewObject.C
-$(cellToFace)/globalIndexStencils/oneDCellToFaceStencil.C
 
 faceToFace = $(extendedStencil)/faceToFace
 $(faceToFace)/fullStencils/faceToFaceStencil.C
