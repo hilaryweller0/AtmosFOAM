@@ -45,10 +45,8 @@ int main(int argc, char *argv[])
 
 	forAll(newPoints, pointIdx)
 	{
-        scalar x = newPoints[pointIdx].x();
-        scalar z = newPoints[pointIdx].z();
-        scalar h = mountain->heightAt(x);
-        if (z < h)
+        scalar h = mountain->heightAt(newPoints[pointIdx]);
+        if (newPoints[pointIdx].z() < h)
         {
             newPoints[pointIdx].z() = h;
         }
