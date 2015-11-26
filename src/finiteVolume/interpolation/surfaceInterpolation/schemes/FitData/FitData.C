@@ -146,7 +146,9 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     // Reference point
     point p0 = this->mesh().faceCentres()[facei];
 
-    bool pureUpwind = sign((C[0]-p0) & (C[1]-p0)) > 0;
+    scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[0]-p0);
+    scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
+    bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
 
     // Setup the point weights
     wts[0] = centralWeight_;
