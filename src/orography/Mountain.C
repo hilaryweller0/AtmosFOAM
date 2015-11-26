@@ -3,7 +3,7 @@
 
 SchaerFineMountain::SchaerFineMountain(const scalar lambda) : lambda(lambda) {};
 
-scalar SchaerFineMountain::heightAt(const scalar x) const
+scalar SchaerFineMountain::heightAt(const point& p) const
 {
-        return sqr(Foam::cos(M_PI * x / lambda));
+        return sqr(Foam::cos(M_PI * p.x() / lambda));
 }
