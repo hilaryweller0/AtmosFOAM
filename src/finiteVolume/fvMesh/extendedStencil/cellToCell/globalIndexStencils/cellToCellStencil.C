@@ -23,16 +23,15 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "cellToFaceStencil.H"
+#include "cellToCellStencil.H"
+#include "syncTools.H"
 #include "SortableList.H"
 #include "emptyPolyPatch.H"
-#include "syncTools.H"
-#include "dummyTransform.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 // Merge two list and guarantee global0,global1 are first.
-void Foam::cellToFaceStencil::merge
+void Foam::cellToCellStencil::merge
 (
     const label global0,
     const label global1,
@@ -124,7 +123,7 @@ void Foam::cellToFaceStencil::merge
 
     if (resultI != result.size())
     {
-        FatalErrorIn("cellToFaceStencil::merge(..)")
+        FatalErrorIn("cellToCellStencil::merge(..)")
             << "problem" << abort(FatalError);
     }
 
@@ -133,7 +132,7 @@ void Foam::cellToFaceStencil::merge
 
 
 // Merge two list and guarantee globalI is first.
-void Foam::cellToFaceStencil::merge
+void Foam::cellToCellStencil::merge
 (
     const label globalI,
     const labelList& pGlobals,
@@ -168,12 +167,14 @@ void Foam::cellToFaceStencil::merge
 }
 
 
-void Foam::cellToFaceStencil::validBoundaryFaces(boolList& isValidBFace) const
+void Foam::cellToCellStencil::validBoundaryFaces(boolList& isValidBFace) const
 {
     //const polyBoundaryMesh& patches = mesh().boundaryMesh();
 
+    // Make sure that  no boundary faces are included in the stencil
+
     isValidBFace.setSize(mesh().nFaces()-mesh().nInternalFaces(), false);
-    Info << "cellToFaceStencil::validBoundaryFaces: No boundary faces in stencils" << endl;
+    Info << "cellToCellStencil::validBoundaryFaces: No boundary faces in stencils" << endl;
 
 //    forAll(patches, patchI)
 //    {
@@ -192,7 +193,7 @@ void Foam::cellToFaceStencil::validBoundaryFaces(boolList& isValidBFace) const
 
 
 Foam::autoPtr<Foam::indirectPrimitivePatch>
-Foam::cellToFaceStencil::allCoupledFacesPatch() const
+Foam::cellToCellStencil::allCoupledFacesPatch() const
 {
     const polyBoundaryMesh& patches = mesh().boundaryMesh();
 
@@ -240,7 +241,7 @@ Foam::cellToFaceStencil::allCoupledFacesPatch() const
 }
 
 
-void Foam::cellToFaceStencil::unionEqOp::operator()
+void Foam::cellToCellStencil::unionEqOp::operator()
 (
     labelList& x,
     const labelList& y
@@ -265,7 +266,7 @@ void Foam::cellToFaceStencil::unionEqOp::operator()
 }
 
 
-void Foam::cellToFaceStencil::insertFaceCells
+void Foam::cellToCellStencil::insertFaceCells
 (
     const label exclude0,
     const label exclude1,
@@ -317,7 +318,7 @@ void Foam::cellToFaceStencil::insertFaceCells
 }
 
 
-Foam::labelList Foam::cellToFaceStencil::calcFaceCells
+Foam::labelList Foam::cellToCellStencil::calcFaceCells
 (
     const boolList& isValidBFace,
     const labelList& faceLabels,
@@ -339,178 +340,9 @@ Foam::labelList Foam::cellToFaceStencil::calcFaceCells
 }
 
 
-// Calculates per face a list of global cell/face indices.
-void Foam::cellToFaceStencil::calcFaceStencil
-(
-    const labelListList& globalCellCells,
-    labelListList& faceStencil
-) const
-{
-    const polyBoundaryMesh& patches = mesh_.boundaryMesh();
-    const label nBnd = mesh_.nFaces()-mesh_.nInternalFaces();
-    const labelList& own = mesh_.faceOwner();
-    const labelList& nei = mesh_.faceNeighbour();
-
-
-    // Determine neighbouring global cell Cells
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    labelListList neiGlobalCellCells(nBnd);
-    forAll(patches, patchI)
-    {
-        const polyPatch& pp = patches[patchI];
-
-        if (pp.coupled())
-        {
-            label faceI = pp.start();
-
-            forAll(pp, i)
-            {
-                neiGlobalCellCells[faceI-mesh_.nInternalFaces()] =
-                    globalCellCells[own[faceI]];
-                faceI++;
-            }
-        }
-    }
-    //syncTools::swapBoundaryFaceList(mesh_, neiGlobalCellCells);
-    syncTools::syncBoundaryFaceList
-    (
-        mesh_,
-        neiGlobalCellCells,
-        eqOp<labelList>(),
-        dummyTransform()
-    );
-
-
-
-    // Construct stencil in global numbering
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    faceStencil.setSize(mesh_.nFaces());
-
-    labelHashSet faceStencilSet;
-
-    for (label faceI = 0; faceI < mesh_.nInternalFaces(); faceI++)
-    {
-        faceStencilSet.clear();
-
-        const labelList& ownCCells = globalCellCells[own[faceI]];
-        label globalOwn = ownCCells[0];
-        // Insert cellCells
-        forAll(ownCCells, i)
-        {
-            faceStencilSet.insert(ownCCells[i]);
-        }
-
-        const labelList& neiCCells = globalCellCells[nei[faceI]];
-        label globalNei = neiCCells[0];
-        // Insert cellCells
-        forAll(neiCCells, i)
-        {
-            faceStencilSet.insert(neiCCells[i]);
-        }
-
-        // Guarantee owner first, neighbour second.
-        faceStencil[faceI].setSize(faceStencilSet.size());
-        label n = 0;
-        faceStencil[faceI][n++] = globalOwn;
-        faceStencil[faceI][n++] = globalNei;
-        forAllConstIter(labelHashSet, faceStencilSet, iter)
-        {
-            if (iter.key() != globalOwn && iter.key() != globalNei)
-            {
-                faceStencil[faceI][n++] = iter.key();
-            }
-        }
-        //Pout<< "internalface:" << faceI << " toc:" << faceStencilSet.toc()
-        //    << " faceStencil:" << faceStencil[faceI] << endl;
-    }
-    forAll(patches, patchI)
-    {
-        const polyPatch& pp = patches[patchI];
-        label faceI = pp.start();
-
-        if (pp.coupled())
-        {
-            forAll(pp, i)
-            {
-                faceStencilSet.clear();
-
-                const labelList& ownCCells = globalCellCells[own[faceI]];
-                label globalOwn = ownCCells[0];
-                forAll(ownCCells, i)
-                {
-                    faceStencilSet.insert(ownCCells[i]);
-                }
-
-                // And the neighbours of the coupled cell
-                const labelList& neiCCells =
-                    neiGlobalCellCells[faceI-mesh_.nInternalFaces()];
-                label globalNei = neiCCells[0];
-                forAll(neiCCells, i)
-                {
-                    faceStencilSet.insert(neiCCells[i]);
-                }
-
-                // Guarantee owner first, neighbour second.
-                faceStencil[faceI].setSize(faceStencilSet.size());
-                label n = 0;
-                faceStencil[faceI][n++] = globalOwn;
-                faceStencil[faceI][n++] = globalNei;
-                forAllConstIter(labelHashSet, faceStencilSet, iter)
-                {
-                    if (iter.key() != globalOwn && iter.key() != globalNei)
-                    {
-                        faceStencil[faceI][n++] = iter.key();
-                    }
-                }
-
-                //Pout<< "coupledface:" << faceI
-                //    << " toc:" << faceStencilSet.toc()
-                //    << " faceStencil:" << faceStencil[faceI] << endl;
-
-                faceI++;
-            }
-        }
-        else if (!isA<emptyPolyPatch>(pp))
-        {
-            forAll(pp, i)
-            {
-                faceStencilSet.clear();
-
-                const labelList& ownCCells = globalCellCells[own[faceI]];
-                label globalOwn = ownCCells[0];
-                forAll(ownCCells, i)
-                {
-                    faceStencilSet.insert(ownCCells[i]);
-                }
-
-                // Guarantee owner first
-                faceStencil[faceI].setSize(faceStencilSet.size());
-                label n = 0;
-                faceStencil[faceI][n++] = globalOwn;
-                forAllConstIter(labelHashSet, faceStencilSet, iter)
-                {
-                    if (iter.key() != globalOwn)
-                    {
-                        faceStencil[faceI][n++] = iter.key();
-                    }
-                }
-
-                //Pout<< "boundaryface:" << faceI
-                //    << " toc:" << faceStencilSet.toc()
-                //    << " faceStencil:" << faceStencil[faceI] << endl;
-
-                faceI++;
-            }
-        }
-    }
-}
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::cellToFaceStencil::cellToFaceStencil(const polyMesh& mesh)
+Foam::cellToCellStencil::cellToCellStencil(const polyMesh& mesh)
 :
     mesh_(mesh),
     globalNumbering_(mesh_.nCells()+mesh_.nFaces()-mesh_.nInternalFaces())
