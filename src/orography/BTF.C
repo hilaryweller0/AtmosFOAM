@@ -6,7 +6,15 @@ BTF::BTF(const Mountain& mountain, const IOdictionary& dict) :
     H(readScalar(dict.lookup("domainHeight")))
 {};
 
-point BTF::transform(const point& geometric) const
+point BTF::computationalToPhysical(const point& computational) const
+{
+    const scalar h = mountain.heightAt(computational);
+    const scalar z_star = computational.z();
+    const scalar z = (z_star < H) ? z_star + h*(1 - z_star/H) : z_star;
+    return point(computational.x(), computational.y(), z);
+}
+
+point BTF::physicalToComputational(const point& geometric) const
 {
     const scalar h = mountain.heightAt(geometric);
     const scalar z = geometric.z();
