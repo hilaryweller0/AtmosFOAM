@@ -18,23 +18,18 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
+
+    Info << "Hello world" << endl;
     
-    // New point locations layered over the mountain
     IOField<point> newPoints
     (
         IOobject("points", mesh.time().constant(), "polyMesh", mesh),
         mesh.points()
     );
 
-    autoPtr<Mountain> mountain(Mountain::New(dict));
-
 	forAll(newPoints, pointIdx)
 	{
-        scalar h = mountain->heightAt(newPoints[pointIdx]);
-        if (newPoints[pointIdx].z() < h)
-        {
-            newPoints[pointIdx].z() = h;
-        }
+        // TODO
     }
 
     newPoints.write();
