@@ -42,14 +42,30 @@ class SchaerSmoothExpMountain : public AbstractMountain
 class Mountain : public AbstractMountain
 {
     public:
+    declareRunTimeSelectionTable
+    (
+        autoPtr,
+        Mountain,
+        dict,
+        (
+            const IOdictionary& dict
+        ),
+        (dict)
+    );
+
+    static autoPtr<Mountain> New(const IOdictionary& dict);
+    virtual ~Mountain() {};
+
     virtual scalar gradientAt(const scalar x) const = 0;
     virtual scalar timeToCross(const scalar u0, const scalar H) const = 0;
     virtual scalar halfWidth() const = 0;
 };
 
+
 class SchaerCosMountain : public Mountain
 {
     public:
+    TypeName("SchaerCosMountain");
     SchaerCosMountain(const IOdictionary& dict);
     SchaerCosMountain(const scalar a, const scalar h0, const scalar lambda);
     scalar heightAt(const point& p) const;

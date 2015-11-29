@@ -1,5 +1,9 @@
 #include "Mountain.H"
 #include "fvCFD.H"
+#include "addToRunTimeSelectionTable.H"
+
+defineTypeNameAndDebug(SchaerCosMountain, 0);
+addToRunTimeSelectionTable(Mountain, SchaerCosMountain, dict);
 
 SchaerSmoothCosMountain::SchaerSmoothCosMountain(const scalar a, const scalar h0) : a(a), h0(h0) {};
 
