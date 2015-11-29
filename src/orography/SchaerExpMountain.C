@@ -1,5 +1,6 @@
 #include "Mountain.H"
 #include "fvCFD.H"
+#include "addToRunTimeSelectionTable.H"
 
 SchaerSmoothExpMountain::SchaerSmoothExpMountain(const scalar a, const scalar h0) : a(a), h0(h0) {};
 
@@ -7,6 +8,9 @@ scalar SchaerSmoothExpMountain::heightAt(const point& p) const
 {
     return h0 * Foam::exp(-sqr(p.x()/a));
 }
+
+defineTypeNameAndDebug(SchaerExpMountain, 0);
+addToRunTimeSelectionTable(Mountain, SchaerExpMountain, dict);
 
 SchaerExpMountain::SchaerExpMountain(const IOdictionary& dict) :
     a(readScalar(dict.lookup("mountainHalfWidth"))),

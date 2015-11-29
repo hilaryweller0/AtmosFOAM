@@ -84,6 +84,7 @@ class SchaerCosMountain : public Mountain
 class SchaerExpMountain : public Mountain
 {
     public:
+    TypeName("SchaerExpMountain");
     SchaerExpMountain(const IOdictionary& dict);
     SchaerExpMountain(const scalar a, const scalar h0, const scalar lambda);
     scalar heightAt(const point& p) const;
