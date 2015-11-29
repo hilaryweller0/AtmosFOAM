@@ -1,5 +1,6 @@
 #include "fvCFD.H"
 #include "Mountain.H"
+#include "BTF.H"
 
 int main(int argc, char *argv[])
 {
@@ -19,17 +20,17 @@ int main(int argc, char *argv[])
         )
     );
 
-    Info << "Hello world" << endl;
-    
     IOField<point> newPoints
     (
         IOobject("points", mesh.time().constant(), "polyMesh", mesh),
         mesh.points()
     );
 
-	forAll(newPoints, pointIdx)
-	{
-        // TODO
+    autoPtr<Mountain> mountain(Mountain::New(dict));
+    BTF btf(mountain, dict);
+    forAll(newPoints, pointIdx)
+    {
+        newPoints[pointIdx] = btf.computationalToPhysical(newPoints[pointIdx]);
     }
 
     newPoints.write();
