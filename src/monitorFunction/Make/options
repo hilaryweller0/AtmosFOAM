@@ -13,4 +13,4 @@ LIB_LIBS = \
     -lOpenFOAM \
     -lfiniteVolumeAtmos -lfiniteVolume \
     -ltriSurface \
-    -lsamplingUser -lsampling -lmeshTools
+    -lsampling -lmeshTools
