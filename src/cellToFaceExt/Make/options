@@ -1,0 +1,7 @@
+EXE_INC = \
+    -I$(FOAM_RUN)/Customers/Matthias_Walter_Uni_Rostock/LEMOS-2.2.x/libLEMOS-2.2.x/finiteVolume/lnInclude \
+    -I$(FOAM_INST_DIR)/LEMOS-2.2.x/libLEMOS-2.2.x/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude
+
+LIB_LIBS = \
+    -lfiniteVolume

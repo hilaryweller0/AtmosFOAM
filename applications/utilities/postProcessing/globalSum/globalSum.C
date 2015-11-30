@@ -40,6 +40,7 @@ Description
 
 int main(int argc, char *argv[])
 {
+    timeSelector::addOptions();
     argList::validArgs.append("field");
     argList::addOption
     (
@@ -55,16 +56,9 @@ int main(int argc, char *argv[])
 #   include "addTimeOptions.H"
 #   include "setRootCase.H"
 #   include "createTime.H"
-
-    // Get times list
-    instantList Times = runTime.times();
-
-    // set startTime and endTime depending on -time and -latestTime options
-#   include "checkTimeOptions.H"
+    instantList timeDirs = timeSelector::select0(runTime, args);
 
     const word fieldName(args.additionalArgs()[0]);
-
-    runTime.setTime(Times[startTime], startTime);
 
     // Check for plotting non-default region
     const string meshRegion = args.optionFound("region") ?
@@ -112,10 +106,9 @@ int main(int argc, char *argv[])
     OFstream os(outFile);
     os << "#time mag RMS inf sum variance min max" << endl;
     
-    for (label i=startTime; i<endTime; i++)
+    forAll(timeDirs, timeI)
     {
-        runTime.setTime(Times[i], i);
-
+        runTime.setTime(timeDirs[timeI], timeI);
         Info<< "Time = " << runTime.timeName() << endl;
 
         mesh.readUpdate();

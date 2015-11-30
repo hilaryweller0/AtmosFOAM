@@ -43,7 +43,7 @@ using namespace Foam::constant::mathematical;
 
 int main(int argc, char *argv[])
 {
-    #include "addTimeOptions.H"
+    timeSelector::addOptions();
     Foam::argList::addOption
     (
         "tracerFieldFileName", "filename", 
@@ -51,17 +51,7 @@ int main(int argc, char *argv[])
     );
 #   include "setRootCase.H"
 #   include "createTime.H"
-    // Get times list
-    instantList Times = runTime.times();
-    if (Times.size() == 1 && !args.optionFound("constant"))
-    {
-        Times.append(instant(scalar(0)));
-    }
-
-    // set startTime and endTime depending on -time and -latestTime options
-    #include "checkTimeOptions.H"
-
-    runTime.setTime(Times[startTime], startTime);
+    instantList timeDirs = timeSelector::select0(runTime, args);
 #   include "createMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -114,13 +104,12 @@ int main(int argc, char *argv[])
         "fixedValue"
     );
     
-    // Set the tracer for each time specified
-    for (label i=startTime; i<endTime; i++)
+    forAll(timeDirs, timeI)
     {
-        runTime.setTime(Times[i], i);
-
+        runTime.setTime(timeDirs[timeI], timeI);
         Info<< "Time = " << runTime.timeName() << endl;
-            // Centre of the tracer for this time step
+
+        // Centre of the tracer for this time step
         const point& advectedPt = velocityProfile->pointAtTime(point(x0, 0, z0), runTime.value());
 
         // Calculating T

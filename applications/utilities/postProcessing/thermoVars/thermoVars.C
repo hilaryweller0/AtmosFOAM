@@ -37,30 +37,21 @@ Description
 
 int main(int argc, char *argv[])
 {
-#   include "addTimeOptions.H"
-#   include "setRootCase.H"
-#   include "createTime.H"
-
-    // Get times list
-    instantList Times = runTime.times();
-
-    // set startTime and endTime depending on -time and -latestTime options
-#   include "checkTimeOptions.H"
-
-    runTime.setTime(Times[startTime], startTime);
-
-#   include "createMesh.H"
-#   include "readEnvironmentalProperties.H"
+    timeSelector::addOptions();
+    #include "setRootCase.H"
+    #include "createTime.H"
+    instantList timeDirs = timeSelector::select0(runTime, args);
+    #include "createMesh.H"
+    #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
 
     Info<< "Creating field g.h at cell centres\n" << endl;
     volScalarField gh("gh", g & mesh.C());
 
-    for (label i=startTime; i<endTime; i++)
+    forAll(timeDirs, timeI)
     {
-        runTime.setTime(Times[i], i);
-
-        Info<< "\nTime = " << runTime.timeName() << endl;
+        runTime.setTime(timeDirs[timeI], timeI);
+        Info<< "Time = " << runTime.timeName() << endl;
 
         //#   include "createMesh.H"
         mesh.readUpdate();

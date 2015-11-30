@@ -26,12 +26,29 @@ int main(int argc, char *argv[])
         mesh.points()
     );
 
-    autoPtr<Mountain> mountain(Mountain::New(dict));
+    const word mountainType(dict.lookup("mountainType"));
+    Mountain* mountain;
+    if (mountainType == "SCHAER_COS")
+    {
+        mountain = new SchaerCosMountain(dict);
+    }
+    else if (mountainType == "SCHAER_EXP")
+    {
+        mountain = new SchaerExpMountain(dict);
+    }
+    else
+    {
+        FatalErrorIn("slantMesh")
+            << "Unknown mountainType " << mountainType
+            << exit(FatalError);
+    }
 
 	forAll(newPoints, pointIdx)
 	{
-        scalar h = mountain->heightAt(newPoints[pointIdx]);
-        if (newPoints[pointIdx].z() < h)
+        scalar x = newPoints[pointIdx].x();
+        scalar z = newPoints[pointIdx].z();
+        scalar h = mountain->heightAt(x);
+        if (z < h)
         {
             newPoints[pointIdx].z() = h;
         }

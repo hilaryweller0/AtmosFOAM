@@ -2,8 +2,11 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2009 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
      \\/     M anipulation  |
+-------------------------------------------------------------------------------
+ 2015-11-17 AtmosFOAM, Hilary Weller, University of Reading added support for
+ cyclic boundaries
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -21,21 +24,30 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-Description
-    Include files needed for using Exner and Theta thermodynamic variables.
-
 \*---------------------------------------------------------------------------*/
 
-#ifndef ExnerTheta_H
-#define ExnerTheta_H
+#include "CPCCellToFaceExtStencil.H"
+#include "CPCCellToCellExtStencil.H"
 
-#include "specie.H"
-#include "perfectGas.H"
-#include "hConstThermo.H"
-#include "constTransport.H"
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Foam::CPCCellToFaceExtStencil::CPCCellToFaceExtStencil(const polyMesh& mesh)
+:
+    cellToFaceExtStencil(mesh)
+{
+    // Calculate per cell the (face) connected cells (in global numbering)
+    CPCCellToCellExtStencil globalCellCells(mesh);
 
-#endif
+    // Add stencils of neighbouring cells to create faceStencil
+    calcFaceStencil
+    (
+        globalCellCells.untransformedElements(),
+        globalCellCells.transformedElements(),
+
+        untransformedElements_,
+        transformedElements_
+    );
+}
+
 
 // ************************************************************************* //

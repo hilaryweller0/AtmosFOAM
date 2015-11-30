@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     forAll(theta, cellI)
     {
         const point p = mesh.C()[cellI];
-        theta[cellI] = profile.thetaAt(btf.physicalToComputational(p));
+        theta[cellI] = profile.thetaAt(btf.transform(p));
     }
 
     theta.write();

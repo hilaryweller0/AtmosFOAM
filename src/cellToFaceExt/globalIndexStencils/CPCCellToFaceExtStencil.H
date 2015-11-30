@@ -2,8 +2,11 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2009 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
      \\/     M anipulation  |
+-------------------------------------------------------------------------------
+ 2015-11-17 AtmosFOAM, Hilary Weller, University of Reading added support for
+ cyclic boundaries
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
@@ -21,18 +24,48 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Class
+    Foam::CPCCellToFaceExtStencil
+
 Description
-    Include files needed for using Exner and Theta thermodynamic variables.
+    Combined corresponding cellToCellExtStencil of owner and neighbour.
+
+SourceFiles
+    CPCCellToFaceExtStencil.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef ExnerTheta_H
-#define ExnerTheta_H
+#ifndef CPCCellToFaceExtStencil_H
+#define CPCCellToFaceExtStencil_H
 
-#include "specie.H"
-#include "perfectGas.H"
-#include "hConstThermo.H"
-#include "constTransport.H"
+#include "cellToFaceExtStencil.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+/*---------------------------------------------------------------------------*\
+                    Class CPCCellToFaceStencil Declaration
+\*---------------------------------------------------------------------------*/
+
+class CPCCellToFaceExtStencil
+:
+    public cellToFaceExtStencil
+{
+public:
+
+    // Constructors
+
+        //- Construct from all cells and boundary faces
+        explicit CPCCellToFaceExtStencil(const polyMesh&);
+
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

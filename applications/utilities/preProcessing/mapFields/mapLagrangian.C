@@ -59,7 +59,7 @@ static label findCell(const Cloud<passiveParticle>& cloud, const point& pt)
         meshSearch meshSearcher
         (
             mesh,
-            polyMesh::FACEPLANES    // no decomposition needed
+            polyMesh::FACE_PLANES    // no decomposition needed
         );
 
         label faceI = meshSearcher.findNearestBoundaryFace(pt);
@@ -80,16 +80,26 @@ static label findCell(const Cloud<passiveParticle>& cloud, const point& pt)
 }
 
 
-void mapLagrangian(const meshToMesh& interp)
+void mapLagrangian(const meshToMesh0& meshToMesh0Interp)
 {
     // Determine which particles are in meshTarget
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    const polyMesh& meshSource = interp.srcRegion();
-    const polyMesh& meshTarget = interp.tgtRegion();
-    const labelListList& sourceToTarget = interp.srcToTgtCellAddr();
+    // target to source cell map
+    const labelList& cellAddressing = meshToMesh0Interp.cellAddressing();
 
+    // Invert celladdressing to get source to target(s).
+    // Note: could use sparse addressing but that is too storage inefficient
+    // (Map<labelList>)
+    labelListList sourceToTargets
+    (
+        invertOneToMany(meshToMesh0Interp.fromMesh().nCells(), cellAddressing)
+    );
+
+    const fvMesh& meshSource = meshToMesh0Interp.fromMesh();
+    const fvMesh& meshTarget = meshToMesh0Interp.toMesh();
     const pointField& targetCc = meshTarget.cellCentres();
+
 
     fileNameList cloudDirs
     (
@@ -110,7 +120,7 @@ void mapLagrangian(const meshToMesh& interp)
             cloud::prefix/cloudDirs[cloudI]
         );
 
-        IOobject* positionsPtr = objects.lookup(word("positions"));
+        IOobject* positionsPtr = objects.lookup("positions");
 
         if (positionsPtr)
         {
@@ -158,7 +168,7 @@ void mapLagrangian(const meshToMesh& interp)
                 if (iter().cell() >= 0)
                 {
                     const labelList& targetCells =
-                        sourceToTarget[iter().cell()];
+                        sourceToTargets[iter().cell()];
 
                     // Particle probably in one of the targetcells. Try
                     // all by tracking from their cell centre to the parcel
@@ -200,7 +210,7 @@ void mapLagrangian(const meshToMesh& interp)
                 sourceParticleI++;
             }
 
-            Info<< "    after meshToMesh addressing found "
+            Info<< "    after meshToMesh0 addressing found "
                 << targetParcels.size()
                 << " parcels in target mesh." << endl;
 
@@ -249,47 +259,17 @@ void mapLagrangian(const meshToMesh& interp)
                 // ~~~~~~~~~~~~~~~~~~~~~
 
                 MapLagrangianFields<label>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
                 MapLagrangianFields<scalar>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
                 MapLagrangianFields<vector>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
                 MapLagrangianFields<sphericalTensor>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
                 MapLagrangianFields<symmTensor>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
                 MapLagrangianFields<tensor>
-                (
-                    cloudDirs[cloudI],
-                    objects,
-                    meshTarget,
-                    addParticles
-                );
+                (cloudDirs[cloudI], objects, meshToMesh0Interp, addParticles);
             }
         }
     }

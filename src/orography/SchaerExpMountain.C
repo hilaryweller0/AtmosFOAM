@@ -1,16 +1,12 @@
 #include "Mountain.H"
 #include "fvCFD.H"
-#include "addToRunTimeSelectionTable.H"
 
 SchaerSmoothExpMountain::SchaerSmoothExpMountain(const scalar a, const scalar h0) : a(a), h0(h0) {};
 
-scalar SchaerSmoothExpMountain::heightAt(const point& p) const
+scalar SchaerSmoothExpMountain::heightAt(const scalar x) const
 {
-    return h0 * Foam::exp(-sqr(p.x()/a));
+    return h0 * Foam::exp(-sqr(x/a));
 }
-
-defineTypeNameAndDebug(SchaerExpMountain, 0);
-addToRunTimeSelectionTable(Mountain, SchaerExpMountain, dict);
 
 SchaerExpMountain::SchaerExpMountain(const IOdictionary& dict) :
     a(readScalar(dict.lookup("mountainHalfWidth"))),
@@ -28,9 +24,9 @@ SchaerExpMountain::SchaerExpMountain(const scalar a, const scalar h0, const scal
     fine = new SchaerFineMountain(lambda);
 }
 
-scalar SchaerExpMountain::heightAt(const point& p) const
+scalar SchaerExpMountain::heightAt(const scalar x) const
 {
-    return smooth->heightAt(p) * fine->heightAt(p);
+    return smooth->heightAt(x) * fine->heightAt(x);
 }
 
 scalar SchaerExpMountain::gradientAt(const scalar x) const
@@ -39,7 +35,7 @@ scalar SchaerExpMountain::gradientAt(const scalar x) const
             2*x / pow(a, 2) * pow(Foam::cos(M_PI*x/lambda), 2));
 }
 
-// FIXME: calculate this
+// FIXME: recalculate this
 scalar SchaerExpMountain::timeToCross(const scalar u0, const scalar H) const
 {
     return 0;

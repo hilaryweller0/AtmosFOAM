@@ -18,7 +18,7 @@ BtfVelocityProfile::BtfVelocityProfile(
 
 vector BtfVelocityProfile::velocityAt(const point& p) const
 {
-    scalar h = mountain.heightAt(p);
+    scalar h = mountain.heightAt(p.x());
     scalar dhdx = mountain.gradientAt(p.x());
     scalar u = H / (H - h);
 
@@ -42,13 +42,13 @@ vector BtfVelocityProfile::velocityAt(const point& p) const
 
 scalar BtfVelocityProfile::streamFunctionAt(const point& p) const 
 {
+    scalar h = mountain.heightAt(p.x());
     if (p.z() > H)
     {
         return -u0 * p.z();
     }
     else
     {
-        scalar h = mountain.heightAt(p);
         return -u0 * (H * (p.z() - h) / (H - h));
     }
 }

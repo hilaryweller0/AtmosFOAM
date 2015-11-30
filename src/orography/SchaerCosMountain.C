@@ -1,18 +1,14 @@
 #include "Mountain.H"
 #include "fvCFD.H"
-#include "addToRunTimeSelectionTable.H"
-
-defineTypeNameAndDebug(SchaerCosMountain, 0);
-addToRunTimeSelectionTable(Mountain, SchaerCosMountain, dict);
 
 SchaerSmoothCosMountain::SchaerSmoothCosMountain(const scalar a, const scalar h0) : a(a), h0(h0) {};
 
-scalar SchaerSmoothCosMountain::heightAt(const point& p) const
+scalar SchaerSmoothCosMountain::heightAt(const scalar x) const
 {
     scalar h = 0;
-    if (mag(p.x()) < a)
+    if (mag(x) < a)
     {
-        h = h0 * sqr(Foam::cos(0.5*M_PI * p.x() / a));
+        h = h0 * sqr(Foam::cos(0.5*M_PI * x / a));
     }
     return h;
 }
@@ -33,9 +29,9 @@ SchaerCosMountain::SchaerCosMountain(const scalar a, const scalar h0, const scal
     fine = new SchaerFineMountain(lambda);
 }
 
-scalar SchaerCosMountain::heightAt(const point& p) const
+scalar SchaerCosMountain::heightAt(const scalar x) const
 {
-    return smooth->heightAt(p) * fine->heightAt(p);
+    return smooth->heightAt(x) * fine->heightAt(x);
 }
 
 scalar SchaerCosMountain::gradientAt(const scalar x) const

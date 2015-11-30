@@ -37,9 +37,9 @@ Description
 
 int main(int argc, char *argv[])
 {
+    timeSelector::addOptions();
     argList::validArgs.append("field");
 
-#   include "addTimeOptions.H"
     Foam::argList::addOption
     (
         "region",
@@ -49,12 +49,7 @@ int main(int argc, char *argv[])
 #   include "setRootCase.H"
 
 #   include "createTime.H"
-
-    // Get times list
-    instantList Times = runTime.times();
-
-    // set startTime and endTime depending on -time and -latestTime options
-#   include "checkTimeOptions.H"
+    instantList timeDirs = timeSelector::select0(runTime, args);
 
     // Check for plotting non-default region
     const string meshRegion = args.optionFound("region") ?
@@ -62,8 +57,6 @@ int main(int argc, char *argv[])
                               fvMesh::defaultRegion;
 
     const word fieldName(args.additionalArgs()[0]);
-
-    runTime.setTime(Times[startTime], startTime);
 
     Info << "Create mesh for time = " << runTime.timeName() <<  " region "
          << meshRegion << endl;
@@ -79,10 +72,9 @@ int main(int argc, char *argv[])
         )
     );
 
-    for (label i=startTime; i<endTime; i++)
+    forAll(timeDirs, timeI)
     {
-        runTime.setTime(Times[i], i);
-
+        runTime.setTime(timeDirs[timeI], timeI);
         Info<< "Time = " << runTime.timeName() << endl;
 
         mesh.readUpdate();

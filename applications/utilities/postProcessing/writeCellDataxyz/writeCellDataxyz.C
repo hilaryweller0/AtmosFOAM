@@ -37,8 +37,8 @@ Description
 
 int main(int argc, char *argv[])
 {
+    timeSelector::addOptions();
     Foam::argList::validArgs.append("fieldName");
-#   include "addTimeOptions.H"
     Foam::argList::addOption
     (
         "region",
@@ -47,13 +47,7 @@ int main(int argc, char *argv[])
     );
 #   include "setRootCase.H"
 #   include "createTime.H"
-
-    // Get times list
-    instantList Times = runTime.times();
-
-    // set startTime and endTime depending on -time and -latestTime options
-#   include "checkTimeOptions.H"
-    runTime.setTime(Times[startTime], startTime);
+    instantList timeDirs = timeSelector::select0(runTime, args);
 
     // Check for plotting non-default region
     const string meshRegion = args.optionFound("region") ?
@@ -76,12 +70,10 @@ int main(int argc, char *argv[])
     );
     const word fieldName = args.args()[1];
 
-    for (label i=startTime; i<endTime; i++)
+    forAll(timeDirs, timeI)
     {
-        runTime.setTime(Times[i], i);
-
-        Info<< "Time = " << runTime.timeName() << " reading/writing field "
-            << fieldName << endl;
+        runTime.setTime(timeDirs[timeI], timeI);
+        Info<< "Time = " << runTime.timeName() << endl;
 
         IOobject fieldHeader
         (
