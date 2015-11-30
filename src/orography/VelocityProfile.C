@@ -1,22 +1,28 @@
 #include "VelocityProfile.H"
-#include "HorizontalVelocityProfile.H"
-#include "BtfVelocityProfile.H"
-#include "Mountain.H"
 
-VelocityProfile* VelocityProfile::lookup(IOdictionary dict)
+defineRunTimeSelectionTable(VelocityProfile, dict);
+
+autoPtr<VelocityProfile> VelocityProfile::New(const IOdictionary& dict)
 {
-    const word velocityProfileWord(dict.lookupOrDefault<word>("velocityProfile", "HORIZONTAL"));
+    const word velocityProfileType(dict.lookup("velocityProfileType"));
 
-    if (velocityProfileWord == "HORIZONTAL") {
-        return new HorizontalVelocityProfile(dict);
-    } else if (velocityProfileWord == "SCHAER_COS") {
-        const SchaerCosMountain* mountain = new SchaerCosMountain(dict);
-        return new BtfVelocityProfile(*mountain, dict);
-    } else if (velocityProfileWord == "SCHAER_EXP") {
-        const SchaerExpMountain* mountain = new SchaerExpMountain(dict);
-        return new BtfVelocityProfile(*mountain, dict);
-    } else {
-        FatalErrorIn("VelocityProfile::lookup") << "Unknown velocityProfile '" << velocityProfileWord << "'" << exit(FatalError);
-        return NULL;
+    dictConstructorTable::iterator cstrIter =
+        dictConstructorTablePtr_->find(velocityProfileType);
+
+    if (cstrIter == dictConstructorTablePtr_->end())
+    {
+        FatalErrorIn
+        (
+            "VelocityProfile::New(const IOdictionary&)"
+        ) << "Unknown velocityProfileType "
+          << velocityProfileType << nl
+          << "Valid types: " << endl
+          << dictConstructorTablePtr_->sortedToc()
+          << exit(FatalError);
     }
+
+    return autoPtr<VelocityProfile>
+    (
+       cstrIter()(dict)
+    );
 }

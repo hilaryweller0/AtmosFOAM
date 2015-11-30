@@ -83,8 +83,7 @@ int main(int argc, char *argv[])
     const string tracerFieldFileName = args.options().found("tracerFieldFileName") ?
                                        args.options()["tracerFieldFileName"] : "T";
 
-    // Comment from Hilary: why are you using a pointer here?
-    VelocityProfile* velocityProfile = VelocityProfile::lookup(velocityDict);
+    autoPtr<VelocityProfile> velocityProfile(VelocityProfile::New(velocityDict));
 
     Info << "Creating initial tracer field " << tracerFieldFileName << endl;
     volScalarField T

@@ -62,8 +62,7 @@ int main(int argc, char *argv[])
         )
     );
 
-    const SchaerExpMountain mountain(dict);
-    const BTF btf(mountain, dict); 
+    const BTF btf(Mountain::New(dict), dict); 
 
     // theta
     Info<< "Creating theta\n" << endl;

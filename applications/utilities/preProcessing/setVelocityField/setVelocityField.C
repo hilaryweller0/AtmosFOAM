@@ -55,8 +55,7 @@ int main(int argc, char *argv[])
         )
     );
 
-    VelocityProfile* profile = VelocityProfile::lookup(dict);
-    const VelocityField velocityField(*profile);
+    const VelocityField velocityField(VelocityProfile::New(dict));
 
     Info << "Creating velocity field Uf" << endl;
     velocityField.applyTo(Uf);

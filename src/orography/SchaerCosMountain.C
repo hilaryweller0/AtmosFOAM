@@ -1,4 +1,4 @@
-#include "Mountain.H"
+#include "SchaerCosMountain.H"
 #include "fvCFD.H"
 #include "addToRunTimeSelectionTable.H"
 

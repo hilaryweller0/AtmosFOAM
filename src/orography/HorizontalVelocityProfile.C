@@ -1,5 +1,9 @@
 #include "HorizontalVelocityProfile.H"
 #include "fvCFD.H"
+#include "addToRunTimeSelectionTable.H"
+
+defineTypeNameAndDebug(HorizontalVelocityProfile, 0);
+addToRunTimeSelectionTable(VelocityProfile, HorizontalVelocityProfile, dict);
 
 HorizontalVelocityProfile::HorizontalVelocityProfile(const IOdictionary& dict) :
     u0(readScalar(dict.lookup("maxVelocity"))),

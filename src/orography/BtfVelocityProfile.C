@@ -1,8 +1,12 @@
 #include "BtfVelocityProfile.H"
 #include "fvCFD.H"
+#include "addToRunTimeSelectionTable.H"
 
-BtfVelocityProfile::BtfVelocityProfile(const Mountain& mountain, const IOdictionary& dict) :
-    mountain(mountain),
+defineTypeNameAndDebug(BtfVelocityProfile, 0);
+addToRunTimeSelectionTable(VelocityProfile, BtfVelocityProfile, dict);
+
+BtfVelocityProfile::BtfVelocityProfile(const IOdictionary& dict) :
+    mountain(Mountain::New(dict)),
     u0(readScalar(dict.lookup("maxVelocity"))),
     H(readScalar(dict.lookup("domainHeight")))
 {};

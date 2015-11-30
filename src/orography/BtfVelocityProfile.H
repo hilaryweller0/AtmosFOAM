@@ -8,7 +8,8 @@
 class BtfVelocityProfile : public VelocityProfile
 {
     public:
-    BtfVelocityProfile(const Mountain& mountain, const IOdictionary& dict);
+    TypeName("BtfVelocityProfile");
+    BtfVelocityProfile(const IOdictionary& dict);
     BtfVelocityProfile(const Mountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
     scalar streamFunctionAt(const point& p) const;
