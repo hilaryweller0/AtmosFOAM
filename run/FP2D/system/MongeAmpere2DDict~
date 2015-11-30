@@ -1,0 +1,63 @@
+// The FOAM Project // File: fvSchemes
+/*
+-------------------------------------------------------------------------------
+ =========         | dictionary
+ \\      /         |
+  \\    /          | Name:   fvSchemes
+   \\  /           | Family: FoamX configuration file
+    \\/            |
+    F ield         | FOAM version: 2.3
+    O peration     | Product of Nabla Ltd.
+    A and          |
+    M anipulation  | Email: Enquiries@Nabla.co.uk
+-------------------------------------------------------------------------------
+*/
+// FoamX Case Dictionary.
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "system";
+    local           "";
+
+    class           dictionary;
+    object          MongeAmpere2DDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+monitorFunctionFrom monitorFunctionSech;
+beta1 0.03;
+beta2 0.2;
+beta3 0.01;
+spherical 1;
+
+// Ring
+//alpha1 10;
+//alpha2 200;
+//a 0.25;
+
+// Bell
+//alpha1 50;
+//alpha2 100;
+//a 0;
+
+// Other
+alpha1 100;
+alpha2 300;
+a 0.0;
+
+centre (0 0 0);
+HessianVolumeRatio 0;
+equiDistTol 0.0001;
+// use 1.84 for the standard method with monitor = Tanh
+gamma gamma [0 0 0 0 0] 0.84;
+//epsilon 1;
+
+// ************************************************************************* //
+
+

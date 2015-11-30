@@ -1,0 +1,29 @@
+FoamFile
+{
+    version         2.2;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XZ;
+
+FieldsToPlot
+2
+(
+    [Phi filledContours -0.04 0.07 0.005 "$GMTU/colours/red_white_blue.cpt"]
+    [gradPhi vectors 0.5 2 "black"]
+);
+
+annotate "minMax -0.25 -0.505";
+region "0/0.5/0/0.5";
+
