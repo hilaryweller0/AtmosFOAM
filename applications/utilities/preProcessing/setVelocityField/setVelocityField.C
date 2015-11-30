@@ -55,7 +55,8 @@ int main(int argc, char *argv[])
         )
     );
 
-    const VelocityField velocityField(VelocityProfile::New(dict));
+    autoPtr<VelocityProfile> velocityProfile(VelocityProfile::New(dict));
+    const VelocityField velocityField(velocityProfile);
 
     Info << "Creating velocity field Uf" << endl;
     velocityField.applyTo(Uf);

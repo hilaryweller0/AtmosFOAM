@@ -10,12 +10,11 @@ class BtfVelocityProfile : public VelocityProfile
     public:
     TypeName("BtfVelocityProfile");
     BtfVelocityProfile(const IOdictionary& dict);
-    BtfVelocityProfile(const Mountain& mountain, const scalar u0, const scalar H);
     vector velocityAt(const point& p) const;
     scalar streamFunctionAt(const point& p) const;
     point pointAtTime(const point& p0, const scalar t) const;
     private:
-    const Mountain& mountain;
+    const autoPtr<Mountain> mountain;
     const scalar u0;
     const scalar H;
 };

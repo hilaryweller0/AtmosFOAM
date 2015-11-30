@@ -11,19 +11,10 @@ BtfVelocityProfile::BtfVelocityProfile(const IOdictionary& dict) :
     H(readScalar(dict.lookup("domainHeight")))
 {};
 
-BtfVelocityProfile::BtfVelocityProfile(
-        const Mountain& mountain,
-        const scalar u0,
-        const scalar H) : 
-    mountain(mountain),
-    u0(u0),
-    H(H)
-{};
-
 vector BtfVelocityProfile::velocityAt(const point& p) const
 {
-    scalar h = mountain.heightAt(p);
-    scalar dhdx = mountain.gradientAt(p.x());
+    scalar h = mountain->heightAt(p);
+    scalar dhdx = mountain->gradientAt(p.x());
     scalar u = H / (H - h);
 
     scalar w = H * dhdx * (H - p.z()) / pow(H - h, 2);
@@ -52,7 +43,7 @@ scalar BtfVelocityProfile::streamFunctionAt(const point& p) const
     }
     else
     {
-        scalar h = mountain.heightAt(p);
+        scalar h = mountain->heightAt(p);
         return -u0 * (H * (p.z() - h) / (H - h));
     }
 }
@@ -60,16 +51,16 @@ scalar BtfVelocityProfile::streamFunctionAt(const point& p) const
 point BtfVelocityProfile::pointAtTime(const point& p0, const scalar t) const
 {
     // TODO: worry about z over mountain
-    scalar distanceToMountainStart = -mountain.halfWidth() - p0.x();
+    scalar distanceToMountainStart = -mountain->halfWidth() - p0.x();
     scalar timeToMountainStart = distanceToMountainStart / u0;
-    scalar timeAfterMountainEnd = t - mountain.timeToCross(u0, H) - timeToMountainStart;
+    scalar timeAfterMountainEnd = t - mountain->timeToCross(u0, H) - timeToMountainStart;
 
     if (t <= timeToMountainStart) {
         // point not yet over mountain
         return point(p0.x() + u0 * t, 0, p0.z());
-    } else if (t >= timeToMountainStart + mountain.timeToCross(u0, H)) {
+    } else if (t >= timeToMountainStart + mountain->timeToCross(u0, H)) {
         // point has passed over mountain
-        return point(p0.x() + distanceToMountainStart + 2.0*mountain.halfWidth() + u0 * timeAfterMountainEnd, 0, p0.z());
+        return point(p0.x() + distanceToMountainStart + 2.0*mountain->halfWidth() + u0 * timeAfterMountainEnd, 0, p0.z());
     } else {
         // TODO: point is somewhere over the mountain, need to calculate this from the big equation
         return p0;
