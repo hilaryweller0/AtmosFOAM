@@ -3,11 +3,13 @@ EXE_INC = \
     -I$(ATMOSFOAM_SRC)/Hops/lnInclude \
     -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
-    -I$(LIB_SRC)/finiteVolume/lnInclude
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lHops \
     -lExnerTheta \
     -lspecie \
-    -lfiniteVolume
+    -lfiniteVolume \
+    -lmeshTools
