@@ -1,0 +1,69 @@
+inputFiles=(orthogonal/50x50/dt_2/errorNorms.dat
+            nonOrthog/50x50/dt_2/errorNorms.dat
+            orthogonal/50x50/dt_20/errorNorms.dat
+            nonOrthog/50x50/dt_20/errorNorms.dat
+            
+            orthogonal/100x100/dt_1/errorNorms.dat
+            nonOrthog/100x100/dt_1/errorNorms.dat
+            orthogonal/100x100/dt_10/errorNorms.dat
+            nonOrthog/100x100/dt_10/errorNorms.dat
+            
+            orthogonal/200x200/dt_0.5/errorNorms.dat
+            nonOrthog/200x200/dt_0.5/errorNorms.dat
+            orthogonal/200x200/dt_5/errorNorms.dat
+            nonOrthog/200x200/dt_5/errorNorms.dat
+            
+            orthogonal/400x400/dt_0.25/errorNorms.dat
+            nonOrthog/400x400/dt_0.25/errorNorms.dat
+            orthogonal/400x400/dt_2.5/errorNorms.dat
+            nonOrthog/400x400/dt_2.5/errorNorms.dat)
+
+outFile=linferrors_time.eps
+col=(4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4)
+legends=("50x50 orthog @~D@~t=2"
+         "50x50 non @~D@~t=2"
+         "50x50 orthog @~D@~t=20"
+         "50x50 non @~D@~t=20"
+         "100x100 orthog @~D@~t=1"
+         "100x100 non @~D@~t=1"
+         "100x100 orthog @~D@~t=10"
+         "100x100 non @~D@~t=10"
+         "200x200 orthog @~D@~t=0.5"
+         "200x200 non @~D@~t=0.5"
+         "200x200 orthog @~D@~t=5"
+         "200x200 non @~D@~t=5"
+         "400x400 orthog @~D@~t=0.25"
+         "400x400 non @~D@~t=0.25"
+         "400x400 orthog @~D@~t=2.5"
+         "400x400 non @~D@~t=2.5")
+
+pens=("1p,black" "1p,black,6_6:0" "1p,black,12_12:0" "1p,black,2_2:0"
+      "1p,red" "1p,red,6_6:0" "1p,red,12_12:0" "1p,red,2_2:0"
+      "1p,blue" "1p,blue,6_6:0" "1p,blue,12_12:0" "1p,blue,2_2:0"
+      "1p,magenta" "1p,magenta,6_6:0" "1p,magenta,12_12:0" "1p,magenta,2_2:0")
+symbols=('c8p' 'x10p' 'd8p' '+10p'
+         'c8p' 'x10p' 'd8p' '+10p'
+         'c8p' 'x10p' 'd8p' '+10p'
+         'c8p' 'x10p' 'd8p' '+10p')
+spens=("1p,black" "1p,black" "1p,black" "1p,black"
+       "1p,red" "1p,red" "1p,red" "1p,red"
+       "1p,blue" "1p,blue" "1p,blue" "1p,blue"
+       "1p,magenta" "1p,magenta" "1p,magenta" "1p,magenta")
+xlabel='time (seconds)'
+ylabel='l@-inf@- error'
+xmin=90
+xmax=610
+dx=100
+ddx=100
+dxg=100
+ymin=5e-4
+ymax=1
+dy=2
+ddy=2
+dyg=2
+xscale=*1
+yscale=*1
+legPos=x10/10
+projection=X10c/10cl
+gv=1
+

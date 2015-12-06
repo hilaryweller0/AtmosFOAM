@@ -1,0 +1,10 @@
+I haven't got the chance to implement a scheme on spherical coordinate. I thought if I wanna set up a similar test case on a plane, the x would be the perimeter of the earth. But after I use xmin = 0, xmax = 2pi, ymin = -0.5pi, ymax = 0.5pi, and use the same tracer distribution and similar streamfunction as described in KNK15 (NL10), though this can be only used in such domain size, the results looks great.
+
+psi = u0 sin^2(X-Lx/T) cos^2(Y) cos(pi/T) - Lx*Y/T
+
+phi = 0.95exp(- 5*((X-x0)**2 + (Y-y0)**2)) + 0.9exp(- 5*((X-x1)**2+ (Y-y0)**2)) (exactly the same as the paper by Lauritzen et al )
+where (x0,y0) = (5Lx/12, 0 ), (x1,y0) = (7Lx/12, 0)
+
+The results in the attachment is implemented by dt = 0.01, nt = 500, nx = 240, ny = 120, with a Courant number of 0.763 in both x- and y- direction.
+I think if Lauritzen et al used a resolution of d(lambda) = 1.5 degree = 360/240, the spatial resolution here should be similar.
+

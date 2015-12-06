@@ -1,0 +1,29 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "/export/lime/data-04/sws02hs/OpenFOAM/sws02hs-1.4.1/run/shallowWater";
+    case            "bucky4_30";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+projection "X18c/18c";
+projection2D XY;
+
+FieldsToPlot
+1
+(
+    [none mesh      "black"]
+);
+
+// options
+//region "0/100/0/100";
+boundaryMarks "a1e3/a1e3";
+//separateLegend true;
+//overlay true;

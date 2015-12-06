@@ -1,0 +1,136 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+
+am AM;
+ap AP;
+squeeze SQUEEZE;
+expand  EXPAND;
+
+nx NX;
+nz NZ;
+
+vertices
+(
+    (-1 -.1 -.5)
+    ( 0 -.1 -.5)
+    ( 1 -.1 -.5)
+
+    (-1 -.1 $ap)
+    ( 0 -.1 $am)
+    ( 1 -.1 $ap)
+
+    (-1 -.1 .5)
+    ( 0 -.1 .5)
+    ( 1 -.1 .5)
+
+    (-1  .1 -.5)
+    ( 0  .1 -.5)
+    ( 1  .1 -.5)
+
+    (-1  .1 $ap)
+    ( 0  .1 $am)
+    ( 1  .1 $ap)
+
+    (-1  .1 .5)
+    ( 0  .1 .5)
+    ( 1  .1 .5)
+);
+
+blocks
+(
+    hex (0 1 10 9 3 4 13 12) ($nx 1 $nz)
+	    edgeGrading (1 1 1 1 1 1 1 1 $squeeze $expand $expand $squeeze)
+	hex (1 2 11 10 4 5 14 13) ($nx 1 $nz)
+	    edgeGrading (1 1 1 1 1 1 1 1 $expand $squeeze $squeeze $expand)
+	hex (3 4 13 12 6 7 16 15) ($nx 1 $nz)
+	    edgeGrading (1 1 1 1 1 1 1 1 $squeeze $expand $expand $squeeze)
+	hex (4 5 14 13 7 8 17 16) ($nx 1 $nz)
+	    edgeGrading (1 1 1 1 1 1 1 1 $expand $squeeze $squeeze $expand)
+);
+
+edges
+(
+);
+
+boundary
+(
+    top
+    {
+        type  wall;
+        faces
+        (
+            (6 7 16 15)
+            (7 8 17 16)
+        );
+    }
+    inlet
+    {
+        type  patch;
+        faces
+        (
+            (0 3 12 9)
+            (3 6 15 12)
+        );
+    }
+    outlet
+    {
+        type  patch;
+        faces
+        (
+            (2 11 14 5)
+            (5 14 17 8)
+        );
+    }
+    ground
+    {
+        type wall;
+        faces
+        (
+            (0 9 10 1)
+            (1 10 11 2)
+        );
+    }
+    front
+    {
+        type empty;
+        faces
+        (
+            (0 1 4 3)
+            (1 2 5 4)
+            (3 4 7 6)
+            (4 5 8 7)
+        );
+    }
+    back
+    {
+        type empty;
+        faces
+        (
+            (9 12 13 10)
+            (10 13 14 11)
+            (12 15 16 13)
+            (13 16 17 14)
+        );
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

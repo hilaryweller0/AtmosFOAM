@@ -25,13 +25,17 @@ scalar maxMagU = 0;
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
     scalar maxDist2 = 0;
+    scalar r = 0;
     if (ortho)
     {
         point pi = mesh.points()[0];
-        scalar r = mag(pi);
+        r = mag(pi);
         p0 = polarPoint(lon0, lat0, r).cartesian(xdir, ydir, axis);
         maxDist2 = 2.5*sqr(r);
     }
+
+    // Find the plot bounding box
+    //boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
 
     // lon and lat directions if needed
     vectorField rHat = mesh.C();

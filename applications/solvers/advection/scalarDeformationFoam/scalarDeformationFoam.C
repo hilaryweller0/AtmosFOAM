@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nCalculating scalar transport\n" << endl;
-
+    
     #include "CourantNo.H"
 
     while (runTime.loop())

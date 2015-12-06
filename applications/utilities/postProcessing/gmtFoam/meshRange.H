@@ -25,6 +25,9 @@ fileName tmpFile = args.rootPath() / args.caseName()
         maxDist2 = 2.5*sqr(r);
     }
 
+    // Find the plot bounding box
+    boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
+
     for(label celli = 0; celli < mesh.nCells(); celli++)
     {
         // First check that all vertices of this cell should be plot
@@ -102,6 +105,13 @@ fileName tmpFile = args.rootPath() / args.caseName()
                     {
                         os << p.z() << "   " << p.y() << '\n';
                     }
+                    else if (projection2D == "cylinder")
+                    {
+                        scalar maxTheta = 360;
+                        if (region != "g") maxTheta = bb.max()[0];
+                        cylinderPoint cp = radToDeg*convertToCylinder(p, maxTheta);
+                        os << cp.theta() << " " << cp.z() <<nl;
+                    }
                     else if (projection2D == "latLon")
                     {
                         scalar r = mag(p);
@@ -118,7 +128,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
                     else
                     {
                         FatalErrorIn("gmtFoam")
-                    << "projection2D should be one of XY, XZ, YZ or latLon but "
+                    << "projection2D should be one of XY, XZ, YZ, cylinder or latLon but "
                         << projection2D << " given"
                         << exit(FatalError);
                     }

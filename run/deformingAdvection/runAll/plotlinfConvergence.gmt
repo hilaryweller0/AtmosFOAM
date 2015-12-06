@@ -1,0 +1,46 @@
+inputFiles=(orthogonal/errorNorms_c1.dat
+            nonOrthog/errorNorms_c1.dat
+            orthogonal/errorNorms_c10.dat
+            nonOrthog/errorNorms_c10.dat
+      Yumeng/solidBodyRotationOnPlane_orthogonal_errorNorms_c1.dat
+      Yumeng/solidBodyRotationOnPlane_nonOrthog_errorNorms_c1.dat
+      Yumeng/solidBodyRotationOnPlane_orthogonal_errorNorms_c10.dat
+      Yumeng/solidBodyRotationOnPlane_nonOrthog_errorNorms_c10.dat
+            runAll/data/1stOrder.dat
+            runAll/data/2ndOrder.dat
+            runAll/data/3rdOrder.dat)
+outFile=linferrors.eps
+col=(3 3 3 3 3 3 3 3 2 2 2)
+legends=("multi d orthog c=1" "multi d non c=1"
+         "multi d orthog c=10" "multi d non c=10"
+         "split orthog c=1" "split non c=1"
+         "split orthog c=10" "split non c=10"
+         "1st/2nd/3rd order")
+pens=("1p,blue" "1p,blue,6_6:0" "1p,cyan" "1p,cyan,6_6:0"
+      "1p,red"  "1p,red,6_6:0"  "1p,magenta" "1p,magenta,6_6:0"
+      "1p,black,1_3:0" "1p,black,1_3:0" "1p,black,1_3:0")
+symbols=('c8p' 'x10p' 'd8p' '+10p'
+         'c8p' 'x10p' 'd8p' '+10p'
+         'x0.1p' 'x0.1p' 'x0.1p')
+spens=("1p,blue" "1p,blue" "1p,cyan" "1p,cyan"
+      "1p,red"  "1p,red"  "1p,magenta" "1p,magenta"
+       "0p,black" "0p,black" "0p,black")
+xlabel='@~D@~x (m)'
+#ylabel='l@-inf@- error'
+xmin=20
+xmax=210
+dx=2
+ddx=3
+dxg=2
+ymin=5e-5
+#ymax=0.23
+ymax=5
+dy=10
+ddy=3
+dyg=10
+xscale=*1
+yscale=*1
+legPos=x10.1/8
+projection=X10cl/8cl
+gv=1
+
