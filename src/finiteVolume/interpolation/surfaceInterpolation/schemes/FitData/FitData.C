@@ -216,11 +216,8 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
             }
 
             // Upwind: weight on face is 0
-            goodFit =
-                (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
-             && coeffsi[0] >= coeffsi[1]
-             && coeffsi[0] > positiveCoeffSum
-             && maxCoeffi <= 1;
+            goodFit = (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
+                && coeffsi[0] > positiveCoeffSum;
         }
 
         if (!goodFit) // (not good fit so increase weight in the centre and
