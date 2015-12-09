@@ -26,7 +26,7 @@ Application
 
 Description
     Solves a transport equation for a passive scalar using Implicit
-    time-stepping for the evolving velocity field in a cylindrical domain 
+    time-stepping for the evolving velocity field on a plane 
     for deformational flow
 
 \*---------------------------------------------------------------------------*/

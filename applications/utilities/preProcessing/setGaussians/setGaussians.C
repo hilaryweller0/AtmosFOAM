@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
         mesh,
         value
     );
+    T *= 0;
     
     // Add fields for all of the Gaussian distributions
     forAll(gaussians, ig)

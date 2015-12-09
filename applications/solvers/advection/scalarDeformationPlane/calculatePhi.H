@@ -1,5 +1,5 @@
-// Update phi (and U and Uf) based on runTime.time()
-// phi assumes the domain in a cylinder rotated about the z axis
+// Update phi (and U and Uf) based on runTime.time() on a plane
+// for deformational flow 
 
 {
     const scalar t = runTime.time().value();
@@ -18,19 +18,10 @@
         {
             p0 = p1;
             p1 = mesh.points()[f[ip]];
-            const scalar r = 0.5*
-            (
-                Foam::sqrt(sqr(p0.x()) + sqr(p0.y()))
-              + Foam::sqrt(sqr(p1.x()) + sqr(p1.y()))
-            );
             point pmid = 0.5*(p0 + p1);
             scalar z = pmid.z();
-            vector normal = pmid - z*vector(0,0,1);
-            normal /= mag(normal);
-            pmid /= mag(pmid);
-            pmid = z*vector(0,0,1) + r*normal;
-            scalar x = r*Foam::atan2(pmid.y(), pmid.x());
-            vector streamFunction = normal*
+            scalar x = pmid.x();
+            vector streamFunction = vector(0,-1,0)*
             (
                 psiScale*sqr(0.5*L.x()/M_PI)/endTime*sqr
                 (
