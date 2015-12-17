@@ -64,7 +64,12 @@ int main(int argc, char *argv[])
     );
 
     // thetaf
-    surfaceScalarField thetaf("thetaf", thetaf_init);
+    Info << "Creating thetaf\n" << endl;
+    surfaceScalarField thetaf
+    (
+        IOobject("thetaf", runTime.timeName(), mesh, IOobject::NO_READ),
+	thetaf_init
+    );
     forAll(thetaf, faceI)
     {
         thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
