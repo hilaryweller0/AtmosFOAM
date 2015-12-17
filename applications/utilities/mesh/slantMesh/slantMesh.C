@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
+
+    const scalar tol(readScalar(dict.lookup("tolerance")));
     
     // New point locations layered over the mountain
     IOField<point> newPoints
@@ -31,7 +33,7 @@ int main(int argc, char *argv[])
 	forAll(newPoints, pointIdx)
 	{
         scalar h = mountain->heightAt(newPoints[pointIdx]);
-        if (newPoints[pointIdx].z() < h)
+        if (newPoints[pointIdx].z() < h + tol)
         {
             newPoints[pointIdx].z() = h;
         }
