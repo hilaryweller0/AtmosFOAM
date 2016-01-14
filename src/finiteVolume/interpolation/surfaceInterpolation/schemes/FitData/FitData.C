@@ -45,11 +45,13 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     linearCorrection_(linearCorrection),
     linearLimitFactor_(linearLimitFactor),
     centralWeight_(centralWeight),
-     #ifdef SPHERICAL_GEOMETRY
-     dim_(2),
-     #else
-     dim_(mesh.nGeometricD()),
-     #endif
+// 2D dependent on the size of the 
+    dim_
+    (
+        mesh.nGeometricD() == 1 ? 1 :
+        isA<emptyPolyPatch>(mesh.boundaryMesh().last()) ? 2 :
+        mesh.nGeometricD()
+    ),
     minSize_(Polynomial::nTerms(dim_))
 {
     // Check input
@@ -79,51 +81,28 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     idir = mesh.faceAreas()[facei];
     idir /= mag(idir);
     
-     #ifndef SPHERICAL_GEOMETRY
-     if (mesh.nGeometricD() <= 2) // find the normal direction
-     {
-         if (mesh.geometricD()[0] == -1)
-         {
-             kdir = vector(1, 0, 0);
-         }
-         else if (mesh.geometricD()[1] == -1)
-         {
-             kdir = vector(0, 1, 0);
-         }
-         else
-         {
-             kdir = vector(0, 0, 1);
-         }
-     }
-     else // 3D so find a direction in the plane of the face
-     {
-         const face& f = mesh.faces()[facei];
-         kdir = mesh.points()[f[0]] - mesh.faceCentres()[facei];
-     }
-     #else
-     // Spherical geometry so kdir is the radial direction
-     kdir = mesh.faceCentres()[facei];
-     #endif
- 
-     if (mesh.nGeometricD() == 3)
-     {
-         // Remove the idir component from kdir and normalise
-         kdir -= (idir & kdir)*idir;
- 
-         scalar magk = mag(kdir);
- 
-         if (magk < SMALL)
-         {
-             FatalErrorIn("findFaceDirs(..)") << " calculated kdir = zero"
-                 << exit(FatalError);
-         }
-         else
-         {
-             kdir /= magk;
-         }
-     }
- 
-     jdir = kdir ^ idir;
+    const point& fC = mesh.faceCentres()[facei];
+    
+    // For the jdir find the cell within all cellCells of the owner that gives
+    // the direction most different to idir by finding the largest idir ^ jdir
+    jdir = idir;
+    vector jdirTmp;
+    const label own = mesh.faceOwner()[facei];
+    forAll(mesh.cellCells()[own], i)
+    {
+        const label celli = mesh.cellCells()[own][i];
+        jdirTmp = mesh.cellCentres()[celli] - fC;
+        if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
+        {
+            jdir = jdirTmp;
+        }
+    }
+    // Remove the idir from jdir and then normalise jdir
+    jdir = jdir - (idir & jdir) * idir;
+    jdir /= mag(jdir);
+    
+    // kdir is normal to idir and jdir
+    kdir = idir ^ jdir;
 }
 
 
