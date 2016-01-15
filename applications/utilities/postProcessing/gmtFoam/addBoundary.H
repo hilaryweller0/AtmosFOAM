@@ -23,15 +23,14 @@ fileName tmpFile = args.rootPath() / args.caseName()
     for(label patchI = 0; patchI < mesh.boundaryMesh().size(); patchI++)
     {
         const polyPatch& patch = mesh.boundaryMesh()[patchI];
-        if (!isA<emptyPolyPatch>(mesh.boundaryMesh()[patchI]))
+        if (!isA<emptyPolyPatch>(patch))
         {
         forAll(patch.edgeLoops(), loopi)
         {
             os << "\n>\n";
             forAll(patch.edgeLoops()[loopi], ip)
             {
-                const point& pt = patch.localPoints()[patch.edgeLoops()[loopi], ip];
-            
+                const point& pt = patch.localPoints()[patch.edgeLoops()[loopi], ip];            
                 // First check that this vertex should be plot
                 bool plotCell = true;
 
@@ -97,6 +96,11 @@ fileName tmpFile = args.rootPath() / args.caseName()
                         scalar r = mag(pt);
                         scalar lon = radToDeg*Foam::atan2((pt&ydir), (pt&xdir));
                         os << lon << "   " << r << '\n';
+                    }
+                    else if (projection2D == "cylinder")
+                    {
+                        cylinderPoint cp = radToDeg*convertToCylinder(pt);
+                        os << cp.theta() << " " << cp.z() << nl;
                     }
                     else if (projection2D == "latLon")
                     {

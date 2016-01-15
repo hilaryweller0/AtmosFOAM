@@ -17,7 +17,7 @@ int main(int argc, char *argv[])
     }
     forAll(vols, cellI)
     {
-        if (vols[cellI] < maxVolume/1e9)
+        if (vols[cellI] < maxVolume/1e12)
         {
             cells.insert(cellI);
         }

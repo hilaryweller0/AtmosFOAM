@@ -12,13 +12,17 @@ fileName tmpFile = args.rootPath() / args.caseName()
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
     scalar maxDist2 = 0;
+    scalar r = 0;
     if (ortho)
     {
         point pi = mesh.points()[plotPatch[0][0]];
-        scalar r = mag(pi);
+        r = mag(pi);
         p0 = polarPoint(lon0, lat0, r).cartesian();
         maxDist2 = 2*sqr(r);
     }
+
+    // Find the plot bounding box
+    //boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
 
     // lon and lat directions if needed
     vectorField rHatf = mesh.boundary()[patchi].Cf();

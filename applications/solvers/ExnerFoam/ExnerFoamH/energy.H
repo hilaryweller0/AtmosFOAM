@@ -16,7 +16,7 @@
        << ((internalTot-internalInitTot)/energyInitTot).value() << "  "
        << ((potentialTot-potentialInitTot)/energyInitTot).value() << "  "
        << energyDiffNorm.value() << "  "
-       << max(Uf.component(vector::Z)).value() << "  "
+       << max(mag(Uf.component(vector::Z))).value() << "  "
        << max(theta).value() << " "
        << normalisedHeatDiff << " "
        << entropyError << " "

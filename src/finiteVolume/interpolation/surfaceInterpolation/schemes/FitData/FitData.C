@@ -26,7 +26,6 @@ License
 #include "FitData.H"
 #include "surfaceFields.H"
 #include "volFields.H"
-//#include <Eigen/SVD>
 #include "SVD.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
@@ -46,11 +45,13 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     linearCorrection_(linearCorrection),
     linearLimitFactor_(linearLimitFactor),
     centralWeight_(centralWeight),
-    #ifdef SPHERICAL_GEOMETRY
-    dim_(2),
-    #else
-    dim_(mesh.nGeometricD()),
-    #endif
+    // 2D dependent on the size of the 
+    dim_
+    (
+        mesh.nGeometricD() == 1 ? 1 :
+        isA<emptyPolyPatch>(mesh.boundaryMesh().last()) ? 2 :
+        mesh.nGeometricD()
+    ),
     minSize_(Polynomial::nTerms(dim_))
 {
     // Check input
@@ -79,52 +80,29 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
 
     idir = mesh.faceAreas()[facei];
     idir /= mag(idir);
-
-    #ifndef SPHERICAL_GEOMETRY
-    if (mesh.nGeometricD() <= 2) // find the normal direction
+    
+    const point& fC = mesh.faceCentres()[facei];
+    
+    // For the jdir find the cell within all cellCells of the owner that gives
+    // the direction most different to idir by finding the largest idir ^ jdir
+    jdir = idir;
+    vector jdirTmp;
+    const label own = mesh.faceOwner()[facei];
+    forAll(mesh.cellCells()[own], i)
     {
-        if (mesh.geometricD()[0] == -1)
+        const label celli = mesh.cellCells()[own][i];
+        jdirTmp = mesh.cellCentres()[celli] - fC;
+        if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
         {
-            kdir = vector(1, 0, 0);
-        }
-        else if (mesh.geometricD()[1] == -1)
-        {
-            kdir = vector(0, 1, 0);
-        }
-        else
-        {
-            kdir = vector(0, 0, 1);
+            jdir = jdirTmp;
         }
     }
-    else // 3D so find a direction in the plane of the face
-    {
-        const face& f = mesh.faces()[facei];
-        kdir = mesh.points()[f[0]] - mesh.faceCentres()[facei];
-    }
-    #else
-    // Spherical geometry so kdir is the radial direction
-    kdir = mesh.faceCentres()[facei];
-    #endif
-
-    if (mesh.nGeometricD() == 3)
-    {
-        // Remove the idir component from kdir and normalise
-        kdir -= (idir & kdir)*idir;
-
-        scalar magk = mag(kdir);
-
-        if (magk < SMALL)
-        {
-            FatalErrorIn("findFaceDirs(..)") << " calculated kdir = zero"
-                << exit(FatalError);
-        }
-        else
-        {
-            kdir /= magk;
-        }
-    }
-
-    jdir = kdir ^ idir;
+    // Remove the idir from jdir and then normalise jdir
+    jdir = jdir - (idir & jdir) * idir;
+    jdir /= mag(jdir);
+    
+    // kdir is normal to idir and jdir
+    kdir = idir ^ jdir;
 }
 
 
@@ -165,7 +143,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 
     // Matrix of the polynomial components
     scalarRectangularMatrix B(C.size(), minSize_, scalar(0));
-    //Eigen::MatrixXd B = Eigen::MatrixXd::Zero(this->minSize(), C.size());
 
     forAll(C, ip)
     {
@@ -188,17 +165,13 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         d /= scale;
 
         Polynomial::addCoeffs(B[ip], d, wts[ip], dim_);
-        //Polynomial::addCoeffs(&B(0,ip), d, wts[ip], dim_);
     }
 
     // Additional weighting for constant (and linear) terms
     for (label i = 0; i < B.n(); i++)
-    //for (label i = 0; i < B.cols(); i++)
     {
         B[i][0] *= wts[0];
         B[i][1] *= wts[0];
-//        B(0,i) *= wts[0];
-//        B(1,i) *= wts[0];
     }
 
     // Set the fit
@@ -209,13 +182,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
     {
         SVD svd(B, SMALL);
-//        Eigen::JacobiSVD<Eigen::MatrixXd> svd
-//        (
-//            B, Eigen::ComputeThinU | Eigen::ComputeThinV
-//        );
-//        Eigen::VectorXd pickElt0 = Eigen::ArrayXd::Zero(B.rows());
-//        pickElt0[0] = 1;
-//        Eigen::VectorXd Binv0 = svd.solve(pickElt0);
 
         scalar maxCoeff = 0;
         label maxCoeffi = 0;
@@ -223,7 +189,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         for (label i=0; i<stencilSize; i++)
         {
             coeffsi[i] = wts[0]*wts[i]*svd.VSinvUt()[0][i];
-            //coeffsi[i] = wts[0]*wts[i]*Binv0(i);
             if (mag(coeffsi[i]) > maxCoeff)
             {
                 maxCoeff = mag(coeffsi[i]);
@@ -251,37 +216,13 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
             }
 
             // Upwind: weight on face is 0
-            goodFit =
-                (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
-             && coeffsi[0] >= coeffsi[1]
-             && coeffsi[0] > positiveCoeffSum
-             && maxCoeffi <= 1;
+            goodFit = (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
+                && coeffsi[0] > positiveCoeffSum;
         }
-
-//         if ((goodFit && iIt > 1))
-//         {
-//             Info<< "FitData<Polynomial>::calcFit"
-//                 << "(const List<point>& C, const label facei" << nl
-//                 << "Can now fit face " << facei << " iteration " << iIt
-//                 << " with sum of weights " << sum(coeffsi) << nl
-//                 << "    Weights " << coeffsi << nl
-//                 << "    Linear weights " << wLin << " " << 1 - wLin << endl;
-//         }
 
         if (!goodFit) // (not good fit so increase weight in the centre and
                       //  weight for constant and linear terms)
         {
-//             if (iIt >= 6)
-//             {
-//                 WarningIn
-//                 (
-//                     "FitData<Polynomial>::calcFit"
-//                     "(const List<point>& C, const label facei"
-//                 )   << "Cannot fit face " << facei << " iteration " << iIt
-//                     << " with sum of weights " << sum(coeffsi) << nl
-//                     << "    Weights " << coeffsi << nl
-//                     << "    Linear weights " << wLin << " " << 1-wLin <<endl;
-//             }
 
             wts[0] *= 10;
             if (linearCorrection_)
@@ -305,18 +246,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
                 B[i][0] *= 10;
                 B[i][1] *= 10;
             }
-
-//            for (label j = 0; j < B.rows(); j++)
-//            {
-//                B(j,0) *= 10;
-//                B(j,1) *= 10;
-//            }
-//
-//            for (label i = 0; i < B.cols(); i++)
-//            {
-//                B(0,i) *= 10;
-//                B(1,i) *= 10;
-//            }
         }
     }
 
@@ -336,16 +265,13 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     }
     else
     {
-        // if (debug)
-        // {
-            WarningIn
-            (
-                "FitData<Polynomial>::calcFit(..)"
-            )   << "Could not fit face " << facei
-                << "    Weights = " << coeffsi
-                << ", reverting to upwind/linear." << nl
-                << "    Linear weights " << wLin << " " << 1 - wLin << endl;
-        // }
+        WarningIn
+        (
+            "FitData<Polynomial>::calcFit(..)"
+        )   << "Could not fit face " << facei
+            << "    Weights = " << coeffsi
+            << ", reverting to upwind/linear." << nl
+            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
 
         coeffsi = 0;
         

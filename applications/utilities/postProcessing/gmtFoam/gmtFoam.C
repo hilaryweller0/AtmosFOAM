@@ -46,6 +46,7 @@ Description
 
 #include "systemVerbose.H"
 #include "polarPoint.H"
+#include "cylinderPoint.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -77,6 +77,10 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
     const fvMesh& mesh = this->mesh();
     const dictionary& debugDict = mesh.solutionDict().subOrEmptyDict("debug");
 
+    // TODO: use this instead of debugFaceI
+    labelList emptyList;
+    labelList debugFaceIlist = debugDict.lookupOrDefault("interpolationWeightsFaceIndices", emptyList, false, false);
+
     label debugFaceI = -1;
     debugDict.readIfPresent("interpolationWeightsFaceIndex", debugFaceI, false, false);
 

@@ -19,7 +19,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
        //Info << "p0 = " << p0 << " maxDist = " << Foam::sqrt(maxDist2) <<endl;
     }
     // Find the plot bounding box
-    //boundBox bb = setRegion(mesh, projection2D, region, r);
+    boundBox bb = setRegion(mesh, projection2D, region, r);
 
     const pointField C(mesh.cellCentres());
     for(label ip = 0; ip < C.size(); ip++)
@@ -58,6 +58,13 @@ fileName tmpFile = args.rootPath() / args.caseName()
             else if (projection2D == "ZY")
             {
                 os << p.z() << "   " << p.y() << '\n';
+            }
+            else if (projection2D == "cylinder")
+            {
+                scalar maxTheta = 360;
+                if (region != "g") maxTheta = bb.max()[0];
+                cylinderPoint cp = radToDeg*convertToCylinder(p, maxTheta);
+                os << cp.theta() << " " << cp.z() <<nl;
             }
             else if (projection2D == "latLon")
             {

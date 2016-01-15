@@ -121,6 +121,13 @@ inline boundBox setRegion
                 bb.min().z() = earthRadius*Foam::sin(miny/radToDeg);
                 bb.max().z() = earthRadius*Foam::sin(maxy/radToDeg);
             }
+            else if (projection2D == "cylinder")
+            {
+                bb.min().x() = minx;
+                bb.max().x() = maxx;
+                bb.min().z() = miny;
+                bb.max().z() = maxy;
+            }
         }
     }
 

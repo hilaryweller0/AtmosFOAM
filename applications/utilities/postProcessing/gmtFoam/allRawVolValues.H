@@ -75,6 +75,30 @@ scalar maxSsf = 0;
                     if (!bb.contains(p)) plotCell = false;
                 }
             }
+            else if(projection2D == "cylinder")
+            {
+                scalar thetaPrev = 0;
+                for(label ip = 0; ip < f.size() && plotCell; ip++)
+                {
+                    point p = mesh.points()[f[ip]];
+                    scalar maxTheta = 360;
+                    if (region != "g") maxTheta = bb.max()[0];
+                    cylinderPoint cp = radToDeg*convertToCylinder(p,maxTheta);
+                    if (ip == 0) thetaPrev = cp.theta();
+                    if
+                    (
+                        cp.theta() < bb.min().x()
+                     || cp.theta() > bb.max().x()
+                     || cp.z() < bb.min().z()
+                     || cp.z() > bb.max().z()
+                     || mag(cp.theta() - thetaPrev) > 180
+                    )
+                    {
+                        plotCell = false;
+                    }
+                    thetaPrev = cp.theta();
+                }
+            }
         }
         
         // Check that the cell centre is within rMin, rMax and lonMin, lonMax
@@ -131,6 +155,13 @@ scalar maxSsf = 0;
                         os << p.y() << "   "<< p.z() << '\n';
                     else if (projection2D == "ZY")
                         os << p.z() << "   "<< p.y() << '\n';
+                    else if (projection2D == "cylinder")
+                    {
+                        scalar maxTheta = 360;
+                        if (region != "g") maxTheta = bb.max()[0];
+                        cylinderPoint cp = radToDeg*convertToCylinder(p,maxTheta);
+                        os << cp.theta() << " " << cp.z() <<nl;
+                    }
                     else if (projection2D == "latLon")
                     {
                         scalar r = mag(p);
@@ -147,7 +178,7 @@ scalar maxSsf = 0;
                     else
                     {
                         FatalErrorIn("gmtFoam")
-                   << "projection2D should be one of XY, XZ, YZ or latLon but "
+                   << "projection2D should be one of XY, XZ, YZ, cylinder or latLon but "
                        << projection2D << " given" << exit(FatalError);
                     }
                 }

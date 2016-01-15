@@ -28,13 +28,17 @@ fileName tmpBFile = args.rootPath() / args.caseName()
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
     scalar maxDist2 = 0;
+    scalar r = 0;
     if (ortho)
     {
         point pi = mesh.points()[0];
-        scalar r = mag(pi);
+        r = mag(pi);
         p0 = polarPoint(lon0, lat0, r).cartesian();
         maxDist2 = 2*sqr(r);
     }
+
+    // Find the plot bounding box
+    boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
 
     // Plot a boundary patch if requested
     const label bpatchi = boundaryPatchName == "" ? -1 :
@@ -103,6 +107,19 @@ fileName tmpBFile = args.rootPath() / args.caseName()
                     os << pOut.z()<<"   "<<pOut.y()<< "   NaN" << '\n';
                     os << pOut2.z()<<"   "<<pOut2.y()<< "   NaN" << '\n';
                 }
+                else if (projection2D == "cylinder")
+                {
+                    scalar maxTheta = 360;
+                    if (region != "g") maxTheta = bb.max()[0];
+
+                    cylinderPoint cp = convertToCylinder(p,maxTheta);
+                    cylinderPoint cpOut = convertToCylinder(pOut,maxTheta);
+                    cylinderPoint cpOut2 = convertToCylinder(pOut2,maxTheta);
+                    os << radToDeg*cp.theta() << " " << cp.z() << " "
+                       << ssf[faci] << nl;
+                    os << radToDeg*cpOut.theta() << " " << cpOut.z() << " NaN\n";
+                    os << radToDeg*cpOut2.theta() << " " << cpOut2.z()<<" NaN\n";
+                }
                 else if (projection2D == "latLon")
                 {
                     scalar r = mag(p);
@@ -129,7 +146,7 @@ fileName tmpBFile = args.rootPath() / args.caseName()
                 else
                 {
                     FatalErrorIn("gmtFoam")
-                    << "projection2D should be one of XY, XZ, YZ or latLon but "
+                    << "projection2D should be one of XY, XZ, YZ, cylinder or latLon but "
                         << projection2D << " given"
                         << exit(FatalError);
                 }
@@ -203,6 +220,13 @@ fileName tmpBFile = args.rootPath() / args.caseName()
                 scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
                 os << lon << "   " << r << "   " << sf[faci] << '\n';
             }
+            else if (projection2D == "cylinder")
+            {
+                scalar maxTheta = 360;
+                if (region != "g") maxTheta = bb.max()[0];
+                cylinderPoint cp = radToDeg*convertToCylinder(p, maxTheta);
+                os << cp.theta() << " " << cp.z() << " "<<sf[faci]<<nl;
+            }
             else if (projection2D == "latLon")
             {
                 scalar r = mag(p);
@@ -215,7 +239,7 @@ fileName tmpBFile = args.rootPath() / args.caseName()
             else
             {
                 FatalErrorIn("gmtFoam")
-                << "projection2D should be one of XY, XZ, YZ or latLon but "
+                << "projection2D should be one of XY, XZ, YZ, cylinder or latLon but "
                     << projection2D << " given"
                     << exit(FatalError);
             }

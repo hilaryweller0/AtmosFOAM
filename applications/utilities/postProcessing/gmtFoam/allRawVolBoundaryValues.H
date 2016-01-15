@@ -39,6 +39,19 @@ scalar maxSsf = -VGREAT;
         }
     }
 
+    // Set the centre point and valid distance for Orthographic projection
+    point p0(0,0,0);
+    scalar r = 0;
+    if (ortho)
+    {
+        point pi = mesh.points()[0];
+        r = mag(pi);
+        p0 = polarPoint(lon0, lat0, r).cartesian(xdir, ydir, axis);
+    }
+
+    // Find the plot bounding box
+    boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
+
     // iterate over boundary faces and plot their values
     forAll(vf.boundaryField(), patchI)
     {
@@ -80,6 +93,13 @@ scalar maxSsf = -VGREAT;
                 {
                     os << p.z() << "   " << p.y() << '\n';
                 }
+                else if (projection2D == "cylinder")
+                {
+                    scalar maxTheta = 360;
+                    if (region != "g") maxTheta = bb.max()[0];
+                    cylinderPoint cp = radToDeg*convertToCylinder(p, maxTheta);
+                    os << cp.theta() << " " << cp.z() << nl;
+                }
                 else if (projection2D == "latLon")
                 {
                     scalar r = mag(p);
@@ -96,7 +116,7 @@ scalar maxSsf = -VGREAT;
                 else
                 {
                     FatalErrorIn("gmtFoam")
-                   << "projection2D should be one of XY, XZ, YZ or latLon but "
+                   << "projection2D should be one of XY, XZ, YZ, cylinder or latLon but "
                         << projection2D << " given" << exit(FatalError);
                 }
             }
