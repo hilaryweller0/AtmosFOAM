@@ -4,11 +4,11 @@
 #include "fvCFD.H"
 #include "Mountain.H"
 
-class WitchOfAgnesiMountain : public Mountain
+class WitchOfAgnesi2DMountain : public Mountain
 {
     public:
-    TypeName("WitchOfAgnesiMountain");
-    WitchOfAgnesiMountain(const IOdictionary& dict);
+    TypeName("WitchOfAgnesi2DMountain");
+    WitchOfAgnesi2DMountain(const IOdictionary& dict);
     scalar heightAt(const point& p) const;
     scalar gradientAt(const scalar x) const;
     scalar timeToCross(const scalar u0, const scalar H) const;
