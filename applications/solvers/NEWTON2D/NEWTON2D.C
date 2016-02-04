@@ -23,12 +23,12 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    AL2D
+    NEWTON2D
 
 // ************************************************************************* //
 // ****************                               ************************** //
 // ****************   Alternative Linearisation   ************************** //
-// ****************          Hilary's Method      ************************** //
+// ****************          Newton's Method      ************************** //
 // ************************************************************************* //   
 
 
@@ -107,19 +107,33 @@ int main(int argc, char *argv[])
 	    matrixA[cellI].yy() = 1.0;
         }
         // Calculate the source terms for the MA equation
-        source = detHess - equiDistMean/monitorNew;
+	c_m = equiDistMean/monitorNew;
+        source = detHess - c_m;
 
-        // Setup and solve the MA equation to find Psi(t+1) 
+        // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
-        (
-          Gamma*fvm::laplacian(matrixA, Phi)
-          - Gamma*fvc::laplacian(matrixA, Phi)
-          + source
-        );
+	  (
+	   Gamma*fvm::laplacian(matrixA, Phi)
+	   - Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
+	   + Gamma*fvm::Sp(fvc::laplacian(c_m),Phi) //offending part
+	   + source
+	   - Gamma*fvc::laplacian(matrixA, Phi)
+	   + Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)	  
+	   - Gamma*fvc::Sp(fvc::laplacian(c_m),Phi)
+	   );
         PhiEqn.setReference(0, scalar(0));
         solverPerformance sp = PhiEqn.solve();
         converged = sp.nIterations() <= 1;
-     
+
+        volScalarField lapcBym("lapcBym", fvc::laplacian(c_m) );
+	lapcBym.write();
+	
+	volScalarField lapcBymPhi("lapcBymPhi", (fvc::laplacian(c_m),Phi) );
+	lapcBymPhi.write();
+
+	volScalarField SplapcBymPhi("SplapcBymPhi", fvc::Sp(fvc::laplacian(c_m),Phi) );
+	SplapcBymPhi.write();
+
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -147,7 +161,7 @@ int main(int argc, char *argv[])
         // Geometric version of the Hessian
 	// detHess.internalField() =rMesh.V()/mesh.V();
         
-        
+	runTime.write();     
         // map to or calculate the monitor function on the new mesh
         monitorR = monitorFunc().map(rMesh, monitor);
         monitorNew.internalField() = monitorR.internalField();
