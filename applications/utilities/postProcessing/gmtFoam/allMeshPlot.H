@@ -40,6 +40,30 @@ fileName tmpFile = args.rootPath() / args.caseName()
                     if (magSqr(p - p0) >= maxDist2) plotCell = false;
                 }
             }
+            else if(projection2D == "cylinder")
+            {
+                scalar thetaPrev = 0;
+                for(label ip = 0; ip < f.size() && plotCell; ip++)
+                {
+                    point p = mesh.points()[f[ip]];
+                    scalar maxTheta = 360;
+                    if (region != "g") maxTheta = bb.max()[0];
+                    cylinderPoint cp = radToDeg*convertToCylinder(p,maxTheta);
+                    if (ip == 0) thetaPrev = cp.theta();
+                    if
+                    (
+                        cp.theta() < bb.min().x()
+                     || cp.theta() > bb.max().x()
+                     || cp.z() < bb.min().z()
+                     || cp.z() > bb.max().z()
+                     || mag(cp.theta() - thetaPrev) > 180
+                    )
+                    {
+                        plotCell = false;
+                    }
+                    thetaPrev = cp.theta();
+                }
+            }
             
             // Check that the cell centre is within the ranges
             const point& p = mesh.C()[celli];

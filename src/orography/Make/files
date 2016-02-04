@@ -5,6 +5,7 @@ BtfVelocityProfile.C
 Mountain.C
 SchaerCosMountain.C
 SchaerExpMountain.C
-WitchOfAgnesiMountain.C
+WitchOfAgnesi2DMountain.C
+WitchOfAgnesi3DMountain.C
 
 LIB = $(FOAM_USER_LIBBIN)/libOrography

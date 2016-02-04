@@ -45,7 +45,7 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     linearCorrection_(linearCorrection),
     linearLimitFactor_(linearLimitFactor),
     centralWeight_(centralWeight),
-    // 2D dependent on the size of the 
+// 2D dependent on the size of the 
     dim_
     (
         mesh.nGeometricD() == 1 ? 1 :

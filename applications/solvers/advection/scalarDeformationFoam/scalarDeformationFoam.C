@@ -41,6 +41,10 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
+    // Read the number of iterations each time-step
+    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const int nCorr = readLabel(itsDict.lookup("nCorr"));
+    
     #include "readDeformationalAdvectionDict.H"
     #include "createFields.H"
 
@@ -57,7 +61,7 @@ int main(int argc, char *argv[])
         #include "calculatePhi.H"
         #include "CourantNo.H"
 
-        for (int corr = 0; corr < 2; corr++)
+        for (int corr = 0; corr < nCorr; corr++)
         {
             solve
             (
