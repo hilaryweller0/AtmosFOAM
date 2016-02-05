@@ -112,15 +112,18 @@ int main(int argc, char *argv[])
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
-	  (
-	   fvm::laplacian(matrixA, Phi)
-	   - Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
-	   + Gamma*fvm::Sp(fvc::laplacian(c_m),Phi) //offending part
-	   + source
-	   - fvc::laplacian(matrixA, Phi)
-	   + Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)	  
-	   - Gamma*(fvc::laplacian(c_m)*Phi)
-	   );
+        (
+            fvm::laplacian(matrixA, Phi)
+          - Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
+          + Gamma*fvm::Sp(fvc::laplacian(c_m),Phi) //offending part
+          + source
+          - fvc::laplacian(matrixA, Phi)
+          + Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)	  
+          - Gamma*(fvc::laplacian(c_m)*Phi)
+        );
+        Info << "Diagonal = " << PhiEqn.diag() << endl;
+        Info << "lower = " << PhiEqn.lower() << endl;
+        Info << "upper = " << PhiEqn.upper() << endl;
         //PhiEqn.setReference(1650, scalar(0));
         solverPerformance sp = PhiEqn.solve();
         converged = sp.nIterations() <= 1;
