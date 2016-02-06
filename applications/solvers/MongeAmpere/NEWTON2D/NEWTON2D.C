@@ -25,16 +25,9 @@ License
 Application
     NEWTON2D
 
-// ************************************************************************* //
-// ****************                               ************************** //
-// ****************   Alternative Linearisation   ************************** //
-// ****************          Newton's Method      ************************** //
-// ************************************************************************* //   
-
-
 Description
     Solves the Monge-Ampere equation to move a mesh based on a monitor
-    function defined on the original mesh by using the Adaptive Linearisation
+    function defined on the original mesh by using Newton's Method
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,8 +39,6 @@ Description
 using namespace Foam;
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 // Main program:
-
-
 
 int main(int argc, char *argv[])
 {
@@ -86,66 +77,59 @@ int main(int argc, char *argv[])
 
     scalar conv = readScalar(controlDict.lookup("conv"));
 
-       
+    dimensionedScalar Vtot("Vtot", dimVol, gSum(mesh.V()));
+
     #include "createFields.H"
 
-
     Info << "Iteration = " << runTime.timeName()
-	 << " PABe = " << PABe.value() << endl;
-
+         << " PABe = " << PABe.value() << endl;
+    
     // Use time-steps instead of iterations to solve the Monge-Ampere eqn
     bool converged = false;
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << flush << nl;
 
-        phiBarLaplacian = fvc::laplacian(Phi);
         // Calculate the matrix: matrixA = 1+fvc::laplacian(phiBar)-Hessian
-        forAll(matrixA, cellI)
-        {
-            matrixA[cellI] = diagTensor::one*(1+phiBarLaplacian[cellI]) - Hessian[cellI];
-	    matrixA[cellI].yy() = 1.0;
-        }
-        // Calculate the source terms for the MA equation
-	c_m = equiDistMean/monitorNew;
-        source = detHess - c_m;
+        matrixA = -Hessian + I*(1+fvc::laplacian(Phi));
+        matrixA.replace(tensor::YY, scalar(1));
+        c_m = equiDistMean/monitorNew;
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
-            fvm::laplacian(matrixA, Phi)
-          - Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
-          + Gamma*fvm::Sp(fvc::laplacian(c_m),Phi) //offending part
-          + source
-          - fvc::laplacian(matrixA, Phi)
-          + Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)	  
-          - Gamma*(fvc::laplacian(c_m)*Phi)
+          - fvm::laplacian(matrixA, Phi)
+          + Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
+          - Gamma*fvm::Sp(fvc::laplacian(c_m),Phi)
+          - detHess + c_m
+          + fvc::laplacian(matrixA, Phi)
+          - Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
+          + Gamma*(fvc::laplacian(c_m)*Phi)
         );
-        Info << "Diagonal = " << PhiEqn.diag() << endl;
-        Info << "lower = " << PhiEqn.lower() << endl;
-        Info << "upper = " << PhiEqn.upper() << endl;
+        // Diagonal and off-diagonal components of the matrix
+        scalarField diag = PhiEqn.diag();
+        scalarField sumOff(mesh.nCells(), 0.0);
+        PhiEqn.sumMagOffDiag(sumOff);
+        scalarField nonDom = (sumOff - diag)/mag(diag);
+        Info << "Diagonal goes from " << min(diag) << " to " << max(diag)
+             << endl;
+        Info << "Sum off diagonal goes from " << min(sumOff) << " to "
+             << max(sumOff) << endl;
+        Info << "Non-dominance goes from " << min(nonDom) << " to "
+             << max(nonDom) << endl;
+        
+        // Solve the matrix and check for convergence
         //PhiEqn.setReference(1650, scalar(0));
+        PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         converged = sp.nIterations() <= 1;
-
-        volScalarField lapcBym("lapcBym", fvc::laplacian(c_m) );
-	lapcBym.write();
-	
-	volScalarField lapcBymPhi("lapcBymPhi", (fvc::laplacian(c_m)*Phi) );
-	lapcBymPhi.write();
-
-
-
-	volScalarField SplapcBymPhi("SplapcBymPhi", fvc::Sp(fvc::laplacian(c_m),Phi) );
-	SplapcBymPhi.write();
-
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
         gradPhi.boundaryField()
             == (static_cast<volVectorField>(fvc::grad(Phi))).boundaryField();
 
-        // Interpolate gradPhi (gradient of Phi) onto faces and correct the normal component
+        // Interpolate gradPhi onto faces and correct the normal component
         gradPhif = fvc::interpolate(gradPhi);
         gradPhif += (fvc::snGrad(Phi) - (gradPhif & mesh.Sf())/mesh.magSf())
                     *mesh.Sf()/mesh.magSf();
@@ -162,11 +146,10 @@ int main(int argc, char *argv[])
             detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
         }
 
-       
         // Geometric version of the Hessian
-	// detHess.internalField() =rMesh.V()/mesh.V();
+        // detHess.internalField() =rMesh.V()/mesh.V();
         
-	runTime.write();     
+        runTime.write();
         // map to or calculate the monitor function on the new mesh
         monitorR = monitorFunc().map(rMesh, monitor);
         monitorNew.internalField() = monitorR.internalField();
@@ -176,27 +159,23 @@ int main(int argc, char *argv[])
         equiDist = monitorR*detHess;
 
         // mean equidistribution, c
-        equiDistMean = fvc::domainIntegrate(detHess)/fvc::domainIntegrate(1/monitorNew);
+        equiDistMean = fvc::domainIntegrate(detHess)
+                        /fvc::domainIntegrate(1/monitorNew);
 
-	// The global equidistribution
-	PABem = sum(equiDist)/mesh.nCells();
-	PABe = pow((sum(pow((equiDist-PABem),2))/mesh.nCells()),0.5)/PABem;
-	converged = PABe.value() < conv;
-
-
-
+        // The global equidistribution and its variance
+        PABem = fvc::domainIntegrate(equiDist)/Vtot;
+        PABe = sqrt(fvc::domainIntegrate(sqr(equiDist - PABem)))/(Vtot*PABem);
+        converged = PABe.value() < conv;
 
         Info << "Iteration = " << runTime.timeName()
              << " PABe = " << PABe.value() << endl;
 
-
         if (converged)
         {
-
-	  Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-	       << nl << endl;
-	  
-	  runTime.writeAndEnd();
+          Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+               << nl << endl;
+          
+          runTime.writeAndEnd();
         }
         runTime.write();
     }

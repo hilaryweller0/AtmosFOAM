@@ -5,11 +5,6 @@ volScalarField Phi
              IOobject::MUST_READ, IOobject::AUTO_WRITE),
     mesh
 );
-Phi.oldTime();
-
-// Create phiBarLaplacian
-volScalarField phiBarLaplacian("phiBarLaplacian", fvc::laplacian(Phi));
-
 
 // The gradient of Phi at cell centres
 volVectorField gradPhi
@@ -43,17 +38,13 @@ volScalarField detHess
 );
 
 // The reqired matrix A
-//volTensorField matrixA("matrixA", 1+fvc::laplacian(Phi)-Hessian);
-volTensorField matrixA
+volTensorField I
 (
-    IOobject("matrixA", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    -Hessian
+    IOobject("I", runTime.constant(), mesh),
+    mesh,
+    dimensionedTensor("I", dimless, tensor::one)
 );
-forAll(matrixA, cellI)
-{
-    matrixA[cellI] = matrixA[cellI] + diagTensor::one*(1+phiBarLaplacian[cellI]);
-}
+volTensorField matrixA("matrixA", -Hessian + I*(1+fvc::laplacian(Phi)));
 
 // the volume ratio between old and new meshes (the geometric Hessian)
 volScalarField volRatio
@@ -86,31 +77,11 @@ volScalarField monitorR
 );
 monitorNew.internalField() = monitorR.internalField();
 
-
-// The equidistribution PAB
-volScalarField PABequi
-(
-    IOobject("PABequi", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    monitorR*detHess
-);
-
-// The global equidistribution
-dimensionedScalar PABem = sum(PABequi)/mesh.nCells();
-dimensionedScalar PABe = pow(  (sum( pow((PABequi-PABem),2) )/mesh.nCells()  ),0.5)/PABem;
-
-
-
 // The mean equidistribution, c
 dimensionedScalar equiDistMean = fvc::domainIntegrate(detHess)
                                  /fvc::domainIntegrate(1/monitorNew);
 
-
-
-
-
 // The equidistribution
-//volScalarField equiDist("equiDist", monitorR*detHess);
 volScalarField equiDist
 (
     IOobject("equiDist", runTime.timeName(), mesh,
@@ -118,16 +89,10 @@ volScalarField equiDist
     monitorR*detHess
 );
 
-dimensionedScalar Vtot = sum(mesh.V());
-
-// Source term
-volScalarField source
-(
-    IOobject("source", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    detHess - equiDistMean/monitorNew
-);
-
+// The global equidistribution
+dimensionedScalar PABem = fvc::domainIntegrate(equiDist)/Vtot;
+dimensionedScalar PABe = sqrt(fvc::domainIntegrate(sqr(equiDist - PABem)))
+                         /(Vtot*PABem);
 
 // constant divided by monitor function:
 volScalarField c_m
@@ -137,14 +102,3 @@ volScalarField c_m
     equiDistMean/monitorNew
 );
 
-Info << "Dimensions of Phi: " << Phi.dimensions() << endl;
-Info << "Dimensions of Hessian: " << Hessian.dimensions() << endl;
-Info << "Dimensions of detHess: " << detHess.dimensions() << endl;
-Info << "Dimensions of volRatio: " << volRatio.dimensions() << endl;
-Info << "Dimensions of monitor: " << monitor.dimensions() << endl;
-Info << "Dimensions of monitorNew: " << monitorNew.dimensions() << endl;
-Info << "Dimension of the integral 1/monitorNew: " << fvc::domainIntegrate(1/monitorNew).dimensions() << endl;
-Info << "Dimension of the integral of detHess: " << fvc::domainIntegrate(detHess).dimensions() << endl;
-Info << "Dimensions of source: " << source.dimensions() << endl;
-Info << "Dimensions of c_m: " << c_m.dimensions() << endl;
-Info << "Dimensions of matrixA: " << matrixA.dimensions() << endl;
