@@ -37,6 +37,15 @@ volScalarField detHess
     dimensionedScalar("", dimless, scalar(1))
 );
 
+volScalarField detHessR
+(
+    IOobject("detHessR", runTime.timeName(), rMesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    rMesh,
+    dimensionedScalar("", dimless, scalar(1))
+);
+
+
 // The reqired matrix A
 volTensorField I
 (
@@ -81,6 +90,15 @@ monitorNew.internalField() = monitorR.internalField();
 dimensionedScalar equiDistMean = fvc::domainIntegrate(detHess)
                                  /fvc::domainIntegrate(1/monitorNew);
 
+dimensionedScalar equiDistMeanR = fvc::domainIntegrate(detHessR)
+                                 /fvc::domainIntegrate(1/monitorR);
+Info << "Dimension of monitor    = " << monitor.dimensions() << endl;
+Info << "Dimension of monitorNew = " << monitorNew.dimensions() << endl;
+Info << "Dimension of monitorR   = " << monitorR.dimensions() << endl;
+
+
+equiDistMeanR = equiDistMean;
+
 // The equidistribution
 volScalarField equiDist
 (
@@ -100,5 +118,32 @@ volScalarField c_m
     IOobject("c_m", runTime.timeName(), mesh,
              IOobject::NO_READ, IOobject::AUTO_WRITE),
     equiDistMean/monitorNew
+);
+
+// constant divided by monitor function:
+volScalarField c_mR
+(
+    IOobject("c_mR", runTime.timeName(), rMesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    equiDistMeanR/monitorR
+);
+
+// The surface gradient of c_m on on the computational mesh
+surfaceScalarField sngradc_m
+(
+    IOobject("sngradc_m", runTime.timeName(), mesh, 
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    mesh.magSf()*fvc::snGrad(c_m),
+    "calculated"
+);
+
+
+// The surface gradient of c_m on the physical mesh
+surfaceScalarField sngradc_mR
+(
+    IOobject("sngradc_mR", runTime.timeName(), rMesh, 
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    rMesh.magSf()*fvc::snGrad(c_mR),
+    "calculated"
 );
 

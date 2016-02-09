@@ -53,6 +53,8 @@ interpolationSchemes
 snGradSchemes
 {
     default         none;
+    snGrad(((domainIntegrate(detHess)|domainIntegrate((1|monitorNew)))|monitorR)) uncorrected;
+    snGrad(c_mR) uncorrected;
 }
 
 fluxRequired

@@ -40,6 +40,7 @@ divSchemes
 {
     default             none;
     div((magSf*snGrad(c_m)),Phi) Gauss upwind;
+    div(sngradc_m,Phi) Gauss upwind;
 }
 
 laplacianSchemes
@@ -68,6 +69,7 @@ snGradSchemes
     snGrad(phiBar)     uncorrected;
     snGrad(Phi)     uncorrected;
     snGrad(c_m) uncorrected;
+    snGrad(((domainIntegrate(detHess)|domainIntegrate((1|monitorNew)))|monitorR)) uncorrected;
 }
 
 fluxRequired

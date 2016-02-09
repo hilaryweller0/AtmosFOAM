@@ -94,12 +94,20 @@ int main(int argc, char *argv[])
         matrixA = -Hessian + I*(1+fvc::laplacian(Phi));
         matrixA.replace(tensor::YY, scalar(1));
         c_m = equiDistMean/monitorNew;
+        c_mR = equiDistMean/monitorR;
+
+        // calculate the gradient of c_m in physical space
+        sngradc_mR = rMesh.magSf()*fvc::snGrad(c_mR);
+
+        // transfer the gradient to the computational mesh
+        sngradc_m.internalField() = sngradc_mR.internalField();
+
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
           - fvm::laplacian(matrixA, Phi)
-          + Gamma*fvm::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
+          + Gamma*fvm::div(sngradc_m,Phi)
           - Gamma*fvm::Sp(fvc::laplacian(c_m),Phi)
           - detHess + c_m
           + fvc::laplacian(matrixA, Phi)

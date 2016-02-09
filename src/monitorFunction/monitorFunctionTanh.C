@@ -93,7 +93,7 @@ tmp<volScalarField> monitorFunctionTanh::map
             IOobject("monitor", newMesh.time().timeName(), newMesh,
                      IOobject::NO_READ, IOobject::AUTO_WRITE),
             newMesh,
-            dimensionSet(0,-2,0,0,0),
+            dimensionSet(0,0,0,0,0),
             wordList(newMesh.boundaryMesh().size(), "zeroGradient")
         )
     );
