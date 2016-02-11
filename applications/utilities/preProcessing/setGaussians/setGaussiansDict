@@ -1,8 +1,8 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -10,19 +10,16 @@ FoamFile
     version     2.0;
     format      ascii;
     class       dictionary;
-    object      fvSolution;
+    object      setGaussinasDict;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
-{
-    Phi
-    {
-        solver PCG;
-        preconditioner   DIC;
-        tolerance        1e-12;
-        relTol           0;
-    };
-}
+backgroundValue T [0 0 0 0 0] 0;
+gaussians 1
+(
+    centre [0 1 0 0 0] (0 0.5 10)
+    radius [0 1 0 0 0] 1
+    max    [0 0 0 0 0] 1
+);
 
 // ************************************************************************* //

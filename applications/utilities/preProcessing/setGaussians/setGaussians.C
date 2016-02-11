@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "setGaussiansDict",
-            mesh.time().constant(),
+            mesh.time().system(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
