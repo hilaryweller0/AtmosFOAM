@@ -70,10 +70,8 @@ int main(int argc, char *argv[])
     autoPtr<monitorFunction> monitorFunc(monitorFunction::New(controlDict));
     
     // The ratio of the finite different to the geometric Hessian
-    const dimensionedScalar Gamma
-    (
-        controlDict.lookup("Gamma")
-    );
+    const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
+    const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
     scalar conv = readScalar(controlDict.lookup("conv"));
 
@@ -104,24 +102,26 @@ int main(int argc, char *argv[])
         // transfer the gradient to the computational mesh
         sngradc_m.internalField() = sngradc_mR.internalField();
 
-        // The divergence of sngradc_m
+        // The divergence of sngradc_m (correct so that it sums to zero)
         lapc_m = fvc::div(mesh.magSf()*sngradc_m);
+        lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
-          - fvm::laplacian(matrixA, phi)
-          + Gamma*fvm::div(mesh.magSf()*sngradc_m,phi)
-          - Gamma*fvm::Sp(lapc_m,phi)
+          - Gamma1*fvm::laplacian(matrixA, phi)
+          + Gamma2*fvm::div(mesh.magSf()*sngradc_m,phi)
+          - Gamma2*fvm::Sp(lapc_m,phi)
           - detHess + c_m
         );
 
         // Solve the matrix and check for convergence
+        //PhiEqn.setReference(1700, scalar(0));
         PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
         phi = dimensionedScalar("phi", dimArea, scalar(0));
-        converged = sp.nIterations() <= 1;
+        //converged = sp.nIterations() <= 1;
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -145,6 +145,16 @@ int main(int argc, char *argv[])
         forAll(detHess, cellI)
         {
             detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
+        }
+
+        // Write out and finish early if the solution is diverging
+        scalar minHess = min(detHess).value();
+        if (minHess < 0)
+        {
+            Info << "Stopping early because minimum of |I+H| has become "
+                 << "negative " << minHess << endl;
+            runTime.writeAndEnd();
+            rMesh.write();
         }
 
         // map to or calculate the monitor function on the new mesh

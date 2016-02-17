@@ -1,36 +1,47 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|  \\    /   O peration     | Version:  2.3.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    object      fvSolution;
+    class       volScalarField;
+    location    "0";
+    object      Phi;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
-{
-    phi
-    {
-        solver BICCG;
-        preconditioner DILU;
-        tolerance        0;
-        relTol           1e-6;
-        maxIter          100;
-    };
-}
+dimensions      [0 2 0 0 0 0 0];
 
-relaxationFactors
+internalField   uniform 0;
+
+boundaryField
 {
-    equations
+    ground
     {
-        phi               0.999999;
+        type            cyclic;
+    }
+    top
+    {
+        type            cyclic;
+    }
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+    defaultFaces
+    {
+        type            empty;
     }
 }
+
+
 // ************************************************************************* //

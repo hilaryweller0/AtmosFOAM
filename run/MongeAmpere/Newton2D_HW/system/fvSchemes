@@ -24,7 +24,7 @@ FoamFile
 
 ddtSchemes
 {
-    default Euler;
+    default none;
 }
 
 gradSchemes
@@ -37,7 +37,7 @@ gradSchemes
 divSchemes
 {
     default             none;
-    div((magSf*sngradc_m),phi) Gauss upwind; //QUICK; //linear; //upwind;
+    div((magSf*sngradc_m),phi) Gauss upwind; //linear;  //upwind;
 }
 
 laplacianSchemes

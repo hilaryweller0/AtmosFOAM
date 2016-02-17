@@ -1,0 +1,501 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+Build  : 3.0.1-18e358711b4e
+Exec   : Newton_HW
+Date   : Feb 17 2016
+Time   : 11:05:54
+Host   : "homer"
+PID    : 7911
+Case   : /home/hilary/OpenFOAM/AtmosFOAM-3.0.1/run/MongeAmpere/Newton2D_HW
+nProcs : 1
+sigFpe : Enabling floating point exception trapping (FOAM_SIGFPE).
+fileModificationChecking : Monitoring run-time modified files using timeStampMaster
+allowSystemOperations : Allowing user-supplied system call operations
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+Create time
+
+Create mesh for time = 0
+
+Selecting initial monitorFunction type monitorFunctionSech
+Iteration = 0 PABe = 2.74758
+Time = 1
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.48478e-07, No Iterations 79
+Iteration = 1 PABe = 2.02431
+Time = 2
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.30563e-07, No Iterations 78
+Iteration = 2 PABe = 1.55267
+Time = 3
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.30437e-07, No Iterations 78
+Iteration = 3 PABe = 1.3063
+Time = 4
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.98425e-07, No Iterations 78
+Iteration = 4 PABe = 1.18399
+Time = 5
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.69717e-07, No Iterations 78
+Iteration = 5 PABe = 1.1131
+Time = 6
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.79982e-07, No Iterations 78
+Iteration = 6 PABe = 1.06472
+Time = 7
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.67076e-07, No Iterations 76
+Iteration = 7 PABe = 1.02795
+Time = 8
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.11774e-07, No Iterations 76
+Iteration = 8 PABe = 0.998252
+Time = 9
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.90879e-07, No Iterations 77
+Iteration = 9 PABe = 0.973278
+Time = 10
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.0991e-07, No Iterations 76
+Iteration = 10 PABe = 0.951554
+Time = 11
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.06493e-07, No Iterations 75
+Iteration = 11 PABe = 0.932201
+Time = 12
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.071e-07, No Iterations 78
+Iteration = 12 PABe = 0.914346
+Time = 13
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.75389e-07, No Iterations 78
+Iteration = 13 PABe = 0.897579
+Time = 14
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.58068e-07, No Iterations 77
+Iteration = 14 PABe = 0.881661
+Time = 15
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.81128e-07, No Iterations 77
+Iteration = 15 PABe = 0.865708
+Time = 16
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.55427e-07, No Iterations 77
+Iteration = 16 PABe = 0.850406
+Time = 17
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.12905e-07, No Iterations 77
+Iteration = 17 PABe = 0.835137
+Time = 18
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.22371e-07, No Iterations 77
+Iteration = 18 PABe = 0.819163
+Time = 19
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.68649e-07, No Iterations 77
+Iteration = 19 PABe = 0.803454
+Time = 20
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.89162e-07, No Iterations 77
+Iteration = 20 PABe = 0.78806
+Time = 21
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.95236e-07, No Iterations 77
+Iteration = 21 PABe = 0.771792
+Time = 22
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.49964e-07, No Iterations 78
+Iteration = 22 PABe = 0.754694
+Time = 23
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.05562e-07, No Iterations 78
+Iteration = 23 PABe = 0.737838
+Time = 24
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.39968e-07, No Iterations 78
+Iteration = 24 PABe = 0.721382
+Time = 25
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 5.42991e-07, No Iterations 78
+Iteration = 25 PABe = 0.704435
+Time = 26
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 5.10106e-07, No Iterations 78
+Iteration = 26 PABe = 0.686396
+Time = 27
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.35889e-07, No Iterations 77
+Iteration = 27 PABe = 0.667697
+Time = 28
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.10193e-07, No Iterations 77
+Iteration = 28 PABe = 0.649141
+Time = 29
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.61977e-07, No Iterations 77
+Iteration = 29 PABe = 0.631074
+Time = 30
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.07301e-07, No Iterations 77
+Iteration = 30 PABe = 0.613196
+Time = 31
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.49968e-07, No Iterations 76
+Iteration = 31 PABe = 0.594867
+Time = 32
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.57103e-07, No Iterations 77
+Iteration = 32 PABe = 0.575661
+Time = 33
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.16005e-07, No Iterations 77
+Iteration = 33 PABe = 0.555716
+Time = 34
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 5.94249e-07, No Iterations 78
+Iteration = 34 PABe = 0.535579
+Time = 35
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.80596e-07, No Iterations 78
+Iteration = 35 PABe = 0.515752
+Time = 36
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.92213e-07, No Iterations 78
+Iteration = 36 PABe = 0.496418
+Time = 37
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.66653e-07, No Iterations 78
+Iteration = 37 PABe = 0.477496
+Time = 38
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.55616e-07, No Iterations 78
+Iteration = 38 PABe = 0.458809
+Time = 39
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.56214e-07, No Iterations 77
+Iteration = 39 PABe = 0.440173
+Time = 40
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.06987e-07, No Iterations 77
+Iteration = 40 PABe = 0.421429
+Time = 41
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.88603e-07, No Iterations 77
+Iteration = 41 PABe = 0.402467
+Time = 42
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.35633e-07, No Iterations 77
+Iteration = 42 PABe = 0.383275
+Time = 43
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.70403e-07, No Iterations 77
+Iteration = 43 PABe = 0.363958
+Time = 44
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.72213e-07, No Iterations 77
+Iteration = 44 PABe = 0.344715
+Time = 45
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.72147e-07, No Iterations 77
+Iteration = 45 PABe = 0.325762
+Time = 46
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.62045e-07, No Iterations 78
+Iteration = 46 PABe = 0.307277
+Time = 47
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.12896e-07, No Iterations 78
+Iteration = 47 PABe = 0.289367
+Time = 48
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.55693e-07, No Iterations 78
+Iteration = 48 PABe = 0.27207
+Time = 49
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.77981e-07, No Iterations 78
+Iteration = 49 PABe = 0.255378
+Time = 50
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.81359e-07, No Iterations 78
+Iteration = 50 PABe = 0.239261
+Time = 51
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.79641e-07, No Iterations 77
+Iteration = 51 PABe = 0.223696
+Time = 52
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.75154e-07, No Iterations 77
+Iteration = 52 PABe = 0.208679
+Time = 53
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.67116e-07, No Iterations 78
+Iteration = 53 PABe = 0.194219
+Time = 54
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.06502e-07, No Iterations 78
+Iteration = 54 PABe = 0.18033
+Time = 55
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.39195e-07, No Iterations 78
+Iteration = 55 PABe = 0.167024
+Time = 56
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.43174e-07, No Iterations 78
+Iteration = 56 PABe = 0.154306
+Time = 57
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.24709e-07, No Iterations 75
+Iteration = 57 PABe = 0.142175
+Time = 58
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.65027e-07, No Iterations 75
+Iteration = 58 PABe = 0.13063
+Time = 59
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.01618e-07, No Iterations 78
+Iteration = 59 PABe = 0.119666
+Time = 60
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.29355e-07, No Iterations 78
+Iteration = 60 PABe = 0.109279
+Time = 61
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.30684e-07, No Iterations 78
+Iteration = 61 PABe = 0.0994641
+Time = 62
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.19302e-07, No Iterations 78
+Iteration = 62 PABe = 0.0902194
+Time = 63
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.01434e-07, No Iterations 78
+Iteration = 63 PABe = 0.0815429
+Time = 64
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.79438e-07, No Iterations 78
+Iteration = 64 PABe = 0.0734326
+Time = 65
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.51928e-07, No Iterations 78
+Iteration = 65 PABe = 0.0658852
+Time = 66
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.28674e-07, No Iterations 78
+Iteration = 66 PABe = 0.0588947
+Time = 67
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.00481e-07, No Iterations 78
+Iteration = 67 PABe = 0.0524508
+Time = 68
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.73193e-07, No Iterations 78
+Iteration = 68 PABe = 0.0465389
+Time = 69
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.44328e-07, No Iterations 78
+Iteration = 69 PABe = 0.0411403
+Time = 70
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.85561e-07, No Iterations 77
+Iteration = 70 PABe = 0.0362327
+Time = 71
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.01242e-07, No Iterations 78
+Iteration = 71 PABe = 0.0317909
+Time = 72
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.79221e-07, No Iterations 78
+Iteration = 72 PABe = 0.0277883
+Time = 73
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.24698e-07, No Iterations 77
+Iteration = 73 PABe = 0.0241966
+Time = 74
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.49377e-07, No Iterations 77
+Iteration = 74 PABe = 0.0209876
+Time = 75
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.19371e-07, No Iterations 77
+Iteration = 75 PABe = 0.0181326
+Time = 76
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.93137e-07, No Iterations 77
+Iteration = 76 PABe = 0.0156037
+Time = 77
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.55024e-07, No Iterations 77
+Iteration = 77 PABe = 0.0133732
+Time = 78
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.13237e-07, No Iterations 77
+Iteration = 78 PABe = 0.0114147
+Time = 79
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.85975e-07, No Iterations 77
+Iteration = 79 PABe = 0.00970269
+Time = 80
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.68481e-07, No Iterations 77
+Iteration = 80 PABe = 0.00821289
+Time = 81
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.61519e-07, No Iterations 77
+Iteration = 81 PABe = 0.00692244
+Time = 82
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.36768e-07, No Iterations 77
+Iteration = 82 PABe = 0.00580986
+Time = 83
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.93372e-07, No Iterations 77
+Iteration = 83 PABe = 0.0048552
+Time = 84
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.77764e-07, No Iterations 77
+Iteration = 84 PABe = 0.00404001
+Time = 85
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.47042e-07, No Iterations 77
+Iteration = 85 PABe = 0.00334739
+Time = 86
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.09922e-07, No Iterations 77
+Iteration = 86 PABe = 0.00276189
+Time = 87
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 5.80046e-07, No Iterations 77
+Iteration = 87 PABe = 0.00226956
+Time = 88
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.49114e-07, No Iterations 76
+Iteration = 88 PABe = 0.00185784
+Time = 89
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.27233e-07, No Iterations 76
+Iteration = 89 PABe = 0.00151548
+Time = 90
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.41625e-07, No Iterations 76
+Iteration = 90 PABe = 0.00123248
+Time = 91
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.89459e-07, No Iterations 75
+Iteration = 91 PABe = 0.00100001
+Time = 92
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.07385e-07, No Iterations 74
+Iteration = 92 PABe = 0.000810294
+Time = 93
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.85596e-07, No Iterations 73
+Iteration = 93 PABe = 0.0006565
+Time = 94
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.54853e-07, No Iterations 73
+Iteration = 94 PABe = 0.000532682
+Time = 95
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.61889e-07, No Iterations 73
+Iteration = 95 PABe = 0.000433656
+Time = 96
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.01546e-07, No Iterations 75
+Iteration = 96 PABe = 0.000354927
+Time = 97
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.97804e-07, No Iterations 75
+Iteration = 97 PABe = 0.000292607
+Time = 98
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.23346e-07, No Iterations 77
+Iteration = 98 PABe = 0.000243362
+Time = 99
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.64878e-07, No Iterations 77
+Iteration = 99 PABe = 0.000204365
+Time = 100
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.05408e-07, No Iterations 77
+Iteration = 100 PABe = 0.000173273
+Time = 101
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.69018e-07, No Iterations 78
+Iteration = 101 PABe = 0.000148192
+Time = 102
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.33513e-07, No Iterations 78
+Iteration = 102 PABe = 0.000127639
+Time = 103
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.88061e-07, No Iterations 78
+Iteration = 103 PABe = 0.000110497
+Time = 104
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.71315e-07, No Iterations 78
+Iteration = 104 PABe = 9.59481e-05
+Time = 105
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.21817e-07, No Iterations 78
+Iteration = 105 PABe = 8.34101e-05
+Time = 106
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.70335e-07, No Iterations 78
+Iteration = 106 PABe = 7.24766e-05
+Time = 107
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.85647e-07, No Iterations 77
+Iteration = 107 PABe = 6.28655e-05
+Time = 108
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.07281e-07, No Iterations 77
+Iteration = 108 PABe = 5.43789e-05
+Time = 109
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.3022e-07, No Iterations 77
+Iteration = 109 PABe = 4.68737e-05
+Time = 110
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.30708e-07, No Iterations 77
+Iteration = 110 PABe = 4.02417e-05
+Time = 111
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.90415e-07, No Iterations 77
+Iteration = 111 PABe = 3.43961e-05
+Time = 112
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.52946e-07, No Iterations 77
+Iteration = 112 PABe = 2.92629e-05
+Time = 113
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.16116e-07, No Iterations 77
+Iteration = 113 PABe = 2.4776e-05
+Time = 114
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.79548e-07, No Iterations 77
+Iteration = 114 PABe = 2.08744e-05
+Time = 115
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.4244e-07, No Iterations 77
+Iteration = 115 PABe = 1.75008e-05
+Time = 116
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.79897e-07, No Iterations 76
+Iteration = 116 PABe = 1.46009e-05
+Time = 117
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.36161e-07, No Iterations 76
+Iteration = 117 PABe = 1.21236e-05
+Time = 118
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.91234e-07, No Iterations 76
+Iteration = 118 PABe = 1.00206e-05
+Time = 119
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.38958e-07, No Iterations 76
+Iteration = 119 PABe = 8.24711e-06
+Time = 120
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.81825e-07, No Iterations 76
+Iteration = 120 PABe = 6.76148e-06
+Time = 121
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.1089e-07, No Iterations 76
+Iteration = 121 PABe = 5.52564e-06
+Time = 122
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.47451e-07, No Iterations 75
+Iteration = 122 PABe = 4.50496e-06
+Time = 123
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.05799e-07, No Iterations 73
+Iteration = 123 PABe = 3.66819e-06
+Time = 124
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.80129e-07, No Iterations 72
+Iteration = 124 PABe = 2.98733e-06
+Time = 125
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.87745e-07, No Iterations 71
+Iteration = 125 PABe = 2.43746e-06
+Time = 126
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.01345e-07, No Iterations 75
+Iteration = 126 PABe = 1.99647e-06
+Time = 127
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.94288e-07, No Iterations 49
+Iteration = 127 PABe = 1.64489e-06
+Time = 128
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.50566e-07, No Iterations 75
+Iteration = 128 PABe = 1.36568e-06
+Time = 129
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.79197e-07, No Iterations 77
+Iteration = 129 PABe = 1.14409e-06
+Time = 130
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.15152e-07, No Iterations 77
+Iteration = 130 PABe = 9.67579e-07
+Time = 131
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.51023e-07, No Iterations 77
+Iteration = 131 PABe = 8.25762e-07
+Time = 132
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.91634e-07, No Iterations 78
+Iteration = 132 PABe = 7.1029e-07
+Time = 133
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.57805e-07, No Iterations 78
+Iteration = 133 PABe = 6.14695e-07
+Time = 134
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.79557e-07, No Iterations 78
+Iteration = 134 PABe = 5.34137e-07
+Time = 135
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.31874e-07, No Iterations 78
+Iteration = 135 PABe = 4.65112e-07
+Time = 136
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.80444e-07, No Iterations 78
+Iteration = 136 PABe = 4.05145e-07
+Time = 137
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.35973e-07, No Iterations 78
+Iteration = 137 PABe = 3.52514e-07
+Time = 138
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.62591e-07, No Iterations 77
+Iteration = 138 PABe = 3.06026e-07
+Time = 139
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.0556e-07, No Iterations 77
+Iteration = 139 PABe = 2.64835e-07
+Time = 140
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.50265e-07, No Iterations 77
+Iteration = 140 PABe = 2.28324e-07
+Time = 141
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.36877e-07, No Iterations 77
+Iteration = 141 PABe = 1.96013e-07
+Time = 142
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.98513e-07, No Iterations 77
+Iteration = 142 PABe = 1.6751e-07
+Time = 143
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.57057e-07, No Iterations 77
+Iteration = 143 PABe = 1.42471e-07
+Time = 144
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.16279e-07, No Iterations 77
+Iteration = 144 PABe = 1.20584e-07
+Time = 145
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.76759e-07, No Iterations 77
+Iteration = 145 PABe = 1.01555e-07
+Time = 146
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 6.38884e-07, No Iterations 77
+Iteration = 146 PABe = 8.51058e-08
+Time = 147
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.74883e-07, No Iterations 76
+Iteration = 147 PABe = 7.09729e-08
+Time = 148
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.31349e-07, No Iterations 76
+Iteration = 148 PABe = 5.89052e-08
+Time = 149
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.8756e-07, No Iterations 76
+Iteration = 149 PABe = 4.86668e-08
+Time = 150
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.40822e-07, No Iterations 76
+Iteration = 150 PABe = 4.00373e-08
+Time = 151
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.9225e-07, No Iterations 76
+Iteration = 151 PABe = 3.28131e-08
+Time = 152
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.3098e-07, No Iterations 76
+Iteration = 152 PABe = 2.68073e-08
+Time = 153
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.11407e-07, No Iterations 75
+Iteration = 153 PABe = 2.18504e-08
+Time = 154
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.81603e-07, No Iterations 73
+Iteration = 154 PABe = 1.77892e-08
+Time = 155
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 8.79151e-07, No Iterations 72
+Iteration = 155 PABe = 1.4487e-08
+Time = 156
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 9.79117e-07, No Iterations 70
+Iteration = 156 PABe = 1.18218e-08
+Time = 157
+DILUPBiCG:  Solving for phi, Initial residual = 1, Final residual = 7.14307e-07, No Iterations 75
+Iteration = 157 PABe = 9.6855e-09
+ExecutionTime = 8.21 s
+
+End
+

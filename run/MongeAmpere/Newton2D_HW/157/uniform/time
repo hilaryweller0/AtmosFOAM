@@ -1,36 +1,29 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|  \\    /   O peration     | Version:  3.0.1                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
     version     2.0;
-    format      ascii;
+    format      binary;
     class       dictionary;
-    object      fvSolution;
+    location    "157/uniform";
+    object      time;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
-{
-    phi
-    {
-        solver BICCG;
-        preconditioner DILU;
-        tolerance        0;
-        relTol           1e-6;
-        maxIter          100;
-    };
-}
+value           157;
 
-relaxationFactors
-{
-    equations
-    {
-        phi               0.999999;
-    }
-}
+name            "157";
+
+index           157;
+
+deltaT          1;
+
+deltaT0         1;
+
+
 // ************************************************************************* //
