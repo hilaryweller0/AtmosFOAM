@@ -33,6 +33,9 @@ Description
 #ifndef deformationalFlow_H
 #define deformationalFlow_H
 
+#include "wallFvPatch.H"
+#include "coupledFvPatch.H"
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
@@ -107,13 +110,55 @@ public:
                 (
                     psiScale_*sqr(0.5*L_.x()/M_PI)/endTime_*sqr
                     (
-                        Foam::sin(2*M_PI*(x/L_.x() - t/endTime_))
-                       *Foam::cos(M_PI*z/L_.z())
+                        sin(2*M_PI*(x/L_.x() - t/endTime_))
+                       *cos(M_PI*z/L_.z())
                     )
-                    *Foam::cos(M_PI*t/endTime_)
+                    *cos(M_PI*t/endTime_)
                   - L_.x()*z/endTime_
                 );
                 phi[faceI] += streamFunction & (p0 - p1);
+            }
+        }
+        
+        // Set boundary values of phi (if needed)
+        forAll(phi.boundaryField(), patchI)
+        {
+            if
+            (
+                phi.boundaryField()[patchI].type() == "calculated"
+             || phi.boundaryField()[patchI].type() == "cyclic"
+            )
+            {
+                forAll(phi.boundaryField()[patchI], fi)
+                {
+                    // Initialise the flux to zero before adding contributions
+                    phi.boundaryField()[patchI][fi] = 0;
+                
+                    // Loop around edges of the face and set the flux
+                    const face& f = mesh.boundaryMesh()[patchI][fi];
+                    point p0 = mesh.points()[f.last()];
+                    point p1 = p0;
+                    forAll(f, ip)
+                    {
+                        p0 = p1;
+                        p1 = mesh.points()[f[ip]];
+                        point pmid = 0.5*(p0 + p1);
+                        scalar z = pmid.z();
+                        scalar x = pmid.x();
+                        vector streamFunction = vector(0,-1,0)*
+                        (
+                            psiScale_*sqr(0.5*L_.x()/M_PI)/endTime_*sqr
+                            (
+                                sin(2*M_PI*(x/L_.x() - t/endTime_))
+                               *cos(M_PI*z/L_.z())
+                            )
+                            *cos(M_PI*t/endTime_)
+                          - L_.x()*z/endTime_
+                        );
+                        phi.boundaryField()[patchI][fi] 
+                            += streamFunction & (p0 - p1);
+                    }
+                }
             }
         }
     }
