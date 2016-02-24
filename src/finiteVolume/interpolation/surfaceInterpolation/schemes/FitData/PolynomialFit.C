@@ -7,7 +7,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
     const bool linearCorrection,
     const scalar linearLimitFactor,
     const scalar centralWeight, 
-    const label dimensions,
+    const direction dimensions,
     const label terms
 )
 :

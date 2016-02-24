@@ -42,20 +42,23 @@ Test::PolynomialFit::PolynomialFit(const Foam::List<point>& stencilPoints)
     const scalar unused_wLin = 0;
     const label unused_faceI = 0;
 
-    fvMesh* unusedMesh = NULL;
-    extendedUpwindCellToFaceStencilNew* unusedStencil = NULL;
     bool linearCorrection = false;
     scalar linearLimitFactor = 3.0;
     scalar centralWeight = 1e3;
     const point p0(0, 0, 0);
-    const bool pureUpwind = true;
+    const bool pureUpwind = false;
     const vector idir(1, 0, 0);
     const vector jdir(0, 0, -1);
     const vector kdir(0, 1, 0);
+    const direction dimensions = 2;
 
-/*    TestableUpwindCorrFitData
-        fitData(*unusedMesh, *unusedStencil, linearCorrection, linearLimitFactor, centralWeight);
-    fitData.calcFit(
+    Foam::PolynomialFit<cubicUpwindCPCFitPolynomial> polynomialFit(
+                linearCorrection,
+                linearLimitFactor,
+                centralWeight,
+                dimensions,
+                cubicUpwindCPCFitPolynomial::nTerms(dimensions));
+    polynomialFit.fit(
             coefficients_,
             wts,
             stencilPoints,
@@ -65,7 +68,7 @@ Test::PolynomialFit::PolynomialFit(const Foam::List<point>& stencilPoints)
             idir,
             jdir,
             kdir,
-            unused_faceI);*/
+            unused_faceI);
     coefficients_[0] += 1.0;
 }
 

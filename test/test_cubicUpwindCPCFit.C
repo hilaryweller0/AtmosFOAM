@@ -41,7 +41,7 @@ TEST_CASE("fit full-size stencil to uniform 2D mesh")
     CHECK(fit.coefficients()[11] == approx(0.047));
 }
 
-/*TEST_CASE("fit full-size stencil to uniform set of points in local coords")
+TEST_CASE("fit full-size stencil to uniform set of points in local coords")
 {
     Foam::List<point> twelvePointStencil(12, point(0, 0, 0));
     twelvePointStencil[0] = point(-0.5, 0, 0);
@@ -70,4 +70,4 @@ TEST_CASE("fit full-size stencil to uniform 2D mesh")
     CHECK(fit.coefficients()[9] == approx(0.008));
     CHECK(fit.coefficients()[10] == approx(-0.086));
     CHECK(fit.coefficients()[11] == approx(0.047));
-}*/
+}

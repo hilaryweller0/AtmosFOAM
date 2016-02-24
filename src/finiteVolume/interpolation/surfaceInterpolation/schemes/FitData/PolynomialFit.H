@@ -14,7 +14,7 @@ namespace Foam
             const bool linearCorrection,
             const scalar linearLimitFactor,
             const scalar centralWeight,
-            const label dimension,
+            const direction dimensions,
             const label terms
         );
         
@@ -36,7 +36,7 @@ namespace Foam
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
         const scalar centralWeight_;
-        const label dim_;
+        const direction dim_;
         const label minSize_;
     };
 }
