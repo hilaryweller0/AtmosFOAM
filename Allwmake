@@ -17,3 +17,5 @@ set -e
 
 src/Allwmake $*
 applications/Allwmake $*
+wmake test
+(cd test && testAtmosFOAM)
