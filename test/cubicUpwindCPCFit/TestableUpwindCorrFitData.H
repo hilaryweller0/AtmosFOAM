@@ -3,19 +3,18 @@
 
 #include "fvCFD.H"
 #include "extendedUpwindCellToFaceStencilNew.H"
+#include "cubicUpwindCPCFitPolynomial.H"
 #include "FitData.H"
 
 namespace Foam
 {
-
-    template<class Polynomial>
     class TestableUpwindCorrFitData
     :
         public FitData
         <
-            TestableUpwindCorrFitData<Polynomial>,
+            TestableUpwindCorrFitData,
             extendedUpwindCellToFaceStencilNew,
-            Polynomial
+            cubicUpwindCPCFitPolynomial
         >
     {
         public:
@@ -26,46 +25,37 @@ namespace Foam
                 const bool linearCorrection,
                 const scalar linearLimitFactor,
                 const scalar centralWeight
-            );
+            )
+            :
+                FitData
+                <
+                    TestableUpwindCorrFitData,
+                    extendedUpwindCellToFaceStencilNew,
+                    cubicUpwindCPCFitPolynomial            
+                >
+                (
+                    mesh, stencil, linearCorrection, linearLimitFactor, centralWeight
+                )
+            {}
 
             virtual ~TestableUpwindCorrFitData() {}
 
-            void calcFit();
+            void calcFit() {}
 
-            void calcFit                                                                                      (
+            // TODO: don't know why I have to explicitly delegate to the base class
+            // bleugh, polymorphism
+            void calcFit
+            (
                 scalarList& coeffsi,
                 scalarList& wts,    
-                const List<point>&, 
+                const List<point>& stencilPoints,
                 const scalar wLin,  
                 const label faci 
-            );
+            )
+            {
+                FitData::calcFit(coeffsi, wts, stencilPoints, wLin, faci);
+            }
     };
-
-    template<class Polynomial>
-    TestableUpwindCorrFitData<Polynomial>::TestableUpwindCorrFitData
-    (
-        const fvMesh& mesh,
-        const extendedUpwindCellToFaceStencilNew& stencil,
-        const bool linearCorrection,
-        const scalar linearLimitFactor,
-        const scalar centralWeight
-    )
-    :
-        FitData
-        <
-            TestableUpwindCorrFitData<Polynomial>,
-            extendedUpwindCellToFaceStencilNew,
-            Polynomial            
-        >
-        (
-            mesh, stencil, linearCorrection, linearLimitFactor, centralWeight
-        )
-    {}
-
-    template<class Polynomial>
-    void TestableUpwindCorrFitData<Polynomial>::calcFit()
-    {}
-
 }
 
 #endif
