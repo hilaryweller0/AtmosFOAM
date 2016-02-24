@@ -1,5 +1,5 @@
-#ifndef PolynomialFit_H
-#define PolynomialFit_H
+#ifndef TestPolynomialFit_H
+#define TestPolynomialFit_H
 
 #include "fvCFD.H"
 
@@ -9,6 +9,7 @@ namespace Test {
             PolynomialFit(
                     const Foam::List<point>& stencilPoints,
                     const Foam::label faceI);
+            PolynomialFit(const Foam::List<point>& stencilPoints);
             const Foam::scalarList coefficients();
 
         private:

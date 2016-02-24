@@ -38,8 +38,6 @@ namespace Foam
                 )
             {}
 
-            virtual ~TestableUpwindCorrFitData() {}
-
             void calcFit() {}
 
             // TODO: don't know why I have to explicitly delegate to the base class
