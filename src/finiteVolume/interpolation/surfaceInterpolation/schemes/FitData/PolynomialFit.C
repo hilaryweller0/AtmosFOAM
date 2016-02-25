@@ -27,9 +27,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     const scalar wLin,
     const point& p0,
     const bool pureUpwind,
-    const vector& idir,
-    const vector& jdir,
-    const vector& kdir,
+    const Basis& basis,
     const label faceI
 )
 {
@@ -48,7 +46,7 @@ void Foam::PolynomialFit<Polynomial>::fit
 
     forAll(C, ip)
     {
-        vector d = toLocalCoordinates(p0, C[ip], idir, jdir, kdir);
+        vector d = toLocalCoordinates(p0, C[ip], basis);
 
         if (ip == 0)
         {
@@ -181,17 +179,17 @@ template<class Polynomial>
 vector Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
         const point& origin,
         const point& p,
-        const vector& idir,
-        const vector& jdir,
-        const vector& kdir)
+        const Basis& basis)
 {
     vector d;
-    d.x() = (p - origin)&idir;
-    d.y() = (p - origin)&jdir;
+
+    d.x() = (p - origin)&basis.i;
+    d.y() = (p - origin)&basis.j;
     #ifndef SPHERICAL_GEOMETRY
-    d.z() = (p - origin)&kdir;
+    d.z() = (p - origin)&basis.k;
     #else
     d.z() = mag(p) - mag(origin);
     #endif
+
     return d;
 }

@@ -2,6 +2,7 @@
 #define PolynomialFit_H
 
 #include "fvCFD.H"
+#include "Basis.H"
 
 namespace Foam
 {
@@ -26,9 +27,7 @@ namespace Foam
             const scalar wLin,
             const point& p0,
             const bool pureUpwind,
-            const vector& idir,
-            const vector& jdir,
-            const vector& kdir,
+            const Basis& basis,
             const label faceI // only used for logging
         );
     
@@ -36,9 +35,7 @@ namespace Foam
         vector toLocalCoordinates(
                 const point& origin,
                 const point& p,
-                const vector& idir,
-                const vector& jdir,
-                const vector& kdir);
+                const Basis& basis);
 
         const bool linearCorrection_;
         const scalar linearLimitFactor_;

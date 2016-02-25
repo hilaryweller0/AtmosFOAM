@@ -25,6 +25,7 @@ License
 
 #include "FitData.H"
 #include "PolynomialFit.H"
+#include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"
 
@@ -135,7 +136,8 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         dim_,
         minSize_
     );
-    polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, idir, jdir, kdir, facei);
+    const Basis basis(idir, jdir, kdir);
+    polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis, facei);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

@@ -47,9 +47,7 @@ Test::PolynomialFit::PolynomialFit(const Foam::List<point>& stencilPoints)
     scalar centralWeight = 1e3;
     const point p0(0, 0, 0);
     const bool pureUpwind = false;
-    const vector idir(1, 0, 0);
-    const vector jdir(0, 0, -1);
-    const vector kdir(0, 1, 0);
+    const Basis basis(vector(1, 0, 0), vector(0, 0, -1), vector(0, 1, 0));
     const direction dimensions = 2;
 
     Foam::PolynomialFit<cubicUpwindCPCFitPolynomial> polynomialFit(
@@ -65,9 +63,7 @@ Test::PolynomialFit::PolynomialFit(const Foam::List<point>& stencilPoints)
             unused_wLin,
             p0,
             pureUpwind,
-            idir,
-            jdir,
-            kdir,
+            basis,
             unused_faceI);
     coefficients_[0] += 1.0;
 }
