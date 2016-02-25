@@ -25,11 +25,11 @@ void Foam::PolynomialFit<Polynomial>::fit
     scalarList& wts,
     const List<point>& C,
     const scalar wLin,
-    const point p0,
+    const point& p0,
     const bool pureUpwind,
-    const vector idir,
-    const vector jdir,
-    const vector kdir,
+    const vector& idir,
+    const vector& jdir,
+    const vector& kdir,
     const label faceI
 )
 {
@@ -40,9 +40,6 @@ void Foam::PolynomialFit<Polynomial>::fit
         wts[1] = centralWeight_;
     }
 
-    // p0 -> p vector in the face-local coordinate system
-    vector d;
-
     // Local coordinate scaling
     scalar scale = 1;
 
@@ -51,15 +48,7 @@ void Foam::PolynomialFit<Polynomial>::fit
 
     forAll(C, ip)
     {
-        const point& p = C[ip];
-
-        d.x() = (p - p0)&idir;
-        d.y() = (p - p0)&jdir;
-        #ifndef SPHERICAL_GEOMETRY
-        d.z() = (p - p0)&kdir;
-        #else
-        d.z() = mag(p) - mag(p0);
-        #endif
+        vector d = toLocalCoordinates(p0, C[ip], idir, jdir, kdir);
 
         if (ip == 0)
         {
@@ -186,4 +175,23 @@ void Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
+}
+
+template<class Polynomial>
+vector Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
+        const point& origin,
+        const point& p,
+        const vector& idir,
+        const vector& jdir,
+        const vector& kdir)
+{
+    vector d;
+    d.x() = (p - origin)&idir;
+    d.y() = (p - origin)&jdir;
+    #ifndef SPHERICAL_GEOMETRY
+    d.z() = (p - origin)&kdir;
+    #else
+    d.z() = mag(p) - mag(origin);
+    #endif
+    return d;
 }

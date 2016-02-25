@@ -24,15 +24,22 @@ namespace Foam
             scalarList& wts,
             const List<point>& stencilPoints,
             const scalar wLin,
-            const point p0,
+            const point& p0,
             const bool pureUpwind,
-            const vector idir,
-            const vector jdir,
-            const vector kdir,
+            const vector& idir,
+            const vector& jdir,
+            const vector& kdir,
             const label faceI // only used for logging
         );
     
     private:
+        vector toLocalCoordinates(
+                const point& origin,
+                const point& p,
+                const vector& idir,
+                const vector& jdir,
+                const vector& kdir);
+
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
         const scalar centralWeight_;
