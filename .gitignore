@@ -63,3 +63,5 @@ run
 *.aux
 *.spl
 *.dvi
+
+testcases/build

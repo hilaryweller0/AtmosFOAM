@@ -2,26 +2,46 @@ MAKEFLAGS += --no-builtin-rules
 .DEFAULT_GOAL := test
 .DELETE_ON_ERROR:
 .SUFFIXES:
-.PHONY: test
+.PHONY: test clean
 
+include $(MAKE_COMMON)/executables/Makefile-OpenFOAM
 include $(MAKE_COMMON)/globals/Makefile-OpenFOAM
 include $(MAKE_COMMON)/templates/Makefile-FileSystem
+include $(MAKE_COMMON)/templates/Makefile-Diagnostics
 
-advectionFoam := $(FOAM_USER_APPBIN)/advectionFoam
 libfiniteVolumeAtmos := $(FOAM_USER_LIBBIN)/libfiniteVolumeAtmos.so
 
 initialFiles := 0/T 0/phi system/fvSchemes system/fvSolution system/controlDict $(meshFiles)
 
-test: build/horizontalCubicUpwindCPCFitAdvection/5000/T
+# $1 -- case directory
+define AdvectionTest
 
-build/horizontalCubicUpwindCPCFitAdvection/5000/T: \
-  $(addprefix build/horizontalCubicUpwindCPCFitAdvection/,$(initialFiles)) \
+.PHONY: $1.checkl2errorT
+
+$1.checkl2errorT: build/$1/5000/l2errorBoundT.txt
+	grep -Fxq "1" $$< || (echo "\033[31ml2error exceeded 0.2\033[0m"; exit 1)
+
+$(eval $(call FieldDiff,build/$1,5000,T,$1/5000/T_analytic))
+$(eval $(call L2Error,build/$1,5000,T))
+$(eval $(call BoundedL2Error,build/$1,5000,T,0.2))
+
+build/$1/5000/T: \
+  $(addprefix build/$1/,$(initialFiles)) \
   $(advectionFoam) \
   $(libfiniteVolumeAtmos)
-	$(advectionFoam) -case build/horizontalCubicUpwindCPCFitAdvection
+	$(advectionFoam) -case build/$1
 
-$(eval $(call CopyNamedFiles,horizontalCubicUpwindCPCFitAdvection,$(initialFiles),build/horizontalCubicUpwindCPCFitAdvection))
+$(eval $(call CopyNamedFiles,$1,$(initialFiles),build/$1))
 
-$(eval $(call MakeDir,build/horizontalCubicUpwindCPCFitAdvection/0))
-$(eval $(call MakeDir,build/horizontalCubicUpwindCPCFitAdvection/system))
-$(eval $(call MakeDir,build/horizontalCubicUpwindCPCFitAdvection/$(polyMesh)))
+$(eval $(call MakeDir,build/$1/0))
+$(eval $(call MakeDir,build/$1/system))
+$(eval $(call MakeDir,build/$1/$(polyMesh)))
+
+endef
+
+$(eval $(call AdvectionTest,horizontalCubicUpwindCPCFitAdvection))
+
+test: horizontalCubicUpwindCPCFitAdvection.checkl2errorT
+
+clean:
+	$(RM) -r build
