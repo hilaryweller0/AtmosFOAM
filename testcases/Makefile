@@ -19,7 +19,7 @@ define AdvectionTest
 .PHONY: $1.checkl2errorT
 
 $1.checkl2errorT: build/$1/5000/l2errorBoundT.txt
-	grep -Fxq "1" $$< || (echo "\033[31ml2error exceeded 0.2\033[0m"; exit 1)
+	@grep -Fxq "1" $$< || (echo "\033[31ml2error exceeded 0.2\033[0m"; exit 1)
 
 $(eval $(call FieldDiff,build/$1,5000,T,$1/5000/T_analytic))
 $(eval $(call L2Error,build/$1,5000,T))
@@ -29,7 +29,7 @@ build/$1/5000/T: \
   $(addprefix build/$1/,$(initialFiles)) \
   $(advectionFoam) \
   $(libfiniteVolumeAtmos)
-	$(advectionFoam) -case build/$1
+	$(advectionFoam) -case build/$1 > build/$1/advectionFoam.log
 
 $(eval $(call CopyNamedFiles,$1,$(initialFiles),build/$1))
 
