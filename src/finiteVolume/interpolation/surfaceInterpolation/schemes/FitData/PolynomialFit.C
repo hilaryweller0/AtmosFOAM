@@ -1,6 +1,5 @@
 #include "PolynomialFit.H"
 #include "FixedPolynomialMatrix.H"
-#include "SVD.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -27,7 +26,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     const List<point>& C,
     const scalar wLin,
     const point& p0,
-    const bool pureUpwind,
+    bool pureUpwind,
     const Basis& basis,
     const label faceI
 )
@@ -39,7 +38,6 @@ void Foam::PolynomialFit<Polynomial>::fit
     }
 
     FixedPolynomialMatrix<Polynomial> matrix(C, dim_);
-    scalarRectangularMatrix& B = matrix.B;
 
     scalar scale = scaleLocalCoordinates(p0, C[0], basis);
     forAll(C, ip)
@@ -49,13 +47,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     }
 
     matrix.applyStencilPointWeights(wts);
-
-    // Additional weighting for constant (and linear) terms
-    for (label i = 0; i < B.n(); i++)
-    {
-        B[i][0] *= wts[0];
-        B[i][1] *= wts[0];
-    }
+    matrix.multiplyConstantAndLinearWeights(wts[0]);
 
     // Set the fit
     label stencilSize = C.size();
@@ -64,52 +56,18 @@ void Foam::PolynomialFit<Polynomial>::fit
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
     {
-        SVD svd(B, SMALL);
+        scalarRectangularMatrix Binv = matrix.pseudoInverse();
 
         for (label i=0; i<stencilSize; i++)
         {
-            coeffsi[i] = wts[0]*wts[i]*svd.VSinvUt()[0][i];
+            coeffsi[i] = wts[0]*wts[i]*Binv[0][i];
         }
 
-        if (linearCorrection_)
-        {
-            goodFit =
-                (mag(coeffsi[0] - wLin) < linearLimitFactor_*wLin)
-             && (mag(coeffsi[1] - (1 - wLin)) < linearLimitFactor_*(1 - wLin))
-             && eitherUpwindOrDownwindHasMaximumMagnitude(coeffsi);
-        }
-        else
-        {
-            goodFit = (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
-                && upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(coeffsi);
-        }
+        goodFit = isGoodFit(coeffsi, wLin);
 
-        if (!goodFit) // (not good fit so increase weight in the centre and
-                      //  weight for constant and linear terms)
+        if (!goodFit)
         {
-            wts[0] *= 10;
-            if (linearCorrection_)
-            {
-                wts[1] *= 10;
-            }
-            else if (!pureUpwind && iIt == 0)
-            {
-                wts[1] /= centralWeight_;
-            }
-
-            for (label j = 0; j < B.m(); j++)
-            {
-                B[0][j] *= 10;
-                if (linearCorrection_) B[1][j] *= 10;
-                else if (!pureUpwind && iIt == 0) B[1][j] /= centralWeight_;
-            }
-
-            // more weighting on constant and linear terms
-            for (label i = 0; i < B.n(); i++)
-            {
-                B[i][0] *= 10;
-                B[i][1] *= 10;
-            }
+            increaseWeights(matrix, wts, pureUpwind, iIt == 0);
         }
     }
 
@@ -176,6 +134,25 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates(
 }
 
 template<class Polynomial>
+bool Foam::PolynomialFit<Polynomial>::isGoodFit(
+        const scalarList& coefficients, 
+        const scalar wLin)
+{
+    if (linearCorrection_)
+    {
+        return
+            (mag(coefficients[0] - wLin) < linearLimitFactor_*wLin)
+         && (mag(coefficients[1] - (1 - wLin)) < linearLimitFactor_*(1 - wLin))
+         && eitherUpwindOrDownwindHasMaximumMagnitude(coefficients);
+    }
+    else
+    {
+        return (mag(coefficients[0] - 1.0) < linearLimitFactor_*1.0)
+            && upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(coefficients);
+    }
+}
+
+template<class Polynomial>
 bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude(
         const scalarList& coefficients)
 {
@@ -207,4 +184,34 @@ bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPosit
     }
 
     return coefficients[0] > positiveCoeffSum;
+}
+
+template<class Polynomial>
+void Foam::PolynomialFit<Polynomial>::increaseWeights(
+        FixedPolynomialMatrix<Polynomial>& matrix,
+        scalarList& wts,
+        bool pureUpwind,
+        bool firstIteration)
+{
+    wts[0] *= 10;
+    if (linearCorrection_)
+    {
+        wts[1] *= 10;
+    }
+    else if (!pureUpwind && firstIteration)
+    {
+        wts[1] /= centralWeight_;
+    }
+
+    matrix.multiplyUpwindWeight(10);
+    if (linearCorrection_)
+    {
+        matrix.multiplyDownwindWeight(10);
+    }
+    else if (!pureUpwind && firstIteration)
+    {
+        matrix.multiplyDownwindWeight(1.0/centralWeight_);
+    }
+
+    matrix.multiplyConstantAndLinearWeights(10);
 }

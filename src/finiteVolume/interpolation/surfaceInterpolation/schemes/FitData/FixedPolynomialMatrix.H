@@ -13,9 +13,12 @@ namespace Foam
 
         void setStencilPoint(const label index, const point& p);
         void applyStencilPointWeights(const scalarList& weights);
-//    private:
-        scalarRectangularMatrix B;
+        void multiplyConstantAndLinearWeights(const scalar weight);
+        void multiplyUpwindWeight(const scalar weight);
+        void multiplyDownwindWeight(const scalar weight);
+        scalarRectangularMatrix pseudoInverse();
     private:
+        scalarRectangularMatrix B;
         const direction dimensions;
     };
 }

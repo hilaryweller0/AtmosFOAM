@@ -3,6 +3,7 @@
 
 #include "fvCFD.H"
 #include "Basis.H"
+#include "FixedPolynomialMatrix.H"
 
 namespace Foam
 {
@@ -26,7 +27,7 @@ namespace Foam
             const List<point>& stencilPoints,
             const scalar wLin, // only used when linearCorrection=true
             const point& p0,
-            const bool pureUpwind,
+            bool pureUpwind,
             const Basis& basis,
             const label faceI // only used for logging
         );
@@ -42,11 +43,19 @@ namespace Foam
                 const point& upwindPoint,
                 const Basis& basis);
 
+        bool isGoodFit(const scalarList& coefficients, const scalar wLin);
+
         bool eitherUpwindOrDownwindHasMaximumMagnitude(
                 const scalarList& coefficients);
 
         bool upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(
                 const scalarList& coefficients);
+
+        void increaseWeights(
+                FixedPolynomialMatrix<Polynomial>& matrix,
+                scalarList& wts,
+                bool pureUpwind,
+                bool firstIteration);
 
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
