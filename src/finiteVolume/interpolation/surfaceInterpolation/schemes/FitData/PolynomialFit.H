@@ -16,8 +16,7 @@ namespace Foam
             const bool linearCorrection,
             const scalar linearLimitFactor,
             const scalar centralWeight,
-            const direction dimensions,
-            const label terms
+            const direction dimensions
         );
         
         void fit
@@ -26,13 +25,18 @@ namespace Foam
             scalarList& wts,
             const List<point>& stencilPoints,
             const scalar wLin, // only used when linearCorrection=true
-            const point& p0,
+            const point& origin,
             bool pureUpwind,
             const Basis& basis,
             const label faceI // only used for logging
         );
     
     private:
+        List<point> toLocalCoordinates(
+                const List<point>& stencilPoints,
+                const point& origin,
+                const Basis& basis);
+
         point toLocalCoordinates(
                 const point& origin,
                 const point& p,
@@ -61,7 +65,6 @@ namespace Foam
         const scalar linearLimitFactor_;
         const scalar centralWeight_;
         const direction dim_;
-        const label minSize_;
     };
 }
 

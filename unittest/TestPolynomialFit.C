@@ -60,8 +60,7 @@ Test::PolynomialFit::PolynomialFit(
                 linearCorrection,
                 linearLimitFactor,
                 centralWeight,
-                dimensions,
-                cubicUpwindCPCFitPolynomial::nTerms(dimensions));
+                dimensions);
     polynomialFit.fit(
             coefficients_,
             wts,

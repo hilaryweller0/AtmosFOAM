@@ -7,15 +7,13 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
     const bool linearCorrection,
     const scalar linearLimitFactor,
     const scalar centralWeight, 
-    const direction dimensions,
-    const label terms
+    const direction dimensions
 )
 :
     linearCorrection_(linearCorrection),
     linearLimitFactor_(linearLimitFactor),
     centralWeight_(centralWeight),
-    dim_(dimensions),
-    minSize_(terms)
+    dim_(dimensions)
 {}
 
 template<class Polynomial>
@@ -25,7 +23,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     scalarList& wts,
     const List<point>& C,
     const scalar wLin,
-    const point& p0,
+    const point& origin,
     bool pureUpwind,
     const Basis& basis,
     const label faceI
@@ -37,14 +35,9 @@ void Foam::PolynomialFit<Polynomial>::fit
         wts[1] = centralWeight_;
     }
 
-    FixedPolynomialMatrix<Polynomial> matrix(C, dim_);
-
-    scalar scale = scaleLocalCoordinates(p0, C[0], basis);
-    forAll(C, ip)
-    {
-        point d = toLocalCoordinates(p0, C[ip], basis) / scale;
-        matrix.setStencilPoint(ip, d);
-    }
+    FixedPolynomialMatrix<Polynomial> matrix(
+            toLocalCoordinates(C, origin, basis),
+            dim_);
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
@@ -103,6 +96,23 @@ void Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
+}
+
+template<class Polynomial>
+List<point> Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
+        const List<point>& stencilPoints,
+        const point& origin,
+        const Basis& basis)
+{
+    List<point> localPoints(stencilPoints.size(), point(0, 0, 0));
+
+    scalar scale = scaleLocalCoordinates(origin, stencilPoints[0], basis);
+    forAll(stencilPoints, i)
+    {
+        localPoints[i] = toLocalCoordinates(origin, stencilPoints[i], basis) / scale;
+    }
+
+    return localPoints;
 }
 
 template<class Polynomial>

@@ -11,7 +11,6 @@ namespace Foam
                 const List<point>& stencil,
                 const direction dimensions);
 
-        void setStencilPoint(const label index, const point& p);
         void applyStencilPointWeights(const scalarList& weights);
         void multiplyConstantAndLinearWeights(const scalar weight);
         void multiplyUpwindWeight(const scalar weight);

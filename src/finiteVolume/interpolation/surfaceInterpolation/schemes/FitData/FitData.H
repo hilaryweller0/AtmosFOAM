@@ -76,9 +76,6 @@ class FitData
         //- Dimensionality of the geometry
         const label dim_;
 
-        //- Minimum stencil size
-        const label minSize_;
-
 
 protected:
 
@@ -135,12 +132,6 @@ public:
         label dim() const
         {
             return dim_;
-        }
-
-        //- Minimum stencil size
-        label minSize() const
-        {
-            return minSize_;
         }
 
         bool linearCorrection() const

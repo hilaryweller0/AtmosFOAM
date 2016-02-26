@@ -9,6 +9,10 @@ Foam::FixedPolynomialMatrix<Polynomial>::FixedPolynomialMatrix(
     B(stencil.size(), Polynomial::nTerms(dimensions), scalar(0)),
     dimensions(dimensions)
 {
+    forAll(stencil, i)
+    {
+        Polynomial::addCoeffs(B[i], stencil[i], 1, dimensions);
+    }
 }
 
 template<class Polynomial>
@@ -16,13 +20,6 @@ scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::pseudoInverse()
 {
     SVD svd(B, SMALL);
     return svd.VSinvUt();
-}
-
-template<class Polynomial>
-void Foam::FixedPolynomialMatrix<Polynomial>::setStencilPoint(
-        const label index, const point& p)
-{
-    Polynomial::addCoeffs(B[index], p, 1, dimensions);
 }
 
 template<class Polynomial>

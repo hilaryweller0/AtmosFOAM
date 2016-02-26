@@ -46,14 +46,12 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     linearCorrection_(linearCorrection),
     linearLimitFactor_(linearLimitFactor),
     centralWeight_(centralWeight),
-// 2D dependent on the size of the 
     dim_
     (
         mesh.nGeometricD() == 1 ? 1 :
         isA<emptyPolyPatch>(mesh.boundaryMesh().last()) ? 2 :
         mesh.nGeometricD()
-    ),
-    minSize_(Polynomial::nTerms(dim_))
+    )
 {
     // Check input
     if (linearLimitFactor <= SMALL || linearLimitFactor > 4)
@@ -133,8 +131,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         linearCorrection_,
         linearLimitFactor_,
         centralWeight_, 
-        dim_,
-        minSize_
+        dim_
     );
     const Basis basis(idir, jdir, kdir);
     polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis, facei);
