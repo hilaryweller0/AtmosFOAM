@@ -53,7 +53,7 @@ Test::PolynomialFit::PolynomialFit(
     scalar centralWeight = 1e3;
     const point p0(0, 0, 0);
     const bool pureUpwind = false;
-    const Basis basis(vector(1, 0, 0), vector(0, 0, -1), vector(0, 1, 0));
+    const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
     Foam::PolynomialFit<cubicUpwindCPCFitPolynomial> polynomialFit(

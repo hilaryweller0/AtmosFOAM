@@ -5,28 +5,15 @@
 #include "fvCFD.H"
 
 #include "TestPolynomialFit.H"
+#include "TestStencils.H"
 
 Approx approx = Approx::custom().epsilon(0.001);
 
 TEST_CASE("fit full-size stencil to uniform 2D mesh")
 {
-    Foam::List<point> twelvePointStencil(12, point(0, 0, 0));
-    twelvePointStencil[0] = point(-0.5, 0, 0);
-    twelvePointStencil[1] = point(0.5, 0, 0);
-    twelvePointStencil[2] = point(-1.5, 0, 0);
-    twelvePointStencil[3] = point(-2.5, 0, 0);
-    twelvePointStencil[4] = point(-0.5, 0, 1);
-    twelvePointStencil[5] = point(0.5, 0, 1);
-    twelvePointStencil[6] = point(-1.5, 0, 1);
-    twelvePointStencil[7] = point(-2.5, 0, 1);
-    twelvePointStencil[8] = point(-0.5, 0, -1);
-    twelvePointStencil[9] = point(0.5, 0, -1);
-    twelvePointStencil[10] = point(-1.5, 0, -1);
-    twelvePointStencil[11] = point(-2.5, 0, -1);
-
     const Foam::label faceI = 11;
 
-    Test::PolynomialFit fit(twelvePointStencil, faceI);
+    Test::PolynomialFit fit(twelvePointStencil(), faceI);
     CHECK(fit.coefficients()[0] == approx(0.875));
     CHECK(fit.coefficients()[1] == approx(0.297));
     CHECK(fit.coefficients()[2] == approx(-0.141));
@@ -43,21 +30,7 @@ TEST_CASE("fit full-size stencil to uniform 2D mesh")
 
 TEST_CASE("fit full-size stencil to uniform set of points in local coords")
 {
-    Foam::List<point> twelvePointStencil(12, point(0, 0, 0));
-    twelvePointStencil[0] = point(-0.5, 0, 0);
-    twelvePointStencil[1] = point(0.5, 0, 0);
-    twelvePointStencil[2] = point(-1.5, 0, 0);
-    twelvePointStencil[3] = point(-2.5, 0, 0);
-    twelvePointStencil[4] = point(-0.5, 0, 1);
-    twelvePointStencil[5] = point(0.5, 0, 1);
-    twelvePointStencil[6] = point(-1.5, 0, 1);
-    twelvePointStencil[7] = point(-2.5, 0, 1);
-    twelvePointStencil[8] = point(-0.5, 0, -1);
-    twelvePointStencil[9] = point(0.5, 0, -1);
-    twelvePointStencil[10] = point(-1.5, 0, -1);
-    twelvePointStencil[11] = point(-2.5, 0, -1);
-
-    Test::PolynomialFit fit(twelvePointStencil);
+    Test::PolynomialFit fit(twelvePointStencil());
     CHECK(fit.coefficients()[0] == approx(0.875));
     CHECK(fit.coefficients()[1] == approx(0.297));
     CHECK(fit.coefficients()[2] == approx(-0.141));
@@ -77,22 +50,9 @@ TEST_CASE("fit full-size stencil to uniform set of points in local coords")
 // that we don't break those particular code paths
 TEST_CASE("fit using linear correction")
 {
-    Foam::List<point> twelvePointStencil(12, point(0, 0, 0));
-    twelvePointStencil[0] = point(-0.5, 0, 0);
-    twelvePointStencil[1] = point(0.5, 0, 0);
-    twelvePointStencil[2] = point(-1.5, 0, 0);
-    twelvePointStencil[3] = point(-2.5, 0, 0);
-    twelvePointStencil[4] = point(-0.5, 0, 1);
-    twelvePointStencil[5] = point(0.5, 0, 1);
-    twelvePointStencil[6] = point(-1.5, 0, 1);
-    twelvePointStencil[7] = point(-2.5, 0, 1);
-    twelvePointStencil[8] = point(-0.5, 0, -1);
-    twelvePointStencil[9] = point(0.5, 0, -1);
-    twelvePointStencil[10] = point(-1.5, 0, -1);
-    twelvePointStencil[11] = point(-2.5, 0, -1);
 
     bool linearCorrection = true;
-    Test::PolynomialFit fit(twelvePointStencil, linearCorrection);
+    Test::PolynomialFit fit(twelvePointStencil(), linearCorrection);
     CHECK(fit.coefficients()[0] == approx(0.875));
     CHECK(fit.coefficients()[1] == approx(0.297));
     CHECK(fit.coefficients()[2] == approx(-0.141));
@@ -106,3 +66,7 @@ TEST_CASE("fit using linear correction")
     CHECK(fit.coefficients()[10] == approx(-0.086));
     CHECK(fit.coefficients()[11] == approx(0.047));
 }
+
+//TEST_CASE("dimensions of FixedPolynomialMatrix")
+//{
+//}
