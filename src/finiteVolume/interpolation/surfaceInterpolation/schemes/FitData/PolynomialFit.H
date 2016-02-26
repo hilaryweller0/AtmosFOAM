@@ -42,6 +42,12 @@ namespace Foam
                 const point& upwindPoint,
                 const Basis& basis);
 
+        bool eitherUpwindOrDownwindHasMaximumMagnitude(
+                const scalarList& coefficients);
+
+        bool upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(
+                const scalarList& coefficients);
+
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
         const scalar centralWeight_;

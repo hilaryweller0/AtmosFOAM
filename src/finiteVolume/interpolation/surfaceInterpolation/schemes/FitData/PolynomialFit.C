@@ -72,17 +72,9 @@ void Foam::PolynomialFit<Polynomial>::fit
     {
         SVD svd(B, SMALL);
 
-        scalar maxCoeff = 0;
-        label maxCoeffi = 0;
-
         for (label i=0; i<stencilSize; i++)
         {
             coeffsi[i] = wts[0]*wts[i]*svd.VSinvUt()[0][i];
-            if (mag(coeffsi[i]) > maxCoeff)
-            {
-                maxCoeff = mag(coeffsi[i]);
-                maxCoeffi = i;
-            }
         }
 
         if (linearCorrection_)
@@ -90,29 +82,17 @@ void Foam::PolynomialFit<Polynomial>::fit
             goodFit =
                 (mag(coeffsi[0] - wLin) < linearLimitFactor_*wLin)
              && (mag(coeffsi[1] - (1 - wLin)) < linearLimitFactor_*(1 - wLin))
-             && maxCoeffi <= 1;
+             && eitherUpwindOrDownwindHasMaximumMagnitude(coeffsi);
         }
         else
         {
-            // go through all coeffsi except the first, add up all positive coeffs
-            scalar positiveCoeffSum = 0;
-            forAll(coeffsi, i)
-            {
-                if (i > 0 && coeffsi[i] > 0)
-                {
-                    positiveCoeffSum += coeffsi[i];
-                }
-            }
-
-            // Upwind: weight on face is 0
             goodFit = (mag(coeffsi[0] - 1.0) < linearLimitFactor_*1.0)
-                && coeffsi[0] > positiveCoeffSum;
+                && upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(coeffsi);
         }
 
         if (!goodFit) // (not good fit so increase weight in the centre and
                       //  weight for constant and linear terms)
         {
-
             wts[0] *= 10;
             if (linearCorrection_)
             {
@@ -199,4 +179,38 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates(
         const Basis& basis)
 {
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
+}
+
+template<class Polynomial>
+bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude(
+        const scalarList& coefficients)
+{
+    scalar maxCoeff = 0;
+    label maxCoeffi = 0;
+    for (label i=0; i<coefficients.size(); i++)
+    {
+        if (mag(coefficients[i]) > maxCoeff)
+        {
+            maxCoeff = mag(coefficients[i]);
+            maxCoeffi = i;
+        }
+    }
+    return maxCoeffi <= 1;
+}
+
+template<class Polynomial>
+bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(const scalarList& coefficients)
+{
+    // go through all coeffsi except the first, add up all positive coeffs
+    scalar positiveCoeffSum = 0;
+
+    forAll(coefficients, i)
+    {
+        if (i > 0 && coefficients[i] > 0)
+        {
+            positiveCoeffSum += coefficients[i];
+        }
+    }
+
+    return coefficients[0] > positiveCoeffSum;
 }
