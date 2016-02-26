@@ -24,7 +24,7 @@ namespace Foam
             scalarList& coeffsi,
             scalarList& wts,
             const List<point>& stencilPoints,
-            const scalar wLin,
+            const scalar wLin, // only used when linearCorrection=true
             const point& p0,
             const bool pureUpwind,
             const Basis& basis,
@@ -35,6 +35,11 @@ namespace Foam
         vector toLocalCoordinates(
                 const point& origin,
                 const point& p,
+                const Basis& basis);
+
+        scalar scaleLocalCoordinates(
+                const point& origin,
+                const point& upwindPoint,
                 const Basis& basis);
 
         const bool linearCorrection_;

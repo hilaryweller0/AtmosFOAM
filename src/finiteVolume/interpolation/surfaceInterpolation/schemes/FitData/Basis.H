@@ -13,8 +13,4 @@ namespace Foam
     };
 }
 
-#ifdef NoRepository
-#   include "Basis.C"
-#endif
-
 #endif

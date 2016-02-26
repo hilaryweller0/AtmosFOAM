@@ -31,32 +31,29 @@ void Foam::PolynomialFit<Polynomial>::fit
     const label faceI
 )
 {
-    // Setup the point weights
     wts[0] = centralWeight_;
     if (!pureUpwind)
     {
         wts[1] = centralWeight_;
     }
 
-    // Local coordinate scaling
-    scalar scale = 1;
-
     // Matrix of the polynomial components
     scalarRectangularMatrix B(C.size(), minSize_, scalar(0));
 
+    scalar scale = scaleLocalCoordinates(p0, C[0], basis);
     forAll(C, ip)
     {
-        vector d = toLocalCoordinates(p0, C[ip], basis);
+        vector d = toLocalCoordinates(p0, C[ip], basis) / scale;
+        Polynomial::addCoeffs(B[ip], d, 1, dim_);
+    }
 
-        if (ip == 0)
+    // Apply weighting per stencil point
+    forAll(C, ip)
+    {
+        for (label j = 0; j < B.m(); j++)
         {
-            scale = cmptMax(cmptMag((d)));
+            B[ip][j] *= wts[ip];
         }
-
-        // Scale the radius vector
-        d /= scale;
-
-        Polynomial::addCoeffs(B[ip], d, wts[ip], dim_);
     }
 
     // Additional weighting for constant (and linear) terms
@@ -133,6 +130,7 @@ void Foam::PolynomialFit<Polynomial>::fit
                 else if (!pureUpwind && iIt == 0) B[1][j] /= centralWeight_;
             }
 
+            // more weighting on constant and linear terms
             for (label i = 0; i < B.n(); i++)
             {
                 B[i][0] *= 10;
@@ -192,4 +190,13 @@ vector Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
     #endif
 
     return d;
+}
+
+template<class Polynomial>
+scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates(
+        const point& origin,
+        const point& upwindPoint,
+        const Basis& basis)
+{
+    return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }
