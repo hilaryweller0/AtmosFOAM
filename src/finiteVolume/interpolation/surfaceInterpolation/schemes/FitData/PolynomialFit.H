@@ -32,7 +32,7 @@ namespace Foam
         );
     
     private:
-        vector toLocalCoordinates(
+        point toLocalCoordinates(
                 const point& origin,
                 const point& p,
                 const Basis& basis);

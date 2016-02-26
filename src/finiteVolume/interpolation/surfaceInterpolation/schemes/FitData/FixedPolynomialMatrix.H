@@ -10,8 +10,13 @@ namespace Foam
         FixedPolynomialMatrix(
                 const List<point>& stencil,
                 const direction dimensions);
+
+        void setStencilPoint(const label index, const point& p);
+        void applyStencilPointWeights(const scalarList& weights);
 //    private:
         scalarRectangularMatrix B;
+    private:
+        const direction dimensions;
     };
 }
 

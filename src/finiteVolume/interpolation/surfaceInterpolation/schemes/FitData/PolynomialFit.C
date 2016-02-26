@@ -44,18 +44,11 @@ void Foam::PolynomialFit<Polynomial>::fit
     scalar scale = scaleLocalCoordinates(p0, C[0], basis);
     forAll(C, ip)
     {
-        vector d = toLocalCoordinates(p0, C[ip], basis) / scale;
-        Polynomial::addCoeffs(B[ip], d, 1, dim_);
+        point d = toLocalCoordinates(p0, C[ip], basis) / scale;
+        matrix.setStencilPoint(ip, d);
     }
 
-    // Apply weighting per stencil point
-    forAll(C, ip)
-    {
-        for (label j = 0; j < B.m(); j++)
-        {
-            B[ip][j] *= wts[ip];
-        }
-    }
+    matrix.applyStencilPointWeights(wts);
 
     // Additional weighting for constant (and linear) terms
     for (label i = 0; i < B.n(); i++)
@@ -155,12 +148,12 @@ void Foam::PolynomialFit<Polynomial>::fit
 }
 
 template<class Polynomial>
-vector Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
+point Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
         const point& origin,
         const point& p,
         const Basis& basis)
 {
-    vector d;
+    point d;
 
     d.x() = (p - origin)&basis.i;
     d.y() = (p - origin)&basis.j;
