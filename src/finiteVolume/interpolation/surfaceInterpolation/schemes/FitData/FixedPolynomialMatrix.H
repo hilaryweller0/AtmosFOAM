@@ -15,6 +15,7 @@ namespace Foam
         void multiplyConstantAndLinearWeights(const scalar weight);
         void multiplyUpwindWeight(const scalar weight);
         void multiplyDownwindWeight(const scalar weight);
+        scalarRectangularMatrix matrix();
         scalarRectangularMatrix pseudoInverse();
     private:
         scalarRectangularMatrix B;

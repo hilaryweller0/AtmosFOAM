@@ -17,3 +17,21 @@ Foam::List<point> twelvePointStencil()
     stencil[11] = point(-5, 2, 0);
     return stencil;
 }
+
+Foam::scalarList twelvePointStencilCoefficients()
+{
+    Foam::scalarList coefficients(12, scalar(0));
+    coefficients[0] = 0.875;
+    coefficients[1] = 0.297;
+    coefficients[2] = -0.141;
+    coefficients[3] = -0.031;
+    coefficients[4] = 0.031;
+    coefficients[5] = 0.008;
+    coefficients[6] = -0.086;
+    coefficients[7] = 0.047;
+    coefficients[8] = 0.031;
+    coefficients[9] = 0.008;
+    coefficients[10] = -0.086;
+    coefficients[11] = 0.047;
+    return coefficients;
+}

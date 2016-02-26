@@ -16,6 +16,13 @@ Foam::FixedPolynomialMatrix<Polynomial>::FixedPolynomialMatrix(
 }
 
 template<class Polynomial>
+scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::matrix()
+{
+    return B;
+}
+
+
+template<class Polynomial>
 scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::pseudoInverse()
 {
     SVD svd(B, SMALL);
