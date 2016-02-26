@@ -1,4 +1,5 @@
 #include "PolynomialFit.H"
+#include "FixedPolynomialMatrix.H"
 #include "SVD.H"
 
 template<class Polynomial>
@@ -37,8 +38,8 @@ void Foam::PolynomialFit<Polynomial>::fit
         wts[1] = centralWeight_;
     }
 
-    // Matrix of the polynomial components
-    scalarRectangularMatrix B(C.size(), minSize_, scalar(0));
+    FixedPolynomialMatrix<Polynomial> matrix(C, dim_);
+    scalarRectangularMatrix& B = matrix.B;
 
     scalar scale = scaleLocalCoordinates(p0, C[0], basis);
     forAll(C, ip)
