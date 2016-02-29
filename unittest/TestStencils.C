@@ -18,7 +18,6 @@ Foam::List<point> Test::Stencils::twelvePoints()
     return stencil;
 }
 
-
 Foam::scalarList twelvePointStencilCoefficients()
 {
     Foam::scalarList coefficients(12, scalar(0));
@@ -45,3 +44,7 @@ Foam::List<point> Test::Stencils::twoPointsInHorizontalLine()
     return stencil;
 }
 
+const scalar Test::Matrices::xLinear[2][2] = {
+    {1, -1},
+    {1, 3}
+};

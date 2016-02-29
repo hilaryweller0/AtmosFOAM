@@ -6,8 +6,7 @@ Foam::FixedPolynomialMatrix<Polynomial>::FixedPolynomialMatrix(
         const List<point>& stencil,
         const direction dimensions)
 :
-    B(stencil.size(), Polynomial::nTerms(dimensions), scalar(0)),
-    dimensions(dimensions)
+    B(stencil.size(), Polynomial::nTerms(dimensions), scalar(0))
 {
     forAll(stencil, i)
     {

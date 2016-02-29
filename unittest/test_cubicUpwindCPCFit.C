@@ -4,6 +4,7 @@
 #include "catch.hpp"
 #include "fvCFD.H"
 
+#include "AdaptivePolynomialMatrix.H"
 #include "FixedPolynomialMatrix.H"
 #include "cubicUpwindCPCFitPolynomial.H"
 #include "TestPolynomialFit.H"
@@ -42,27 +43,19 @@ TEST_CASE("fit using linear correction")
 TEST_CASE("12x9 FixedPolynomialMatrix")
 {
     const direction dimensions = 2;
+    const List<point> stencil = Test::Stencils::twelvePoints();
     Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
-        matrix(Test::Stencils::twelvePoints(), dimensions);
-    scalarRectangularMatrix B = matrix.matrix();
+        matrix(stencil, dimensions);
 
-    const scalar (&expected)[12][9] = twelvePointStencilMatrix;
-
-    CHECK(B.n() == 12);
-    CHECK(B.m() == 9);
-
-    for (int i=0; i<B.n(); i++)
-    {
-        for (int j=0; j<B.m(); j++)
-        {
-            CHECK(B[i][j] == approx(expected[i][j]));
-        }
-    }
+    check<12, 9>(matrix.matrix(), twelvePointStencilMatrix);
 }
 
 TEST_CASE("a + bx with two points in horizontal line")
 {
     const direction dimensions = 2;
-    Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
-        matrix(Test::Stencils::twoPointsInHorizontalLine(), dimensions);
+    const List<point> stencil = Test::Stencils::twoPointsInHorizontalLine();
+    Foam::AdaptivePolynomialMatrix<cubicUpwindCPCFitPolynomial>
+        matrix(stencil, dimensions);
+
+    check<2, 2>(matrix.matrix(), Test::Matrices::xLinear);
 }

@@ -3,19 +3,26 @@
 
 #include "fvCFD.H"
 
+// TODO: I wonder whether each test should have an object with a stencil, expected matrix, expected coefficients etc
 namespace Test {
     class Stencils
     {
-        public:
-            static Foam::List<point> twelvePoints();
-            static Foam::List<point> twoPointsInHorizontalLine();
+    public:
+        static Foam::List<point> twelvePoints();
+        static Foam::List<point> twoPointsInHorizontalLine();
+    };
+
+    class Matrices
+    {
+    public:
+        static const scalar xLinear[2][2];
     };
 }
 
 
 Foam::scalarList twelvePointStencilCoefficients();
 
-const scalar twelvePointStencilMatrix[][9] = {
+const scalar twelvePointStencilMatrix[12][9] = {
     {1, -1,  0,  1,  0, 0,   -1,   0,   0},
     {1,  1,  0,  1,  0, 0,    1,   0,   0},
     {1, -3,  0,  9,  0, 0,  -27,   0,   0},

@@ -19,7 +19,6 @@ namespace Foam
         scalarRectangularMatrix pseudoInverse();
     private:
         scalarRectangularMatrix B;
-        const direction dimensions;
     };
 }
 
