@@ -35,3 +35,4 @@ Foam::scalarList twelvePointStencilCoefficients()
     coefficients[11] = 0.047;
     return coefficients;
 }
+

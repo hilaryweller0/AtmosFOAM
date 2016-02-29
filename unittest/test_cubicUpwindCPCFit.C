@@ -9,6 +9,7 @@
 #include "TestPolynomialFit.H"
 #include "TestStencils.H"
 #include "Checks.H"
+#include <assert.h>
 
 TEST_CASE("fit full-size stencil to uniform 2D mesh")
 {
@@ -42,16 +43,18 @@ TEST_CASE("dimensions of FixedPolynomialMatrix")
 {
     Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
         matrix(twelvePointStencil(), 2);
-    scalarRectangularMatrix B = matrix.matrix();     
-    CHECK(B.m() == 9);
+    scalarRectangularMatrix B = matrix.matrix();
+
+    const scalar (&expected)[12][9] = twelvePointStencilMatrix;
+
     CHECK(B.n() == 12);
-    CHECK(B[0][0] == approx(1));
-    CHECK(B[0][1] == approx(-1));
-    CHECK(B[0][2] == approx(0));
-    CHECK(B[0][3] == approx(1));
-    CHECK(B[0][4] == approx(0));
-    CHECK(B[0][5] == approx(0));
-    CHECK(B[0][6] == approx(-1));
-    CHECK(B[0][7] == approx(0));
-    CHECK(B[0][8] == approx(0));
+    CHECK(B.m() == 9);
+
+    for (int i=0; i<B.n(); i++)
+    {
+        for (int j=0; j<B.m(); j++)
+        {
+            CHECK(B[i][j] == approx(expected[i][j]));
+        }
+    }
 }
