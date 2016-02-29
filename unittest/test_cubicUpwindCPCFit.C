@@ -15,14 +15,14 @@ TEST_CASE("fit full-size stencil to uniform 2D mesh")
 {
     const Foam::label faceI = 11;
 
-    Test::PolynomialFit fit(twelvePointStencil(), faceI);
+    Test::PolynomialFit fit(Test::Stencils::twelvePoints(), faceI);
 
     check(fit.coefficients(), twelvePointStencilCoefficients());
 }
 
 TEST_CASE("fit full-size stencil to uniform set of points in local coords")
 {
-    Test::PolynomialFit fit(twelvePointStencil());
+    Test::PolynomialFit fit(Test::Stencils::twelvePoints());
 
     check(fit.coefficients(), twelvePointStencilCoefficients());
 }
@@ -34,15 +34,16 @@ TEST_CASE("fit using linear correction")
 {
     bool linearCorrection = true;
 
-    Test::PolynomialFit fit(twelvePointStencil(), linearCorrection);
+    Test::PolynomialFit fit(Test::Stencils::twelvePoints(), linearCorrection);
 
     check(fit.coefficients(), twelvePointStencilCoefficients());
 }
 
-TEST_CASE("dimensions of FixedPolynomialMatrix")
+TEST_CASE("12x9 FixedPolynomialMatrix")
 {
+    const direction dimensions = 2;
     Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
-        matrix(twelvePointStencil(), 2);
+        matrix(Test::Stencils::twelvePoints(), dimensions);
     scalarRectangularMatrix B = matrix.matrix();
 
     const scalar (&expected)[12][9] = twelvePointStencilMatrix;
@@ -57,4 +58,11 @@ TEST_CASE("dimensions of FixedPolynomialMatrix")
             CHECK(B[i][j] == approx(expected[i][j]));
         }
     }
+}
+
+TEST_CASE("a + bx with two points in horizontal line")
+{
+    const direction dimensions = 2;
+    Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
+        matrix(Test::Stencils::twoPointsInHorizontalLine(), dimensions);
 }

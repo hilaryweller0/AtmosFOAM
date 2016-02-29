@@ -3,7 +3,15 @@
 
 #include "fvCFD.H"
 
-Foam::List<point> twelvePointStencil();
+namespace Test {
+    class Stencils
+    {
+        public:
+            static Foam::List<point> twelvePoints();
+            static Foam::List<point> twoPointsInHorizontalLine();
+    };
+}
+
 
 Foam::scalarList twelvePointStencilCoefficients();
 

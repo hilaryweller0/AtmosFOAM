@@ -1,6 +1,6 @@
 #include "TestStencils.H"
 
-Foam::List<point> twelvePointStencil()
+Foam::List<point> Test::Stencils::twelvePoints()
 {
     Foam::List<point> stencil(12, point(0, 0, 0));
     stencil[0] = point(-1, 0, 0);
@@ -18,6 +18,7 @@ Foam::List<point> twelvePointStencil()
     return stencil;
 }
 
+
 Foam::scalarList twelvePointStencilCoefficients()
 {
     Foam::scalarList coefficients(12, scalar(0));
@@ -34,5 +35,13 @@ Foam::scalarList twelvePointStencilCoefficients()
     coefficients[10] = -0.086;
     coefficients[11] = 0.047;
     return coefficients;
+}
+
+Foam::List<point> Test::Stencils::twoPointsInHorizontalLine()
+{
+    Foam::List<point> stencil(2, point(0, 0, 0));
+    stencil[0] = point(-1, 0, 0);
+    stencil[1] = point(3, 0, 0);
+    return stencil;
 }
 
