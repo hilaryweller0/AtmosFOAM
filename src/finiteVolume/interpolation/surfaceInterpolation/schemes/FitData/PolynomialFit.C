@@ -1,5 +1,5 @@
 #include "PolynomialFit.H"
-#include "FixedPolynomialMatrix.H"
+#include "FixedPolynomial.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -35,14 +35,13 @@ void Foam::PolynomialFit<Polynomial>::fit
         wts[1] = centralWeight_;
     }
 
-    FixedPolynomialMatrix<Polynomial> matrix(
-            toLocalCoordinates(C, origin, basis),
-            dim_);
+    const List<point> localStencil = toLocalCoordinates(C, origin, basis);
+    FixedPolynomial<Polynomial> polynomial(localStencil, dim_);
+    WeightedMatrix matrix(polynomial.matrix());
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
 
-    // Set the fit
     label stencilSize = C.size();
     coeffsi.setSize(stencilSize);
 
@@ -198,7 +197,7 @@ bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPosit
 
 template<class Polynomial>
 void Foam::PolynomialFit<Polynomial>::increaseWeights(
-        FixedPolynomialMatrix<Polynomial>& matrix,
+        WeightedMatrix& matrix,
         scalarList& wts,
         bool pureUpwind,
         bool firstIteration)

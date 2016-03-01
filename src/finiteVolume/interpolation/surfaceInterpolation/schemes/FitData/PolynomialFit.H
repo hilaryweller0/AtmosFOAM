@@ -3,7 +3,7 @@
 
 #include "fvCFD.H"
 #include "Basis.H"
-#include "FixedPolynomialMatrix.H"
+#include "WeightedMatrix.H"
 
 namespace Foam
 {
@@ -56,7 +56,7 @@ namespace Foam
                 const scalarList& coefficients);
 
         void increaseWeights(
-                FixedPolynomialMatrix<Polynomial>& matrix,
+                WeightedMatrix& matrix,
                 scalarList& wts,
                 bool pureUpwind,
                 bool firstIteration);

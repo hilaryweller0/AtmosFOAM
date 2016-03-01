@@ -1,9 +1,9 @@
-#include "AdaptivePolynomialMatrix.H"
+#include "AdaptivePolynomial.H"
 #include "SVD.H"
 #include "ListOps.H"
 
 template<class Polynomial>
-Foam::AdaptivePolynomialMatrix<Polynomial>::AdaptivePolynomialMatrix(
+Foam::AdaptivePolynomial<Polynomial>::AdaptivePolynomial(
         const List<point>& stencil,
         const direction dimensions,
         const scalar tolerance)
@@ -15,7 +15,7 @@ Foam::AdaptivePolynomialMatrix<Polynomial>::AdaptivePolynomialMatrix(
 {}
 
 template<class Polynomial>
-scalarRectangularMatrix Foam::AdaptivePolynomialMatrix<Polynomial>::matrix() const
+scalarRectangularMatrix Foam::AdaptivePolynomial<Polynomial>::matrix() const
 {
     List<label> fittableTerms(0, label(0));
     for (int terms=0; terms<maxTerms; terms++)
@@ -60,13 +60,13 @@ scalarRectangularMatrix Foam::AdaptivePolynomialMatrix<Polynomial>::matrix() con
 }
 
 template<class Polynomial>
-bool Foam::AdaptivePolynomialMatrix<Polynomial>::containsEntry(const List<label> fittableTerms, label term) const
+bool Foam::AdaptivePolynomial<Polynomial>::containsEntry(const List<label> fittableTerms, label term) const
 {
     return findIndex(fittableTerms, term) != -1;
 }
 
 template<class Polynomial>
-bool Foam::AdaptivePolynomialMatrix<Polynomial>::fullRank(const scalarRectangularMatrix& B) const
+bool Foam::AdaptivePolynomial<Polynomial>::fullRank(const scalarRectangularMatrix& B) const
 {
     SVD svd(B, SMALL);
     return min(svd.S()) > tolerance;

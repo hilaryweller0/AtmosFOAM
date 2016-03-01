@@ -1,7 +1,7 @@
-#ifndef AdaptivePolynomialMatrix_H
-#define AdaptivePolynomialMatrix_H
+#ifndef AdaptivePolynomial_H
+#define AdaptivePolynomial_H
 
-#include "PolynomialMatrix.H"
+#include "AbstractPolynomial.H"
 
 namespace Foam
 {
@@ -12,10 +12,10 @@ namespace Foam
      * will be included and the higher order terms dropped.
      */
     template<class Polynomial>
-    class AdaptivePolynomialMatrix : public PolynomialMatrix<Polynomial>
+    class AdaptivePolynomial : public AbstractPolynomial<Polynomial>
     {
     public:
-        AdaptivePolynomialMatrix(
+        AdaptivePolynomial(
                 const List<point>& stencil,
                 const direction dimensions,
                 const scalar tolerance=1e-4);
@@ -34,7 +34,7 @@ namespace Foam
 }
 
 #ifdef NoRepository
-#   include "AdaptivePolynomialMatrix.C"
+#   include "AdaptivePolynomial.C"
 #endif
 
 #endif

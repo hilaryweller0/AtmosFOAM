@@ -4,19 +4,13 @@
 namespace Foam
 {
     template<class Polynomial>
-    class PolynomialMatrix
+    class AbstractPolynomial
     {
     public:
-        virtual ~PolynomialMatrix() {};
-
-        scalarRectangularMatrix pseudoInverse() const;
+        virtual ~AbstractPolynomial() {};
 
         virtual scalarRectangularMatrix matrix() const = 0;
     };
 }
-
-#ifdef NoRepository
-#   include "PolynomialMatrix.C"
-#endif
 
 #endif

@@ -4,8 +4,8 @@
 #include "catch.hpp"
 #include "fvCFD.H"
 
-#include "AdaptivePolynomialMatrix.H"
-#include "FixedPolynomialMatrix.H"
+#include "AdaptivePolynomial.H"
+#include "FixedPolynomial.H"
 #include "cubicUpwindCPCFitPolynomial.H"
 #include "TestPolynomialFit.H"
 #include "TestStencils.H"
@@ -40,11 +40,11 @@ TEST_CASE("fit using linear correction")
     check(fit.coefficients(), twelvePointStencilCoefficients());
 }
 
-TEST_CASE("12x9 FixedPolynomialMatrix")
+TEST_CASE("12x9 FixedPolynomial")
 {
     const direction dimensions = 2;
     const List<point> stencil = Test::Stencils::twelvePoints();
-    Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
+    Foam::FixedPolynomial<cubicUpwindCPCFitPolynomial>
         matrix(stencil, dimensions);
 
     check<12, 9>(matrix.matrix(), Test::Matrices::twelvePoints);
@@ -54,7 +54,7 @@ TEST_CASE("a + bx with two points in horizontal line")
 {
     const direction dimensions = 2;
     const List<point> stencil = Test::Stencils::twoPointsInHorizontalLine();
-    Foam::AdaptivePolynomialMatrix<cubicUpwindCPCFitPolynomial>
+    Foam::AdaptivePolynomial<cubicUpwindCPCFitPolynomial>
         matrix(stencil, dimensions);
 
     check<2, 2>(matrix.matrix(), Test::Matrices::xLinear);
@@ -64,7 +64,7 @@ TEST_CASE("a + by with two points in vertical line")
 {
     const direction dimensions = 2;
     const List<point> stencil = Test::Stencils::twoPointsInVerticalLine();
-    Foam::AdaptivePolynomialMatrix<cubicUpwindCPCFitPolynomial>
+    Foam::AdaptivePolynomial<cubicUpwindCPCFitPolynomial>
         matrix(stencil, dimensions);
 
     check<2, 2>(matrix.matrix(), Test::Matrices::yLinear);
