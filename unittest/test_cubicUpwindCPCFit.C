@@ -47,7 +47,7 @@ TEST_CASE("12x9 FixedPolynomialMatrix")
     Foam::FixedPolynomialMatrix<cubicUpwindCPCFitPolynomial>
         matrix(stencil, dimensions);
 
-    check<12, 9>(matrix.matrix(), twelvePointStencilMatrix);
+    check<12, 9>(matrix.matrix(), Test::Matrices::twelvePoints);
 }
 
 TEST_CASE("a + bx with two points in horizontal line")
@@ -58,4 +58,14 @@ TEST_CASE("a + bx with two points in horizontal line")
         matrix(stencil, dimensions);
 
     check<2, 2>(matrix.matrix(), Test::Matrices::xLinear);
+}
+
+TEST_CASE("a + by with two points in vertical line")
+{
+    const direction dimensions = 2;
+    const List<point> stencil = Test::Stencils::twoPointsInVerticalLine();
+    Foam::AdaptivePolynomialMatrix<cubicUpwindCPCFitPolynomial>
+        matrix(stencil, dimensions);
+
+    check<2, 2>(matrix.matrix(), Test::Matrices::yLinear);
 }

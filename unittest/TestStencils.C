@@ -44,7 +44,35 @@ Foam::List<point> Test::Stencils::twoPointsInHorizontalLine()
     return stencil;
 }
 
+Foam::List<point> Test::Stencils::twoPointsInVerticalLine()
+{
+    Foam::List<point> stencil(2, point(0, 0, 0));
+    stencil[0] = point(0, 1, 0);
+    stencil[1] = point(0, -2, 0);
+    return stencil;
+}
+
+const scalar Test::Matrices::twelvePoints[12][9] = {
+    {1, -1,  0,  1,  0, 0,   -1,   0,   0},
+    {1,  1,  0,  1,  0, 0,    1,   0,   0},
+    {1, -3,  0,  9,  0, 0,  -27,   0,   0},
+    {1, -5,  0, 25,  0, 0, -125,   0,   0},
+    {1, -1, -2,  1,  2, 4,   -1,  -2,  -4},
+    {1,  1, -2,  1, -2, 4,    1,  -2,   4},
+    {1, -3, -2,  9,  6, 4,  -27, -18, -12},
+    {1, -5, -2, 25, 10, 4, -125, -50, -20},
+    {1, -1,  2,  1, -2, 4,   -1,   2,  -4},
+    {1,  1,  2,  1,  2, 4,    1,   2,   4},
+    {1, -3,  2,  9, -6, 4,  -27,  18, -12},
+    {1, -5,  2, 25,-10, 4, -125,  50, -20}
+};
+
 const scalar Test::Matrices::xLinear[2][2] = {
     {1, -1},
     {1, 3}
+};
+
+const scalar Test::Matrices::yLinear[2][2] = {
+    {1, 1},
+    {1, -2}
 };

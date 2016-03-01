@@ -9,14 +9,19 @@ namespace Foam
     public:
         AdaptivePolynomialMatrix(
                 const List<point>& stencil,
-                const direction dimensions);
+                const direction dimensions,
+                const scalar tolerance=1e-4);
 
         scalarRectangularMatrix matrix();
     
     private:
+        bool containsEntry(const List<label> fittableTerms, label term);
+        bool fullRank(const scalarRectangularMatrix& B);
+
         const List<point>& stencil;
         const direction dimensions;
         const label maxTerms;
+        const scalar tolerance;
     };
 }
 
