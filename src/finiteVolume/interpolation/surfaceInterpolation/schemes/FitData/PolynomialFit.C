@@ -36,7 +36,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     }
 
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
-    FixedPolynomial<Polynomial> polynomial(localStencil, dim_);
+    Polynomial polynomial(localStencil, dim_);
     WeightedMatrix matrix(polynomial.matrix());
 
     matrix.applyStencilPointWeights(wts);

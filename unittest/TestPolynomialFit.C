@@ -56,7 +56,7 @@ Test::PolynomialFit::PolynomialFit(
     const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
-    Foam::PolynomialFit<cubicUpwindCPCFitPolynomial> polynomialFit(
+    Foam::PolynomialFit<FixedPolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
                 linearCorrection,
                 linearLimitFactor,
                 centralWeight,

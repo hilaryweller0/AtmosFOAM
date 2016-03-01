@@ -127,7 +127,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
     bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
 
-    PolynomialFit<Polynomial> polynomialFit(
+    PolynomialFit<FixedPolynomial<Polynomial> > polynomialFit(
         linearCorrection_,
         linearLimitFactor_,
         centralWeight_, 
