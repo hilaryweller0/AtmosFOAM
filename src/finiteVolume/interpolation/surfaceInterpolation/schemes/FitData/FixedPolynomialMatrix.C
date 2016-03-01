@@ -1,5 +1,4 @@
 #include "FixedPolynomialMatrix.H"
-#include "SVD.H"
 
 template<class Polynomial>
 Foam::FixedPolynomialMatrix<Polynomial>::FixedPolynomialMatrix(
@@ -15,17 +14,9 @@ Foam::FixedPolynomialMatrix<Polynomial>::FixedPolynomialMatrix(
 }
 
 template<class Polynomial>
-scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::matrix()
+scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::matrix() const
 {
     return B;
-}
-
-
-template<class Polynomial>
-scalarRectangularMatrix Foam::FixedPolynomialMatrix<Polynomial>::pseudoInverse()
-{
-    SVD svd(B, SMALL);
-    return svd.VSinvUt();
 }
 
 template<class Polynomial>
@@ -53,17 +44,20 @@ void Foam::FixedPolynomialMatrix<Polynomial>::multiplyConstantAndLinearWeights(c
 template<class Polynomial>
 void Foam::FixedPolynomialMatrix<Polynomial>::multiplyUpwindWeight(const scalar weight)
 {
-    for (label j = 0; j < B.m(); j++)
-    {
-        B[0][j] *= weight;
-    }
+    multiplyStencilPointWeight(0, weight);
 }
 
 template<class Polynomial>
 void Foam::FixedPolynomialMatrix<Polynomial>::multiplyDownwindWeight(const scalar weight)
 {
+    multiplyStencilPointWeight(1, weight);
+}
+
+template<class Polynomial>
+void Foam::FixedPolynomialMatrix<Polynomial>::multiplyStencilPointWeight(const label index, const scalar weight)
+{
     for (label j = 0; j < B.m(); j++)
     {
-        B[1][j] *= weight;
+        B[index][j] *= weight;
     }
 }

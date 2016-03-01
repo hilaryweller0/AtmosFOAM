@@ -15,7 +15,7 @@ Foam::AdaptivePolynomialMatrix<Polynomial>::AdaptivePolynomialMatrix(
 {}
 
 template<class Polynomial>
-scalarRectangularMatrix Foam::AdaptivePolynomialMatrix<Polynomial>::matrix()
+scalarRectangularMatrix Foam::AdaptivePolynomialMatrix<Polynomial>::matrix() const
 {
     List<label> fittableTerms(0, label(0));
     for (int terms=0; terms<maxTerms; terms++)
@@ -60,13 +60,13 @@ scalarRectangularMatrix Foam::AdaptivePolynomialMatrix<Polynomial>::matrix()
 }
 
 template<class Polynomial>
-bool Foam::AdaptivePolynomialMatrix<Polynomial>::containsEntry(const List<label> fittableTerms, label term)
+bool Foam::AdaptivePolynomialMatrix<Polynomial>::containsEntry(const List<label> fittableTerms, label term) const
 {
     return findIndex(fittableTerms, term) != -1;
 }
 
 template<class Polynomial>
-bool Foam::AdaptivePolynomialMatrix<Polynomial>::fullRank(const scalarRectangularMatrix& B)
+bool Foam::AdaptivePolynomialMatrix<Polynomial>::fullRank(const scalarRectangularMatrix& B) const
 {
     SVD svd(B, SMALL);
     return min(svd.S()) > tolerance;

@@ -1,10 +1,12 @@
 #ifndef FixedPolynomialMatrix_H
 #define FixedPolynomialMatrix_H
 
+#include "PolynomialMatrix.H"
+
 namespace Foam
 {
     template<class Polynomial>
-    class FixedPolynomialMatrix
+    class FixedPolynomialMatrix : public PolynomialMatrix<Polynomial>
     {
     public:
         FixedPolynomialMatrix(
@@ -15,8 +17,8 @@ namespace Foam
         void multiplyConstantAndLinearWeights(const scalar weight);
         void multiplyUpwindWeight(const scalar weight);
         void multiplyDownwindWeight(const scalar weight);
-        scalarRectangularMatrix matrix();
-        scalarRectangularMatrix pseudoInverse();
+        void multiplyStencilPointWeight(const label index, const scalar weight);
+        scalarRectangularMatrix matrix() const;
     private:
         scalarRectangularMatrix B;
     };
