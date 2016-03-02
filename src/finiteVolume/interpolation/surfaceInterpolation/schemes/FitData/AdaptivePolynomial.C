@@ -41,6 +41,7 @@ scalarRectangularMatrix Foam::AdaptivePolynomial<Polynomial>::matrix() const
         }
     }
     
+    Info << "fittableTerms " << fittableTerms.size() << endl;
     scalarRectangularMatrix B(stencil.size(), fittableTerms.size(), scalar(0));
     for (int i=0; i<B.n(); i++)
     {
