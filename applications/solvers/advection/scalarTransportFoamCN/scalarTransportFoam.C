@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << endl;
 
+        // Fixed number of iterations per time-step version
         for (int corr = 0; corr < 4; corr++)
         {
             solve
@@ -62,6 +63,20 @@ int main(int argc, char *argv[])
               + 0.5*divPhiT.oldTime()
             );
         }
+
+/*        // Keep doing iterations until converged version
+        for(bool converged = false; !converged;)
+        {
+            fvScalarMatrix TEqn
+            (
+                fvm::ddt(T)
+              + 0.5*fvm::div(phi, T)
+              + 0.5*divPhiT.oldTime()
+            );
+            solverPerformance sp = TEqn.solve();
+            converged = sp.nIterations() <= 1;
+        }
+*/
         divPhiT = fvc::div(phi, T);
 
         Info << " T goes from " << min(T.internalField()) << " to "

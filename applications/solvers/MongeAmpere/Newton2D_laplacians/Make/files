@@ -1,0 +1,3 @@
+Newton2D.C
+
+EXE = $(FOAM_USER_APPBIN)/Newton2D_laplacians
