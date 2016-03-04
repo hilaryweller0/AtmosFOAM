@@ -1,4 +1,4 @@
-/*interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
+interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
 interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
 interpolation/surfaceInterpolation/schemes/biQuadraticUpwindFit/biQuadraticUpwindFit.C
 interpolation/surfaceInterpolation/schemes/quadraticUpwindCPCFit/quadraticUpwindCPCFit.C
@@ -9,8 +9,10 @@ interpolation/surfaceInterpolation/schemes/biLinearUpwindFit/biLinearUpwindFit.C
 interpolation/surfaceInterpolation/schemes/APVM/APVM.C
 interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
-*/
+
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
+interpolation/surfaceInterpolation/schemes/FitData/Basis.C
+interpolation/surfaceInterpolation/schemes/FitData/WeightedMatrix.C
 
 extendedStencil = fvMesh/extendedStencil
 
