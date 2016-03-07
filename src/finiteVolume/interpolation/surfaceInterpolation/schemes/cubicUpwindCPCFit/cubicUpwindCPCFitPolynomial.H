@@ -37,20 +37,11 @@ Description
 
 #include "vector.H"
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
 namespace Foam
 {
-
-/*---------------------------------------------------------------------------*\
-                 Class cubicUpwindCPCFitPolynomial Declaration
-\*---------------------------------------------------------------------------*/
-
-class cubicUpwindCPCFitPolynomial
-{
-public:
-
-    // Member functions
+    class cubicUpwindCPCFitPolynomial
+    {
+    public:
 
         static label nTerms(const direction dim)
         {
@@ -72,39 +63,34 @@ public:
         {
             register label curIdx = 0;
 
+            // degree 0 
             coeffs[curIdx++] = weight;
-            coeffs[curIdx++] = weight*d.x();
-            coeffs[curIdx++] = weight*sqr(d.x());
-            coeffs[curIdx++] = weight*pow(d.x(),3);
 
-            if (dim >= 2)
-            {
-                coeffs[curIdx++] = weight*d.y();
-                coeffs[curIdx++] = weight*d.x()*d.y();
-                coeffs[curIdx++] = weight*sqr(d.y());
-                coeffs[curIdx++] = weight*sqr(d.x())*d.y();
-                coeffs[curIdx++] = weight*d.x()*sqr(d.y());
-            }
+            // degree 1
+            coeffs[curIdx++] = weight*d.x();
+            if (dim >= 2) coeffs[curIdx++] = weight*d.y();
+            if (dim == 3) coeffs[curIdx++] = weight*d.z();
+
+            // degree 2
+            coeffs[curIdx++] = weight*sqr(d.x());
+            if (dim >= 2) coeffs[curIdx++] = weight*d.x()*d.y();
+            if (dim >= 2) coeffs[curIdx++] = weight*sqr(d.y());
+            if (dim == 3) coeffs[curIdx++] = weight*d.x()*d.z();
+            if (dim == 3) coeffs[curIdx++] = weight*d.y()*d.z();
+            if (dim == 3) coeffs[curIdx++] = weight*sqr(d.z());
+
+            // degree 3
+            coeffs[curIdx++] = weight*pow(d.x(),3);
+            if (dim >= 2) coeffs[curIdx++] = weight*sqr(d.x())*d.y();
+            if (dim >= 2) coeffs[curIdx++] = weight*d.x()*sqr(d.y());
             if (dim == 3)
             {
-                coeffs[curIdx++] = weight*d.z();
-                coeffs[curIdx++] = weight*d.x()*d.z();
-                coeffs[curIdx++] = weight*d.y()*d.z();
-                coeffs[curIdx++] = weight*sqr(d.z());
                 coeffs[curIdx++] = weight*d.x()*d.y()*d.z();
                 coeffs[curIdx++] = weight*sqr(d.x())*d.z();
                 coeffs[curIdx++] = weight*d.x()*sqr(d.z());
             }
         }
-};
-
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    };
+}
 
 #endif
-
-// ************************************************************************* //
