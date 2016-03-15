@@ -36,7 +36,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
-    WeightedMatrix matrix(polynomial.matrix());
+    scalarRectangularMatrix B = polynomial.matrix();
+    WeightedMatrix matrix(B);
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
@@ -89,7 +90,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     return autoPtr<Fit>(new Fit(
             C,
             coeffsi,
-            goodFit
+            goodFit,
+            B.m()
     ));
 }
 

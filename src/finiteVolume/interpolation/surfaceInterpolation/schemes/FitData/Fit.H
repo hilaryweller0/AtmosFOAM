@@ -11,12 +11,14 @@ namespace Foam
         Fit(
                 const List<point>& stencilPoints,
                 const scalarList& coeffs,
-                const bool good
+                const bool good,
+                const label polynomialTerms
         );
 
         const List<point>& stencilPoints;
         const scalarList& coeffs;
         const bool good;
+        const label polynomialTerms;
     };
 }
 

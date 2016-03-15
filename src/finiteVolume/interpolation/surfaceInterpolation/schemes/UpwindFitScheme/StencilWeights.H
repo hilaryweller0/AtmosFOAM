@@ -20,6 +20,8 @@ namespace Foam
         void write();
 
     private:
+        void populateStencilWeights(const Fit& fit);
+
         const fvMesh& mesh;
         label debugFaceI;
         autoPtr<volScalarField> stencilWeights;
