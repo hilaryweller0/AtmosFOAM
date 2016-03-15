@@ -14,9 +14,9 @@ Foam::StencilWeights::StencilWeights(const fvMesh& mesh, const word prefix)
     //labelList debugFaceIlist = debugDict.lookupOrDefault("interpolationWeightsFaceIndices", emptyList, false, false);
 
     std::ostringstream filename;
-    filename << prefix << debugFaceI;
+    filename << prefix << "Weights" << debugFaceI;
 
-    weightField.reset(new volScalarField
+    stencilWeights.reset(new volScalarField
         (
             IOobject
             (
@@ -35,22 +35,21 @@ Foam::StencilWeights::StencilWeights(const fvMesh& mesh, const word prefix)
 
 void Foam::StencilWeights::fitted(
         const label faceI,
-        const List<scalarList>& coeffs,
-        const List<List<point> >& stencilPoints
+        const autoPtr<Fit>& fit
 )
 {
     if (faceI != debugFaceI) return;
 
-    forAll(stencilPoints[faceI], stencilI)
+    forAll(fit->stencilPoints, stencilI)
     {
         forAll(mesh.C(), cellI)
         {
-            if (mesh.C()[cellI] == stencilPoints[faceI][stencilI])
+            if (mesh.C()[cellI] == fit->stencilPoints[stencilI])
             {
-                weightField()[cellI] = coeffs[faceI][stencilI];
+                stencilWeights()[cellI] = fit->coeffs[stencilI];
                 if (stencilI == 0)
                 {
-                    weightField()[cellI] += 1.0; // re-add upwind weight
+                    stencilWeights()[cellI] += 1.0; // re-add upwind weight
                 }
             }
         }
@@ -58,12 +57,12 @@ void Foam::StencilWeights::fitted(
         forAll(mesh.boundary(), patchI)
         {
             const fvPatch& boundaryPatch = mesh.boundary()[patchI];
-            fvPatchField<scalar>& weightsPatch = weightField->boundaryField()[patchI];
+            fvPatchField<scalar>& weightsPatch = stencilWeights->boundaryField()[patchI];
             forAll(boundaryPatch.Cf(), boundaryFaceI)
             {
-                if (boundaryPatch.Cf()[boundaryFaceI] == stencilPoints[faceI][stencilI])
+                if (boundaryPatch.Cf()[boundaryFaceI] == fit->stencilPoints[stencilI])
                 {
-                    weightsPatch[boundaryFaceI] = coeffs[faceI][stencilI];
+                    weightsPatch[boundaryFaceI] = fit->coeffs[stencilI];
                     if (stencilI == 0)
                     {
                         weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight
@@ -76,5 +75,5 @@ void Foam::StencilWeights::fitted(
 
 void Foam::StencilWeights::write()
 {
-    weightField->write();
+    stencilWeights->write();
 }

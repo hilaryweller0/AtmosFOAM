@@ -86,7 +86,11 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
-    return autoPtr<Fit>(new Fit(goodFit));
+    return autoPtr<Fit>(new Fit(
+            C,
+            coeffsi,
+            goodFit
+    ));
 }
 
 template<class Polynomial>

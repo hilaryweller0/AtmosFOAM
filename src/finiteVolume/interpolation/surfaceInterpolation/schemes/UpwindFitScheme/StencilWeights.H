@@ -3,6 +3,7 @@
 
 #include "fvCFD.H"
 #include "autoPtr.H"
+#include "Fit.H"
 
 namespace Foam
 {
@@ -13,8 +14,7 @@ namespace Foam
 
         void fitted(
             const label faceI, 
-            const List<scalarList>& coeffs,
-            const List<List<point> >& stencilPoints
+            const autoPtr<Fit>& fit
         );
 
         void write();
@@ -22,8 +22,8 @@ namespace Foam
     private:
         const fvMesh& mesh;
         label debugFaceI;
-        autoPtr<volScalarField> weightField;
-        //autoPtr<volScalarField> neiWeights;
+        autoPtr<volScalarField> stencilWeights;
+        autoPtr<surfaceScalarField> polynomialTerms;
     };
 }
 

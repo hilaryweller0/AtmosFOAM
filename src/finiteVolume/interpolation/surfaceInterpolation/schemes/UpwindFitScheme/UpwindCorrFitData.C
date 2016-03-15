@@ -87,7 +87,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    StencilWeights ownerWeights(mesh, "ownerWeights");
+    StencilWeights ownerWeights(mesh, "owner");
     fit(owncoeffs_, stencilPoints, ownerWeights);
     ownerWeights.write();
 
@@ -99,7 +99,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    StencilWeights neiWeights(mesh, "neiWeights");
+    StencilWeights neiWeights(mesh, "nei");
     fit(neicoeffs_, stencilPoints, neiWeights);
     neiWeights.write();
 }
@@ -115,8 +115,8 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
-        fit(facei, coeffs, stencilPoints, w[facei]);
-        stencilWeights.fitted(facei, coeffs, stencilPoints);
+        autoPtr<Fit> f = fit(facei, coeffs, stencilPoints, w[facei]);
+        stencilWeights.fitted(facei, f);
     }
 
     const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
@@ -130,7 +130,8 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
             forAll(pw, i)
             {
-                fit(facei, coeffs, stencilPoints, pw[i]);
+                autoPtr<Fit> f = fit(facei, coeffs, stencilPoints, pw[i]);
+                stencilWeights.fitted(facei, f);
                 facei++;
             }
         }
@@ -138,13 +139,14 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 }
 
 template<class Polynomial>
-void Foam::UpwindCorrFitData<Polynomial>::fit(
+autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit(
         const label faceI,
         List<scalarList>& coeffs,
         const List<List<point> >& stencilPoints,
         const scalar wLin)
 {
     scalarList wts(stencilPoints[faceI].size(), scalar(1));
+
     autoPtr<Fit> fit = FitData
     <
         UpwindCorrFitData<Polynomial>,
@@ -154,6 +156,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
     (
         coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
     );
+
     if (!fit->good)
     {
         WarningIn
@@ -164,4 +167,6 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
             << ", reverting to upwind/linear." << nl
             << "    Linear weights " << wLin << " " << 1 - wLin << endl;
     }
+
+    return fit;
 }
