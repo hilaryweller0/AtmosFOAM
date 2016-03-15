@@ -18,3 +18,8 @@ solvers {
 SIMPLE {
     nNonOrthogonalCorrectors 1;
 }
+
+debug
+{
+        interpolationWeightsFaceIndex  492;
+}
