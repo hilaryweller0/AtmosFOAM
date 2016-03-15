@@ -17,7 +17,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
 {}
 
 template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::fit
+autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 (
     scalarList& coeffsi,
     scalarList& wts,
@@ -95,6 +95,7 @@ void Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
+    return autoPtr<Fit>(new Fit(false));
 }
 
 template<class Polynomial>

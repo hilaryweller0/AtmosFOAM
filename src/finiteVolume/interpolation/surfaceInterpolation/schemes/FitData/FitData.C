@@ -107,7 +107,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
 
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
-void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
+autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 (
     scalarList& coeffsi,
     scalarList& wts,
@@ -135,7 +135,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         dim_
     );
     const Basis basis(idir, jdir, kdir);
-    polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis, facei);
+    return polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis, facei);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

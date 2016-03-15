@@ -2,7 +2,9 @@
 #define PolynomialFit_H
 
 #include "fvCFD.H"
+#include "autoPtr.H"
 #include "Basis.H"
+#include "Fit.H"
 #include "WeightedMatrix.H"
 
 namespace Foam
@@ -19,7 +21,7 @@ namespace Foam
             const direction dimensions
         );
         
-        void fit
+        autoPtr<Fit> fit
         (
             scalarList& coeffsi,
             scalarList& wts,

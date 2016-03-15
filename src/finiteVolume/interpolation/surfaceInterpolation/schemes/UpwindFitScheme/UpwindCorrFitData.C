@@ -120,11 +120,6 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 	"fixedValue"
     );
 
-    const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
-    const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
-
-    // Owner stencil weights
-    // ~~~~~~~~~~~~~~~~~~~~~
 
     // Get the cell/face centres in stencil order.
     List<List<point> > stencilPoints(mesh.nFaces());
@@ -136,95 +131,10 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    // find the fit coefficients for every owner
-
-    //Pout<< "-- Owner --" << endl;
-    for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
-    {
-        scalarList wts(stencilPoints[facei].size(), scalar(1));
-        FitData
-        <
-            UpwindCorrFitData<Polynomial>,
-            extendedUpwindCellToFaceStencilNew,
-            Polynomial
-        >::calcFit(owncoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
-
-        if (facei == debugFaceI)
-        {
-            forAll(stencilPoints[facei], stencilI)
-            {
-                forAll(mesh.C(), cellI)
-                {
-                    if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
-                    {
-                        ownerWeights[cellI] = owncoeffs_[facei][stencilI];
-                        if (stencilI == 0)
-                        {
-                            ownerWeights[cellI] += 1.0; // re-add upwind weight
-                        }
-                    }
-                }
-                forAll(mesh.boundary(), patchI)
-                {
-                    const fvPatch& boundaryPatch = mesh.boundary()[patchI];
-                    fvPatchField<scalar>& weightsPatch = ownerWeights.boundaryField()[patchI];
-                    forAll(boundaryPatch.Cf(), boundaryFaceI)
-                    {
-                        if (boundaryPatch.Cf()[boundaryFaceI] == stencilPoints[facei][stencilI])
-                        {
-                            weightsPatch[boundaryFaceI] = owncoeffs_[facei][stencilI];
-                            if (stencilI == 0)
-                            {
-                                weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        //Pout<< "    facei:" << facei
-        //    << " at:" << mesh.faceCentres()[facei] << endl;
-        //forAll(owncoeffs_[facei], i)
-        //{
-        //    Pout<< "    point:" << stencilPoints[facei][i]
-        //        << "\tweight:" << owncoeffs_[facei][i]
-        //        << endl;
-        //}
-    }
-
-    forAll(bw, patchi)
-    {
-        const fvsPatchScalarField& pw = bw[patchi];
-
-        if (pw.coupled())
-        {
-            label facei = pw.patch().start();
-
-            forAll(pw, i)
-            {
-                scalarList wts(stencilPoints[facei].size(), scalar(1));
-                FitData
-                <
-                    UpwindCorrFitData<Polynomial>,
-                    extendedUpwindCellToFaceStencilNew,
-                    Polynomial
-                >::calcFit
-                (
-                    owncoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
-                );
-                facei++;
-            }
-        }
-    }
-
+    fit(owncoeffs_, stencilPoints, ownerWeights, debugFaceI);
     ownerWeights.write();
 
 
-    // Neighbour stencil weights
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~
-
-    // Note:reuse stencilPoints since is major storage
     this->stencil().collectData
     (
         this->stencil().neiMap(),
@@ -233,9 +143,20 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    // find the fit coefficients for every neighbour
+    fit(neicoeffs_, stencilPoints, neiWeights, debugFaceI);
+    neiWeights.write();
+}
 
-    //Pout<< "-- Neighbour --" << endl;
+template<class Polynomial>
+void Foam::UpwindCorrFitData<Polynomial>::fit(
+        List<scalarList>& coeffs,
+        const List<List<point> > stencilPoints,
+        volScalarField& weightField,
+        const label debugFaceI)
+{
+    const fvMesh& mesh = this->mesh();
+    const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
+
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
         scalarList wts(stencilPoints[facei].size(), scalar(1));
@@ -244,7 +165,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
             UpwindCorrFitData<Polynomial>,
             extendedUpwindCellToFaceStencilNew,
             Polynomial
-        >::calcFit(neicoeffs_[facei], wts, stencilPoints[facei], w[facei], facei);
+        >::calcFit(coeffs[facei], wts, stencilPoints[facei], w[facei], facei);
 
         if (facei == debugFaceI)
         {
@@ -254,22 +175,22 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                 {
                     if (mesh.C()[cellI] == stencilPoints[facei][stencilI])
                     {
-                        neiWeights[cellI] = neicoeffs_[facei][stencilI];
+                        weightField[cellI] = coeffs[facei][stencilI];
                         if (stencilI == 0)
                         {
-                            neiWeights[cellI] += 1.0; // re-add upwind weight
+                            weightField[cellI] += 1.0; // re-add upwind weight
                         }
                     }
                 }
                 forAll(mesh.boundary(), patchI)
                 {
                     const fvPatch& boundaryPatch = mesh.boundary()[patchI];
-                    fvPatchField<scalar>& weightsPatch = neiWeights.boundaryField()[patchI];
+                    fvPatchField<scalar>& weightsPatch = weightField.boundaryField()[patchI];
                     forAll(boundaryPatch.Cf(), boundaryFaceI)
                     {
                         if (boundaryPatch.Cf()[boundaryFaceI] == stencilPoints[facei][stencilI])
                         {
-                            weightsPatch[boundaryFaceI] = neicoeffs_[facei][stencilI];
+                            weightsPatch[boundaryFaceI] = coeffs[facei][stencilI];
                             if (stencilI == 0)
                             {
                                 weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight
@@ -279,17 +200,9 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                 }
             }
         }
-
-        //Pout<< "    facei:" << facei
-        //    << " at:" << mesh.faceCentres()[facei] << endl;
-        //forAll(neicoeffs_[facei], i)
-        //{
-        //    Pout<< "    point:" << stencilPoints[facei][i]
-        //        << "\tweight:" << neicoeffs_[facei][i]
-        //        << endl;
-        //}
     }
 
+    const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
     forAll(bw, patchi)
     {
         const fvsPatchScalarField& pw = bw[patchi];
@@ -308,13 +221,12 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
                     Polynomial
                 >::calcFit
                 (
-                    neicoeffs_[facei], wts, stencilPoints[facei], pw[i], facei
+                    coeffs[facei], wts, stencilPoints[facei], pw[i], facei
                 );
                 facei++;
             }
         }
     }
-    neiWeights.write();
 }
 
 

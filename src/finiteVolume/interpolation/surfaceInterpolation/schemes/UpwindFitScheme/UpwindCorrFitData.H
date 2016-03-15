@@ -104,17 +104,25 @@ public:
 
     // Member functions
 
-        //- Return reference to owner fit coefficients
-        const List<scalarList>& owncoeffs() const
-        {
-            return owncoeffs_;
-        }
+    //- Return reference to owner fit coefficients
+    const List<scalarList>& owncoeffs() const
+    {
+        return owncoeffs_;
+    }
 
-        //- Return reference to neighbour fit coefficients
-        const List<scalarList>& neicoeffs() const
-        {
-            return neicoeffs_;
-        }
+    //- Return reference to neighbour fit coefficients
+    const List<scalarList>& neicoeffs() const
+    {
+        return neicoeffs_;
+    }
+
+private:
+    void fit(
+            List<scalarList>& coeffs,
+            const List<List<point> > stencilPoints,
+            volScalarField& weightField,
+            const label debugFaceI
+    );
 };
 
 

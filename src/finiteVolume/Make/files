@@ -13,6 +13,7 @@ interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
 interpolation/surfaceInterpolation/schemes/FitData/Basis.C
 interpolation/surfaceInterpolation/schemes/FitData/WeightedMatrix.C
+interpolation/surfaceInterpolation/schemes/FitData/Fit.C
 
 extendedStencil = fvMesh/extendedStencil
 
