@@ -25,8 +25,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     const scalar wLin,
     const point& origin,
     bool pureUpwind,
-    const Basis& basis,
-    const label faceI
+    const Basis& basis
 )
 {
     wts[0] = centralWeight_;
@@ -79,14 +78,6 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     }
     else
     {
-        WarningIn
-        (
-            "FitData<Polynomial>::calcFit(..)"
-        )   << "Could not fit face " << faceI
-            << "    Weights = " << coeffsi
-            << ", reverting to upwind/linear." << nl
-            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
-
         coeffsi = 0;
         
         if (linearCorrection_)
@@ -95,7 +86,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
-    return autoPtr<Fit>(new Fit(false));
+    return autoPtr<Fit>(new Fit(goodFit));
 }
 
 template<class Polynomial>

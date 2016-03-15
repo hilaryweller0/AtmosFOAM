@@ -159,13 +159,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
-        scalarList wts(stencilPoints[facei].size(), scalar(1));
-        FitData
-        <
-            UpwindCorrFitData<Polynomial>,
-            extendedUpwindCellToFaceStencilNew,
-            Polynomial
-        >::calcFit(coeffs[facei], wts, stencilPoints[facei], w[facei], facei);
+        fit(facei, coeffs, stencilPoints, w[facei]);
 
         if (facei == debugFaceI)
         {
@@ -213,21 +207,38 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
             forAll(pw, i)
             {
-                scalarList wts(stencilPoints[facei].size(), scalar(1));
-                FitData
-                <
-                    UpwindCorrFitData<Polynomial>,
-                    extendedUpwindCellToFaceStencilNew,
-                    Polynomial
-                >::calcFit
-                (
-                    coeffs[facei], wts, stencilPoints[facei], pw[i], facei
-                );
+                fit(facei, coeffs, stencilPoints, pw[i]);
                 facei++;
             }
         }
     }
 }
 
-
-// ************************************************************************* //
+template<class Polynomial>
+void Foam::UpwindCorrFitData<Polynomial>::fit(
+        const label faceI,
+        List<scalarList>& coeffs,
+        const List<List<point> > stencilPoints,
+        const scalar wLin)
+{
+    scalarList wts(stencilPoints[faceI].size(), scalar(1));
+    autoPtr<Fit> fit = FitData
+    <
+        UpwindCorrFitData<Polynomial>,
+        extendedUpwindCellToFaceStencilNew,
+        Polynomial
+    >::calcFit
+    (
+        coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
+    );
+    if (!fit->good)
+    {
+        WarningIn
+        (
+            "FitData<Polynomial>::calcFit(..)"
+        )   << "Could not fit face " << faceI
+            << "    Weights = " << coeffs[faceI]
+            << ", reverting to upwind/linear." << nl
+            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
+    }
+}

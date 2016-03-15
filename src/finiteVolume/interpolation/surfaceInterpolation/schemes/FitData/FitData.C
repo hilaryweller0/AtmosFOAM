@@ -135,7 +135,7 @@ autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         dim_
     );
     const Basis basis(idir, jdir, kdir);
-    return polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis, facei);
+    return polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

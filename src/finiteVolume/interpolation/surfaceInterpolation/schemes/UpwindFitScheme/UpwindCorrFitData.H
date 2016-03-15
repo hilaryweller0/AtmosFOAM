@@ -123,6 +123,12 @@ private:
             volScalarField& weightField,
             const label debugFaceI
     );
+    void fit(
+        const label faceI,
+        List<scalarList>& coeffs,
+        const List<List<point> > stencilPoints,
+        const scalar wLin
+    );
 };
 
 

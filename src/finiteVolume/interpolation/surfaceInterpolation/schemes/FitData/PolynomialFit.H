@@ -29,8 +29,7 @@ namespace Foam
             const scalar wLin, // only used when linearCorrection=true
             const point& origin,
             bool pureUpwind,
-            const Basis& basis,
-            const label faceI // only used for logging
+            const Basis& basis
         );
     
     private:
