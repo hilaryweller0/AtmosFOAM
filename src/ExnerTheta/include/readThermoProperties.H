@@ -31,4 +31,4 @@ const dimensionedScalar Cv("Cv", Cp - R);
 const dimensionedScalar speedSound("speedSound", sqrt(gamma*R*T0));
 
 Info << "Cp = " << Cp.value() << " speedSound = " << speedSound << " kappa = "
-     << kappa << " R = " << air.R() << " RR = " << RR << endl;
+     << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv << endl;
