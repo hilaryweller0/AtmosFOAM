@@ -47,7 +47,6 @@ Test::PolynomialFit::PolynomialFit(
 
     scalarList wts(stencilPoints.size(), scalar(1));
     const scalar wLin = 0.6;
-    const label unused_faceI = 0;
 
     scalar linearLimitFactor = 3.0;
     scalar centralWeight = 1e3;
@@ -68,8 +67,7 @@ Test::PolynomialFit::PolynomialFit(
             wLin,
             p0,
             pureUpwind,
-            basis,
-            unused_faceI);
+            basis);
 
     // TODO: shouldn't really have logic in the test code
     if (linearCorrection)

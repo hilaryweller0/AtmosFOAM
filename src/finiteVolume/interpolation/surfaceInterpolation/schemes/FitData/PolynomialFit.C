@@ -17,7 +17,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
 {}
 
 template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::fit
+autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 (
     scalarList& coeffsi,
     scalarList& wts,
@@ -25,8 +25,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     const scalar wLin,
     const point& origin,
     bool pureUpwind,
-    const Basis& basis,
-    const label faceI
+    const Basis& basis
 )
 {
     wts[0] = centralWeight_;
@@ -37,7 +36,8 @@ void Foam::PolynomialFit<Polynomial>::fit
 
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
-    WeightedMatrix matrix(polynomial.matrix());
+    scalarRectangularMatrix B = polynomial.matrix();
+    WeightedMatrix matrix(B);
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
@@ -79,14 +79,6 @@ void Foam::PolynomialFit<Polynomial>::fit
     }
     else
     {
-        WarningIn
-        (
-            "FitData<Polynomial>::calcFit(..)"
-        )   << "Could not fit face " << faceI
-            << "    Weights = " << coeffsi
-            << ", reverting to upwind/linear." << nl
-            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
-
         coeffsi = 0;
         
         if (linearCorrection_)
@@ -95,6 +87,12 @@ void Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
+    return autoPtr<Fit>(new Fit(
+            C,
+            coeffsi,
+            goodFit,
+            B.m()
+    ));
 }
 
 template<class Polynomial>
