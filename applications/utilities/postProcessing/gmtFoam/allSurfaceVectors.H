@@ -76,39 +76,45 @@ scalar maxMagU = 0;
         {
             if (projection2D == "XY")
             {
-                os << p.x() << "   " << p.y() << "   "
-                    << p.x() + vectorScale*Uf[faci][0] << "   "
-                    << p.y() + vectorScale*Uf[faci][1] << '\n';
+                os << p.x() - 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.y() - 0.5*vectorScale*Uf[faci][1] << "   "
+                   << p.x() + 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.y() + 0.5*vectorScale*Uf[faci][1] << '\n';
             }
             else if (projection2D == "YX")
             {
-                os << p.y() << "   " << p.x() << "   "
-                    << p.y() + vectorScale*Uf[faci][1] << "   "
-                    << p.x() + vectorScale*Uf[faci][0] << '\n';
+                os << p.y() - 0.5*vectorScale*Uf[faci][1] << "   " 
+                   << p.x() - 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.y() + 0.5*vectorScale*Uf[faci][1] << "   "
+                   << p.x() + 0.5*vectorScale*Uf[faci][0] << '\n';
             }
             else if (projection2D == "XZ")
             {
-                os << p.x() << "   " << p.z() << "   "
-                    << p.x() + vectorScale*Uf[faci][0] << "   "
-                    << p.z() + vectorScale*Uf[faci][2] << '\n';
+                os << p.x() - 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.z() - 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.x() + 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.z() + 0.5*vectorScale*Uf[faci][2] << '\n';
             }
             else if (projection2D == "ZX")
             {
-                os << p.z() << "   " << p.x() << "   "
-                    << p.z() + vectorScale*Uf[faci][2] << "   "
-                    << p.x() + vectorScale*Uf[faci][0] << '\n';
+                os << p.z() - 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.x() - 0.5*vectorScale*Uf[faci][0] << "   "
+                   << p.z() + 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.x() + 0.5*vectorScale*Uf[faci][0] << '\n';
             }
             else if (projection2D == "YZ")
             {
-                os << p.y() << "   " << p.z() << "   "
-                    << p.y() + vectorScale*Uf[faci][1] << "   "
-                    << p.z() + vectorScale*Uf[faci][2] << '\n';
+                os << p.y() - 0.5*vectorScale*Uf[faci][1] << "   "
+                   << p.z() - 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.y() + 0.5*vectorScale*Uf[faci][1] << "   "
+                   << p.z() + 0.5*vectorScale*Uf[faci][2] << '\n';
             }
             else if (projection2D == "ZY")
             {
-                os << p.z() << "   " << p.y() << "   "
-                    << p.z() + vectorScale*Uf[faci][2] << "   "
-                    << p.y() + vectorScale*Uf[faci][1] << '\n';
+                os << p.z() - 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.y() - 0.5*vectorScale*Uf[faci][1] << "   "
+                   << p.z() + 0.5*vectorScale*Uf[faci][2] << "   "
+                   << p.y() + 0.5*vectorScale*Uf[faci][1] << '\n';
             }
             else if (projection2D == "latz")
             {
@@ -117,18 +123,20 @@ scalar maxMagU = 0;
                 scalar sinLat = r > VSMALL ? (p&axis)/r : 0;
                 sinLat = max(min(sinLat, 1), -1);
                 scalar lat = radToDeg*Foam::asin(sinLat);
-                os << lat << "   " << r << "   "
-                   << lat + mToDeg*vectorScale*((Uf[faci]) & (latHat[faci]))<<" "
-                   << r + vectorScale*((Uf[faci]) & (rHat[faci])) << '\n';
+                os << lat - 0.5*mToDeg*vectorScale*((Uf[faci]) & (latHat[faci]))<<"   "
+                   << r - 0.5*vectorScale*((Uf[faci]) & (rHat[faci])) << "   "
+                   << lat + 0.5*mToDeg*vectorScale*((Uf[faci]) & (latHat[faci]))<<" "
+                   << r + 0.5*vectorScale*((Uf[faci]) & (rHat[faci])) << '\n';
             }
             else if (projection2D == "lonz")
             {
                 scalar r = mag(p);
                 const scalar mToDeg = radToDeg/r;
                 scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
-                os << lon << "   " << r << "   "
-                   << lon + mToDeg*vectorScale*((Uf[faci]) & (lonHat[faci]))<<" "
-                   << r + vectorScale*((Uf[faci]) & (rHat[faci])) << '\n';
+                os << lon - 0.5*mToDeg*vectorScale*((Uf[faci]) & (lonHat[faci]))<<"   "
+                   << r - 0.5*vectorScale*((Uf[faci]) & (rHat[faci])) << "   "
+                   << lon + 0.5*mToDeg*vectorScale*((Uf[faci]) & (lonHat[faci]))<<" "
+                   << r + 0.5*vectorScale*((Uf[faci]) & (rHat[faci])) << '\n';
             }
             else if (projection2D == "latLon")
             {
@@ -136,8 +144,10 @@ scalar maxMagU = 0;
                 scalar sinLat = r > VSMALL ? (p&axis)/r : 0;
                 //scalar sinLat = r > VSMALL ? p.z()/r : 0;
                 sinLat = max(min(sinLat, 1), -1);
-                scalar lat = radToDeg*Foam::asin(sinLat);
-                scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
+                scalar lat = radToDeg*Foam::asin(sinLat)
+                           - 0.5*vectorScale*((Uf[faci]) & (latHat[faci]));
+                scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir))
+                           - 0.5*vectorScale*((Uf[faci]) & (lonHat[faci]));
                 scalar lon2 = lon + vectorScale*((Uf[faci]) & (lonHat[faci]));
                 scalar lat2 = lat + vectorScale*((Uf[faci]) & (latHat[faci]));
                 if (lon2 >= -180 && lon2 <= 180)
