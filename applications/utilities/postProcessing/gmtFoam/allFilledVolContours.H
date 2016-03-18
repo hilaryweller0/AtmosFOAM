@@ -1,44 +1,57 @@
 // write data to temporary output file
 fileName tmpFile = args.rootPath() / args.caseName()
         / runTime.timeName() / vf.name() + ".dat";
-        
-scalar minVf = 0;
-scalar maxVf = 0;
+bool autoscale = false;
+
+scalar minSsf = 0;
+scalar maxSsf = 0;
 {
     OFstream os(tmpFile);
     os << "#x    y    " << vf.name() << endl;
 
     const scalarField& ssf = vf.internalField();
-    minVf = min(vf).value();
-    maxVf = max(vf).value();
-    Info << vf.name() << " goes from " << minVf
-         << " to " << maxVf << endl;
+    Info << vf.name() << " goes from " << min(ssf) << " to " << max(ssf)<<endl;
 
+    systemCall = "echo '%% " + vf.name() + " min_max " + stringScalar(min(ssf)) + " "
+                              + stringScalar(max(ssf)) + "' >> " + epsFile;
+    systemVerbose(systemCall);
+
+    minSsf = min(ssf);
+    maxSsf = max(ssf);
     if (colourMin == colourMax)
     {
-        colourMin = minVf;
-        colourMax = maxVf;
-        colourStep = 0.1*(colourMax - colourMin);
-    }
-    if (colourMax-colourMin < 5e-6)
-    {
-        colourMin -= 1;
-        colourMax += 1;
-        colourStep = 1;
+        autoscale = true;
+        
+        if (minSsf < 0 && maxSsf > 0)
+        {
+            colourMin = min(minSsf, -maxSsf);
+            colourMax = -colourMin;
+        }
+        else
+        {
+            colourMin = minSsf;
+            colourMax = maxSsf;
+        }
+        colourStep = (colourMax - colourMin)/21.;
+        if (colourMax-colourMin < 5e-6)
+        {
+            colourMin -= 1;
+            colourMax += 1;
+            colourStep = 1;
+        }
     }
 
     // Set the centre point and valid distance for Orthographic projection
     point p0(0,0,0);
     scalar maxDist2 = 0;
-    scalar r = 0;
+    point pi = mesh.C()[0];
+
+    scalar r = mag(pi);
     if (ortho)
     {
-        point pi = mesh.points()[0];
-        r = mag(pi);
-        p0 = polarPoint(lon0, lat0, r).cartesian(xdir, ydir, axis);
-        maxDist2 = 2*sqr(r);
+        p0 = polarPoint(lon0, lat0, r).cartesian();
+        maxDist2 = 2.5*sqr(r);
     }
-
     // Find the plot bounding box
     boundBox bb = setRegion(mesh, projection2D, region, 1.1*r);
 
@@ -155,56 +168,72 @@ scalar maxVf = 0;
         }
     }
 
-    for(label faci = 0; faci < ssf.size(); faci++)
+    for(label celli = 0; celli < ssf.size(); celli++)
     {
-        point p = mesh.C()[faci];
+        const point& p = mesh.C()[celli];
 
-        // First check that this vertex should be plot
-        bool plotFace = !ortho || magSqr(p - p0) < maxDist2;
+        // First check that this cell should be plot
+        bool plotCell = true;
+
+        if (ortho)
+        {
+            if (magSqr(p - p0) >= maxDist2) plotCell = false;
+            if (!bb.contains(p)) plotCell = false;
+        }
+        else if(projection2D == "cylinder")
+        {
+            scalar maxTheta = 360;
+            if (region != "g") maxTheta = bb.max()[0];
+            cylinderPoint cp = radToDeg*convertToCylinder(p,maxTheta);
+            if
+            (
+                cp.theta() < bb.min().x()
+             || cp.theta() > bb.max().x()
+             || cp.z() < bb.min().z()
+             || cp.z() > bb.max().z()
+            )
+            {
+                plotCell = false;
+            }
+        }
         
-        if (plotFace && rMax > rMin)
+        // Check that the cell centre is within rMin, rMax and lonMin, lonMax
+        if (plotCell && rMax > rMin)
         {
             const scalar r = mag(p);
-            if (r < rMin || r > rMax) plotFace = false;
+            if (r < rMin || r > rMax) plotCell = false;
         }
-
-        if (plotFace && lonMax > lonMin)
+        if (plotCell && lonMax > lonMin)
         {
             const scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
-            if (lon < lonMin || lon > lonMax) plotFace = false;
+            if (lon < lonMin || lon > lonMax) plotCell = false;
         }
-
-        if (plotFace && latMax > latMin)
-        {
-            const scalar lat = radToDeg*Foam::asin(p&axis/mag(p));
-            if (lat < latMin || lat > latMax) plotFace = false;
-        }
-
-        if (plotFace)
+        
+        if (plotCell)
         {
             if (projection2D == "XY")
             {
-                os << p.x() << "   " << p.y() << "   " << ssf[faci] << '\n';
+                os << p.x() << "   " << p.y() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "YX")
             {
-                os << p.y() << "   " << p.x() << "   " << ssf[faci] << '\n';
+                os << p.y() << "   " << p.x() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "XZ")
             {
-                os << p.x() << "   " << p.z() << "   " << ssf[faci] << '\n';
+                os << p.x() << "   " << p.z() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "ZX")
             {
-                os << p.z() << "   " << p.x() << "   " << ssf[faci] << '\n';
+                os << p.z() << "   " << p.x() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "YZ")
             {
-                os << p.y() << "   " << p.z() << "   " << ssf[faci] << '\n';
+                os << p.y() << "   " << p.z() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "ZY")
             {
-                os << p.z() << "   " << p.y() << "   " << ssf[faci] << '\n';
+                os << p.z() << "   " << p.y() << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "latz")
             {
@@ -212,20 +241,20 @@ scalar maxVf = 0;
                 scalar sinLat = r > VSMALL ? (p&axis)/r : 0;
                 sinLat = max(min(sinLat, 1), -1);
                 scalar lat = radToDeg*Foam::asin(sinLat);
-                os << lat << "   " << r << "   " << ssf[faci] << '\n';
+                os << lat << "   " << r << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "lonz")
             {
                 scalar r = mag(p);
                 scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
-                os << lon << "   " << r << "   " << ssf[faci] << '\n';
+                os << lon << "   " << r << "   " << ssf[celli] << '\n';
             }
             else if (projection2D == "cylinder")
             {
                 scalar maxTheta = 360;
                 if (region != "g") maxTheta = bb.max()[0];
                 cylinderPoint cp = radToDeg*convertToCylinder(p, maxTheta);
-                os << cp.theta() << " " << cp.z() << " "<<ssf[faci]<<nl;
+                os << cp.theta() << " " << cp.z() << " "<<ssf[celli]<<nl;
             }
             else if (projection2D == "latLon")
             {
@@ -236,7 +265,7 @@ scalar maxVf = 0;
                 scalar lat = radToDeg*Foam::asin(sinLat);
                 scalar lon = radToDeg*Foam::atan2((p&ydir), (p&xdir));
                 //scalar lon = radToDeg*Foam::atan2(p.y(), p.x());
-                os << lon << "   " << lat << "   " << ssf[faci] << '\n';
+                os << lon << "   " << lat << "   " << ssf[celli] << '\n';
             }
             else
             {
@@ -250,9 +279,17 @@ scalar maxVf = 0;
 }
 
 // colourscale for plot
-systemCall = "makecpt -D -C" + fieldsToPlot[ifield].colourScale()
-                  + " -T" + stringScalar(colourMin)/stringScalar(colourMax)
-                            /stringScalar(colourStep) + " > colourScale.cpt";
+systemCall = "makecpt -C" + fieldsToPlot[ifield].colourScale();
+if (colourStep > 0)
+{
+    systemCall += " -D -T" + stringScalar(colourMin,4)/stringScalar(colourMax,4)
+                  /stringScalar(colourStep,4) + " > colourScale.cpt";
+}
+else
+{
+    systemCall += " -I -D -T" +stringScalar(colourMax,3)/stringScalar(colourMin,3)
+                  /stringScalar(-colourStep,3) + " > colourScale.cpt";
+}
 systemVerbose(systemCall);
 
 // plot filled contours
@@ -265,7 +302,7 @@ if (!separateLegend)
 {
     systemCall = "psscale -CcolourScale.cpt -S -E -K -O ";
     systemCall += " -D9c/-0.5c/18c/0.5ch -B"
-               + stringScalar(2*colourStep) + " >> " + epsFile;
+               + stringScalar(2*mag(colourStep),3) + " >> " + epsFile;
     systemVerbose(systemCall);
 }
 else
@@ -282,12 +319,15 @@ else
         << endl;
 
     systemCall2 = "psscale -C../colourScale.cpt -S -E ";
-    systemCall = systemCall2 + " -D9c/-0.5c/18c/0.5ch -B"
-                       + stringScalar(4*colourStep) + " | ps2eps -f -q > " + legNameH;
+    if (!autoscale)
+    {
+        systemCall2 = systemCall2 + " -B" + stringScalar(2*mag(colourStep));
+    }
+    systemCall = systemCall2 + " -D9c/-0.5c/18c/0.5ch  | ps2eps -f -q > " + legNameH;
     systemVerbose(systemCall);
 
-    systemCall = systemCall2 + " -D-0.5c/9c/18c/0.5c -B"
-                       + stringScalar(4*colourStep) + " | ps2eps -f -q > " + legNameV;
+    systemCall = systemCall2 + " -D-0.5c/9c/18c/0.5c "
+                + " | ps2eps -f -q > " + legNameV;
     systemVerbose(systemCall);
 
     chDir("..");
@@ -298,8 +338,8 @@ if (annotate == "minMax")
 {
     systemCall = "echo '" + stringScalar(annotateX) + " "
                + stringScalar(annotateY) + " 12 0 Times-Roman TL "
-               + "min = " + stringScalar(minVf,5)
-               + "    max = " + stringScalar(maxVf,5);
+               + "min = " + stringScalar(minSsf,5)
+               + "    max = " + stringScalar(maxSsf,5);
 //               + "    L@-1@- = " + stringScalar(l1,4)
 //               + "    L@-2@- = " + stringScalar(l2,4);
     systemCall += "' | pstext -J -R -h0 -N -O -K >>" + epsFile;

@@ -1,5 +1,5 @@
-#ifndef PolynomialMatrix_H
-#define PolynomialMatrix_H
+#ifndef AbstractPolynomial_H
+#define AbstractPolynomial_H
 
 namespace Foam
 {

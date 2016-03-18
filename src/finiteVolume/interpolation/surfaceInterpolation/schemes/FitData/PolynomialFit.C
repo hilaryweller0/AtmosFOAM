@@ -17,7 +17,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
 {}
 
 template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::fit
+autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 (
     scalarList& coeffsi,
     scalarList& wts,
@@ -25,8 +25,7 @@ void Foam::PolynomialFit<Polynomial>::fit
     const scalar wLin,
     const point& origin,
     bool pureUpwind,
-    const Basis& basis,
-    const label faceI
+    const Basis& basis
 )
 {
     wts[0] = centralWeight_;
@@ -37,7 +36,8 @@ void Foam::PolynomialFit<Polynomial>::fit
 
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
-    WeightedMatrix matrix(polynomial.matrix());
+    scalarRectangularMatrix B = polynomial.matrix();
+    WeightedMatrix matrix(B);
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
@@ -79,14 +79,6 @@ void Foam::PolynomialFit<Polynomial>::fit
     }
     else
     {
-        WarningIn
-        (
-            "FitData<Polynomial>::calcFit(..)"
-        )   << "Could not fit face " << faceI
-            << "    Weights = " << coeffsi
-            << ", reverting to upwind/linear." << nl
-            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
-
         coeffsi = 0;
         
         if (linearCorrection_)
@@ -95,13 +87,20 @@ void Foam::PolynomialFit<Polynomial>::fit
             coeffsi[1] = -(1-wLin);
         }
     }
+    return autoPtr<Fit>(new Fit(
+            C,
+            coeffsi,
+            goodFit,
+            B.m()
+    ));
 }
 
 template<class Polynomial>
-List<point> Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
-        const List<point>& stencilPoints,
-        const point& origin,
-        const Basis& basis)
+List<point> Foam::PolynomialFit<Polynomial>::toLocalCoordinates
+(
+    const List<point>& stencilPoints,
+    const point& origin,
+    const Basis& basis)
 {
     List<point> localPoints(stencilPoints.size(), point(0, 0, 0));
 
@@ -115,10 +114,12 @@ List<point> Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
 }
 
 template<class Polynomial>
-point Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
-        const point& origin,
-        const point& p,
-        const Basis& basis)
+point Foam::PolynomialFit<Polynomial>::toLocalCoordinates
+(
+    const point& origin,
+    const point& p,
+    const Basis& basis
+)
 {
     point d;
 
@@ -134,18 +135,21 @@ point Foam::PolynomialFit<Polynomial>::toLocalCoordinates(
 }
 
 template<class Polynomial>
-scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates(
-        const point& origin,
-        const point& upwindPoint,
-        const Basis& basis)
+scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
+(
+    const point& origin,
+    const point& upwindPoint,
+    const Basis& basis)
 {
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }
 
 template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::isGoodFit(
-        const scalarList& coefficients, 
-        const scalar wLin)
+bool Foam::PolynomialFit<Polynomial>::isGoodFit
+(
+    const scalarList& coefficients, 
+    const scalar wLin
+)
 {
     if (linearCorrection_)
     {
@@ -162,8 +166,10 @@ bool Foam::PolynomialFit<Polynomial>::isGoodFit(
 }
 
 template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude(
-        const scalarList& coefficients)
+bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude
+(
+    const scalarList& coefficients
+)
 {
     scalar maxCoeff = 0;
     label maxCoeffi = 0;
@@ -179,28 +185,33 @@ bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude(
 }
 
 template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(const scalarList& coefficients)
+bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients
+(
+    const scalarList& coefficients
+)
 {
     // go through all coeffsi except the first, add up all positive coeffs
     scalar positiveCoeffSum = 0;
 
-    forAll(coefficients, i)
+    for(label i = 1; i < coefficients.size(); i++)
     {
-        if (i > 0 && coefficients[i] > 0)
+        if (coefficients[i] > 0)
         {
             positiveCoeffSum += coefficients[i];
         }
     }
 
-    return coefficients[0] > positiveCoeffSum;
+    return 3*coefficients[0] > positiveCoeffSum;
 }
 
 template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::increaseWeights(
-        WeightedMatrix& matrix,
-        scalarList& wts,
-        bool pureUpwind,
-        bool firstIteration)
+void Foam::PolynomialFit<Polynomial>::increaseWeights
+(
+    WeightedMatrix& matrix,
+    scalarList& wts,
+    bool pureUpwind,
+    bool firstIteration
+)
 {
     wts[0] *= 10;
     if (linearCorrection_)

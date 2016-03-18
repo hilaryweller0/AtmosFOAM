@@ -39,8 +39,10 @@ SourceFiles
 #ifndef FitData_H
 #define FitData_H
 
+#include "autoPtr.H"
 #include "MeshObject.H"
 #include "fvMesh.H"
+#include "Fit.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -140,7 +142,7 @@ public:
         }
 
         //- Calculate the fit for the specified face and set the coefficients
-        void calcFit
+        autoPtr<Fit> calcFit
         (
             scalarList& coeffsi, // coefficients to be set
             scalarList& wts,     // weights to be set (for debugging)

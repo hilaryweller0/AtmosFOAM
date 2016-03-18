@@ -38,40 +38,6 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-scalar entropy(const volScalarField& theta, const volScalarField& rho)
-{
-    return gSum
-    (
-        fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field())
-    );
-}
-
-scalar variance(const volScalarField& field) {
-    scalar totalVolume = 0;
-    scalar average = 0;
-
-    forAll(field.mesh().cells(), cellI)
-    {
-        scalar value = field[cellI];
-        scalar cellVolume = field.mesh().V()[cellI];
-        totalVolume += cellVolume;
-        average += value*cellVolume;
-    }
-
-    average /= totalVolume;
-
-    scalar variance = 0;
-    forAll(field.mesh().cells(), cellI)
-    {
-	scalar value = field[cellI];
-	scalar cellVolume = field.mesh().V()[cellI];
-	variance += pow(value - average, 2) * cellVolume;
-    }
-
-    variance /= totalVolume;
-    return variance;
-}
-
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -80,15 +46,13 @@ int main(int argc, char *argv[])
     #include "orthogonalBoundaries.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
+    #include "readThermoPropertiesMoist.H"
     Hops H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
-    const scalar initEntropy = entropy(theta, rho);
-    scalar thetaVariance = variance(theta);
-    scalar thetaRhoVariance = variance(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
@@ -99,7 +63,6 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
-    const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -113,48 +76,36 @@ int main(int argc, char *argv[])
 
         // update old time variables for Crank-Nicholson
         V.oldTime() += (1-offCentre)*dt*dVdt;
-        // Old part of theta change (before any variables are updated)
-        if (SIgravityWaves)
-        {
-            thetaf.oldTime() = fvc::interpolate
-            (
-                (
-                    rho.oldTime()*theta.oldTime()
-                  - (1-offCentre)*dt*divUtheta.oldTime()
-                )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
-                "interpolate(theta)"
-            );
-        }
 
+        #include "rhoEqn.H"
+        #include "moisture.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
             #include "rhoThetaEqn.H"
+            #include "moisture.H"
             #include "exnerEqn.H"
+            p = pRef*pow(Exner, 1/kappa);
         }
         
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
         
         // Updates for next time step
-        {
-            thetaf = fvc::interpolate(theta);
-        }
-        dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
+        
+        thetaRho = fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta");
+        dVdt += rhof*gd - H.magd()*Cp*rhof*thetaRho*fvc::snGrad(Exner)
               - muSponge*V;
         divU = fvc::div(U);
         divUtheta = fvc::div(U, theta);
+        divUrv = fvc::div(U, rv);
+        divUrl = fvc::div(U, rl);
         
         #include "compressibleContinuityErrs.H"
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
                                         - initHeat;
         normalisedHeatDiff = (totalHeatDiff/initHeat).value();
-        entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
-        thetaVariance = variance(theta);
-        thetaRhoVariance = variance(theta*rho);
-        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = "
-             << entropyError << endl;
         #include "energy.H"
 
         runTime.write();

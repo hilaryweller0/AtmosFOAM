@@ -39,6 +39,8 @@ SourceFiles
 #define UpwindCorrFitData_H
 
 #include "FitData.H"
+#include "StencilWeights.H"
+#include "Fit.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -104,17 +106,31 @@ public:
 
     // Member functions
 
-        //- Return reference to owner fit coefficients
-        const List<scalarList>& owncoeffs() const
-        {
-            return owncoeffs_;
-        }
+    //- Return reference to owner fit coefficients
+    const List<scalarList>& owncoeffs() const
+    {
+        return owncoeffs_;
+    }
 
-        //- Return reference to neighbour fit coefficients
-        const List<scalarList>& neicoeffs() const
-        {
-            return neicoeffs_;
-        }
+    //- Return reference to neighbour fit coefficients
+    const List<scalarList>& neicoeffs() const
+    {
+        return neicoeffs_;
+    }
+
+private:
+    void fit(
+            List<scalarList>& coeffs,
+            const List<List<point> >& stencilPoints,
+            StencilWeights& stencilWeights
+    );
+
+    autoPtr<Fit> fit(
+        const label faceI,
+        List<scalarList>& coeffs,
+        const List<List<point> >& stencilPoints,
+        const scalar wLin
+    );
 };
 
 

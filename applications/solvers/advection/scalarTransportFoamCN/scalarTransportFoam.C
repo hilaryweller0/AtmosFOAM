@@ -42,6 +42,9 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    // Read the number of iterations each time-step
+    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const int nCorr = readLabel(itsDict.lookup("nCorr"));
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,7 +57,7 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << endl;
 
         // Fixed number of iterations per time-step version
-        for (int corr = 0; corr < 4; corr++)
+        for (int corr = 0; corr < nCorr; corr++)
         {
             solve
             (
