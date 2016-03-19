@@ -33,17 +33,18 @@ FoamFile
 monitorFunctionFrom monitorFunctionSech;
 
 // Ring
-alpha1 10;
-alpha2 200;
-a 0.25;
+//alpha1 10;
+//alpha2 200;
+//a 0.25;
 
 // Bell
-//alpha1 50;
-//alpha2 100;
-//a 0.0;
+alpha1 50;
+alpha2 100;
+a 0.0;
 
 centre (0 0 0);
-Gamma Gamma [0 0 0 0 0] 0.01;
+Gamma1 Gamma1 [0 0 0 0 0] 1;
+Gamma2 Gamma2 [0 0 0 0 0] 0;
 conv 1.0e-8;
 
 // ************************************************************************* //

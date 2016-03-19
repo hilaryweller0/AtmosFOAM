@@ -70,10 +70,8 @@ int main(int argc, char *argv[])
     autoPtr<monitorFunction> monitorFunc(monitorFunction::New(controlDict));
     
     // The ratio of the finite different to the geometric Hessian
-    const dimensionedScalar Gamma
-    (
-        controlDict.lookup("Gamma")
-    );
+    const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
+    const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
     scalar conv = readScalar(controlDict.lookup("conv"));
 
@@ -97,43 +95,44 @@ int main(int argc, char *argv[])
         forAll(matrixA, cellI)
         {
             
-            matrixA[cellI] = diagTensor::one*(1+phiBarLaplacian[cellI]) - Hessian[cellI];
+            matrixA[cellI] = diagTensor::one*(1+phiBarLaplacian[cellI])
+                           - Hessian[cellI];
             matrixA[cellI].yy() = 1.0;
-            localA = 0.5*(matrixA[cellI]+matrixA[cellI].T());
+            localA = 0.5*(matrixA[cellI] + matrixA[cellI].T());
             localAew = eigenValues(localA)[0];
-            if(localAew <= 0){
+            if(localAew <= 0)
+            {
                 Info << "Minimum eigenvalue = " << localAew << endl;
                 matrixA[cellI] = localA + (1.0e-5 - localAew)*diagTensor::one;
+              //matrixA[cellI] = localA -2*localAew*diagTensor::one;
             }
             else
-                {
-                    matrixA[cellI] = localA;
-                }
+            {
+                matrixA[cellI] = localA;
+            }
         }
 
-
-        //matrixA = -Hessian + I*(1+fvc::laplacian(Phi));
-        //matrixA.replace(tensor::YY, scalar(1));
+        // Calculate c/m and its gradients on both meshes
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
         // calculate the gradient of c_m in physical space
-        sngradc_mR = rMesh.magSf()*fvc::snGrad(c_mR);
+        sngradc_mR = fvc::snGrad(c_mR);
 
         // transfer the gradient to the computational mesh
         sngradc_m.internalField() = sngradc_mR.internalField();
 
+        // The divergence of sngradc_m (correct so that it sums to zero)
+        lapc_m = fvc::div(mesh.magSf()*sngradc_m);
+        lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
-          - fvm::laplacian(matrixA, Phi)
-          + Gamma*fvm::div(sngradc_m,Phi)
-          - Gamma*fvm::Sp(fvc::laplacian(c_m),Phi)
+          - Gamma1*fvm::laplacian(matrixA, phi)
+          + Gamma2*fvm::div(mesh.magSf()*sngradc_m,phi)
+          - Gamma2*fvm::Sp(lapc_m,phi)
           - detHess + c_m
-          + fvc::laplacian(matrixA, Phi)
-          - Gamma*fvc::div(mesh.magSf()*fvc::snGrad(c_m),Phi)
-          + Gamma*(fvc::laplacian(c_m)*Phi)
         );
         // Diagonal and off-diagonal components of the matrix
         scalarField diag = PhiEqn.diag();
@@ -151,7 +150,8 @@ int main(int argc, char *argv[])
         //PhiEqn.setReference(1650, scalar(0));
         PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
-        converged = sp.nIterations() <= 1;
+        Phi += phi;
+        phi = dimensionedScalar("phi", dimArea, scalar(0));
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -194,7 +194,7 @@ int main(int argc, char *argv[])
         // The global equidistribution and its variance
         PABem = fvc::domainIntegrate(equiDist)/Vtot;
         PABe = sqrt(fvc::domainIntegrate(sqr(equiDist - PABem)))/(Vtot*PABem);
-        converged = PABe.value() < conv;
+        converged = PABe.value() < conv || sp.nIterations() <= 0;
 
         Info << "Iteration = " << runTime.timeName()
              << " PABe = " << PABe.value() << endl;

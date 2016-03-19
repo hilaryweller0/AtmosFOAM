@@ -6,6 +6,9 @@ volScalarField Phi
     mesh
 );
 
+// Create the perturbation from Phi
+volScalarField phi("phi", Phi);
+
 // Create phiBarLaplacian
 volScalarField phiBarLaplacian("phiBarLaplacian", fvc::laplacian(Phi));
 
@@ -134,19 +137,22 @@ volScalarField c_mR
 // The surface gradient of c_m on on the computational mesh
 surfaceScalarField sngradc_m
 (
-    IOobject("sngradc_m", runTime.timeName(), mesh, 
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    mesh.magSf()*fvc::snGrad(c_m),
-    "calculated"
+    IOobject("sngradc_m", runTime.timeName(), mesh),
+    fvc::snGrad(c_m)
 );
 
 
 // The surface gradient of c_m on the physical mesh
 surfaceScalarField sngradc_mR
 (
-    IOobject("sngradc_mR", runTime.timeName(), rMesh, 
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    rMesh.magSf()*fvc::snGrad(c_mR),
-    "calculated"
+    IOobject("sngradc_mR", runTime.timeName(), rMesh),
+    fvc::snGrad(c_mR)
+);
+
+// The divergence of sngradc_mR
+volScalarField lapc_m
+(
+    IOobject("lapc_m", runTime.timeName(), mesh),
+    fvc::div(mesh.magSf()*sngradc_m)
 );
 

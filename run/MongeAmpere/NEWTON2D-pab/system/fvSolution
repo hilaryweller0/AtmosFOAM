@@ -16,14 +16,14 @@ FoamFile
 
 solvers
 {
-    Phi
+    "Phi|phi"
     {
         solver GAMG;
         smoother symGaussSeidel;
         preconditioner   DILU;
         tolerance        1e-12;
         relTol           1e-6;
-        maxIter          2000;
+        maxIter          500;
     };
 }
 
@@ -32,6 +32,7 @@ relaxationFactors
     equations
     {
         Phi               0.999;
+        phi               0.999;
     }
 }
 // ************************************************************************* //

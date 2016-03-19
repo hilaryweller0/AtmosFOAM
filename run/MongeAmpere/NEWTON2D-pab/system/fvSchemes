@@ -26,26 +26,25 @@ ddtSchemes
 {
     default Euler;
 }
-offCentre 0.5;
 
 gradSchemes
 {
     default         none;
     grad(phiBar)    Gauss linear;
-    grad(Psi)       Gauss linear;
+    grad(phi)       Gauss linear;
     grad(Phi)       Gauss linear;
 }
 
 divSchemes
 {
     default             none;
-    div((magSf*snGrad(c_m)),Phi) Gauss upwind;
-    div(sngradc_m,Phi) Gauss upwind;
+    div((magSf*sngradc_m),phi) Gauss upwind;
+    div(sngradc_m,phi) Gauss upwind;
 }
 
 laplacianSchemes
 {
-    default     none;
+    default     Gauss linear uncorrected;
     laplacian(Phi) Gauss linear uncorrected;
     laplacian(phiBar) Gauss linear uncorrected;
     laplacian(c_m) Gauss linear uncorrected;
@@ -56,7 +55,7 @@ laplacianSchemes
 
 interpolationSchemes
 {
-    default        none;
+    default        linear;
     interpolate(gradPhi) linear;
     interpolate(gradPhi) linear;
     interpolate(grad(Psi))  linear;
