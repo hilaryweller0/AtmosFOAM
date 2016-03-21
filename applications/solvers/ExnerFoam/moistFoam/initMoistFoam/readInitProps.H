@@ -12,7 +12,7 @@ IOdictionary initDict
     )
 );
 
-const dimensionedScalar thetae(initDict.lookup("thetae"));
+const dimensionedScalar thetae0(initDict.lookup("thetae"));
 const dimensionedScalar rt0(initDict.lookup("totalWaterRatio"));
 const label maxIters = readLabel(initDict.lookup("maxIters"));
 const scalar underRelax = readScalar(initDict.lookup("underRelax"));
@@ -23,6 +23,6 @@ const scalar boundaryRelaxation = readScalar
     initDict.lookup("boundaryRelaxation")
 );
 
-const dimensionedScalar thetaPrime(initDict.lookup("thetaPrime"));
+const scalar thetaPrime = readScalar(initDict.lookup("thetaPrime"));
 const point bubbleCentre(initDict.lookup("bubbleCentre"));
 const vector bubbleRadii(initDict.lookup("bubbleRadii"));

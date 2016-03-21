@@ -200,3 +200,16 @@ forAll(Vu.boundaryField(), patchi)
     }
 }
 
+// thetae for diagnostics
+volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
+volScalarField thetae
+(
+    IOobject
+    (
+        "thetae", runTime.timeName(), mesh,
+        IOobject::NO_READ, IOobject::AUTO_WRITE
+    ),
+    T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(rv+rl)))
+   *Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T))
+);
+thetae.write();

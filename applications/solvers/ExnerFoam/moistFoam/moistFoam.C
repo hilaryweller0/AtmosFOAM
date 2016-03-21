@@ -108,7 +108,15 @@ int main(int argc, char *argv[])
         normalisedHeatDiff = (totalHeatDiff/initHeat).value();
         #include "energy.H"
 
-        runTime.write();
+        thetae = T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(rv+rl)))
+                *Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T));
+
+        Info << "rl goes from " << min(rl).value() << " to "<<max(rl).value()
+             <<endl;
+        Info << "rv goes from " << min(rv).value() << " to "<<max(rv).value()
+             << endl;
+
+       runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

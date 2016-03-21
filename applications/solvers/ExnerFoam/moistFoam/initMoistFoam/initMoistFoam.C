@@ -73,10 +73,11 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
+            thetaf = fvc::interpolate(thetaRho0);
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian(Cp*thetaRho, Exner)
+              - fvm::laplacian(Cp*thetaf, Exner)
             );
             innerConverged
                 = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
@@ -89,27 +90,31 @@ int main(int argc, char *argv[])
                 // Partial pressure of dry air
                 volScalarField pd = p*epsilon/(rv + epsilon);
 
-                // Temperature from thetae using Rosenbrock step
+                // Temperature from thetae0 using Rosenbrock step
                 volScalarField a = pow(pd/pRef, -R/(Cp+Cpl*rt0));
                 volScalarField b = Lv*rv/(Cp + Cpl*rt0);
-                T -= (T*a - thetae*Foam::exp(-b/T))/(a*(1 - b/T));
+                T -= (T*a - thetae0*Foam::exp(-b/T))/(a*(1 - b/T));
                 Lv = Lv0 - (Cpl - Cpv)*(T - T0);
         
                 // Calculate saturation vapour pressure and set rv to be saturated
-                es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T + Tcc));
+                es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+                rvs = epsilon*es/(p-es);
                 // Update rv with under-relaxation
-                rv == (1-underRelax)*rv + underRelax*epsilon*(es/(p-es));
+                rv == max
+                (
+                    min((1-underRelax)*rv + underRelax*rvs, rt0),
+                    scalar(0)
+                );
                 
-                volScalarField rvs = epsilon*(es/(p-es));
                 condenseRate = (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T))));
                 Info << "condenseRate goes from "  << min(condenseRate).value() 
                      << " to " << max(condenseRate).value() << endl;
             }
             rl == max(rt0 - rv, scalar(0));
         
-            // Calculate theta and thetaRho for hydrostatic balance
+            // Calculate theta and thetaRho0 for hydrostatic balance
             theta == T/Exner;
-            thetaRho = fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl),"theta");
+            thetaRho0 = theta*(1+rv/epsilon)/(1+rt0);
         }
         scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -146,6 +151,8 @@ int main(int argc, char *argv[])
     rlRef.write();
 
     Info << "Adding bouyancy perturbation and re-calculating rv and rl" << endl;
+    // Cell where bouancy perturbation is maximum
+    label cellMax = 0;
     forAll(theta, celli)
     {
         scalar L = Foam::sqrt
@@ -157,13 +164,24 @@ int main(int argc, char *argv[])
 
         if (L < 1)
         {
-            theta[celli] *= 1 + (thetaPrime*sqr(Foam::cos(piby2*L))/T0).value();
+            thetaScale[celli] += thetaPrime*sqr(Foam::cos(piby2*L));
+            if (thetaScale[celli] > thetaScale[cellMax])
+            {
+                cellMax = celli;
+            }
         }
     }
-    T = theta*Exner;
-    Lv = Lv0 - (Cpl - Cpv)*(T - T0);
-    es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T + Tcc));
-    rv == epsilon*(es/(p-es));
+    // Interate so that new theta, rv and rl are in balance
+    for(label iter = 0; iter < 5; iter++)
+    {
+        theta = thetaRho0*(1 + rt0)/(1+rv/epsilon)*thetaScale;
+        T = theta*Exner;
+        es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+        rvs = epsilon*es/(p-es);
+        rv == max(min(rvs, rt0), scalar(0));
+        Info << "Bouyancy perturbation " << iter << " theta at centre = "
+             << theta[cellMax] << nl;
+    }
     rl == max(rt0 - rv, scalar(0));
 
     theta.write();
@@ -187,6 +205,15 @@ int main(int argc, char *argv[])
     );
     ExnerNew.correctBoundaryConditions();
     ExnerNew.write();
+    
+    // Check thetae
+    volScalarField thetae
+    (
+        "thetae",
+        T*pow(p*epsilon/(rv + epsilon)/pRef, -R/(Cp+Cpl*rt0))
+       *Foam::exp(Lv*rv/((Cp+Cpl*rt0)*T))
+    );
+    thetae.write();
 
     return 0;
 }

@@ -4,8 +4,8 @@
 volScalarField es("es", Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc)));
 
 // Calculate the saturation mixing ratio
-volScalarField rvs = epsilon*(es/(p-es));
-volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
+volScalarField rvs = epsilon*es/(p-es);
+Lv = Lv0 - (Cpl - Cpv)*(T - T0);
 
 
 rv = rv.oldTime() - dt*(1-offCentre)*condenseRate.oldTime();
@@ -34,6 +34,10 @@ condenseRate = max
     (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T)))),
     -rl/dt
 );
+//Info << "condenseRate goes from " << min(condenseRate).value() << " to "
+//     << max(condenseRate).value() << endl;
+//Info << "rl goes from " << min(rl).value() << " to "<<max(rl).value() <<endl;
+//Info << "rv goes from " << min(rv).value() << " to "<<max(rv).value() <<endl;
 
 rv -= dt*offCentre*condenseRate;
 rl += dt*offCentre*condenseRate;

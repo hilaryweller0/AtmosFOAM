@@ -53,6 +53,8 @@ volScalarField T("T", Exner*theta);
 volScalarField p("p", pRef*pow(Exner, 1/kappa));
 volScalarField es("es", Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T + Tcc)));
 volScalarField condenseRate("condenseRate", -rl/dt);
+volScalarField thetaScale("thetaScale", theta/theta);
+volScalarField rvs("rvs", epsilon*(es/(p-es)));
 
 // Latent heat of vapoursation
 volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
@@ -64,11 +66,13 @@ surfaceScalarField U
     H.Hdiag()*gd
 );
 
+
 // Moist theta on the face
-surfaceScalarField thetaRho
+volScalarField thetaRho0("thetaRho0", theta*(1+rv/epsilon)/(1+rt0));
+surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta")
+    fvc::interpolate(thetaRho0)
 );
 
 label groundBC = -1;

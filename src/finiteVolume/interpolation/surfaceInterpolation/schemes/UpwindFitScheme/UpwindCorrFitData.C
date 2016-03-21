@@ -139,11 +139,13 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 }
 
 template<class Polynomial>
-autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit(
-        const label faceI,
-        List<scalarList>& coeffs,
-        const List<List<point> >& stencilPoints,
-        const scalar wLin)
+autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit
+(
+    const label faceI,
+    List<scalarList>& coeffs,
+    const List<List<point> >& stencilPoints,
+    const scalar wLin
+)
 {
     scalarList wts(stencilPoints[faceI].size(), scalar(1));
 
