@@ -48,14 +48,6 @@ namespace Foam
                 const point& upwindPoint,
                 const Basis& basis);
 
-        bool isGoodFit(const scalarList& coefficients, const scalar wLin);
-
-        bool eitherUpwindOrDownwindHasMaximumMagnitude(
-                const scalarList& coefficients);
-
-        bool upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(
-                const scalarList& coefficients);
-
         void increaseWeights(
                 polynomialMatrix& matrix,
                 scalarList& wts,

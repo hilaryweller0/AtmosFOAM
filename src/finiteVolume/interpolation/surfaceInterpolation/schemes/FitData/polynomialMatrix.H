@@ -1,5 +1,6 @@
 #ifndef polynomialMatrix_H
 #define polynomialMatrix_H
+
 #include "fvCFD.H"
 
 namespace Foam

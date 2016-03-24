@@ -11,6 +11,7 @@ interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
 
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
+interpolation/surfaceInterpolation/schemes/FitData/adjuster.C
 interpolation/surfaceInterpolation/schemes/FitData/Basis.C
 interpolation/surfaceInterpolation/schemes/FitData/polynomialMatrix.C
 interpolation/surfaceInterpolation/schemes/FitData/weightedMatrix.C

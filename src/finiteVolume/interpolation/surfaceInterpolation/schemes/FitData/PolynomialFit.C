@@ -1,6 +1,6 @@
 #include "PolynomialFit.H"
-#include "AdaptivePolynomial.H"
 #include "weightedMatrix.H"
+#include "adjuster.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -46,17 +46,27 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     label stencilSize = C.size();
     coeffsi.setSize(stencilSize);
 
+    adjuster adjuster
+    (
+        matrix,
+        coeffsi,
+        wts,
+        wLin,
+        pureUpwind,
+        linearCorrection_,
+        linearLimitFactor_
+    );
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
     {
         scalarRectangularMatrix Binv = matrix.pseudoInverse();
 
-        for (label i=0; i<stencilSize; i++)
+        for (label i=0; i<coeffsi.size(); i++)
         {
             coeffsi[i] = wts[0]*wts[i]*Binv[0][i];
         }
 
-        goodFit = isGoodFit(coeffsi, wLin);
+        goodFit = adjuster.isGoodFit();
 
         if (!goodFit)
         {
@@ -145,65 +155,6 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }
 
-template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::isGoodFit
-(
-    const scalarList& coefficients, 
-    const scalar wLin
-)
-{
-    if (linearCorrection_)
-    {
-        return
-            (mag(coefficients[0] - wLin) < linearLimitFactor_*wLin)
-         && (mag(coefficients[1] - (1 - wLin)) < linearLimitFactor_*(1 - wLin))
-         && eitherUpwindOrDownwindHasMaximumMagnitude(coefficients);
-    }
-    else
-    {
-        return (mag(coefficients[0] - 1.0) < linearLimitFactor_*1.0)
-            && upwindCoefficientLargerThanSumOfOtherPositiveCoefficients(coefficients);
-    }
-}
-
-template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::eitherUpwindOrDownwindHasMaximumMagnitude
-(
-    const scalarList& coefficients
-)
-{
-    scalar maxCoeff = 0;
-    label maxCoeffi = 0;
-    for (label i=0; i<coefficients.size(); i++)
-    {
-        if (mag(coefficients[i]) > maxCoeff)
-        {
-            maxCoeff = mag(coefficients[i]);
-            maxCoeffi = i;
-        }
-    }
-    return maxCoeffi <= 1;
-}
-
-template<class Polynomial>
-bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients
-(
-    const scalarList& coefficients
-)
-{
-    // go through all coeffsi except the first, add up all positive coeffs
-    scalar positiveCoeffSum = 0;
-
-    for(label i = 1; i < coefficients.size(); i++)
-    {
-        if (coefficients[i] > 0)
-        {
-            positiveCoeffSum += coefficients[i];
-        }
-    }
-
-    return 3*coefficients[0] > positiveCoeffSum;
-}
 
 template<class Polynomial>
 void Foam::PolynomialFit<Polynomial>::increaseWeights
