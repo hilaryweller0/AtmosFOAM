@@ -1,15 +1,15 @@
-#ifndef WeightedMatrix_H
-#define WeightedMatrix_H
+#ifndef weightedMatrix_H
+#define weightedMatrix_H
 
 #include "fvCFD.H"
 #include "polynomialMatrix.H"
 
 namespace Foam
 {
-    class WeightedMatrix : public polynomialMatrix
+    class weightedMatrix : public polynomialMatrix
     {
     public:
-        WeightedMatrix(const scalarRectangularMatrix B);
+        weightedMatrix(const scalarRectangularMatrix B);
 
         void applyStencilPointWeights(const scalarList& weights);
         void multiplyConstantAndLinearWeights(const scalar weight);

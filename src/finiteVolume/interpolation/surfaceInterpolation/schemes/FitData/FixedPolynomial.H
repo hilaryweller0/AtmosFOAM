@@ -2,7 +2,7 @@
 #define FixedPolynomial_H
 
 #include "AbstractPolynomial.H"
-#include "WeightedMatrix.H"
+#include "weightedMatrix.H"
 
 namespace Foam
 {
