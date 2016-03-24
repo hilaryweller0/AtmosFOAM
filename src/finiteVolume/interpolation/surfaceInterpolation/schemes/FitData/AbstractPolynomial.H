@@ -1,6 +1,8 @@
 #ifndef AbstractPolynomial_H
 #define AbstractPolynomial_H
 
+#include "autoPtr.H"
+
 namespace Foam
 {
     template<class Polynomial>
@@ -9,7 +11,7 @@ namespace Foam
     public:
         virtual ~AbstractPolynomial() {};
 
-        virtual scalarRectangularMatrix matrix() const = 0;
+        virtual autoPtr<scalarRectangularMatrix> matrix() const = 0;
     };
 }
 

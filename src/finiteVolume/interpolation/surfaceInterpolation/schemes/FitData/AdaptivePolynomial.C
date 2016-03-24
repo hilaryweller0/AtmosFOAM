@@ -15,7 +15,7 @@ Foam::AdaptivePolynomial<Polynomial>::AdaptivePolynomial(
 {}
 
 template<class Polynomial>
-scalarRectangularMatrix Foam::AdaptivePolynomial<Polynomial>::matrix() const
+autoPtr<scalarRectangularMatrix> Foam::AdaptivePolynomial<Polynomial>::matrix() const
 {
     List<label> fittableTerms(0, label(0));
     for (int terms=0; terms<maxTerms; terms++)
@@ -41,8 +41,8 @@ scalarRectangularMatrix Foam::AdaptivePolynomial<Polynomial>::matrix() const
         }
     }
     
-    scalarRectangularMatrix B(stencil.size(), fittableTerms.size(), scalar(0));
-    for (int i=0; i<B.n(); i++)
+    scalarRectangularMatrix* B = new scalarRectangularMatrix(stencil.size(), fittableTerms.size(), scalar(0));
+    for (int i=0; i<B->n(); i++)
     {
         scalar coefficients[maxTerms]; 
         Polynomial::addCoeffs(coefficients, stencil[i], 1, dimensions);
@@ -51,12 +51,12 @@ scalarRectangularMatrix Foam::AdaptivePolynomial<Polynomial>::matrix() const
         {
             if (containsEntry(fittableTerms, j))
             {
-                B[i][col++] = coefficients[j];
+                (*B)[i][col++] = coefficients[j];
             }
         }
     }
 
-    return B;
+    return autoPtr<scalarRectangularMatrix>(B);
 }
 
 template<class Polynomial>

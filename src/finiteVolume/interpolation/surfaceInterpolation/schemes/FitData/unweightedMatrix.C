@@ -1,7 +1,7 @@
 #include "unweightedMatrix.H"
 #include "SVD.H"
 
-Foam::unweightedMatrix::unweightedMatrix(const scalarRectangularMatrix B) : polynomialMatrix(B) {};
+Foam::unweightedMatrix::unweightedMatrix(scalarRectangularMatrix& B) : polynomialMatrix(B) {};
 
 scalarRectangularMatrix Foam::unweightedMatrix::pseudoInverse() const
 {

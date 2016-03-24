@@ -7,7 +7,7 @@ namespace Foam
     class polynomialMatrix
     {
     public:
-        polynomialMatrix(const scalarRectangularMatrix B);
+        polynomialMatrix(scalarRectangularMatrix& B);
         virtual ~polynomialMatrix() {};
 
         virtual void applyStencilPointWeights(const scalarList& weights) = 0;
@@ -17,7 +17,7 @@ namespace Foam
         virtual scalarRectangularMatrix pseudoInverse() const = 0;
 
     protected:
-        scalarRectangularMatrix B;
+        scalarRectangularMatrix& B;
     };
 }
 

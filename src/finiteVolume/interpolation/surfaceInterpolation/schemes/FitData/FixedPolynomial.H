@@ -2,7 +2,6 @@
 #define FixedPolynomial_H
 
 #include "AbstractPolynomial.H"
-#include "weightedMatrix.H"
 
 namespace Foam
 {
@@ -14,7 +13,7 @@ namespace Foam
                 const List<point>& stencil,
                 const direction dimensions);
 
-        scalarRectangularMatrix matrix() const;
+        autoPtr<scalarRectangularMatrix> matrix() const;
 
     private:
         const List<point>& stencil;

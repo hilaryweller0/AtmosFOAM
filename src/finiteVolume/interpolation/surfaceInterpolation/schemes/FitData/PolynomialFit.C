@@ -1,5 +1,5 @@
 #include "PolynomialFit.H"
-#include "FixedPolynomial.H"
+#include "AdaptivePolynomial.H"
 #include "weightedMatrix.H"
 
 template<class Polynomial>
@@ -37,8 +37,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
-    scalarRectangularMatrix B = polynomial.matrix();
-    weightedMatrix matrix(B);
+    autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
+    weightedMatrix matrix(B());
 
     matrix.applyStencilPointWeights(wts);
     matrix.multiplyConstantAndLinearWeights(wts[0]);
@@ -92,7 +92,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
             C,
             coeffsi,
             goodFit,
-            B.m()
+            B->m()
     ));
 }
 

@@ -9,7 +9,7 @@ namespace Foam
     class weightedMatrix : public polynomialMatrix
     {
     public:
-        weightedMatrix(const scalarRectangularMatrix B);
+        weightedMatrix(scalarRectangularMatrix& B);
 
         void applyStencilPointWeights(const scalarList& weights);
         void multiplyConstantAndLinearWeights(const scalar weight);

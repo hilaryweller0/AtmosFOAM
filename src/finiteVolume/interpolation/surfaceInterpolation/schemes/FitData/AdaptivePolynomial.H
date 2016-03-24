@@ -20,7 +20,7 @@ namespace Foam
                 const direction dimensions,
                 const scalar tolerance=1e-4);
 
-        scalarRectangularMatrix matrix() const;
+        autoPtr<scalarRectangularMatrix> matrix() const;
     
     private:
         bool containsEntry(const List<label> fittableTerms, label term) const;
