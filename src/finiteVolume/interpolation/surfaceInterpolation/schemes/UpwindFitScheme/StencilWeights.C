@@ -1,4 +1,5 @@
 #include "StencilWeights.H"
+#include "fieldAccess.H"
 
 Foam::StencilWeights::StencilWeights(const fvMesh& mesh, const word prefix)
 :
@@ -58,12 +59,12 @@ void Foam::StencilWeights::fitted(
 )
 {
     if (faceI == debugFaceI) populateStencilWeights(fit());
-    polynomialTerms()[faceI] = fit->polynomialTerms;
+    fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
 }
 
 void Foam::StencilWeights::write()
 {
-    stencilWeights->write();
+    if (debugFaceI > -1) stencilWeights->write();
     polynomialTerms->write();
 }
 
