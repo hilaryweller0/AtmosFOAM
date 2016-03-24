@@ -45,9 +45,9 @@ namespace Foam
 
 
 template<class Type>
-inline Type fieldAccess
+inline Type& fieldAccess
 (
-    const GeometricField<Type, fvsPatchField, surfaceMesh>& f,
+    GeometricField<Type, fvsPatchField, surfaceMesh>& f,
     const label i
 )
 {

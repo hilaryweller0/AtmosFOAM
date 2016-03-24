@@ -91,13 +91,10 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     forAll(mesh.cellCells()[own], i)
     {
         const label celli = mesh.cellCells()[own][i];
-        if (celli < mesh.nCells())
+        jdirTmp = mesh.cellCentres()[celli] - fC;
+        if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
         {
-            jdirTmp = mesh.cellCentres()[celli] - fC;
-            if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
-            {
-                jdir = jdirTmp;
-            }
+            jdir = jdirTmp;
         }
     }
     // Remove the idir from jdir and then normalise jdir
