@@ -1,5 +1,6 @@
 #include "PolynomialFit.H"
 #include "FixedPolynomial.H"
+#include "WeightedMatrix.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -207,7 +208,7 @@ bool Foam::PolynomialFit<Polynomial>::upwindCoefficientLargerThanSumOfOtherPosit
 template<class Polynomial>
 void Foam::PolynomialFit<Polynomial>::increaseWeights
 (
-    WeightedMatrix& matrix,
+    polynomialMatrix& matrix,
     scalarList& wts,
     bool pureUpwind,
     bool firstIteration

@@ -5,7 +5,7 @@
 #include "autoPtr.H"
 #include "Basis.H"
 #include "Fit.H"
-#include "WeightedMatrix.H"
+#include "polynomialMatrix.H"
 
 namespace Foam
 {
@@ -57,7 +57,7 @@ namespace Foam
                 const scalarList& coefficients);
 
         void increaseWeights(
-                WeightedMatrix& matrix,
+                polynomialMatrix& matrix,
                 scalarList& wts,
                 bool pureUpwind,
                 bool firstIteration);
