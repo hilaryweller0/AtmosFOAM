@@ -2,7 +2,7 @@
 #define iterativeAdjuster_H
 
 #include "adjuster.H"
-#include "polynomialMatrix.H"
+#include "weightedMatrix.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace Foam
     public:
         iterativeAdjuster
         (
-            polynomialMatrix& matrix, 
+            weightedMatrix& matrix, 
             scalarList& coefficients,
             scalarList& wts,
             const scalar wLin,
@@ -29,7 +29,7 @@ namespace Foam
         bool upwindCoefficientLargerThanSumOfOtherPositiveCoefficients();
         void increaseWeights(bool firstIteration);
 
-        polynomialMatrix& matrix;
+        weightedMatrix& matrix;
         scalarList& coefficients;
         scalarList& wts;
         const scalar wLin;

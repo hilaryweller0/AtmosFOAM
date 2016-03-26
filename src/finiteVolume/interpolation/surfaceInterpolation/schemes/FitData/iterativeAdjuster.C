@@ -2,7 +2,7 @@
 
 Foam::iterativeAdjuster::iterativeAdjuster
 (
-    polynomialMatrix& matrix, 
+    weightedMatrix& matrix, 
     scalarList& coefficients,
     scalarList& wts,
     const scalar wLin,
@@ -31,6 +31,11 @@ bool Foam::iterativeAdjuster::adjustWeights()
 
         for (label i=0; i<coefficients.size(); i++)
         {
+            // wts[0] is for the constant term weighting
+            // we should delegate to obtain value
+            
+            // wts[i] is for the stencil cell weightings
+            // and we should similarly delegate to obtain these values
             coefficients[i] = wts[0]*wts[i]*Binv[0][i];
         }
 

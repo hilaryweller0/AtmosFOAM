@@ -1,7 +1,7 @@
 #include "weightedMatrix.H"
 #include "SVD.H"
 
-Foam::weightedMatrix::weightedMatrix(scalarRectangularMatrix& B) : polynomialMatrix(B) {};
+Foam::weightedMatrix::weightedMatrix(scalarRectangularMatrix& B) : B(B) {};
 
 scalarRectangularMatrix Foam::weightedMatrix::pseudoInverse() const
 {

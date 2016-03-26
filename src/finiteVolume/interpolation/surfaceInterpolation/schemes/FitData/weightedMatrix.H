@@ -2,11 +2,10 @@
 #define weightedMatrix_H
 
 #include "fvCFD.H"
-#include "polynomialMatrix.H"
 
 namespace Foam
 {
-    class weightedMatrix : public polynomialMatrix
+    class weightedMatrix
     {
     public:
         weightedMatrix(scalarRectangularMatrix& B);
@@ -18,6 +17,8 @@ namespace Foam
         scalarRectangularMatrix pseudoInverse() const;
     private:
         void multiplyStencilPointWeight(const label index, const scalar weight);
+
+        scalarRectangularMatrix& B;
     };
 }
 

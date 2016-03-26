@@ -2,7 +2,7 @@
 #define nullAdjuster_H
 
 #include "adjuster.H"
-#include "polynomialMatrix.H"
+#include "weightedMatrix.H"
 
 namespace Foam
 {
@@ -11,7 +11,7 @@ namespace Foam
     public:
         nullAdjuster
         (
-            polynomialMatrix& matrix, 
+            weightedMatrix& matrix, 
             scalarList& coefficients,
             scalarList& wts
         );
@@ -19,7 +19,7 @@ namespace Foam
         bool adjustWeights();
 
     private:
-        polynomialMatrix& matrix;
+        weightedMatrix& matrix;
         scalarList& coefficients;
         scalarList& wts;
     };

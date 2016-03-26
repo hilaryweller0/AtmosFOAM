@@ -5,7 +5,7 @@
 #include "autoPtr.H"
 #include "Basis.H"
 #include "Fit.H"
-#include "polynomialMatrix.H"
+#include "weightedMatrix.H"
 
 namespace Foam
 {
