@@ -1,6 +1,6 @@
-#include "adjuster.H"
+#include "iterativeAdjuster.H"
 
-Foam::adjuster::adjuster
+Foam::iterativeAdjuster::iterativeAdjuster
 (
     polynomialMatrix& matrix, 
     scalarList& coefficients,
@@ -22,7 +22,7 @@ Foam::adjuster::adjuster
     centralWeight(centralWeight)
 {}
 
-bool Foam::adjuster::adjustWeights()
+bool Foam::iterativeAdjuster::adjustWeights()
 {
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
@@ -45,7 +45,7 @@ bool Foam::adjuster::adjustWeights()
     return goodFit;
 }
 
-bool Foam::adjuster::isGoodFit()
+bool Foam::iterativeAdjuster::isGoodFit()
 {
     if (linearCorrection)
     {
@@ -61,7 +61,7 @@ bool Foam::adjuster::isGoodFit()
     }
 }
 
-bool Foam::adjuster::eitherUpwindOrDownwindHasMaximumMagnitude()
+bool Foam::iterativeAdjuster::eitherUpwindOrDownwindHasMaximumMagnitude()
 {
     scalar maxCoeff = 0;
     label maxCoeffi = 0;
@@ -76,7 +76,7 @@ bool Foam::adjuster::eitherUpwindOrDownwindHasMaximumMagnitude()
     return maxCoeffi <= 1;
 }
 
-bool Foam::adjuster::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients()
+bool Foam::iterativeAdjuster::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients()
 {
     // go through all coeffsi except the first, add up all positive coeffs
     scalar positiveCoeffSum = 0;
@@ -92,7 +92,7 @@ bool Foam::adjuster::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients()
     return 3*coefficients[0] > positiveCoeffSum;
 }
 
-void Foam::adjuster::increaseWeights(bool firstIteration)
+void Foam::iterativeAdjuster::increaseWeights(bool firstIteration)
 {
     wts[0] *= 10;
     if (linearCorrection)

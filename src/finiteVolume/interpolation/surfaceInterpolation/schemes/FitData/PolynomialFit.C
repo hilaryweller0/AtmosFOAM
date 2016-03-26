@@ -1,6 +1,6 @@
 #include "PolynomialFit.H"
 #include "weightedMatrix.H"
-#include "adjuster.H"
+#include "iterativeAdjuster.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -46,7 +46,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     label stencilSize = C.size();
     coeffsi.setSize(stencilSize);
 
-    adjuster adjuster
+    iterativeAdjuster iterativeAdjuster
     (
         matrix,
         coeffsi,
@@ -58,7 +58,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
         centralWeight_
     );
 
-    bool goodFit = adjuster.adjustWeights();
+    bool goodFit = iterativeAdjuster.adjustWeights();
     applyCorrection(coeffsi, goodFit, wLin);
 
     return autoPtr<Fit>(new Fit(
