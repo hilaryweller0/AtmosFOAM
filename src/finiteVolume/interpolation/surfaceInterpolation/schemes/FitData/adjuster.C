@@ -22,6 +22,29 @@ Foam::adjuster::adjuster
     centralWeight(centralWeight)
 {}
 
+bool Foam::adjuster::adjustWeights()
+{
+    bool goodFit = false;
+    for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
+    {
+        scalarRectangularMatrix Binv = matrix.pseudoInverse();
+
+        for (label i=0; i<coefficients.size(); i++)
+        {
+            coefficients[i] = wts[0]*wts[i]*Binv[0][i];
+        }
+
+        goodFit = isGoodFit();
+
+        if (!goodFit)
+        {
+            increaseWeights(iIt == 0);
+        }
+    }
+
+    return goodFit;
+}
+
 bool Foam::adjuster::isGoodFit()
 {
     if (linearCorrection)

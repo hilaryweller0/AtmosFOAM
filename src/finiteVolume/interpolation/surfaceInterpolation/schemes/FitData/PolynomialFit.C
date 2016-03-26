@@ -57,24 +57,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
         linearLimitFactor_,
         centralWeight_
     );
-    bool goodFit = false;
-    for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
-    {
-        scalarRectangularMatrix Binv = matrix.pseudoInverse();
 
-        for (label i=0; i<coeffsi.size(); i++)
-        {
-            coeffsi[i] = wts[0]*wts[i]*Binv[0][i];
-        }
-
-        goodFit = adjuster.isGoodFit();
-
-        if (!goodFit)
-        {
-            adjuster.increaseWeights(iIt == 0);
-        }
-    }
-
+    bool goodFit = adjuster.adjustWeights();
     if (goodFit)
     {
         if (linearCorrection_)

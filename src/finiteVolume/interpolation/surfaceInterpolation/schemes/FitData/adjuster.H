@@ -20,13 +20,13 @@ namespace Foam
             const scalar centralWeight
         );
 
-        bool isGoodFit();
-
-        void increaseWeights(bool firstIteration);
+        bool adjustWeights();
 
     private:
+        bool isGoodFit();
         bool eitherUpwindOrDownwindHasMaximumMagnitude();
         bool upwindCoefficientLargerThanSumOfOtherPositiveCoefficients();
+        void increaseWeights(bool firstIteration);
 
         polynomialMatrix& matrix;
         scalarList& coefficients;
