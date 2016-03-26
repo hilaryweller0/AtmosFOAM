@@ -33,20 +33,33 @@ namespace Foam
         );
     
     private:
-        List<point> toLocalCoordinates(
-                const List<point>& stencilPoints,
-                const point& origin,
-                const Basis& basis);
+        List<point> toLocalCoordinates
+        (
+            const List<point>& stencilPoints,
+            const point& origin,
+            const Basis& basis
+        );
 
-        point toLocalCoordinates(
-                const point& origin,
-                const point& p,
-                const Basis& basis);
+        point toLocalCoordinates
+        (
+            const point& origin,
+            const point& p,
+            const Basis& basis
+        );
 
-        scalar scaleLocalCoordinates(
-                const point& origin,
-                const point& upwindPoint,
-                const Basis& basis);
+        scalar scaleLocalCoordinates
+        (
+            const point& origin,
+            const point& upwindPoint,
+            const Basis& basis
+        );
+
+        void applyCorrection
+        (
+            scalarList& coeffsi,
+            const bool goodFit,
+            const scalar wLin
+        );
 
         const bool linearCorrection_;
         const scalar linearLimitFactor_;

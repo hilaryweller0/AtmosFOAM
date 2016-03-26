@@ -59,30 +59,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     );
 
     bool goodFit = adjuster.adjustWeights();
-    if (goodFit)
-    {
-        if (linearCorrection_)
-        {
-            // Remove the uncorrected linear coefficients
-            coeffsi[0] -= wLin;
-            coeffsi[1] -= 1 - wLin;
-        }
-        else
-        {
-            // Remove the uncorrected upwind coefficients
-            coeffsi[0] -= 1.0;
-        }
-    }
-    else
-    {
-        coeffsi = 0;
-        
-        if (linearCorrection_)
-        {
-            coeffsi[0] = 1-wLin;
-            coeffsi[1] = -(1-wLin);
-        }
-    }
+    applyCorrection(coeffsi, goodFit, wLin);
+
     return autoPtr<Fit>(new Fit(
             C,
             coeffsi,
@@ -135,8 +113,42 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
 (
     const point& origin,
     const point& upwindPoint,
-    const Basis& basis)
+    const Basis& basis
+)
 {
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }
 
+template<class Polynomial>
+void Foam::PolynomialFit<Polynomial>::applyCorrection
+(
+    scalarList& coeffsi,
+    const bool goodFit,
+    const scalar wLin
+)
+{
+    if (goodFit)
+    {
+        if (linearCorrection_)
+        {
+            // Remove the uncorrected linear coefficients
+            coeffsi[0] -= wLin;
+            coeffsi[1] -= 1 - wLin;
+        }
+        else
+        {
+            // Remove the uncorrected upwind coefficients
+            coeffsi[0] -= 1.0;
+        }
+    }
+    else
+    {
+        coeffsi = 0;
+        
+        if (linearCorrection_)
+        {
+            coeffsi[0] = 1-wLin;
+            coeffsi[1] = -(1-wLin);
+        }
+    }
+}
