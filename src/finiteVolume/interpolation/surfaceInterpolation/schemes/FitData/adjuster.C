@@ -8,7 +8,8 @@ Foam::adjuster::adjuster
     const scalar wLin,
     const bool pureUpwind,
     const bool linearCorrection,
-    const scalar linearLimitFactor
+    const scalar linearLimitFactor,
+    const scalar centralWeight
 )
 :
     matrix(matrix),
@@ -17,7 +18,8 @@ Foam::adjuster::adjuster
     wLin(wLin),
     pureUpwind(pureUpwind),
     linearCorrection(linearCorrection),
-    linearLimitFactor(linearLimitFactor)
+    linearLimitFactor(linearLimitFactor),
+    centralWeight(centralWeight)
 {}
 
 bool Foam::adjuster::isGoodFit()
@@ -65,4 +67,29 @@ bool Foam::adjuster::upwindCoefficientLargerThanSumOfOtherPositiveCoefficients()
     }
 
     return 3*coefficients[0] > positiveCoeffSum;
+}
+
+void Foam::adjuster::increaseWeights(bool firstIteration)
+{
+    wts[0] *= 10;
+    if (linearCorrection)
+    {
+        wts[1] *= 10;
+    }
+    else if (!pureUpwind && firstIteration)
+    {
+        wts[1] /= centralWeight;
+    }
+
+    matrix.multiplyUpwindWeight(10);
+    if (linearCorrection)
+    {
+        matrix.multiplyDownwindWeight(10);
+    }
+    else if (!pureUpwind && firstIteration)
+    {
+        matrix.multiplyDownwindWeight(1.0/centralWeight);
+    }
+
+    matrix.multiplyConstantAndLinearWeights(10);
 }

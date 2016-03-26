@@ -48,12 +48,6 @@ namespace Foam
                 const point& upwindPoint,
                 const Basis& basis);
 
-        void increaseWeights(
-                polynomialMatrix& matrix,
-                scalarList& wts,
-                bool pureUpwind,
-                bool firstIteration);
-
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
         const scalar centralWeight_;

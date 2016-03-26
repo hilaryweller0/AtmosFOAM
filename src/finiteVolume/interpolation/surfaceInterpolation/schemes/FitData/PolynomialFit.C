@@ -54,7 +54,8 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
         wLin,
         pureUpwind,
         linearCorrection_,
-        linearLimitFactor_
+        linearLimitFactor_,
+        centralWeight_
     );
     bool goodFit = false;
     for (int iIt = 0; iIt < 8 && !goodFit; iIt++)
@@ -70,7 +71,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 
         if (!goodFit)
         {
-            increaseWeights(matrix, wts, pureUpwind, iIt == 0);
+            adjuster.increaseWeights(iIt == 0);
         }
     }
 
@@ -155,35 +156,3 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }
 
-
-template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::increaseWeights
-(
-    polynomialMatrix& matrix,
-    scalarList& wts,
-    bool pureUpwind,
-    bool firstIteration
-)
-{
-    wts[0] *= 10;
-    if (linearCorrection_)
-    {
-        wts[1] *= 10;
-    }
-    else if (!pureUpwind && firstIteration)
-    {
-        wts[1] /= centralWeight_;
-    }
-
-    matrix.multiplyUpwindWeight(10);
-    if (linearCorrection_)
-    {
-        matrix.multiplyDownwindWeight(10);
-    }
-    else if (!pureUpwind && firstIteration)
-    {
-        matrix.multiplyDownwindWeight(1.0/centralWeight_);
-    }
-
-    matrix.multiplyConstantAndLinearWeights(10);
-}

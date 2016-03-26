@@ -16,10 +16,13 @@ namespace Foam
             const scalar wLin,
             const bool pureUpwind,
             const bool linearCorrection,
-            const scalar linearLimitFactor
+            const scalar linearLimitFactor,
+            const scalar centralWeight
         );
 
         bool isGoodFit();
+
+        void increaseWeights(bool firstIteration);
 
     private:
         bool eitherUpwindOrDownwindHasMaximumMagnitude();
@@ -32,6 +35,7 @@ namespace Foam
         const bool pureUpwind;
         const bool linearCorrection;
         const scalar linearLimitFactor;
+        const scalar centralWeight;
     };
 }
 
