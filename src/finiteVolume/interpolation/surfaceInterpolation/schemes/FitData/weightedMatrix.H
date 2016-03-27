@@ -2,6 +2,7 @@
 #define weightedMatrix_H
 
 #include "fvCFD.H"
+#include "fitWeights.H"
 
 namespace Foam
 {
@@ -10,12 +11,14 @@ namespace Foam
     public:
         weightedMatrix(scalarRectangularMatrix& B);
 
-        void applyStencilPointWeights(const scalarList& weights);
-        void multiplyConstantAndLinearWeights(const scalar weight);
+        void apply(const fitWeights& weights);
+        void multiplyConstantAndLinearWeights(const scalar weight); 
         void multiplyUpwindWeight(const scalar weight);
         void multiplyDownwindWeight(const scalar weight);
         scalarRectangularMatrix pseudoInverse() const;
+
     private:
+        void applyStencilPointWeights(const fitWeights& weights);
         void multiplyStencilPointWeight(const label index, const scalar weight);
 
         scalarRectangularMatrix& B;

@@ -1,6 +1,7 @@
 #include "TestPolynomialFit.H"
 #include "extendedUpwindCellToFaceStencilNew.H"
 #include "TestableUpwindCorrFitData.H"
+#include "fitWeights.H"
 
 Test::PolynomialFit::PolynomialFit(
         const Foam::List<point>& stencilPoints,
@@ -20,13 +21,13 @@ Test::PolynomialFit::PolynomialFit(
         )
     );
 
-    scalarList wts(stencilPoints.size(), scalar(1));
     const scalar unused_wLin = 0;
 
     extendedUpwindCellToFaceStencilNew* unusedStencil = NULL;
     bool linearCorrection = false;
     scalar linearLimitFactor = 3.0;
     scalar centralWeight = 1e3;
+    scalarList wts(stencilPoints.size(), scalar(1));
 
     TestableUpwindCorrFitData fitData(
             mesh,
@@ -45,13 +46,18 @@ Test::PolynomialFit::PolynomialFit(
 {
     using namespace Foam;
 
-    scalarList wts(stencilPoints.size(), scalar(1));
+    scalar centralWeight = 1e3;
+    const bool pureUpwind = false;
+
+    fitWeights weights(stencilPoints.size());
+    weights.setCentralWeight(centralWeight, pureUpwind);
+    weights.setConstantWeight(centralWeight);
+    weights.setXlinearWeight(centralWeight);
+
     const scalar wLin = 0.6;
 
     scalar linearLimitFactor = 3.0;
-    scalar centralWeight = 1e3;
     const point p0(0, 0, 0);
-    const bool pureUpwind = false;
     const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
@@ -60,9 +66,10 @@ Test::PolynomialFit::PolynomialFit(
                 linearLimitFactor,
                 centralWeight,
                 dimensions);
+
     polynomialFit.fit(
             coefficients_,
-            wts,
+            weights,
             stencilPoints,
             wLin,
             p0,

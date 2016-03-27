@@ -13,7 +13,7 @@ namespace Foam
         (
             weightedMatrix& matrix, 
             scalarList& coefficients,
-            scalarList& wts
+            fitWeights& weights
         );
 
         bool adjustWeights();
@@ -21,7 +21,7 @@ namespace Foam
     private:
         weightedMatrix& matrix;
         scalarList& coefficients;
-        scalarList& wts;
+        fitWeights& weights;
     };
 }
 

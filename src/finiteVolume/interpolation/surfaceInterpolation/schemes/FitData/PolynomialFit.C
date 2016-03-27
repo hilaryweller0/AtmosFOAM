@@ -1,6 +1,7 @@
 #include "PolynomialFit.H"
 #include "weightedMatrix.H"
 #include "nullAdjuster.H"
+#include "iterativeAdjuster.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -21,36 +22,41 @@ template<class Polynomial>
 autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
 (
     scalarList& coeffsi,
-    scalarList& wts,
+    fitWeights& weights,
     const List<point>& C,
     const scalar wLin,
     const point& origin,
-    bool pureUpwind,
+    const bool pureUpwind,
     const Basis& basis
 )
 {
-    wts[0] = centralWeight_;
-    if (!pureUpwind)
-    {
-        wts[1] = centralWeight_;
-    }
-
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
     weightedMatrix matrix(B());
 
-    matrix.applyStencilPointWeights(wts);
-    matrix.multiplyConstantAndLinearWeights(wts[0]);
+    matrix.apply(weights);
 
     label stencilSize = C.size();
     coeffsi.setSize(stencilSize);
 
-    nullAdjuster adjuster
+    /*nullAdjuster adjuster
     (
-        matrix,
+        matrix, 
+        coefficients,
+        weights
+    );*/
+
+    iterativeAdjuster adjuster
+    (
+        matrix, 
         coeffsi,
-        wts
+        weights,
+        wLin,
+        pureUpwind,
+        linearCorrection_,
+        linearLimitFactor_,
+        centralWeight_
     );
 
     bool goodFit = adjuster.adjustWeights();

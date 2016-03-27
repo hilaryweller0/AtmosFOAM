@@ -13,7 +13,7 @@ namespace Foam
         (
             weightedMatrix& matrix, 
             scalarList& coefficients,
-            scalarList& wts,
+            fitWeights& weights,
             const scalar wLin,
             const bool pureUpwind,
             const bool linearCorrection,
@@ -31,7 +31,7 @@ namespace Foam
 
         weightedMatrix& matrix;
         scalarList& coefficients;
-        scalarList& wts;
+        fitWeights& weights;
         const scalar wLin;
         const bool pureUpwind;
         const bool linearCorrection;

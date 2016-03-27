@@ -4,7 +4,7 @@ Foam::iterativeAdjuster::iterativeAdjuster
 (
     weightedMatrix& matrix, 
     scalarList& coefficients,
-    scalarList& wts,
+    fitWeights& weights,
     const scalar wLin,
     const bool pureUpwind,
     const bool linearCorrection,
@@ -14,7 +14,7 @@ Foam::iterativeAdjuster::iterativeAdjuster
 :
     matrix(matrix),
     coefficients(coefficients),
-    wts(wts),
+    weights(weights),
     wLin(wLin),
     pureUpwind(pureUpwind),
     linearCorrection(linearCorrection),
@@ -31,12 +31,7 @@ bool Foam::iterativeAdjuster::adjustWeights()
 
         for (label i=0; i<coefficients.size(); i++)
         {
-            // wts[0] is for the constant term weighting
-            // we should delegate to obtain value
-            
-            // wts[i] is for the stencil cell weightings
-            // and we should similarly delegate to obtain these values
-            coefficients[i] = wts[0]*wts[i]*Binv[0][i];
+            coefficients[i] = weights.constant()*weights[i]*Binv[0][i];
         }
 
         goodFit = isGoodFit();
@@ -99,14 +94,14 @@ bool Foam::iterativeAdjuster::upwindCoefficientLargerThanSumOfOtherPositiveCoeff
 
 void Foam::iterativeAdjuster::increaseWeights(bool firstIteration)
 {
-    wts[0] *= 10;
+    weights[0] *= 10;
     if (linearCorrection)
     {
-        wts[1] *= 10;
+        weights[1] *= 10;
     }
     else if (!pureUpwind && firstIteration)
     {
-        wts[1] /= centralWeight;
+        weights[1] /= centralWeight;
     }
 
     matrix.multiplyUpwindWeight(10);

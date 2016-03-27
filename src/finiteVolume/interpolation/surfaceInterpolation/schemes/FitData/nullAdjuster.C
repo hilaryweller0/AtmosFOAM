@@ -4,12 +4,12 @@ Foam::nullAdjuster::nullAdjuster
 (
     weightedMatrix& matrix,
     scalarList& coefficients,
-    scalarList& wts
+    fitWeights& weights
 )
 :
     matrix(matrix),
     coefficients(coefficients),
-    wts(wts)
+    weights(weights)
 {}
 
 bool Foam::nullAdjuster::adjustWeights()
@@ -18,12 +18,7 @@ bool Foam::nullAdjuster::adjustWeights()
 
     for (label i=0; i<coefficients.size(); i++)
     {
-        // wts[0] is for the constant term weighting
-        // we should delegate to obtain this value
-
-        // wts[i] is for the stencil cell weightings
-        // and we should similarly delegate to obtain these values
-        coefficients[i] = wts[0]*wts[i]*Binv[0][i];
+        coefficients[i] = weights.constant()*weights[i]*Binv[0][i];
     }
 
     return true;

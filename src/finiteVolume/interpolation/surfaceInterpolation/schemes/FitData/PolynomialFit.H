@@ -6,6 +6,7 @@
 #include "Basis.H"
 #include "Fit.H"
 #include "weightedMatrix.H"
+#include "fitWeights.H"
 
 namespace Foam
 {
@@ -24,11 +25,11 @@ namespace Foam
         autoPtr<Fit> fit
         (
             scalarList& coeffsi,
-            scalarList& wts,
+            fitWeights& weights,
             const List<point>& stencilPoints,
             const scalar wLin, // only used when linearCorrection=true
             const point& origin,
-            bool pureUpwind,
+            const bool pureUpwind,
             const Basis& basis
         );
     

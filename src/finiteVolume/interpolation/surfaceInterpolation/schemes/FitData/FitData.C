@@ -128,6 +128,11 @@ autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
     bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
 
+    fitWeights weights(C.size());
+    weights.setCentralWeight(centralWeight_, pureUpwind);
+    weights.setConstantWeight(centralWeight_);
+    weights.setXlinearWeight(centralWeight_);
+
     PolynomialFit<FixedPolynomial<Polynomial> > polynomialFit(
         linearCorrection_,
         linearLimitFactor_,
@@ -135,7 +140,7 @@ autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
         dim_
     );
     const Basis basis(idir, jdir, kdir);
-    return polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis);
+    return polynomialFit.fit(coeffsi, weights, C, wLin, p0, pureUpwind, basis);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

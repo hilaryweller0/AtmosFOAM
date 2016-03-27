@@ -43,6 +43,7 @@ SourceFiles
 #include "MeshObject.H"
 #include "fvMesh.H"
 #include "Fit.H"
+#include "fitWeights.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -145,7 +146,7 @@ public:
         autoPtr<Fit> calcFit
         (
             scalarList& coeffsi, // coefficients to be set
-            scalarList& wts,     // weights to be set (for debugging)
+            scalarList& wts,
             const List<point>&,  // Stencil points
             const scalar wLin,   // Weight for linear approximation (weights
                                  // nearest neighbours)
