@@ -25,7 +25,7 @@ License
 
 #include "FitData.H"
 #include "PolynomialFit.H"
-#include "FixedPolynomial.H"
+#include "AdaptivePolynomial.H"
 #include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"
@@ -130,10 +130,10 @@ autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
-    weights.setConstantWeight(centralWeight_);
-    weights.setXlinearWeight(centralWeight_);
+//    weights.setConstantWeight(centralWeight_);
+//    weights.setXlinearWeight(centralWeight_);
 
-    PolynomialFit<FixedPolynomial<Polynomial> > polynomialFit(
+    PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(
         linearCorrection_,
         linearLimitFactor_,
         centralWeight_, 

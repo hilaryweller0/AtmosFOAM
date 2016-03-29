@@ -159,6 +159,20 @@ autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit
         coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
     );
 
+    scalarList& coeffsi = coeffs[faceI];
+    scalar upwind = coeffsi[0] + 1.0;
+    scalar downwind = coeffsi[1];
+    bool stable = mag(downwind) < upwind && upwind <= 1 + downwind;
+
+    if (!stable)
+    {
+        Info << "0 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
+    }
+    else
+    {
+        Info << "1 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
+    }
+
     if (!fit->good)
     {
         WarningIn

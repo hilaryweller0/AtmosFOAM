@@ -40,14 +40,14 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     label stencilSize = C.size();
     coeffsi.setSize(stencilSize);
 
-    /*nullAdjuster adjuster
+    nullAdjuster adjuster
     (
         matrix, 
-        coefficients,
+        coeffsi,
         weights
-    );*/
+    );
 
-    iterativeAdjuster adjuster
+/*    iterativeAdjuster adjuster
     (
         matrix, 
         coeffsi,
@@ -57,7 +57,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
         linearCorrection_,
         linearLimitFactor_,
         centralWeight_
-    );
+    );*/
 
     bool goodFit = adjuster.adjustWeights();
     applyCorrection(coeffsi, goodFit, wLin);
