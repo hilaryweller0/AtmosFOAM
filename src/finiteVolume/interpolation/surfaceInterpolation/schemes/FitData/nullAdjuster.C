@@ -2,9 +2,9 @@
 
 Foam::nullAdjuster::nullAdjuster
 (
-    weightedMatrix& matrix,
+    const weightedMatrix& matrix,
     scalarList& coefficients,
-    fitWeights& weights
+    const fitWeights& weights
 )
 :
     matrix(matrix),

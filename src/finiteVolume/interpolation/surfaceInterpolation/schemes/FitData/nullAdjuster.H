@@ -11,17 +11,17 @@ namespace Foam
     public:
         nullAdjuster
         (
-            weightedMatrix& matrix, 
+            const weightedMatrix& matrix, 
             scalarList& coefficients,
-            fitWeights& weights
+            const fitWeights& weights
         );
 
         bool adjustWeights();
 
     private:
-        weightedMatrix& matrix;
+        const weightedMatrix& matrix;
         scalarList& coefficients;
-        fitWeights& weights;
+        const fitWeights& weights;
     };
 }
 
