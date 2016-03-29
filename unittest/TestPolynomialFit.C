@@ -1,6 +1,7 @@
 #include "TestPolynomialFit.H"
 #include "extendedUpwindCellToFaceStencilNew.H"
 #include "TestableUpwindCorrFitData.H"
+#include "FixedPolynomial.H"
 #include "fitWeights.H"
 
 Test::PolynomialFit::PolynomialFit(
