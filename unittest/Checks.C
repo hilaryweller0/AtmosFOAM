@@ -9,9 +9,11 @@ void check(Foam::scalarList actual, Foam::scalarList expected)
 }
 
 template <size_t rows, size_t cols>
-void check(
-        const Foam::scalarRectangularMatrix& actual, 
-        const scalar (&expected)[rows][cols])
+void check
+(
+    const Foam::scalarRectangularMatrix& actual, 
+    const scalar (&expected)[rows][cols]
+)
 {
     CHECK( actual.n() == rows );
     CHECK( actual.m() == cols );
@@ -23,4 +25,13 @@ void check(
             CHECK( actual[i][j] == approx(expected[i][j]) );
         }
     }
+}
+
+void checkStable(Foam::scalarList coefficients)
+{
+    scalar upwind = coefficients[0];
+    scalar downwind = coefficients[1];
+
+    CHECK( mag(downwind) < upwind );
+    CHECK( upwind <= 1 + downwind );
 }

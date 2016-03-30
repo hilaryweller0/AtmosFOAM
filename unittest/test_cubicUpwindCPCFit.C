@@ -18,14 +18,14 @@ TEST_CASE("fit full-size stencil to uniform 2D mesh")
 
     Test::PolynomialFit fit(Test::Stencils::twelvePoints(), faceI);
 
-    check(fit.coefficients(), twelvePointStencilCoefficients());
+    check(fit.coefficients(), Test::Coefficients::twelvePoints());
 }
 
 TEST_CASE("fit full-size stencil to uniform set of points in local coords")
 {
     Test::PolynomialFit fit(Test::Stencils::twelvePoints());
 
-    check(fit.coefficients(), twelvePointStencilCoefficients());
+    check(fit.coefficients(), Test::Coefficients::twelvePoints());
 }
 
 // while cubicUpwindCPCFit is a correction on upwind, 
@@ -37,7 +37,7 @@ TEST_CASE("fit using linear correction")
 
     Test::PolynomialFit fit(Test::Stencils::twelvePoints(), linearCorrection);
 
-    check(fit.coefficients(), twelvePointStencilCoefficients());
+    check(fit.coefficients(), Test::Coefficients::twelvePoints());
 }
 
 TEST_CASE("12x9 FixedPolynomial")
@@ -68,4 +68,18 @@ TEST_CASE("a + by with two points in vertical line")
         matrix(stencil, dimensions);
 
     check<2, 2>(matrix.matrix(), Test::Matrices::yLinear);
+}
+
+/*
+ * This test case is taken from a real BTF mesh where the von Neumann
+ * analysis detected an instability.  When advectionFoam was run on this mesh,
+ * this was the first stencil to become unstable.
+ */
+TEST_CASE("BTF stable")
+{
+    Test::PolynomialFit fit(Test::Stencils::btfStable());
+    
+    Info << "*** " << fit.coefficients();
+
+    checkStable(fit.coefficients());
 }

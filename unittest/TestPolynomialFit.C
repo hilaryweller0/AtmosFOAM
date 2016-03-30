@@ -1,7 +1,7 @@
 #include "TestPolynomialFit.H"
 #include "extendedUpwindCellToFaceStencilNew.H"
 #include "TestableUpwindCorrFitData.H"
-#include "FixedPolynomial.H"
+#include "AdaptivePolynomial.H"
 #include "fitWeights.H"
 
 Test::PolynomialFit::PolynomialFit(
@@ -52,8 +52,6 @@ Test::PolynomialFit::PolynomialFit(
 
     fitWeights weights(stencilPoints.size());
     weights.setCentralWeight(centralWeight, pureUpwind);
-    weights.setConstantWeight(centralWeight);
-    weights.setXlinearWeight(centralWeight);
 
     const scalar wLin = 0.6;
 
@@ -62,7 +60,7 @@ Test::PolynomialFit::PolynomialFit(
     const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
-    Foam::PolynomialFit<FixedPolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
+    Foam::PolynomialFit<AdaptivePolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
                 linearCorrection,
                 linearLimitFactor,
                 centralWeight,

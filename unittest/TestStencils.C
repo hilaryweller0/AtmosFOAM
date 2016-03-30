@@ -18,7 +18,7 @@ Foam::List<point> Test::Stencils::twelvePoints()
     return stencil;
 }
 
-Foam::scalarList twelvePointStencilCoefficients()
+Foam::scalarList Test::Coefficients::twelvePoints()
 {
     Foam::scalarList coefficients(12, scalar(0));
     coefficients[0] = 0.875;
@@ -49,6 +49,21 @@ Foam::List<point> Test::Stencils::twoPointsInVerticalLine()
     Foam::List<point> stencil(2, point(0, 0, 0));
     stencil[0] = point(0, 1, 0);
     stencil[1] = point(0, -2, 0);
+    return stencil;
+}
+
+Foam::List<point> Test::Stencils::btfStable()
+{
+    Foam::List<point> stencil(9, point(0, 0, 0));
+    stencil[0] = point(1, -0.0373978, 2.41746e-16);
+    stencil[1] = point(-1, 0.0547895, 1.16175e-16);
+    stencil[2] = point(2.09757, 2.03321, -5.95858e-16);
+    stencil[3] = point(1.9996, -0.0921689, 2.46512e-16);
+    stencil[4] = point(1.90163, -2.21755, 6.05113e-16);
+    stencil[5] = point(1.05656, 2.08695, -7.20833e-16);
+    stencil[6] = point(0.944101, -2.16689, 4.80117e-16);
+    stencil[7] = point(-1.02598, 2.18294, 5.03523e-33);
+    stencil[8] = point(-0.971564, -2.07859, 5.96625e-16);
     return stencil;
 }
 

@@ -11,6 +11,13 @@ namespace Test {
         static Foam::List<point> twelvePoints();
         static Foam::List<point> twoPointsInHorizontalLine();
         static Foam::List<point> twoPointsInVerticalLine();
+        static Foam::List<point> btfStable();
+    };
+
+    class Coefficients
+    {
+    public:
+        static Foam::scalarList twelvePoints();
     };
 
     class Matrices
@@ -21,8 +28,5 @@ namespace Test {
         static const scalar yLinear[2][2];
     };
 }
-
-
-Foam::scalarList twelvePointStencilCoefficients();
 
 #endif
