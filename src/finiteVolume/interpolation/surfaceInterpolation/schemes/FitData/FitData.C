@@ -29,6 +29,7 @@ License
 #include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"
+#include "fitCoefficients.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
@@ -105,11 +106,10 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     kdir = idir ^ jdir;
 }
 
-
 template<class FitDataType, class ExtendedStencil, class Polynomial>
 autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 (
-    scalarList& coeffsi,
+    fitCoefficients& coefficients,
     scalarList& wts,
     const List<point>& C,
     const scalar wLin,
@@ -121,7 +121,6 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     vector kdir(0,0,1);
     findFaceDirs(idir, jdir, kdir, facei);
     
-    // Reference point
     point p0 = this->mesh().faceCentres()[facei];
 
     scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[0]-p0);
@@ -130,8 +129,6 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
 
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
-//    weights.setConstantWeight(centralWeight_);
-//    weights.setXlinearWeight(centralWeight_);
 
     PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(
         linearCorrection_,
@@ -139,8 +136,24 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
         centralWeight_, 
         dim_
     );
+
     const Basis basis(idir, jdir, kdir);
-    return polynomialFit.fit(coeffsi, weights, C, wLin, p0, pureUpwind, basis);
+
+    return polynomialFit.fit(coefficients, weights, C, wLin, p0, pureUpwind, basis);
+}
+
+template<class FitDataType, class ExtendedStencil, class Polynomial>
+void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
+(
+    scalarList& coeffsi,
+    scalarList& wts,
+    const List<point>& C,
+    const scalar wLin,
+    const label facei
+)
+{
+    fitCoefficients coefficients(coeffsi, C, linearCorrection_, wLin);
+    calcFit(coefficients, wts, C, wLin, facei);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

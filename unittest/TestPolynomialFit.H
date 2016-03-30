@@ -6,10 +6,18 @@
 namespace Test {
     class PolynomialFit {
         public:
-            PolynomialFit(
-                    const Foam::List<point>& stencilPoints,
-                    const Foam::label faceI);
-            PolynomialFit(const Foam::List<point>& stencilPoints, bool linearCorrection=false);
+            PolynomialFit
+            (
+                const Foam::List<point>& stencilPoints,
+                const Foam::label faceI
+            );
+
+            PolynomialFit
+            (
+                const Foam::List<point>& stencilPoints,
+                bool linearCorrection=false
+            );
+
             const Foam::scalarList coefficients();
 
         private:

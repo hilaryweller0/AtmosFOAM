@@ -2,13 +2,13 @@
 
 Foam::fitResult::fitResult(
         const List<point>& stencilPoints,
-        const scalarList& coeffs,
+        const fitCoefficients& coefficients,
         const bool good,
         const label polynomialTerms
 )
 :
     stencilPoints(stencilPoints),
-    coeffs(coeffs),
+    coefficients(coefficients),
     good(good),
     polynomialTerms(polynomialTerms)
 {};

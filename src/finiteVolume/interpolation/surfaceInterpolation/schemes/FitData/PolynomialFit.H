@@ -24,7 +24,7 @@ namespace Foam
         
         autoPtr<fitResult> fit
         (
-            scalarList& coeffsi,
+            fitCoefficients& coefficients,
             fitWeights& weights,
             const List<point>& stencilPoints,
             const scalar wLin, // only used when linearCorrection=true

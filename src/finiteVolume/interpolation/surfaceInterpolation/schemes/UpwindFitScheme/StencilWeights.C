@@ -76,7 +76,7 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
         {
             if (mesh.C()[cellI] == fit.stencilPoints[stencilI])
             {
-                stencilWeights()[cellI] = fit.coeffs[stencilI];
+                stencilWeights()[cellI] = fit.coefficients[stencilI];
                 if (stencilI == 0)
                 {
                     stencilWeights()[cellI] += 1.0; // re-add upwind weight
@@ -92,7 +92,7 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
             {
                 if (boundaryPatch.Cf()[boundaryFaceI] == fit.stencilPoints[stencilI])
                 {
-                    weightsPatch[boundaryFaceI] = fit.coeffs[stencilI];
+                    weightsPatch[boundaryFaceI] = fit.coefficients[stencilI];
                     if (stencilI == 0)
                     {
                         weightsPatch[boundaryFaceI] += 1.0; // re-add upwind weight

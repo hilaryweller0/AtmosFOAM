@@ -15,6 +15,21 @@ Foam::fitCoefficients::fitCoefficients
     coefficients.setSize(stencil.size());
 }
 
+scalar& Foam::fitCoefficients::operator[](int i)
+{
+    return coefficients[i];
+}
+
+scalar Foam::fitCoefficients::operator[](int i) const
+{
+    return coefficients[i];
+}
+
+label Foam::fitCoefficients::size()
+{
+    return coefficients.size();
+}
+
 void Foam::fitCoefficients::applyCorrection(const bool goodFit)
 {
     if (goodFit)

@@ -3,6 +3,7 @@
 #include "TestableUpwindCorrFitData.H"
 #include "AdaptivePolynomial.H"
 #include "fitWeights.H"
+#include "fitCoefficients.H"
 
 Test::PolynomialFit::PolynomialFit(
         const Foam::List<point>& stencilPoints,
@@ -37,8 +38,9 @@ Test::PolynomialFit::PolynomialFit(
             linearLimitFactor,
             centralWeight);
 
-    fitData.calcFit(coefficients_, wts, stencilPoints, unused_wLin, faceI);
-    coefficients_[0] += 1.0;
+    fitCoefficients coefficients(coefficients_, stencilPoints, linearCorrection, unused_wLin);
+    fitData.calcFit(coefficients, wts, stencilPoints, unused_wLin, faceI);
+    coefficients[0] += 1.0;
 }
 
 Test::PolynomialFit::PolynomialFit(
@@ -66,8 +68,9 @@ Test::PolynomialFit::PolynomialFit(
                 centralWeight,
                 dimensions);
 
+    fitCoefficients coefficients(coefficients_, stencilPoints, linearCorrection, wLin);
     polynomialFit.fit(
-            coefficients_,
+            coefficients,
             weights,
             stencilPoints,
             wLin,

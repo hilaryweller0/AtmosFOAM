@@ -5,6 +5,7 @@
 #include "extendedUpwindCellToFaceStencilNew.H"
 #include "cubicUpwindCPCFitPolynomial.H"
 #include "FitData.H"
+#include "fitCoefficients.H"
 
 namespace Foam
 {
@@ -44,14 +45,14 @@ namespace Foam
             // bleugh, polymorphism
             void calcFit
             (
-                scalarList& coeffsi,
+                fitCoefficients& coefficients,
                 scalarList& wts,    
                 const List<point>& stencilPoints,
                 const scalar wLin,  
                 const label faci 
             )
             {
-                FitData::calcFit(coeffsi, wts, stencilPoints, wLin, faci);
+                FitData::calcFit(coefficients, wts, stencilPoints, wLin, faci);
             }
     };
 }

@@ -22,7 +22,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
 template<class Polynomial>
 autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 (
-    scalarList& coeffsi,
+    fitCoefficients& coefficients,
     fitWeights& weights,
     const List<point>& C,
     const scalar wLin,
@@ -31,8 +31,6 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     const Basis& basis
 )
 {
-    fitCoefficients coefficients(coeffsi, C, linearCorrection_, wLin);
-
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
@@ -43,7 +41,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     nullAdjuster adjuster
     (
         matrix, 
-        coeffsi,
+        coefficients,
         weights
     );
 
@@ -64,7 +62,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 
     return autoPtr<fitResult>(new fitResult(
             C,
-            coeffsi,
+            coefficients,
             goodFit,
             B->m()
     ));

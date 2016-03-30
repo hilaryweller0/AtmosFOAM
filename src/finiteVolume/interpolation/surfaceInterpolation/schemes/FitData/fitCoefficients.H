@@ -16,6 +16,9 @@ namespace Foam
             const scalar wLin
         );
 
+        label size();
+        scalar& operator[](int i);
+        scalar operator[](int i) const;
         void applyCorrection(const bool goodFit);
 
     private:

@@ -2,6 +2,7 @@
 #define fitResult_H
 
 #include "fvCFD.H"
+#include "fitCoefficients.H"
 
 namespace Foam
 {
@@ -10,13 +11,13 @@ namespace Foam
     public:
         fitResult(
                 const List<point>& stencilPoints,
-                const scalarList& coeffs,
+                const fitCoefficients& coefficients,
                 const bool good,
                 const label polynomialTerms
         );
 
         const List<point>& stencilPoints;
-        const scalarList& coeffs;
+        const fitCoefficients& coefficients;
         const bool good;
         const label polynomialTerms;
     };

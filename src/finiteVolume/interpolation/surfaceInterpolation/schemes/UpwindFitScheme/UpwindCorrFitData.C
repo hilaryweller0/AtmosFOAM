@@ -147,6 +147,16 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     const scalar wLin
 )
 {
+    fitCoefficients coefficients
+    (
+        coeffs[faceI],
+        stencilPoints[faceI],
+        FitData<
+            UpwindCorrFitData<Polynomial>,
+            extendedUpwindCellToFaceStencilNew,
+            Polynomial
+        >::linearCorrection(),
+        wLin);
     scalarList wts(stencilPoints[faceI].size(), scalar(1));
 
     autoPtr<fitResult> fit = FitData
@@ -156,11 +166,11 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
         Polynomial
     >::calcFit
     (
-        coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
+        coefficients, wts, stencilPoints[faceI], wLin, faceI
     );
 
-    scalar upwind = fit->coeffs[0] + 1.0;
-    scalar downwind = fit->coeffs[1];
+    scalar upwind = fit->coefficients[0] + 1.0;
+    scalar downwind = fit->coefficients[1];
     bool stable = mag(downwind) < upwind && upwind <= 1 + downwind;
 
     if (!stable)

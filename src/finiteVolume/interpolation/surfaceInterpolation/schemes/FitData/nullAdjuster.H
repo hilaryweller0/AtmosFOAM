@@ -2,6 +2,7 @@
 #define nullAdjuster_H
 
 #include "adjuster.H"
+#include "fitCoefficients.H"
 #include "weightedMatrix.H"
 
 namespace Foam
@@ -12,7 +13,7 @@ namespace Foam
         nullAdjuster
         (
             const weightedMatrix& matrix, 
-            scalarList& coefficients,
+            fitCoefficients& coefficients,
             const fitWeights& weights
         );
 
@@ -20,7 +21,7 @@ namespace Foam
 
     private:
         const weightedMatrix& matrix;
-        scalarList& coefficients;
+        fitCoefficients& coefficients;
         const fitWeights& weights;
     };
 }

@@ -44,6 +44,7 @@ SourceFiles
 #include "fvMesh.H"
 #include "fitResult.H"
 #include "fitWeights.H"
+#include "fitCoefficients.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -142,8 +143,18 @@ public:
             return linearCorrection_;
         }
 
-        //- Calculate the fit for the specified face and set the coefficients
         autoPtr<fitResult> calcFit
+        (
+            fitCoefficients& coefficients, // coefficients to be set
+            scalarList& wts,
+            const List<point>&,  // Stencil points
+            const scalar wLin,   // Weight for linear approximation (weights
+                                 // nearest neighbours)
+            const label faci     // Current face index
+        );
+
+        //- Calculate the fit for the specified face and set the coefficients
+        void calcFit
         (
             scalarList& coeffsi, // coefficients to be set
             scalarList& wts,
