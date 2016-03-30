@@ -159,9 +159,8 @@ autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit
         coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
     );
 
-    scalarList& coeffsi = coeffs[faceI];
-    scalar upwind = coeffsi[0] + 1.0;
-    scalar downwind = coeffsi[1];
+    scalar upwind = fit->coeffs[0] + 1.0;
+    scalar downwind = fit->coeffs[1];
     bool stable = mag(downwind) < upwind && upwind <= 1 + downwind;
 
     if (!stable)

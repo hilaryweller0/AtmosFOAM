@@ -55,13 +55,6 @@ namespace Foam
             const Basis& basis
         );
 
-        void applyCorrection
-        (
-            scalarList& coeffsi,
-            const bool goodFit,
-            const scalar wLin
-        );
-
         const bool linearCorrection_;
         const scalar linearLimitFactor_;
         const scalar centralWeight_;

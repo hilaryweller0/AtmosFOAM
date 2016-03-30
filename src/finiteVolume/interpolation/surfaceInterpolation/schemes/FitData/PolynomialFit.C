@@ -2,6 +2,7 @@
 #include "weightedMatrix.H"
 #include "nullAdjuster.H"
 #include "iterativeAdjuster.H"
+#include "fitCoefficients.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -30,15 +31,14 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     const Basis& basis
 )
 {
+    fitCoefficients coefficients(coeffsi, C, linearCorrection_, wLin);
+
     const List<point> localStencil = toLocalCoordinates(C, origin, basis);
     Polynomial polynomial(localStencil, dim_);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
     weightedMatrix matrix(B());
 
     matrix.apply(weights);
-
-    label stencilSize = C.size();
-    coeffsi.setSize(stencilSize);
 
     nullAdjuster adjuster
     (
@@ -60,7 +60,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     );*/
 
     bool goodFit = adjuster.adjustWeights();
-    applyCorrection(coeffsi, goodFit, wLin);
+    coefficients.applyCorrection(goodFit);
 
     return autoPtr<Fit>(new Fit(
             C,
@@ -118,38 +118,4 @@ scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
 )
 {
     return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
-}
-
-template<class Polynomial>
-void Foam::PolynomialFit<Polynomial>::applyCorrection
-(
-    scalarList& coeffsi,
-    const bool goodFit,
-    const scalar wLin
-)
-{
-    if (goodFit)
-    {
-        if (linearCorrection_)
-        {
-            // Remove the uncorrected linear coefficients
-            coeffsi[0] -= wLin;
-            coeffsi[1] -= 1 - wLin;
-        }
-        else
-        {
-            // Remove the uncorrected upwind coefficients
-            coeffsi[0] -= 1.0;
-        }
-    }
-    else
-    {
-        coeffsi = 0;
-        
-        if (linearCorrection_)
-        {
-            coeffsi[0] = 1-wLin;
-            coeffsi[1] = -(1-wLin);
-        }
-    }
 }

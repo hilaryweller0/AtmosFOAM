@@ -78,8 +78,6 @@ TEST_CASE("a + by with two points in vertical line")
 TEST_CASE("BTF stable")
 {
     Test::PolynomialFit fit(Test::Stencils::btfStable());
-    
-    Info << "*** " << fit.coefficients();
 
     checkStable(fit.coefficients());
 }
