@@ -20,6 +20,7 @@ namespace Foam
         scalar& operator[](int i);
         scalar operator[](int i) const;
         void applyCorrection(const bool goodFit);
+        bool stable() const;
 
     private:
         scalarList& coefficients;

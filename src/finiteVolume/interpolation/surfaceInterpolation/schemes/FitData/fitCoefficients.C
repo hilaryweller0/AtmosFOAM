@@ -57,3 +57,13 @@ void Foam::fitCoefficients::applyCorrection(const bool goodFit)
         }
     }
 }
+
+bool Foam::fitCoefficients::stable() const
+{
+    // TODO: this assumes that applyCorrection() has been called, and that it was an upwind correction,
+    // not a linear correction
+    scalar upwind = coefficients[0] + 1.0;
+    scalar downwind = coefficients[1];
+
+    return mag(downwind) < upwind && upwind <= 1 + downwind;
+}
