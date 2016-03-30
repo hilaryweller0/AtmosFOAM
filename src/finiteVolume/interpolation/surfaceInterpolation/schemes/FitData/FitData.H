@@ -42,7 +42,7 @@ SourceFiles
 #include "autoPtr.H"
 #include "MeshObject.H"
 #include "fvMesh.H"
-#include "Fit.H"
+#include "fitResult.H"
 #include "fitWeights.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -143,7 +143,7 @@ public:
         }
 
         //- Calculate the fit for the specified face and set the coefficients
-        autoPtr<Fit> calcFit
+        autoPtr<fitResult> calcFit
         (
             scalarList& coeffsi, // coefficients to be set
             scalarList& wts,

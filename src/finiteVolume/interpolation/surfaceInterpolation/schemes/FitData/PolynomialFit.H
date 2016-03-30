@@ -4,7 +4,7 @@
 #include "fvCFD.H"
 #include "autoPtr.H"
 #include "Basis.H"
-#include "Fit.H"
+#include "fitResult.H"
 #include "weightedMatrix.H"
 #include "fitWeights.H"
 
@@ -22,7 +22,7 @@ namespace Foam
             const direction dimensions
         );
         
-        autoPtr<Fit> fit
+        autoPtr<fitResult> fit
         (
             scalarList& coeffsi,
             fitWeights& weights,

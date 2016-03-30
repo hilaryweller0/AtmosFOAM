@@ -1,14 +1,14 @@
-#ifndef Fit_H
-#define Fit_H
+#ifndef fitResult_H
+#define fitResult_H
 
 #include "fvCFD.H"
 
 namespace Foam
 {
-    class Fit
+    class fitResult
     {
     public:
-        Fit(
+        fitResult(
                 const List<point>& stencilPoints,
                 const scalarList& coeffs,
                 const bool good,

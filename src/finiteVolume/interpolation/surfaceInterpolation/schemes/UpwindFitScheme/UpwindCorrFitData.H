@@ -40,7 +40,7 @@ SourceFiles
 
 #include "FitData.H"
 #include "StencilWeights.H"
-#include "Fit.H"
+#include "fitResult.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -125,7 +125,7 @@ private:
             StencilWeights& stencilWeights
     );
 
-    autoPtr<Fit> fit(
+    autoPtr<fitResult> fit(
         const label faceI,
         List<scalarList>& coeffs,
         const List<List<point> >& stencilPoints,

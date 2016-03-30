@@ -55,7 +55,7 @@ Foam::StencilWeights::StencilWeights(const fvMesh& mesh, const word prefix)
 
 void Foam::StencilWeights::fitted(
         const label faceI,
-        const autoPtr<Fit>& fit
+        const autoPtr<fitResult>& fit
 )
 {
     if (faceI == debugFaceI) populateStencilWeights(fit());
@@ -68,7 +68,7 @@ void Foam::StencilWeights::write()
     polynomialTerms->write();
 }
 
-void Foam::StencilWeights::populateStencilWeights(const Fit& fit)
+void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
 {
     forAll(fit.stencilPoints, stencilI)
     {

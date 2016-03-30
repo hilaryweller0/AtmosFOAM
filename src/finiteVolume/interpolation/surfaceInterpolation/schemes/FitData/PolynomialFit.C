@@ -20,7 +20,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
 {}
 
 template<class Polynomial>
-autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
+autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 (
     scalarList& coeffsi,
     fitWeights& weights,
@@ -62,7 +62,7 @@ autoPtr<Fit> Foam::PolynomialFit<Polynomial>::fit
     bool goodFit = adjuster.adjustWeights();
     coefficients.applyCorrection(goodFit);
 
-    return autoPtr<Fit>(new Fit(
+    return autoPtr<fitResult>(new fitResult(
             C,
             coeffsi,
             goodFit,

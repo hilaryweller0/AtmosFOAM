@@ -3,7 +3,7 @@
 
 #include "fvCFD.H"
 #include "autoPtr.H"
-#include "Fit.H"
+#include "fitResult.H"
 
 namespace Foam
 {
@@ -14,13 +14,13 @@ namespace Foam
 
         void fitted(
             const label faceI, 
-            const autoPtr<Fit>& fit
+            const autoPtr<fitResult>& fit
         );
 
         void write();
 
     private:
-        void populateStencilWeights(const Fit& fit);
+        void populateStencilWeights(const fitResult& fit);
 
         const fvMesh& mesh;
         label debugFaceI;

@@ -1,6 +1,6 @@
-#include "Fit.H"
+#include "fitResult.H"
 
-Foam::Fit::Fit(
+Foam::fitResult::fitResult(
         const List<point>& stencilPoints,
         const scalarList& coeffs,
         const bool good,
