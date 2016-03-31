@@ -1,7 +1,7 @@
 #include "PolynomialFit.H"
 #include "weightedMatrix.H"
-#include "nullAdjuster.H"
 #include "fitCoefficients.H"
+#include "stabiliser.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -22,18 +22,12 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 {
     Polynomial polynomial(stencil, dimensions);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
-    weightedMatrix matrix(B());
 
-    matrix.apply(weights);
+    weightedMatrix matrix(B(), weights);
 
-    nullAdjuster adjuster
-    (
-        matrix, 
-        coefficients,
-        weights
-    );
+    stabiliser stabiliser;
+    bool goodFit = stabiliser.stabilise(matrix, coefficients);
 
-    bool goodFit = adjuster.adjustWeights();
     coefficients.applyCorrection(goodFit);
 
     return autoPtr<fitResult>(new fitResult(
