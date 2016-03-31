@@ -10,14 +10,18 @@ bool Foam::stabiliser::stabilise
 
     matrix.populate(c);
 
-    if (!c.stable())
+    label columns = matrix.columns() - 1;
+
+    while (!c.stable() && columns > 0)
     {
-        // remove degree-3 columns from matrix
-        autoPtr<weightedMatrix> m = matrix.truncateToAtMost(6); // columns
+        autoPtr<weightedMatrix> m = matrix.truncateToAtMost(columns);
         m->populate(c);
+        columns--;
     }
+
+    if (!c.stable()) Info << c << endl;
 
     coefficients.copyFrom(c);
 
-    return true;
+    return c.stable();
 }

@@ -20,6 +20,8 @@ namespace Foam
 
         autoPtr<weightedMatrix> truncateToAtMost(const label columns) const;
 
+        label columns() const;
+
     private:
         void applyStencilPointWeights(const fitWeights& weights);
 

@@ -54,6 +54,11 @@ autoPtr<weightedMatrix> Foam::weightedMatrix::truncateToAtMost(const label colum
     );
 }
 
+label Foam::weightedMatrix::columns() const
+{
+    return B.m();
+}
+
 void Foam::weightedMatrix::applyStencilPointWeights(const fitWeights& weights)
 {
     for (label i = 0; i < B.n(); i++)
