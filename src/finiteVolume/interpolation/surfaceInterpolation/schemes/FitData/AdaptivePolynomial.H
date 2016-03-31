@@ -1,7 +1,6 @@
 #ifndef AdaptivePolynomial_H
 #define AdaptivePolynomial_H
 
-#include "AbstractPolynomial.H"
 #include "localStencil.H"
 
 namespace Foam
@@ -13,7 +12,7 @@ namespace Foam
      * will be included and the higher order terms dropped.
      */
     template<class Polynomial>
-    class AdaptivePolynomial : public AbstractPolynomial<Polynomial>
+    class AdaptivePolynomial
     {
     public:
         AdaptivePolynomial(
