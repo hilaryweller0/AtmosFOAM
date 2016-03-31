@@ -10,13 +10,11 @@ namespace Foam
     {
     public:
         fitResult(
-                const List<point>& stencilPoints,
                 const fitCoefficients& coefficients,
                 const bool good,
                 const label polynomialTerms
         );
 
-        const List<point>& stencilPoints;
         const fitCoefficients& coefficients;
         const bool good;
         const label polynomialTerms;

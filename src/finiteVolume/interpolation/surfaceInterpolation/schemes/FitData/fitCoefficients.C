@@ -3,7 +3,7 @@
 Foam::fitCoefficients::fitCoefficients
 (
     scalarList& coefficients,
-    const List<point>& stencil,
+    const label stencilSize,
     const bool linearCorrection,
     const scalar wLin
 )
@@ -12,7 +12,7 @@ Foam::fitCoefficients::fitCoefficients
     linearCorrection(linearCorrection),
     wLin(wLin)
 {
-    coefficients.setSize(stencil.size());
+    coefficients.setSize(stencilSize);
 }
 
 scalar& Foam::fitCoefficients::operator[](int i)

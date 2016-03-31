@@ -1,7 +1,6 @@
 #include "PolynomialFit.H"
 #include "weightedMatrix.H"
 #include "nullAdjuster.H"
-#include "iterativeAdjuster.H"
 #include "fitCoefficients.H"
 
 template<class Polynomial>
@@ -10,7 +9,7 @@ Foam::PolynomialFit<Polynomial>::PolynomialFit
     const direction dimensions
 )
 :
-    dim_(dimensions)
+    dimensions(dimensions)
 {}
 
 template<class Polynomial>
@@ -18,13 +17,10 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 (
     fitCoefficients& coefficients,
     fitWeights& weights,
-    const List<point>& C,
-    const point& origin,
-    const Basis& basis
+    const localStencil& stencil
 )
 {
-    const List<point> localStencil = toLocalCoordinates(C, origin, basis);
-    Polynomial polynomial(localStencil, dim_);
+    Polynomial polynomial(stencil, dimensions);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
     weightedMatrix matrix(B());
 
@@ -41,59 +37,8 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     coefficients.applyCorrection(goodFit);
 
     return autoPtr<fitResult>(new fitResult(
-            C,
             coefficients,
             goodFit,
             B->m()
     ));
-}
-
-template<class Polynomial>
-List<point> Foam::PolynomialFit<Polynomial>::toLocalCoordinates
-(
-    const List<point>& stencilPoints,
-    const point& origin,
-    const Basis& basis)
-{
-    List<point> localPoints(stencilPoints.size(), point(0, 0, 0));
-
-    scalar scale = scaleLocalCoordinates(origin, stencilPoints[0], basis);
-    forAll(stencilPoints, i)
-    {
-        localPoints[i] = toLocalCoordinates(origin, stencilPoints[i], basis) / scale;
-    }
-
-    return localPoints;
-}
-
-template<class Polynomial>
-point Foam::PolynomialFit<Polynomial>::toLocalCoordinates
-(
-    const point& origin,
-    const point& p,
-    const Basis& basis
-)
-{
-    point d;
-
-    d.x() = (p - origin)&basis.i;
-    d.y() = (p - origin)&basis.j;
-    #ifndef SPHERICAL_GEOMETRY
-    d.z() = (p - origin)&basis.k;
-    #else
-    d.z() = mag(p) - mag(origin);
-    #endif
-
-    return d;
-}
-
-template<class Polynomial>
-scalar Foam::PolynomialFit<Polynomial>::scaleLocalCoordinates
-(
-    const point& origin,
-    const point& upwindPoint,
-    const Basis& basis
-)
-{
-    return cmptMax(cmptMag((toLocalCoordinates(origin, upwindPoint, basis))));
 }

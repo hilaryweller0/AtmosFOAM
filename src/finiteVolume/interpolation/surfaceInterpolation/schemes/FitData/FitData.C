@@ -30,6 +30,7 @@ License
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "fitCoefficients.H"
+#include "localStencil.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
@@ -133,8 +134,9 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(dim_);
 
     const Basis basis(idir, jdir, kdir);
+    const localStencil stencil(C, p0, basis);
 
-    return polynomialFit.fit(coefficients, weights, C, p0, basis);
+    return polynomialFit.fit(coefficients, weights, stencil);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
@@ -147,7 +149,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     const label facei
 )
 {
-    fitCoefficients coefficients(coeffsi, C, linearCorrection_, wLin);
+    fitCoefficients coefficients(coeffsi, C.size(), linearCorrection_, wLin);
     calcFit(coefficients, wts, C, wLin, facei);
 }
 

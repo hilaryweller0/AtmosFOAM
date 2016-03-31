@@ -2,16 +2,17 @@
 #define TestStencils_H
 
 #include "fvCFD.H"
+#include "localStencil.H"
 
 // TODO: I wonder whether each test should have an object with a stencil, expected matrix, expected coefficients etc
 namespace Test {
     class Stencils
     {
     public:
-        static Foam::List<point> twelvePoints();
-        static Foam::List<point> twoPointsInHorizontalLine();
-        static Foam::List<point> twoPointsInVerticalLine();
-        static Foam::List<point> btfStable();
+        static Foam::localStencil twelvePoints();
+        static Foam::localStencil twoPointsInHorizontalLine();
+        static Foam::localStencil twoPointsInVerticalLine();
+        static Foam::localStencil btfStable();
     };
 
     class Coefficients

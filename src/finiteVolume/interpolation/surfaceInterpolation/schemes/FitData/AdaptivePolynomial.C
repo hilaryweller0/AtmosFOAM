@@ -4,7 +4,7 @@
 
 template<class Polynomial>
 Foam::AdaptivePolynomial<Polynomial>::AdaptivePolynomial(
-        const List<point>& stencil,
+        const localStencil& stencil,
         const direction dimensions,
         const scalar tolerance)
 :

@@ -7,6 +7,7 @@
 #include "fitResult.H"
 #include "weightedMatrix.H"
 #include "fitWeights.H"
+#include "localStencil.H"
 
 namespace Foam
 {
@@ -23,34 +24,11 @@ namespace Foam
         (
             fitCoefficients& coefficients,
             fitWeights& weights,
-            const List<point>& stencilPoints,
-            const point& origin,
-            const Basis& basis
+            const localStencil& stencil
         );
     
     private:
-        List<point> toLocalCoordinates
-        (
-            const List<point>& stencilPoints,
-            const point& origin,
-            const Basis& basis
-        );
-
-        point toLocalCoordinates
-        (
-            const point& origin,
-            const point& p,
-            const Basis& basis
-        );
-
-        scalar scaleLocalCoordinates
-        (
-            const point& origin,
-            const point& upwindPoint,
-            const Basis& basis
-        );
-
-        const direction dim_;
+        const direction dimensions;
     };
 }
 

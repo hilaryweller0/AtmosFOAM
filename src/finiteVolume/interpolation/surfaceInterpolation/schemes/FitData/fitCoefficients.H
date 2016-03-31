@@ -2,6 +2,7 @@
 #define fitCoefficients_H
 
 #include "fvCFD.H"
+#include "localStencil.H"
 
 namespace Foam
 {
@@ -11,7 +12,7 @@ namespace Foam
         fitCoefficients
         (
             scalarList& coefficients,
-            const List<point>& stencil,
+            const label stencilSize,
             const bool linearCorrection,
             const scalar wLin
         );

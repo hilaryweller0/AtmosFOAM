@@ -2,6 +2,7 @@
 #define TestPolynomialFit_H
 
 #include "fvCFD.H"
+#include "localStencil.H"
 
 namespace Test {
     class PolynomialFit {
@@ -14,7 +15,7 @@ namespace Test {
 
             PolynomialFit
             (
-                const Foam::List<point>& stencilPoints,
+                const Foam::localStencil stencil,
                 bool linearCorrection=false
             );
 

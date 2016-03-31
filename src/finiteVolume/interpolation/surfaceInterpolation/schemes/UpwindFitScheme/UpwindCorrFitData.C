@@ -147,17 +147,19 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     const scalar wLin
 )
 {
+    label stencilSize = stencilPoints[faceI].size();
+    
     fitCoefficients coefficients
     (
         coeffs[faceI],
-        stencilPoints[faceI],
+        stencilSize,
         FitData<
             UpwindCorrFitData<Polynomial>,
             extendedUpwindCellToFaceStencilNew,
             Polynomial
         >::linearCorrection(),
         wLin);
-    scalarList wts(stencilPoints[faceI].size(), scalar(1));
+    scalarList wts(stencilSize, scalar(1));
 
     autoPtr<fitResult> fit = FitData
     <

@@ -2,6 +2,7 @@
 #define AdaptivePolynomial_H
 
 #include "AbstractPolynomial.H"
+#include "localStencil.H"
 
 namespace Foam
 {
@@ -16,7 +17,7 @@ namespace Foam
     {
     public:
         AdaptivePolynomial(
-                const List<point>& stencil,
+                const localStencil& stencil,
                 const direction dimensions,
                 const scalar tolerance=1e-4);
 
@@ -26,7 +27,7 @@ namespace Foam
         bool containsEntry(const List<label> fittableTerms, label term) const;
         bool fullRank(const scalarRectangularMatrix& B) const;
 
-        const List<point>& stencil;
+        const localStencil& stencil;
         const direction dimensions;
         const label maxTerms;
         const scalar tolerance;

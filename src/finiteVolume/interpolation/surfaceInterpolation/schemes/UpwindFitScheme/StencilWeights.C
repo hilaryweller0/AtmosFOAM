@@ -70,7 +70,7 @@ void Foam::StencilWeights::write()
 
 void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
 {
-    forAll(fit.stencilPoints, stencilI)
+/*    forAll(fit.stencilPoints, stencilI)
     {
         forAll(mesh.C(), cellI)
         {
@@ -101,4 +101,5 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
             }
         }
     }
+*/
 }
