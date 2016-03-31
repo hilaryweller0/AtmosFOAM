@@ -2,17 +2,39 @@
 
 Foam::fitCoefficients::fitCoefficients
 (
-    scalarList& coefficients,
+    const fitCoefficients& c
+)
+:
+    coefficients(0),
+    linearCorrection(c.linearCorrection),
+    wLin(c.wLin)
+{
+    coefficients.append(c.coefficients);
+}
+
+Foam::fitCoefficients::fitCoefficients
+(
     const label stencilSize,
     const bool linearCorrection,
     const scalar wLin
 )
 :
-    coefficients(coefficients),
+    coefficients(stencilSize, scalar(0)),
     linearCorrection(linearCorrection),
     wLin(wLin)
+{}
+
+void Foam::fitCoefficients::copyFrom(const fitCoefficients& source)
 {
-    coefficients.setSize(stencilSize);
+    forAll(source.coefficients, i)
+    {
+        coefficients[i] = source.coefficients[i];
+    }
+}
+
+void Foam::fitCoefficients::copyInto(scalarList& target)
+{
+    target.append(coefficients);
 }
 
 scalar& Foam::fitCoefficients::operator[](int i)
@@ -25,7 +47,7 @@ scalar Foam::fitCoefficients::operator[](int i) const
     return coefficients[i];
 }
 
-label Foam::fitCoefficients::size()
+label Foam::fitCoefficients::size() const
 {
     return coefficients.size();
 }
@@ -60,9 +82,7 @@ void Foam::fitCoefficients::applyCorrection(const bool goodFit)
 
 bool Foam::fitCoefficients::stable() const
 {
-    // TODO: this assumes that applyCorrection() has been called, and that it was an upwind correction,
-    // not a linear correction
-    scalar upwind = coefficients[0] + 1.0;
+    scalar upwind = coefficients[0];
     scalar downwind = coefficients[1];
 
     return mag(downwind) < upwind && upwind <= 1 + downwind;

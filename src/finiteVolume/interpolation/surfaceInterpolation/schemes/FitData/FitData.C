@@ -149,8 +149,9 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     const label facei
 )
 {
-    fitCoefficients coefficients(coeffsi, C.size(), linearCorrection_, wLin);
+    fitCoefficients coefficients(C.size(), linearCorrection_, wLin);
     calcFit(coefficients, wts, C, wLin, facei);
+    coefficients.copyInto(coeffsi);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

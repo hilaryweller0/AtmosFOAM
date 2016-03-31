@@ -151,7 +151,6 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     
     fitCoefficients coefficients
     (
-        coeffs[faceI],
         stencilSize,
         FitData<
             UpwindCorrFitData<Polynomial>,
@@ -170,10 +169,12 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     (
         coefficients, wts, stencilPoints[faceI], wLin, faceI
     );
+    coefficients.copyInto(coeffs[faceI]);
 
     scalar upwind = fit->coefficients[0];
     scalar downwind = fit->coefficients[1];
 
+    /*
     if (fit->coefficients.stable())
     {
         Info << "1 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
@@ -182,6 +183,7 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     {
         Info << "0 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
     }
+    */
 
     if (!fit->good)
     {

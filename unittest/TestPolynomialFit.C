@@ -38,9 +38,10 @@ Test::PolynomialFit::PolynomialFit(
             linearLimitFactor,
             centralWeight);
 
-    fitCoefficients coefficients(coefficients_, stencilPoints.size(), linearCorrection, unused_wLin);
+    fitCoefficients coefficients(stencilPoints.size(), linearCorrection, unused_wLin);
     fitData.calcFit(coefficients, wts, stencilPoints, unused_wLin, faceI);
     coefficients[0] += 1.0;
+    coefficients.copyInto(coefficients_);
 }
 
 Test::PolynomialFit::PolynomialFit(
@@ -64,9 +65,9 @@ Test::PolynomialFit::PolynomialFit(
     Foam::PolynomialFit<AdaptivePolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
                 dimensions);
 
-    fitCoefficients coefficients(coefficients_, stencil.size(), linearCorrection, wLin);
-
+    fitCoefficients coefficients(stencil.size(), linearCorrection, wLin);
     polynomialFit.fit(coefficients, weights, stencil);
+    coefficients.copyInto(coefficients_);
 
     // TODO: shouldn't really have logic in the test code
     if (linearCorrection)

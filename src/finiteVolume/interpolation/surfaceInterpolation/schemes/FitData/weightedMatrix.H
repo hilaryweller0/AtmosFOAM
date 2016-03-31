@@ -11,16 +11,19 @@ namespace Foam
     {
     public:
         weightedMatrix(
-            scalarRectangularMatrix& B,
-            const fitWeights& weights
+            const scalarRectangularMatrix& matrix,
+            const fitWeights& weights,
+            bool applyWeights = true
         );
 
         void populate(fitCoefficients& coefficients) const;
 
+        autoPtr<weightedMatrix> truncateToAtMost(const label columns) const;
+
     private:
         void applyStencilPointWeights(const fitWeights& weights);
 
-        scalarRectangularMatrix& B;
+        scalarRectangularMatrix B;
         const fitWeights& weights;
     };
 }

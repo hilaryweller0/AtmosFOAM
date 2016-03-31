@@ -6,7 +6,18 @@ bool Foam::stabiliser::stabilise
     fitCoefficients& coefficients
 ) const
 {
-    matrix.populate(coefficients);
+    fitCoefficients c(coefficients);
+
+    matrix.populate(c);
+
+    if (!c.stable())
+    {
+        // remove degree-3 columns from matrix
+        autoPtr<weightedMatrix> m = matrix.truncateToAtMost(6); // columns
+        m->populate(c);
+    }
+
+    coefficients.copyFrom(c);
 
     return true;
 }

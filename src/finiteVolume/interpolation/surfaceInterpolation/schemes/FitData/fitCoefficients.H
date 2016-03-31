@@ -9,22 +9,25 @@ namespace Foam
     class fitCoefficients
     {
     public:
+        fitCoefficients(const fitCoefficients& c);
+
         fitCoefficients
         (
-            scalarList& coefficients,
             const label stencilSize,
             const bool linearCorrection,
             const scalar wLin
         );
 
-        label size();
+        label size() const;
         scalar& operator[](int i);
         scalar operator[](int i) const;
+        void copyFrom(const fitCoefficients& source);
+        void copyInto(scalarList& target);
         void applyCorrection(const bool goodFit);
         bool stable() const;
 
     private:
-        scalarList& coefficients;
+        scalarList coefficients;
         const bool linearCorrection;
         const scalar wLin;
     };
