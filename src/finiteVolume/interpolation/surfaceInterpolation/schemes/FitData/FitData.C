@@ -130,16 +130,11 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
 
-    PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(
-        linearCorrection_,
-        linearLimitFactor_,
-        centralWeight_, 
-        dim_
-    );
+    PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(dim_);
 
     const Basis basis(idir, jdir, kdir);
 
-    return polynomialFit.fit(coefficients, weights, C, wLin, p0, pureUpwind, basis);
+    return polynomialFit.fit(coefficients, weights, C, p0, basis);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

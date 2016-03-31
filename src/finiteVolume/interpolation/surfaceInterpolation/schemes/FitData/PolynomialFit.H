@@ -16,9 +16,6 @@ namespace Foam
     public:
         PolynomialFit
         (
-            const bool linearCorrection,
-            const scalar linearLimitFactor,
-            const scalar centralWeight,
             const direction dimensions
         );
         
@@ -27,9 +24,7 @@ namespace Foam
             fitCoefficients& coefficients,
             fitWeights& weights,
             const List<point>& stencilPoints,
-            const scalar wLin, // only used when linearCorrection=true
             const point& origin,
-            const bool pureUpwind,
             const Basis& basis
         );
     
@@ -55,9 +50,6 @@ namespace Foam
             const Basis& basis
         );
 
-        const bool linearCorrection_;
-        const scalar linearLimitFactor_;
-        const scalar centralWeight_;
         const direction dim_;
     };
 }

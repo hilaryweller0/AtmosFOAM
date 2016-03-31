@@ -57,15 +57,11 @@ Test::PolynomialFit::PolynomialFit(
 
     const scalar wLin = 0.6;
 
-    scalar linearLimitFactor = 3.0;
     const point p0(0, 0, 0);
     const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
     Foam::PolynomialFit<AdaptivePolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
-                linearCorrection,
-                linearLimitFactor,
-                centralWeight,
                 dimensions);
 
     fitCoefficients coefficients(coefficients_, stencilPoints, linearCorrection, wLin);
@@ -73,9 +69,7 @@ Test::PolynomialFit::PolynomialFit(
             coefficients,
             weights,
             stencilPoints,
-            wLin,
             p0,
-            pureUpwind,
             basis);
 
     // TODO: shouldn't really have logic in the test code

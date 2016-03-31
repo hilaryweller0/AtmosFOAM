@@ -7,15 +7,9 @@
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
 (
-    const bool linearCorrection,
-    const scalar linearLimitFactor,
-    const scalar centralWeight, 
     const direction dimensions
 )
 :
-    linearCorrection_(linearCorrection),
-    linearLimitFactor_(linearLimitFactor),
-    centralWeight_(centralWeight),
     dim_(dimensions)
 {}
 
@@ -25,9 +19,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     fitCoefficients& coefficients,
     fitWeights& weights,
     const List<point>& C,
-    const scalar wLin,
     const point& origin,
-    const bool pureUpwind,
     const Basis& basis
 )
 {
@@ -44,18 +36,6 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
         coefficients,
         weights
     );
-
-/*    iterativeAdjuster adjuster
-    (
-        matrix, 
-        coeffsi,
-        weights,
-        wLin,
-        pureUpwind,
-        linearCorrection_,
-        linearLimitFactor_,
-        centralWeight_
-    );*/
 
     bool goodFit = adjuster.adjustWeights();
     coefficients.applyCorrection(goodFit);
