@@ -14,13 +14,18 @@ namespace Foam
 
         void fitted(
             const label faceI, 
-            const autoPtr<fitResult>& fit
+            const autoPtr<fitResult>& fit,
+            const List<point>& stencil
         );
 
         void write();
 
     private:
-        void populateStencilWeights(const fitResult& fit);
+        void populateStencilWeights
+        (
+            const fitResult& fit,
+            const List<point>& stencil
+        );
 
         const fvMesh& mesh;
         label debugFaceI;

@@ -55,10 +55,11 @@ Foam::StencilWeights::StencilWeights(const fvMesh& mesh, const word prefix)
 
 void Foam::StencilWeights::fitted(
         const label faceI,
-        const autoPtr<fitResult>& fit
+        const autoPtr<fitResult>& fit,
+        const List<point>& stencil
 )
 {
-    if (faceI == debugFaceI) populateStencilWeights(fit());
+    if (faceI == debugFaceI) populateStencilWeights(fit(), stencil);
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
 }
 
@@ -68,13 +69,13 @@ void Foam::StencilWeights::write()
     polynomialTerms->write();
 }
 
-void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
+void Foam::StencilWeights::populateStencilWeights(const fitResult& fit, const List<point>& stencil)
 {
-/*    forAll(fit.stencilPoints, stencilI)
+    forAll(stencil, stencilI)
     {
         forAll(mesh.C(), cellI)
         {
-            if (mesh.C()[cellI] == fit.stencilPoints[stencilI])
+            if (mesh.C()[cellI] == stencil[stencilI])
             {
                 stencilWeights()[cellI] = fit.coefficients[stencilI];
                 if (stencilI == 0)
@@ -90,7 +91,7 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
             fvPatchField<scalar>& weightsPatch = stencilWeights->boundaryField()[patchI];
             forAll(boundaryPatch.Cf(), boundaryFaceI)
             {
-                if (boundaryPatch.Cf()[boundaryFaceI] == fit.stencilPoints[stencilI])
+                if (boundaryPatch.Cf()[boundaryFaceI] == stencil[stencilI])
                 {
                     weightsPatch[boundaryFaceI] = fit.coefficients[stencilI];
                     if (stencilI == 0)
@@ -101,5 +102,4 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit)
             }
         }
     }
-*/
 }

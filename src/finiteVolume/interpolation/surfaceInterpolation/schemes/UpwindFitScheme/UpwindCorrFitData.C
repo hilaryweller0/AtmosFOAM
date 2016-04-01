@@ -116,7 +116,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
         autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], w[facei]);
-        stencilWeights.fitted(facei, f);
+        stencilWeights.fitted(facei, f, stencilPoints[facei]);
     }
 
     const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
@@ -131,7 +131,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
             forAll(pw, i)
             {
                 autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], pw[i]);
-                stencilWeights.fitted(facei, f);
+                stencilWeights.fitted(facei, f, stencilPoints[facei]);
                 facei++;
             }
         }
