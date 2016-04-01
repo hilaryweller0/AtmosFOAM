@@ -115,7 +115,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
-        autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints, w[facei]);
+        autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], w[facei]);
         stencilWeights.fitted(facei, f);
     }
 
@@ -130,7 +130,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
             forAll(pw, i)
             {
-                autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints, pw[i]);
+                autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], pw[i]);
                 stencilWeights.fitted(facei, f);
                 facei++;
             }
@@ -143,11 +143,11 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
 (
     const label faceI,
     List<scalarList>& coeffs,
-    const List<List<point> >& stencilPoints,
+    const List<point>& stencilPoints,
     const scalar wLin
 )
 {
-    label stencilSize = stencilPoints[faceI].size();
+    label stencilSize = stencilPoints.size();
     
     fitCoefficients coefficients
     (
@@ -167,7 +167,7 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
         Polynomial
     >::calcFit
     (
-        coefficients, wts, stencilPoints[faceI], wLin, faceI
+        coefficients, wts, stencilPoints, wLin, faceI
     );
     coefficients.copyInto(coeffs[faceI]);
 

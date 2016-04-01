@@ -19,8 +19,6 @@ bool Foam::stabiliser::stabilise
         columns--;
     }
 
-    if (!c.stable()) Info << c << endl;
-
     coefficients.copyFrom(c);
 
     return c.stable();

@@ -128,7 +128,7 @@ private:
     autoPtr<fitResult> fit(
         const label faceI,
         List<scalarList>& coeffs,
-        const List<List<point> >& stencilPoints,
+        const List<point>& stencilPoints,
         const scalar wLin
     );
 };
