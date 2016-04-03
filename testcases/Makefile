@@ -15,18 +15,19 @@ initialFiles := 0/T 0/phi system/fvSchemes system/fvSolution system/controlDict 
 
 # $1 -- case directory
 # $2 -- l2 error bound
+# $3 -- endTime
 define AdvectionTest
 
 .PHONY: $1.checkl2errorT
 
-$1.checkl2errorT: build/$1/5000/l2errorBoundT.txt
+$1.checkl2errorT: build/$1/$3/l2errorBoundT.txt
 	@grep -Fxq "1" $$< || (echo "\033[31ml2error exceeded $2\033[0m"; exit 1)
 
-$(eval $(call FieldDiff,build/$1,5000,T,$1/5000/T_analytic))
-$(eval $(call L2Error,build/$1,5000,T))
-$(eval $(call BoundedL2Error,build/$1,5000,T,$2))
+$(eval $(call FieldDiff,build/$1,$3,T,$1/$3/T_analytic))
+$(eval $(call L2Error,build/$1,$3,T))
+$(eval $(call BoundedL2Error,build/$1,$3,T,$2))
 
-build/$1/5000/T: \
+build/$1/$3/T: \
   $(addprefix build/$1/,$(initialFiles)) \
   $(advectionFoam) \
   $(libfiniteVolumeAtmos)
@@ -40,12 +41,14 @@ $(eval $(call MakeDir,build/$1/$(polyMesh)))
 
 endef
 
-$(eval $(call AdvectionTest,horizontalBTFCubicUpwindCPCFitAdvection,0.2))
-$(eval $(call AdvectionTest,horizontalNoOrographyCubicUpwindCPCFitAdvection,0.006))
+$(eval $(call AdvectionTest,horizontalBTFCubicUpwindCPCFitAdvection,0.2,5000))
+$(eval $(call AdvectionTest,horizontalNoOrographyCubicUpwindCPCFitAdvection,0.006,5000))
+$(eval $(call AdvectionTest,terrainFollowingNoOrographyCubicUpwindCPCFitAdvection,0.346,10000))
 
 test: \
   horizontalBTFCubicUpwindCPCFitAdvection.checkl2errorT \
-  horizontalNoOrographyCubicUpwindCPCFitAdvection.checkl2errorT
+  horizontalNoOrographyCubicUpwindCPCFitAdvection.checkl2errorT \
+  terrainFollowingNoOrographyCubicUpwindCPCFitAdvection.checkl2errorT
 
 clean:
 	$(RM) -r build
