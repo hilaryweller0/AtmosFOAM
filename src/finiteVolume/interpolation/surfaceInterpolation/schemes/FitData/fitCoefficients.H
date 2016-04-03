@@ -21,6 +21,7 @@ namespace Foam
         label size() const;
         scalar& operator[](int i);
         scalar operator[](int i) const;
+        friend Ostream& operator<< (Ostream& stream, const fitCoefficients& c);
         void copyFrom(const fitCoefficients& source);
         void copyInto(scalarList& target);
         void applyCorrection(const bool goodFit);

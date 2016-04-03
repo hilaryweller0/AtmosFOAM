@@ -67,6 +67,26 @@ Foam::localStencil Test::Stencils::btfStable()
     return localStencil(stencil);
 }
 
+Foam::localStencil Test::Stencils::slantedCellStable()
+{
+    Foam::List<point> stencil(14, point(0, 0, 0));
+    stencil[0] = point(1, 9.32232e-15, 9.09495e-16);
+    stencil[1] = point(-0.292076, 0.555556, 5.25905e-16);
+    stencil[2] = point(1, -3.33333, -4.26945e-16);
+    stencil[3] = point(1, 3.33333, 8.81693e-16);
+    stencil[4] = point(-0.438115, -3.33333, 4.82549e-16);
+    stencil[5] = point(-0.438115, 3.7744e-14, 4.83439e-30);
+    stencil[6] = point(5, -3.33333, -8.81693e-16);
+    stencil[7] = point(5, 1.8872e-14, -4.54747e-16);
+    stencil[8] = point(5, 3.33333, -9.37297e-16);
+    stencil[9] = point(-0.292076, -3.88889, -4.98103e-16);
+    stencil[10] = point(-0.755646, 3.55039, 0);
+    stencil[11] = point(3, -3.33333, 9.37297e-16);
+    stencil[12] = point(3, 9.32232e-15, 1.19404e-30);
+    stencil[13] = point(3, 3.33333, 4.26945e-16);
+    return localStencil(stencil);
+}
+
 const scalar Test::Matrices::twelvePoints[12][9] = {
     {1, -1,  0,  1,  0, 0,   -1,   0,   0},
     {1,  1,  0,  1,  0, 0,    1,   0,   0},

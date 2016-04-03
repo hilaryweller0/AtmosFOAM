@@ -10,12 +10,15 @@ bool Foam::stabiliser::stabilise
 
     matrix.populate(c);
 
+//    Info << "*** coeffs (" << matrix.columns() << " terms) " << c << endl;
+
     label columns = matrix.columns() - 1;
 
     while (!c.stable() && columns > 0)
     {
-        autoPtr<weightedMatrix> m = matrix.truncateToAtMost(columns);
+        autoPtr<weightedMatrix> m = matrix.truncateTo(columns);
         m->populate(c);
+//        Info << "*** coeffs (" << columns << " terms) " << c << endl;
         columns--;
     }
 

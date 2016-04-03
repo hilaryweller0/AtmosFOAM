@@ -62,11 +62,25 @@ TEST_CASE("a + by with two points in vertical line")
 /*
  * This test case is taken from a real BTF mesh where the von Neumann
  * analysis detected an instability.  When advectionFoam was run on this mesh,
- * this was the first stencil to become unstable.
+ * this was the first stencil to become unstable.  The stabiliser class
+ * is able to achieve stability by removing high-order polynomial terms
+ * for (face, orientation) that would otherwise be unstable.
  */
 TEST_CASE("BTF stable")
 {
     Test::PolynomialFit fit(Test::Stencils::btfStable());
+
+    checkStable(fit.coefficients());
+}
+
+/*
+ * This test case is taken from a real slantedCell mesh where the von Neumann
+ * analysis detected an instability.  When advectionFoam was run on this mesh,
+ * this was the first stencil to become unstable.
+ */
+TEST_CASE("slantedCell stable")
+{
+    Test::PolynomialFit fit(Test::Stencils::slantedCellStable());
 
     checkStable(fit.coefficients());
 }

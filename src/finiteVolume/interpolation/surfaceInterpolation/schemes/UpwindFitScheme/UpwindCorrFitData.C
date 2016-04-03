@@ -171,20 +171,6 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
     );
     coefficients.copyInto(coeffs[faceI]);
 
-    scalar upwind = fit->coefficients[0];
-    scalar downwind = fit->coefficients[1];
-
-    /*
-    if (fit->coefficients.stable())
-    {
-        Info << "1 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
-    }
-    else
-    {
-        Info << "0 " << faceI << " " << this->mesh().Cf()[faceI] << " " << upwind << " " << downwind << endl;
-    }
-    */
-
     if (!fit->good)
     {
         WarningIn

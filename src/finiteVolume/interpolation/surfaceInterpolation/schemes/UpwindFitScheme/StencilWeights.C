@@ -59,7 +59,24 @@ void Foam::StencilWeights::fitted(
         const List<point>& stencil
 )
 {
-    if (faceI == debugFaceI) populateStencilWeights(fit(), stencil);
+    if (faceI == debugFaceI)
+    {
+        populateStencilWeights(fit(), stencil);
+
+        Info << "# stencil in mesh coordinates for faceI " << faceI << endl;
+        forAll(stencil, i)
+        {
+            Info << stencil[i].x() << " " << stencil[i].y() << " " << stencil[i].z() << endl;
+        }
+        Info << endl;
+
+        Info << "# stencil in local coordinates for faceI " << faceI << endl;
+        forAll(fit->stencil, i)
+        {
+            Info << fit->stencil[i].x() << " " << fit->stencil[i].y() << " " << fit->stencil[i].z() << endl;
+        }
+        Info << endl;
+    }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
 }
 

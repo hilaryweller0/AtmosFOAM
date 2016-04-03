@@ -87,3 +87,13 @@ bool Foam::fitCoefficients::stable() const
 
     return mag(downwind) < upwind && upwind <= 1 + downwind;
 }
+
+Foam::Ostream& Foam::operator<<
+(
+    Ostream& stream,
+    const fitCoefficients& c
+)
+{
+    stream << c.coefficients;
+    return stream;
+}

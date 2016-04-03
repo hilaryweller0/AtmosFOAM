@@ -31,6 +31,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     coefficients.applyCorrection(goodFit);
 
     return autoPtr<fitResult>(new fitResult(
+            stencil,
             coefficients,
             goodFit,
             B->m()

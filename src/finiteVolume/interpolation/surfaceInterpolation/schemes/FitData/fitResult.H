@@ -3,6 +3,7 @@
 
 #include "fvCFD.H"
 #include "fitCoefficients.H"
+#include "localStencil.H"
 
 namespace Foam
 {
@@ -10,11 +11,13 @@ namespace Foam
     {
     public:
         fitResult(
+                const localStencil stencil,
                 const fitCoefficients& coefficients,
                 const bool good,
                 const label polynomialTerms
         );
 
+        const localStencil stencil;
         const fitCoefficients& coefficients;
         const bool good;
         const label polynomialTerms;

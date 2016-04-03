@@ -13,6 +13,7 @@ namespace Test {
         static Foam::localStencil twoPointsInHorizontalLine();
         static Foam::localStencil twoPointsInVerticalLine();
         static Foam::localStencil btfStable();
+        static Foam::localStencil slantedCellStable();
     };
 
     class Coefficients

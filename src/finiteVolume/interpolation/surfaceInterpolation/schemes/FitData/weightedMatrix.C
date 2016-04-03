@@ -36,7 +36,7 @@ void Foam::weightedMatrix::populate(fitCoefficients& coefficients) const
     }
 }
 
-autoPtr<weightedMatrix> Foam::weightedMatrix::truncateToAtMost(const label columns) const
+autoPtr<weightedMatrix> Foam::weightedMatrix::truncateTo(const label columns) const
 {
     scalarRectangularMatrix truncated(B.n(), min(columns, B.m()));
 

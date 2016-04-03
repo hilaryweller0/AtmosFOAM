@@ -18,7 +18,7 @@ namespace Foam
 
         void populate(fitCoefficients& coefficients) const;
 
-        autoPtr<weightedMatrix> truncateToAtMost(const label columns) const;
+        autoPtr<weightedMatrix> truncateTo(const label columns) const;
 
         label columns() const;
 
