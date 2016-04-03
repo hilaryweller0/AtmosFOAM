@@ -93,7 +93,7 @@ public:
             ),
             faceFlux_(upwind<Type>::faceFlux_),
             linearLimitFactor_(readScalar(is)),
-            centralWeight_(1000)
+            centralWeight_(5)
         {}
 
 
@@ -108,7 +108,7 @@ public:
             upwind<Type>(mesh, faceFlux),
             faceFlux_(faceFlux),
             linearLimitFactor_(readScalar(is)),
-            centralWeight_(1000)
+            centralWeight_(5)
         {}
 
 
