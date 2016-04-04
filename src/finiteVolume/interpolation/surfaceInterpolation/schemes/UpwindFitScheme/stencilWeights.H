@@ -1,5 +1,5 @@
-#ifndef StencilWeights_H
-#define StencilWeights_H
+#ifndef stencilWeights_H
+#define stencilWeights_H
 
 #include "fvCFD.H"
 #include "autoPtr.H"
@@ -7,10 +7,10 @@
 
 namespace Foam
 {
-    class StencilWeights
+    class stencilWeights
     {
     public:
-        StencilWeights(const fvMesh& mesh, const word prefix);
+        stencilWeights(const fvMesh& mesh, const word prefix);
 
         void fitted(
             const label faceI, 
@@ -35,7 +35,7 @@ namespace Foam
 
         const fvMesh& mesh;
         label debugFaceI;
-        autoPtr<volScalarField> stencilWeights;
+        autoPtr<volScalarField> weights;
         autoPtr<surfaceScalarField> polynomialTerms;
     };
 }

@@ -39,7 +39,7 @@ SourceFiles
 #define UpwindCorrFitData_H
 
 #include "FitData.H"
-#include "StencilWeights.H"
+#include "stencilWeights.H"
 #include "fitResult.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -122,7 +122,7 @@ private:
     void fit(
             List<scalarList>& coeffs,
             const List<List<point> >& stencilPoints,
-            StencilWeights& stencilWeights
+            stencilWeights& stencilWts
     );
 
     autoPtr<fitResult> fit(
