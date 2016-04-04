@@ -146,7 +146,6 @@ public:
         autoPtr<fitResult> calcFit
         (
             fitCoefficients& coefficients, // coefficients to be set
-            scalarList& wts,
             const List<point>&,  // Stencil points
             const scalar wLin,   // Weight for linear approximation (weights
                                  // nearest neighbours)

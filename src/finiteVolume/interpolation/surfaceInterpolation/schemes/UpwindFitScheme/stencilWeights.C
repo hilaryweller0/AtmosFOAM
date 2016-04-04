@@ -82,7 +82,7 @@ void Foam::stencilWeights::fitted(
     {
         populateStencilWeights(fit(), stencil);
         printStencilCoordinates(fit(), stencil);
-
+        Info << "# coefficients for face " << debugFaceI << " " << fit->coefficients << endl;
     }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
     fieldAccess(badFits(), faceI) = (fit->good ? 0 : 1);
