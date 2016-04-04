@@ -37,6 +37,7 @@ namespace Foam
         label debugFaceI;
         autoPtr<volScalarField> weights;
         autoPtr<surfaceScalarField> polynomialTerms;
+        autoPtr<surfaceScalarField> badFits;
     };
 }
 

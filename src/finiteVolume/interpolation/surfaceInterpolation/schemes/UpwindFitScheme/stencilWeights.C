@@ -51,6 +51,25 @@ Foam::stencilWeights::stencilWeights(const fvMesh& mesh, const word prefix)
             "fixedValue"
         )
     );
+
+    std::ostringstream badFitsFilename;
+    badFitsFilename << prefix << "BadFits";
+
+    badFits.reset(new surfaceScalarField
+        (
+            IOobject
+            (
+                badFitsFilename.str(),
+                mesh.time().constant(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh,
+            0.0,
+            "fixedValue"
+        )
+    );
 }
 
 void Foam::stencilWeights::fitted(
@@ -66,12 +85,14 @@ void Foam::stencilWeights::fitted(
 
     }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
+    fieldAccess(badFits(), faceI) = (fit->good ? 0 : 1);
 }
 
 void Foam::stencilWeights::write()
 {
     if (debugFaceI > -1) weights->write();
     polynomialTerms->write();
+    badFits->write();
 }
 
 void Foam::stencilWeights::populateStencilWeights
