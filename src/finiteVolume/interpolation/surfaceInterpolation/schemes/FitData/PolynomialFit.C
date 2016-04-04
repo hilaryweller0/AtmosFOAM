@@ -1,5 +1,4 @@
 #include "PolynomialFit.H"
-#include "weightedMatrix.H"
 #include "fitCoefficients.H"
 #include "stabiliser.H"
 
@@ -23,10 +22,8 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     Polynomial polynomial(stencil, dimensions);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
 
-    weightedMatrix matrix(B(), weights);
-
     stabiliser stabiliser;
-    bool goodFit = stabiliser.stabilise(matrix, coefficients);
+    bool goodFit = stabiliser.stabilise(B(), weights, coefficients);
 
     coefficients.applyCorrection(goodFit);
 

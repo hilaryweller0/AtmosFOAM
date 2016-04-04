@@ -30,6 +30,11 @@ void Foam::fitWeights::setXlinearWeight(const scalar weight)
     xLinearWeight = weight;
 }
 
+void Foam::fitWeights::removeDownwindWeight()
+{
+    cellWeights[1] = 1.0;
+}
+
 scalar& Foam::fitWeights::operator[](int i)
 {
     return cellWeights[i];

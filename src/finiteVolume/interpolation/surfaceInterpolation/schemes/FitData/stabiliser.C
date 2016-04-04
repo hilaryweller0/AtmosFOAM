@@ -1,15 +1,18 @@
 #include "stabiliser.H"
+#include "weightedMatrix.H"
 
 // TODO: maybe change signature to accept the fitWeights and scalarRectangularMatrix
 // then it will be easier to construct weightedMatrices ourselves
 bool Foam::stabiliser::stabilise
 (
-    const weightedMatrix& matrix,
+    const scalarRectangularMatrix& B,
+    fitWeights& weights,
     fitCoefficients& coefficients
 ) const
 {
     fitCoefficients c(coefficients);
 
+    weightedMatrix matrix(B, weights);
     matrix.populate(c);
 
 //    Info << "*** coeffs (" << matrix.columns() << " terms) " << c << endl;
@@ -26,7 +29,11 @@ bool Foam::stabiliser::stabilise
 
     if (!c.stable())
     {
-        // create new weightedMatrix with upwind weight, no downwind weight
+        weights.removeDownwindWeight();
+        weightedMatrix matrix(B, weights);
+        matrix.populate(c);
+        
+        // TODO
         // eventually, we could try removing the downwind weight gradually (from 5 to 1)
         // stopping when stability is achieved.  this should give better accuracy
         // because we've seen in test results that errors are smaller when central weights

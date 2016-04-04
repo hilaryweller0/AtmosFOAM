@@ -1,8 +1,8 @@
 #ifndef stabiliser_H
 #define stabiliser_H
 
-#include "weightedMatrix.H"
 #include "fitCoefficients.H"
+#include "fitWeights.H"
 
 namespace Foam
 {
@@ -11,7 +11,8 @@ namespace Foam
     public:
         bool stabilise
         (
-            const weightedMatrix& matrix,
+            const scalarRectangularMatrix& B,
+            fitWeights& weights,
             fitCoefficients& coefficients
         ) const;
     };

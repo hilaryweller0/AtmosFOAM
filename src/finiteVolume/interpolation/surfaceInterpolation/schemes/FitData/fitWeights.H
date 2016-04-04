@@ -16,6 +16,7 @@ namespace Foam
         void setCentralWeight(const scalar weight, const bool pureUpwind);
         void setConstantWeight(const scalar weight);
         void setXlinearWeight(const scalar weight);
+        void removeDownwindWeight();
 
         scalar& operator[](int i);
         scalar operator[](int i) const;
