@@ -25,5 +25,5 @@ FieldsToPlot
 );
 
 annotate "minMax -0.25 -0.501";
-region "0/0.5/0/0.5";
+region "-0.5/0.5/-0.5/0.5";
 
