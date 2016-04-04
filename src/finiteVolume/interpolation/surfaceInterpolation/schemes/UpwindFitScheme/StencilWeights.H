@@ -27,6 +27,12 @@ namespace Foam
             const List<point>& stencil
         );
 
+        void printStencilCoordinates
+        (
+            const fitResult& fit,
+            const List<point>& stencil
+        );
+
         const fvMesh& mesh;
         label debugFaceI;
         autoPtr<volScalarField> stencilWeights;

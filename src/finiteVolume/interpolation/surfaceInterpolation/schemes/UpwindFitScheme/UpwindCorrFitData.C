@@ -177,6 +177,7 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
         (
             "FitData<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << faceI
+            << " at " << this->mesh().Cf()[faceI]
             << "    Weights = " << coeffs[faceI]
             << ", reverting to upwind/linear." << nl
             << "    Linear weights " << wLin << " " << 1 - wLin << endl;

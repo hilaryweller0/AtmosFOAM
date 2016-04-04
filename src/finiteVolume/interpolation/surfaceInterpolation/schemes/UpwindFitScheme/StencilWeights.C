@@ -62,20 +62,8 @@ void Foam::StencilWeights::fitted(
     if (faceI == debugFaceI)
     {
         populateStencilWeights(fit(), stencil);
+        printStencilCoordinates(fit(), stencil);
 
-        Info << "# stencil in mesh coordinates for faceI " << faceI << endl;
-        forAll(stencil, i)
-        {
-            Info << stencil[i].x() << " " << stencil[i].y() << " " << stencil[i].z() << endl;
-        }
-        Info << endl;
-
-        Info << "# stencil in local coordinates for faceI " << faceI << endl;
-        forAll(fit->stencil, i)
-        {
-            Info << fit->stencil[i].x() << " " << fit->stencil[i].y() << " " << fit->stencil[i].z() << endl;
-        }
-        Info << endl;
     }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
 }
@@ -86,7 +74,11 @@ void Foam::StencilWeights::write()
     polynomialTerms->write();
 }
 
-void Foam::StencilWeights::populateStencilWeights(const fitResult& fit, const List<point>& stencil)
+void Foam::StencilWeights::populateStencilWeights
+(
+    const fitResult& fit,
+    const List<point>& stencil
+)
 {
     forAll(stencil, stencilI)
     {
@@ -119,4 +111,25 @@ void Foam::StencilWeights::populateStencilWeights(const fitResult& fit, const Li
             }
         }
     }
+}
+
+void Foam::StencilWeights::printStencilCoordinates
+(
+    const fitResult& fit,
+    const List<point>& stencil
+)
+{
+    Info << "# stencil in mesh coordinates for debugFaceI " << debugFaceI << endl;
+    forAll(stencil, i)
+    {
+        Info << stencil[i].x() << " " << stencil[i].y() << " " << stencil[i].z() << endl;
+    }
+    Info << endl;
+
+    Info << "# stencil in local coordinates for debugFaceI " << debugFaceI << endl;
+    forAll(fit.stencil, i)
+    {
+        Info << fit.stencil[i].x() << " " << fit.stencil[i].y() << " " << fit.stencil[i].z() << endl;
+    }
+    Info << endl;
 }
