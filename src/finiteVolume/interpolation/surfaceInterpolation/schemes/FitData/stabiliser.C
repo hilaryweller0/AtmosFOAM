@@ -27,17 +27,12 @@ bool Foam::stabiliser::stabilise
         columns--;
     }
 
-    if (!c.stable())
+    while (!c.stable() && weights.downwind() >= 2.0)
     {
-        weights.removeDownwindWeight();
+        weights.downwind() -= 1.0;
         weightedMatrix matrix(B, weights);
         matrix.populate(c);
-        
-        // TODO
-        // eventually, we could try removing the downwind weight gradually (from 5 to 1)
-        // stopping when stability is achieved.  this should give better accuracy
-        // because we've seen in test results that errors are smaller when central weights
-        // are used compared to just upwind weighting.
+        Info << "*** coeffs (" << weights.downwind() << " downwind weight) " << c << endl;
     }
 
     coefficients.copyFrom(c);

@@ -35,6 +35,16 @@ void Foam::fitWeights::removeDownwindWeight()
     cellWeights[1] = 1.0;
 }
 
+scalar Foam::fitWeights::downwind() const
+{
+    return cellWeights[1];
+}
+
+scalar& Foam::fitWeights::downwind()
+{
+    return cellWeights[1];
+}
+
 scalar& Foam::fitWeights::operator[](int i)
 {
     return cellWeights[i];
