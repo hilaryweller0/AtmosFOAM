@@ -64,3 +64,13 @@ scalar Foam::fitWeights::xLinear() const
 {
     return xLinearWeight;
 }
+
+Foam::Ostream& Foam::operator<<
+(
+    Ostream& stream,
+    const fitWeights& w
+)
+{
+    stream << w.cellWeights;
+    return stream;
+}

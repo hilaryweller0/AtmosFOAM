@@ -30,6 +30,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     return autoPtr<fitResult>(new fitResult(
             stencil,
             coefficients,
+            weights,
             goodFit,
             B->m()
     ));

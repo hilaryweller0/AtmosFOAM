@@ -20,6 +20,7 @@ namespace Foam
         scalar downwind() const;
         scalar& downwind();
 
+        friend Ostream& operator<< (Ostream& stream, const fitWeights& c);
         scalar& operator[](int i);
         scalar operator[](int i) const;
         scalar constant() const;
