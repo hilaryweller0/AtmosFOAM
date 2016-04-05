@@ -58,7 +58,12 @@ void Foam::StencilWeights::fitted(
         const autoPtr<Fit>& fit
 )
 {
-    if (faceI == debugFaceI) populateStencilWeights(fit());
+    if (faceI == debugFaceI)
+    {
+        populateStencilWeights(fit());
+        Info << "# coefficients for face " << debugFaceI << " " << fit->coeffs << endl;
+        Info << "# polynomialTerms for face " << debugFaceI << " " << fit->polynomialTerms << endl;
+    }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
 }
 
