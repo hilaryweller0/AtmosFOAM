@@ -112,7 +112,6 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
 (
     fitCoefficients& coefficients,
     const List<point>& C,
-    const scalar wLin,
     const label facei
 )
 {
@@ -149,7 +148,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 )
 {
     fitCoefficients coefficients(C.size(), linearCorrection_, wLin);
-    calcFit(coefficients, C, wLin, facei);
+    calcFit(coefficients, C, facei);
     coefficients.copyInto(coeffsi);
     // FIXME: I should probably populate wts using some returned data inside fitResult
 }

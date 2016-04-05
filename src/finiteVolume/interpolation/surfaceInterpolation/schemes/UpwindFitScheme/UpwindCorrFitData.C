@@ -115,7 +115,18 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
-        autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], w[facei]);
+        fitCoefficients coefficients
+        (
+            stencilPoints[facei].size(),
+            FitData<
+                UpwindCorrFitData<Polynomial>,
+                extendedUpwindCellToFaceStencilNew,
+                Polynomial
+            >::linearCorrection(),
+            w[facei]
+        );
+        autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei]);
+        coefficients.copyInto(coeffs[facei]);
         stencilWts.fitted(facei, f, stencilPoints[facei]);
     }
 
@@ -130,7 +141,18 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
             forAll(pw, i)
             {
-                autoPtr<fitResult> f = fit(facei, coeffs, stencilPoints[facei], pw[i]);
+                fitCoefficients coefficients
+                (
+                    stencilPoints[facei].size(),
+                    FitData<
+                        UpwindCorrFitData<Polynomial>,
+                        extendedUpwindCellToFaceStencilNew,
+                        Polynomial
+                    >::linearCorrection(),
+                    pw[i]
+                );
+                autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei]);
+                coefficients.copyInto(coeffs[facei]);
                 stencilWts.fitted(facei, f, stencilPoints[facei]);
                 facei++;
             }
@@ -142,21 +164,10 @@ template<class Polynomial>
 autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
 (
     const label faceI,
-    List<scalarList>& coeffs,
-    const List<point>& stencilPoints,
-    const scalar wLin
+    fitCoefficients& coefficients,
+    const List<point>& stencilPoints
 )
 {
-    fitCoefficients coefficients
-    (
-        stencilPoints.size(),
-        FitData<
-            UpwindCorrFitData<Polynomial>,
-            extendedUpwindCellToFaceStencilNew,
-            Polynomial
-        >::linearCorrection(),
-        wLin);
-
     autoPtr<fitResult> fit = FitData
     <
         UpwindCorrFitData<Polynomial>,
@@ -164,9 +175,8 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
         Polynomial
     >::calcFit
     (
-        coefficients, stencilPoints, wLin, faceI
+        coefficients, stencilPoints, faceI
     );
-    coefficients.copyInto(coeffs[faceI]);
 
     if (!fit->good)
     {
@@ -175,9 +185,8 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
             "FitData<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << faceI
             << " at " << this->mesh().Cf()[faceI]
-            << "    Weights = " << coeffs[faceI]
-            << ", reverting to upwind/linear." << nl
-            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
+            << "    Weights = " << coefficients
+            << ", reverting to upwind/linear." << endl;
     }
 
     return fit;
