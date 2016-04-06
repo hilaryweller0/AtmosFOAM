@@ -6,10 +6,25 @@ FoamFile {
     object      fvSchemes;
 }
 
-#include "commonFvSchemes"
-
 divSchemes {
     default         none;
     div(phi,T)      Gauss cubicUpwindCPCFit 3;
     div(phi,T_0)    Gauss cubicUpwindCPCFit 3;
+}
+
+gradSchemes {
+    default         Gauss linear;
+}
+
+laplacianSchemes {
+    default         Gauss linear corrected;
+}
+
+ddtSchemes {
+    default         backward;
+}
+
+fluxRequired {
+    default         no;
+    T;
 }
