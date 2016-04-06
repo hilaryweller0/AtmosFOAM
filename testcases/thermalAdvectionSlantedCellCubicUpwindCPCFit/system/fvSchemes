@@ -1,0 +1,15 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+
+#include "commonFvSchemes"
+
+divSchemes {
+    default         none;
+    div(phi,T)      Gauss cubicUpwindCPCFit 3;
+    div(phi,T_0)    Gauss cubicUpwindCPCFit 3;
+}
