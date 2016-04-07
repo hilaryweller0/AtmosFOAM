@@ -85,7 +85,7 @@ bool Foam::fitCoefficients::stable() const
     scalar upwind = coefficients[0];
     scalar downwind = coefficients[1];
 
-    return mag(downwind) < upwind && upwind <= 1 + downwind;
+    return mag(downwind) < upwind && upwind <= 1 + downwind && upwind >= 0.5;
 }
 
 Foam::Ostream& Foam::operator<<
