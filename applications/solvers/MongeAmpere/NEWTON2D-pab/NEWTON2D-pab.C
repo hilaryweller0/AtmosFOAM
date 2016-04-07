@@ -69,7 +69,8 @@ int main(int argc, char *argv[])
     // The monitor funciton
     autoPtr<monitorFunction> monitorFunc(monitorFunction::New(controlDict));
     
-    // The ratio of the finite different to the geometric Hessian
+    // The under-relaxation factors for the differnet parts of the Newton
+    // solver
     const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
     const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
@@ -82,56 +83,11 @@ int main(int argc, char *argv[])
     Info << "Iteration = " << runTime.timeName()
          << " PABe = " << PABe.value() << endl;
 
-    // Calculate the gradient of phiBar at cell centres and on faces
-    gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
-    gradPhi.boundaryField()
-        == (static_cast<volVectorField>(fvc::grad(Phi))).boundaryField();
-
-    runTime.write();
-    gradPhi.write();
-    Info << "should have written something " << endl;
-    // Interpolate gradPhi onto faces and correct the normal component
-    gradPhif = fvc::interpolate(gradPhi);
-    gradPhif += (fvc::snGrad(Phi) - (gradPhif & mesh.Sf())/mesh.magSf())
-        *mesh.Sf()/mesh.magSf();
-    
-    // Map gradPhi onto vertices in order to create the new mesh
-    //pointVectorField gradPhiP = fvc::faceToPointReconstruct(fvc::snGrad(Phi));
-    //rMesh.movePoints(mesh.points() + gradPhiP);
-    
-    // finite difference Hessian of phiBar and its determinant
-    Hessian = fvc::grad(gradPhif);
-    forAll(detHess, cellI)
-        {
-            detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
-        }
-    
-    // Geometric version of the Hessian
-    // detHess.internalField() =rMesh.V()/mesh.V();
-    
-
-    // map to or calculate the monitor function on the new mesh
-    monitorR = monitorFunc().map(rMesh, monitor);
-    monitorNew.internalField() = monitorR.internalField();
-    monitorNew.correctBoundaryConditions();
-    
-    // The Equidistribution
-    equiDist = monitorR*detHess;
-    equiDist.write();
-    monitorR.write();
-    detHess.write();
-
-    // mean equidistribution, c
-    equiDistMean = fvc::domainIntegrate(detHess)
-        /fvc::domainIntegrate(1/monitorNew);
-    
-
-    
     // Use time-steps instead of iterations to solve the Monge-Ampere eqn
     bool converged = false;
     while (runTime.loop())
     {
-        Info<< "Time = " << runTime.timeName() << flush << nl;
+        Info<< "Time = " << runTime.timeName() << endl;
 
         // Calculate the matrix: matrixA = 1+fvc::laplacian(phiBar)-Hessian
         phiBarLaplacian = fvc::laplacian(Phi);
@@ -162,20 +118,20 @@ int main(int argc, char *argv[])
         c_mR = equiDistMean/monitorR;
 
         // calculate the gradient of c_m in physical space
-        sngradc_mR = fvc::snGrad(c_mR);
+        gradc_mR = fvc::interpolate(fvc::grad(c_mR));
 
         // transfer the gradient to the computational mesh
-        sngradc_m.internalField() = sngradc_mR.internalField();
+        gradc_m.internalField() = gradc_mR.internalField();
 
         // The divergence of sngradc_m (correct so that it sums to zero)
-        lapc_m = fvc::div(mesh.magSf()*sngradc_m);
+        lapc_m = fvc::div(mesh.Sf() & gradc_m);
         lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
           - Gamma1*fvm::laplacian(matrixA, phi)
-          + Gamma2*fvm::div(mesh.magSf()*sngradc_m,phi)
+          + Gamma2*fvm::div((mesh.Sf() & gradc_m), phi)
           - Gamma2*fvm::Sp(lapc_m,phi)
           - detHess + c_m
         );
@@ -196,7 +152,7 @@ int main(int argc, char *argv[])
         PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
-        phi = dimensionedScalar("phi", dimArea, scalar(0));
+        phi == dimensionedScalar("phi", dimArea, scalar(0));
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
