@@ -9,7 +9,7 @@ namespace Foam
     class stabiliser
     {
     public:
-        bool stabilise
+        label stabilise
         (
             const scalarRectangularMatrix& B,
             fitWeights& weights,

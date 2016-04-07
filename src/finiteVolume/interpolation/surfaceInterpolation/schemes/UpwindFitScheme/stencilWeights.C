@@ -70,6 +70,25 @@ Foam::stencilWeights::stencilWeights(const fvMesh& mesh, const word prefix)
             "fixedValue"
         )
     );
+
+    std::ostringstream smallUpwindWeightsFilename;
+    smallUpwindWeightsFilename << prefix << "smallUpwindWeights";
+
+    smallUpwindWeights.reset(new surfaceScalarField
+        (
+            IOobject
+            (
+                smallUpwindWeightsFilename.str(),
+                mesh.time().constant(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh,
+            0.0,
+            "fixedValue"
+        )
+    );
 }
 
 void Foam::stencilWeights::fitted(
@@ -86,6 +105,11 @@ void Foam::stencilWeights::fitted(
         Info << "# polynomialTerms for face " << debugFaceI << " " << fit->polynomialTerms << endl;
         Info << "# cell weights for face " << debugFaceI << " " << fit->weights << endl;
     }
+    if (fit->coefficients[0] < 0.5-1)
+    {
+        Info << "##### " << faceI << " has stencil " << fit->coefficients << endl;
+        fieldAccess(smallUpwindWeights(), faceI) = 1;
+    }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
     fieldAccess(badFits(), faceI) = (fit->good ? 0 : 1);
 }
@@ -95,6 +119,7 @@ void Foam::stencilWeights::write()
     if (debugFaceI > -1) weights->write();
     polynomialTerms->write();
     badFits->write();
+    smallUpwindWeights->write();
 }
 
 void Foam::stencilWeights::populateStencilWeights
