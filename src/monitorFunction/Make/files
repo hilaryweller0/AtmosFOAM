@@ -2,6 +2,7 @@ monitorFunction.C
 monitorFunctionTanh.C
 monitorFunctionSech.C
 monitorFunctionMapped.C
+eispack.C
 tensor.C
 
 LIB = $(FOAM_USER_LIBBIN)/libmonitorFunction
