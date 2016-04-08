@@ -23,11 +23,15 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    NEWTON2D
+    Newton2d-vectorGradc_m
 
 Description
     Solves the Monge-Ampere equation to move a mesh based on a monitor
-    function defined on the original mesh by using Newton's Method
+    function defined on the original mesh by using Newton's Method.
+    The gradient of c/m is calculated as a vector on the rMesh and the full 
+    vectory is transferred to the computational mesh before the divergence is
+    taken. This appear to me to be the correct thing to do but it always slows
+    convergence. Don't understand why
 
 \*---------------------------------------------------------------------------*/
 
@@ -117,38 +121,31 @@ int main(int argc, char *argv[])
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
-        // The normal gradient of c_m in physical space
+        // calculate the gradient of c_m in physical space (with compact
+        // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
+        surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
+        gradc_mR = fvc::interpolate(fvc::grad(c_mR));
+        gradc_mR += fvc::snGrad(c_mR) * deltaRHat
+                  - (gradc_mR & deltaRHat) * deltaRHat;
 
         // transfer the gradient to the computational mesh
-        snGradc_m.internalField() = snGradc_mR.internalField();
+        gradc_m.internalField() = gradc_mR.internalField();
 
         // The divergence of sngradc_m (correct so that it sums to zero)
-        lapc_m = fvc::div(mesh.magSf() * snGradc_m);
-        //lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
+        lapc_m = fvc::div(mesh.Sf() & gradc_m);
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
           - Gamma1*fvm::laplacian(matrixA, phi)
-          + Gamma2*fvm::div(mesh.magSf() * snGradc_m, phi)
+          + Gamma2*fvm::div((mesh.Sf() & gradc_m), phi)
           - Gamma2*fvm::Sp(lapc_m,phi)
           - detHess + c_m
         );
-//        // Diagonal and off-diagonal components of the matrix
-//        scalarField diag = PhiEqn.diag();
-//        scalarField sumOff(mesh.nCells(), 0.0);
-//        PhiEqn.sumMagOffDiag(sumOff);
-//        scalarField nonDom = (sumOff - diag)/mag(diag);
-//        Info << "Diagonal goes from " << min(diag) << " to " << max(diag)
-//             << endl;
-//        Info << "Sum off diagonal goes from " << min(sumOff) << " to "
-//             << max(sumOff) << endl;
-//        Info << "Non-dominance goes from " << min(nonDom) << " to "
-//             << max(nonDom) << endl;
         
         // Solve the matrix and check for convergence
-        //PhiEqn.setReference(1650, scalar(0));
+//        PhiEqn.setReference(1650, scalar(0));
         PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;

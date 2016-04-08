@@ -143,13 +143,6 @@ volScalarField c_mR
     equiDistMeanR/monitorR
 );
 
-// The normalgradient of c_m on on the computational mesh
-surfaceScalarField snGradc_m
-(
-    IOobject("snGradc_m", runTime.timeName(), mesh),
-    fvc::snGrad(c_m)
-);
-
 // The normal gradient of c_m on the physical mesh
 surfaceScalarField snGradc_mR
 (
@@ -157,10 +150,24 @@ surfaceScalarField snGradc_mR
     fvc::snGrad(c_mR)
 );
 
-// The divergence of snGradc_m on the computational mesh
+// The gradient of c_m on on the computational mesh
+surfaceVectorField gradc_m
+(
+    IOobject("gradc_m", runTime.timeName(), mesh),
+    fvc::interpolate(fvc::grad(c_m))
+);
+
+// The gradient of c_m on the physical mesh
+surfaceVectorField gradc_mR
+(
+    IOobject("gradc_mR", runTime.timeName(), rMesh),
+    fvc::interpolate(fvc::grad(c_mR))
+);
+
+// The divergence of gradc_m on the computational mesh
 volScalarField lapc_m
 (
     IOobject("lapc_m", runTime.timeName(), mesh),
-    fvc::div(mesh.magSf() * snGradc_m)
+    fvc::div(mesh.Sf() & gradc_m)
 );
 
