@@ -39,7 +39,7 @@ Test::PolynomialFit::PolynomialFit(
             centralWeight);
 
     fitCoefficients coefficients(stencilPoints.size(), linearCorrection, unused_wLin);
-    fitData.calcFit(coefficients, wts, stencilPoints, unused_wLin, faceI);
+    fitData.calcFit(coefficients, stencilPoints, faceI);
     coefficients[0] += 1.0;
     coefficients.copyInto(coefficients_);
 }

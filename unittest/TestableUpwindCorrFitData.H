@@ -6,6 +6,7 @@
 #include "cubicUpwindCPCFitPolynomial.H"
 #include "FitData.H"
 #include "fitCoefficients.H"
+#include "fitResult.H"
 
 namespace Foam
 {
@@ -41,11 +42,21 @@ namespace Foam
 
             void calcFit() {}
 
+            autoPtr<fitResult> calcFit
+            (
+                fitCoefficients& coefficients,
+                const List<point>& stencilPoints,
+                const label faci
+            )
+            {
+                return FitData::calcFit(coefficients, stencilPoints, faci);
+            }
+
             // TODO: don't know why I have to explicitly delegate to the base class
             // bleugh, polymorphism
             void calcFit
             (
-                fitCoefficients& coefficients,
+                scalarList& coefficients,
                 scalarList& wts,    
                 const List<point>& stencilPoints,
                 const scalar wLin,  
