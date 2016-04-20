@@ -146,7 +146,7 @@ public:
         autoPtr<fitResult> calcFit
         (
             fitCoefficients& coefficients, // coefficients to be set
-            const List<point>&,  // Stencil points
+            const List<point>& stencilPoints,  // Stencil points
             const label faci     // Current face index
         );
 
