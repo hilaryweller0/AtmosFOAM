@@ -18,41 +18,70 @@ template<class Polynomial>
 autoPtr<scalarRectangularMatrix> Foam::AdaptivePolynomial<Polynomial>::matrix() const
 {
     List<label> fittableTerms(0, label(0));
-    for (int terms=0; terms<maxTerms; terms++)
+
+    autoPtr<scalarRectangularMatrix> matrix = matrixWithAllTerms();
+
+    if (fullRank(matrix))
     {
-        scalarRectangularMatrix B(stencil.size(), fittableTerms.size()+1, scalar(0));
-        for (int i=0; i<B.n(); i++)
+        return matrix;
+    }
+    else 
+    {
+        for (int terms=0; terms<maxTerms; terms++)
+        {
+            scalarRectangularMatrix B(stencil.size(), fittableTerms.size()+1, scalar(0));
+            for (int i=0; i<B.n(); i++)
+            {
+                scalar coefficients[maxTerms]; 
+                Polynomial::addCoeffs(coefficients, stencil[i], 1, dimensions);
+
+                int col = 0;
+                for (int j=0; j<maxTerms; j++)
+                {
+                    if (containsEntry(fittableTerms, j) || j == terms)
+                    {
+                        B[i][col++] = coefficients[j];
+                    }
+                }
+            }
+            if (fullRank(B))
+            {
+                fittableTerms.append(terms);
+            }
+        }
+        
+        scalarRectangularMatrix* B = new scalarRectangularMatrix(stencil.size(), fittableTerms.size(), scalar(0));
+        for (int i=0; i<B->n(); i++)
         {
             scalar coefficients[maxTerms]; 
             Polynomial::addCoeffs(coefficients, stencil[i], 1, dimensions);
-
             int col = 0;
             for (int j=0; j<maxTerms; j++)
             {
-                if (containsEntry(fittableTerms, j) || j == terms)
+                if (containsEntry(fittableTerms, j))
                 {
-                    B[i][col++] = coefficients[j];
+                    (*B)[i][col++] = coefficients[j];
                 }
             }
         }
-        if (fullRank(B))
-        {
-            fittableTerms.append(terms);
-        }
+
+        return autoPtr<scalarRectangularMatrix>(B);
     }
-    
-    scalarRectangularMatrix* B = new scalarRectangularMatrix(stencil.size(), fittableTerms.size(), scalar(0));
+}
+
+template<class Polynomial>
+autoPtr<scalarRectangularMatrix> Foam::AdaptivePolynomial<Polynomial>::matrixWithAllTerms() const
+{
+    scalarRectangularMatrix* B = new scalarRectangularMatrix(stencil.size(), maxTerms, scalar(0));
+
     for (int i=0; i<B->n(); i++)
     {
         scalar coefficients[maxTerms]; 
         Polynomial::addCoeffs(coefficients, stencil[i], 1, dimensions);
-        int col = 0;
+
         for (int j=0; j<maxTerms; j++)
         {
-            if (containsEntry(fittableTerms, j))
-            {
-                (*B)[i][col++] = coefficients[j];
-            }
+            (*B)[i][j] = coefficients[j];
         }
     }
 

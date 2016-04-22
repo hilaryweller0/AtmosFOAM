@@ -23,6 +23,7 @@ namespace Foam
         autoPtr<scalarRectangularMatrix> matrix() const;
     
     private:
+        autoPtr<scalarRectangularMatrix> matrixWithAllTerms() const;
         bool containsEntry(const List<label> fittableTerms, label term) const;
         bool fullRank(const scalarRectangularMatrix& B) const;
 
