@@ -38,7 +38,8 @@ gradSchemes
 
 divSchemes
 {
-    default             Gauss upwind;
+    default             none;
+    div((S&gradc_m),phi) Gauss upwind; //linear;
 }
 
 laplacianSchemes

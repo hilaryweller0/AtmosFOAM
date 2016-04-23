@@ -121,32 +121,40 @@ int main(int argc, char *argv[])
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
-        // calculate the gradient of c_m in physical space (with compact
+        // calculate the gradient of c_m in physical space (without compact
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
         surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
         gradc_mR = fvc::interpolate(fvc::grad(c_mR));
-        gradc_mR += fvc::snGrad(c_mR) * deltaRHat
-                  - (gradc_mR & deltaRHat) * deltaRHat;
+        //gradc_mR += fvc::snGrad(c_mR) * deltaRHat
+        //          - (gradc_mR & deltaRHat) * deltaRHat;
 
         // transfer the gradient to the computational mesh
         gradc_m.internalField() = gradc_mR.internalField();
 
-        // The divergence of sngradc_m (correct so that it sums to zero)
-        lapc_m = fvc::div(mesh.Sf() & gradc_m);
-
+        // The divergence of sngradc_m
+        surfaceScalarField flux = mesh.Sf() & gradc_m;
+        lapc_m = fvc::div(flux);
+        
+        dimensionedScalar relax
+        (
+            "relax", dimensionSet(0,-2,0,0,0), scalar(0.1)
+        );
+        
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
+            fvm::Sp(relax,phi)
           - Gamma1*fvm::laplacian(matrixA, phi)
-          + Gamma2*fvm::div((mesh.Sf() & gradc_m), phi)
-          - Gamma2*fvm::Sp(lapc_m,phi)
+          + Gamma2*fvm::div(flux, phi)
+          - Gamma2*fvm::Sp(lapc_m, phi)
           - detHess + c_m
         );
         
         // Solve the matrix and check for convergence
-//        PhiEqn.setReference(1650, scalar(0));
-        PhiEqn.relax();
+        //PhiEqn.setReference(7320, scalar(0));
+        //PhiEqn.setValues(labelList(1,7320), scalarList(1,scalar(0)));
+        //PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
         phi == dimensionedScalar("phi", dimArea, scalar(0));
@@ -186,6 +194,8 @@ int main(int argc, char *argv[])
         equiDistMean = fvc::domainIntegrate(detHess)
                         /fvc::domainIntegrate(1/monitorNew);
 
+        runTime.write();
+
         // The global equidistribution and its variance
         PABem = fvc::domainIntegrate(equiDist)/Vtot;
         PABe = sqrt(fvc::domainIntegrate(sqr(equiDist - PABem)))/(Vtot*PABem);
@@ -201,7 +211,6 @@ int main(int argc, char *argv[])
           
           runTime.writeAndEnd();
         }
-        runTime.write();
     }
     
     Info << "End\n" << endl;

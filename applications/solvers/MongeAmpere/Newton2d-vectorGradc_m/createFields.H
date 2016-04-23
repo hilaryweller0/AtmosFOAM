@@ -167,7 +167,8 @@ surfaceVectorField gradc_mR
 // The divergence of gradc_m on the computational mesh
 volScalarField lapc_m
 (
-    IOobject("lapc_m", runTime.timeName(), mesh),
+    IOobject("lapc_m", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
     fvc::div(mesh.Sf() & gradc_m)
 );
 

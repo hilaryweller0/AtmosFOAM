@@ -30,7 +30,8 @@ ddtSchemes
 gradSchemes
 {
     default         none;
-    grad(c_mR)      Gauss linear;
+    //grad(c_mR)      Gauss downwind snGradc_mR;
+    grad(c_mR)      leastSquares;
 }
 
 divSchemes
@@ -46,12 +47,13 @@ laplacianSchemes
 interpolationSchemes
 {
     default        none;
-    interpolate(grad(c_mR)) linear;
+    interpolate(grad(c_mR)) downwind snGradc_mR; //linear;
 }
 
 snGradSchemes
 {
-    default         uncorrected; //uncorrected;
+    default         none;
+    snGrad(c_mR)    uncorrected; // (only needed for the direction)
 }
 
 fluxRequired
