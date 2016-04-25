@@ -60,6 +60,8 @@ int main(int argc, char *argv[])
         )
     );
 
+    dimensionedScalar Vtot("Vtot", dimVol, gSum(mesh.V()));
+
     // Open control dictionary
     IOdictionary controlDict
     (
@@ -78,9 +80,11 @@ int main(int argc, char *argv[])
     const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
     const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
-    scalar conv = readScalar(controlDict.lookup("conv"));
-
-    dimensionedScalar Vtot("Vtot", dimVol, gSum(mesh.V()));
+    const scalar conv = readScalar(controlDict.lookup("conv"));
+    const dimensionedScalar matrixRelax =
+          readScalar(controlDict.lookup("matrixRelax"))
+       * dimensionedScalar("", dimLength,mesh.bounds().span().y())/min(mesh.V());
+    Info << "matrixRelax = " << matrixRelax << endl;
 
     #include "createFields.H"
 
@@ -121,13 +125,13 @@ int main(int argc, char *argv[])
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
-        // calculate the gradient of c_m in physical space (without compact
+        // calculate the gradient of c_m in physical space (with compact
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
-        surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
         gradc_mR = fvc::interpolate(fvc::grad(c_mR));
-        //gradc_mR += fvc::snGrad(c_mR) * deltaRHat
-        //          - (gradc_mR & deltaRHat) * deltaRHat;
+//        surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
+//        gradc_mR += fvc::snGrad(c_mR) * deltaRHat
+//                  - (gradc_mR & deltaRHat) * deltaRHat;
 
         // transfer the gradient to the computational mesh
         gradc_m.internalField() = gradc_mR.internalField();
@@ -136,25 +140,17 @@ int main(int argc, char *argv[])
         surfaceScalarField flux = mesh.Sf() & gradc_m;
         lapc_m = fvc::div(flux);
         
-        dimensionedScalar relax
-        (
-            "relax", dimensionSet(0,-2,0,0,0), scalar(0.1)
-        );
-        
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
-            fvm::Sp(relax,phi)
+            fvm::Sp(matrixRelax,phi)
           - Gamma1*fvm::laplacian(matrixA, phi)
           + Gamma2*fvm::div(flux, phi)
           - Gamma2*fvm::Sp(lapc_m, phi)
           - detHess + c_m
         );
-        
+
         // Solve the matrix and check for convergence
-        //PhiEqn.setReference(7320, scalar(0));
-        //PhiEqn.setValues(labelList(1,7320), scalarList(1,scalar(0)));
-        //PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
         phi == dimensionedScalar("phi", dimArea, scalar(0));
@@ -181,7 +177,6 @@ int main(int argc, char *argv[])
             detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
         }
 
-        runTime.write();
         // map to or calculate the monitor function on the new mesh
         monitorR = monitorFunc().map(rMesh, monitor);
         monitorNew.internalField() = monitorR.internalField();
