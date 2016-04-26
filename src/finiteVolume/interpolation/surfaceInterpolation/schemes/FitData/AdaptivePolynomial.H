@@ -29,7 +29,6 @@ namespace Foam
 
         const localStencil& stencil;
         const direction dimensions;
-        const label polynomialTerms;
         const label maxTerms;
         const scalar tolerance;
     };
