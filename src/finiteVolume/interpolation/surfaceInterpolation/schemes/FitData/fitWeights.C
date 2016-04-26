@@ -1,13 +1,22 @@
 #include "fitWeights.H"
 
+Foam::fitWeights::fitWeights(
+    const fitWeights& source
+)
+:
+    cellWeights(source.cellWeights),
+    constantWeight(source.constantWeight),
+    xLinearWeight(source.xLinearWeight)
+{}
+
 Foam::fitWeights::fitWeights
 (
     const label cells
 )
 :
-cellWeights(cells, scalar(1)),
-constantWeight(1),
-xLinearWeight(1)
+    cellWeights(cells, scalar(1)),
+    constantWeight(1),
+    xLinearWeight(1)
 {}
 
 void Foam::fitWeights::setCentralWeight

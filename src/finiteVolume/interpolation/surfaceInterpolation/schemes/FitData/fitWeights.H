@@ -8,10 +8,8 @@ namespace Foam
     class fitWeights
     {
     public:
-        fitWeights
-        (
-            const label cells
-        );
+        fitWeights(const fitWeights& source);
+        fitWeights(const label cells);
 
         void setCentralWeight(const scalar weight, const bool pureUpwind);
         void setConstantWeight(const scalar weight);

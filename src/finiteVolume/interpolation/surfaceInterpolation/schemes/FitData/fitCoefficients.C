@@ -88,6 +88,16 @@ bool Foam::fitCoefficients::stable() const
     return mag(downwind) < upwind && upwind <= 1 + downwind && upwind >= 0.5;
 }
 
+bool Foam::fitCoefficients::central_are_largest() const
+{
+    scalar smallest_central_coefficient = min(coefficients[0], coefficients[1]);
+    for (int i=2; i < coefficients.size(); i++)
+    {
+        if (coefficients[i] > smallest_central_coefficient) return false;
+    }
+    return true;
+}
+
 Foam::Ostream& Foam::operator<<
 (
     Ostream& stream,

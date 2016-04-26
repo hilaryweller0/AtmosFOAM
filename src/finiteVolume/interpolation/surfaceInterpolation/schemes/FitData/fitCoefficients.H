@@ -26,6 +26,7 @@ namespace Foam
         void copyInto(scalarList& target);
         void applyCorrection(const bool goodFit);
         bool stable() const;
+        bool central_are_largest() const;
 
     private:
         scalarList coefficients;
