@@ -10,7 +10,8 @@ Foam::AdaptivePolynomial<Polynomial>::AdaptivePolynomial(
 :
     stencil(stencil),
     dimensions(dimensions),
-    maxTerms(Polynomial::nTerms(dimensions)),
+    polynomialTerms(Polynomial::nTerms(dimensions)),
+    maxTerms(min(stencil.size(), Polynomial::nTerms(dimensions))),
     tolerance(tolerance)
 {}
 
@@ -76,7 +77,7 @@ autoPtr<scalarRectangularMatrix> Foam::AdaptivePolynomial<Polynomial>::matrixWit
 
     for (int i=0; i<B->n(); i++)
     {
-        scalar coefficients[maxTerms]; 
+        scalar coefficients[polynomialTerms]; 
         Polynomial::addCoeffs(coefficients, stencil[i], 1, dimensions);
 
         for (int j=0; j<maxTerms; j++)

@@ -18,7 +18,7 @@ namespace Foam
         AdaptivePolynomial(
                 const localStencil& stencil,
                 const direction dimensions,
-                const scalar tolerance=1e-4);
+                const scalar tolerance=1e-3);
 
         autoPtr<scalarRectangularMatrix> matrix() const;
     
@@ -29,6 +29,7 @@ namespace Foam
 
         const localStencil& stencil;
         const direction dimensions;
+        const label polynomialTerms;
         const label maxTerms;
         const scalar tolerance;
     };

@@ -21,8 +21,10 @@ interpolation/surfaceInterpolation/schemes/FitData/weightedMatrix.C
 interpolation/surfaceInterpolation/schemes/UpwindFitScheme/stencilWeights.C
 
 extendedStencil = fvMesh/extendedStencil
+$(extendedStencil)/cellToCell/globalIndexStencils/cellToCellStencil.C
 
 cellToFace = $(extendedStencil)/cellToFace
+$(cellToFace)/globalIndexStencils/cellToFaceStencil.C
 $(cellToFace)/globalIndexStencils/oneDCellToFaceStencil.C
 $(cellToFace)/extendedUpwindCellToFaceStencilNew.C
 $(cellToFace)/MeshObjects/pureUpwindCPCCellToFaceStencilObject.C
