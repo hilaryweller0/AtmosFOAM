@@ -59,6 +59,13 @@ TEST_CASE("a + by with two points in vertical line")
     check<2, 2>(matrix.matrix(), Test::Matrices::yLinear);
 }
 
+TEST_CASE("2x3 stencil with diagonal gives a + bx + cy + dxy + ey^2")
+{
+    Test::PolynomialFit fit(Test::Stencils::twoByThreeWithDiagonal());
+
+    check(fit.coefficients(), Test::Coefficients::twoByThreeWithDiagonal());
+}
+
 /*
  * This test case is taken from a real BTF mesh where the von Neumann
  * analysis detected an instability.  When advectionFoam was run on this mesh,

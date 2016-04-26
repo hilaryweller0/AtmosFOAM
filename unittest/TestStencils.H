@@ -12,6 +12,7 @@ namespace Test {
         static Foam::localStencil twelvePoints();
         static Foam::localStencil twoPointsInHorizontalLine();
         static Foam::localStencil twoPointsInVerticalLine();
+        static Foam::localStencil twoByThreeWithDiagonal();
         static Foam::localStencil btfStable();
         static Foam::localStencil slantedCellStable();
     };
@@ -20,6 +21,7 @@ namespace Test {
     {
     public:
         static Foam::scalarList twelvePoints();
+        static Foam::scalarList twoByThreeWithDiagonal();
     };
 
     class Matrices

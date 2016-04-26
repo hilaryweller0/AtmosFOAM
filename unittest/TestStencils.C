@@ -36,6 +36,18 @@ Foam::scalarList Test::Coefficients::twelvePoints()
     return coefficients;
 }
 
+Foam::scalarList Test::Coefficients::twoByThreeWithDiagonal()
+{
+    Foam::scalarList coefficients(6, scalar(0));
+    coefficients[0] = 0.5101;
+    coefficients[1] = 0.49;
+    coefficients[2] = -0.0184;
+    coefficients[3] = -0.0155;
+    coefficients[4] = 0.0158;
+    coefficients[5] = 0.0181;
+    return coefficients;
+}
+
 Foam::localStencil Test::Stencils::twoPointsInHorizontalLine()
 {
     Foam::List<point> stencil(2, point(0, 0, 0));
@@ -49,6 +61,18 @@ Foam::localStencil Test::Stencils::twoPointsInVerticalLine()
     Foam::List<point> stencil(2, point(0, 0, 0));
     stencil[0] = point(0, 1, 0);
     stencil[1] = point(0, -2, 0);
+    return localStencil(stencil);
+}
+
+Foam::localStencil Test::Stencils::twoByThreeWithDiagonal()
+{
+    Foam::List<point> stencil(6, point(0, 0, 0));
+    stencil[0] = point(-1, 0.0330314, 0);
+    stencil[1] = point(0.907926, -2.64e-14, 0);
+    stencil[2] = point(-1.13441, 3.05716, 0);
+    stencil[3] = point(-0.87524, -2.99221, 0);
+    stencil[4] = point(0.907926, 3.02642, 0);
+    stencil[5] = point(0.907926, -3.02642, 0);
     return localStencil(stencil);
 }
 

@@ -7,7 +7,8 @@
 
 Test::PolynomialFit::PolynomialFit(
         const Foam::List<point>& stencilPoints,
-        const Foam::label faceI)
+        const Foam::label faceI
+)
 {
     using namespace Foam;
 
@@ -46,7 +47,8 @@ Test::PolynomialFit::PolynomialFit(
 
 Test::PolynomialFit::PolynomialFit(
         const Foam::localStencil stencil,
-        bool linearCorrection)
+        bool linearCorrection
+)
 {
     using namespace Foam;
 
@@ -62,8 +64,7 @@ Test::PolynomialFit::PolynomialFit(
     const Basis basis(vector(1, 0, 0), vector(0, 1, 0), vector(0, 0, 1));
     const direction dimensions = 2;
 
-    Foam::PolynomialFit<AdaptivePolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(
-                dimensions);
+    Foam::PolynomialFit<AdaptivePolynomial<cubicUpwindCPCFitPolynomial> > polynomialFit(dimensions);
 
     fitCoefficients coefficients(stencil.size(), linearCorrection, wLin);
     polynomialFit.fit(coefficients, weights, stencil);
