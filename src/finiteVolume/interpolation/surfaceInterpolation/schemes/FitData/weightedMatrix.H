@@ -22,11 +22,15 @@ namespace Foam
             bool applyWeights = true
         );
 
+        weightedMatrix
+        (
+            const weightedMatrix& matrix,
+            const fitWeights& weights
+        );
+
         void populate(fitCoefficients& coefficients) const;
 
         autoPtr<weightedMatrix> subset(const labelList columns) const;
-
-        autoPtr<weightedMatrix> truncateTo(const label columns) const;
 
         label columns() const;
 

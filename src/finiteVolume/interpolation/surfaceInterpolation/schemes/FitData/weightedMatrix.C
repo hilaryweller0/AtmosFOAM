@@ -36,6 +36,26 @@ Foam::weightedMatrix::weightedMatrix
     }
 }
 
+Foam::weightedMatrix::weightedMatrix
+(
+    const weightedMatrix& matrix,
+    const fitWeights& weights
+)
+:
+    B(matrix.B.m(), matrix.B.n()),
+    weights(new fitWeights(weights))
+{
+    this->B = matrix.B;
+
+    applyStencilPointWeights(this->weights);
+
+    for (label i = 0; i < this->B.n(); i++)
+    {
+        this->B[i][0] *= this->weights->constant();
+        this->B[i][1] *= this->weights->xLinear();
+    }
+}
+
 void Foam::weightedMatrix::populate(fitCoefficients& coefficients) const
 {
     SVD svd(B, SMALL);
@@ -62,24 +82,6 @@ autoPtr<weightedMatrix> Foam::weightedMatrix::subset(const labelList columns) co
     return autoPtr<weightedMatrix>
     (
         new weightedMatrix(subset, weights, false)
-    );
-}
-
-autoPtr<weightedMatrix> Foam::weightedMatrix::truncateTo(const label columns) const
-{
-    scalarRectangularMatrix truncated(B.n(), min(columns, B.m()));
-
-    for (label i = 0; i < truncated.n(); i++)
-    {
-        for (label j = 0; j < truncated.m(); j++)
-        {
-            truncated[i][j] = B[i][j];
-        }
-    }
-
-    return autoPtr<weightedMatrix>
-    (
-        new weightedMatrix(truncated, weights, false)
     );
 }
 

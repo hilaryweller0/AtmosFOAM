@@ -3,6 +3,7 @@
 
 #include "fitCoefficients.H"
 #include "fitWeights.H"
+#include "weightedMatrix.H"
 
 namespace Foam
 {
@@ -14,6 +15,14 @@ namespace Foam
             const scalarRectangularMatrix& B,
             fitWeights& weights,
             fitCoefficients& coefficients
+        ) const;
+
+    private:
+        autoPtr<weightedMatrix> findStabilisableMatrix
+        (
+            const scalarRectangularMatrix& B,
+            const fitWeights& weights,
+            const fitCoefficients& coefficients
         ) const;
     };
 }

@@ -52,7 +52,7 @@ Test::PolynomialFit::PolynomialFit(
 {
     using namespace Foam;
 
-    scalar centralWeight = 1e3;
+    scalar centralWeight = 5.0;
     const bool pureUpwind = false;
 
     fitWeights weights(stencil.size());
