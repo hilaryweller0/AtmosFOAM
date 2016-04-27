@@ -18,6 +18,7 @@ case=save/60x60_ring_NewtonLinear_gradcmDown
 case=save/100x100_ring_NewtonLinear_gradcmDown
 case=save/200x200_ring_NewtonLinear_gradcmDown
 case=save/300x300_ring_NewtonLinear_gradcmDown
+case=save/60x60_bell_NewtonLinear_gradcmDown_setRef
 mkdir $case
 cp -r system $case
 gedit -s $case/system/fv* $case/system/*Dict  $case/system/rMesh/fvSchemes
@@ -45,7 +46,7 @@ grep PABe $case/log | awk '{print $3, $6}' \
          -Bf450/f10 -W \
          | ps2eps > $case/conv2.eps
 gv $case/conv2.eps &
-ls 
+
 gmtFoam -case $case -latestTime -region rMesh mesh
 gv $case/[1-9]*/mesh.pdf &
 gmtFoam -case $case -latestTime Phi

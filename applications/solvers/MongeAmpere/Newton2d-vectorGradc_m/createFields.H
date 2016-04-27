@@ -153,7 +153,8 @@ surfaceScalarField snGradc_mR
 // The gradient of c_m on on the computational mesh
 surfaceVectorField gradc_m
 (
-    IOobject("gradc_m", runTime.timeName(), mesh),
+    IOobject("gradc_m", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
     fvc::interpolate(fvc::grad(c_m))
 );
 
@@ -168,7 +169,8 @@ surfaceVectorField gradc_mR
 volScalarField lapc_m
 (
     IOobject("lapc_m", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
+             IOobject::NO_READ, IOobject::AUTO_WRITE
+             ),
     fvc::div(mesh.Sf() & gradc_m)
 );
 

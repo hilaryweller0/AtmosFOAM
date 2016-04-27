@@ -151,6 +151,7 @@ int main(int argc, char *argv[])
         );
 
         // Solve the matrix and check for convergence
+        //PhiEqn.setReference(610, scalar(0));
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
         phi == dimensionedScalar("phi", dimArea, scalar(0));
