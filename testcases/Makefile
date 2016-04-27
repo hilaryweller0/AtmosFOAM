@@ -44,10 +44,10 @@ endef
 $(eval $(call AdvectionTest,horizontalBTFCubicUpwindCPCFitAdvection,0.2,5000))
 $(eval $(call AdvectionTest,horizontalNoOrographyCubicUpwindCPCFitAdvection,0.006,5000))
 $(eval $(call AdvectionTest,terrainFollowingNoOrographyCubicUpwindCPCFitAdvection,0.346,10000))
-$(eval $(call AdvectionTest,thermalAdvectionSlantedCellCubicUpwindCPCFit,0.00003513,5399.1))
+$(eval $(call AdvectionTest,thermalAdvectionSlantedCellCubicUpwindCPCFit,0.000082,5399.1))
 $(eval $(call AdvectionTest,thermalAdvectionSlantedCellFineMeshCubicUpwindCPCFit,0.0000447,3000))
 $(eval $(call AdvectionTest,thermalAdvectionBTFCubicUpwindCPCFit,0.00001,5472))
-$(eval $(call AdvectionTest,thermalAdvectionCutCellCubicUpwindCPCFit,0.00006,4800))
+$(eval $(call AdvectionTest,thermalAdvectionCutCellCubicUpwindCPCFit,0.00015,4800))
 
 test: \
   horizontalBTFCubicUpwindCPCFitAdvection.checkl2errorT \
