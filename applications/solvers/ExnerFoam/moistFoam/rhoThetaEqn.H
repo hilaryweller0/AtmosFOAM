@@ -12,9 +12,6 @@ rhoThetaSource = rho*theta*
   + (Cv*Lv/(cvml*Cp*T) - Rv/cvml*(1 - R/Cp*cpml/Rm))*condenseRate
 );
 
-//Info << "rhoThetaSource goes from " << min(rhoThetaSource).value() << " to "
-//     << max(rhoThetaSource).value() << endl;
-
 theta = 
 (
     theta.oldTime()*rho.oldTime() - dt*

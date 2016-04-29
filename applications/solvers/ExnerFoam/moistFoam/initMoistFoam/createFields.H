@@ -51,7 +51,7 @@ rl == 0.1*rt0;
 
 volScalarField T("T", Exner*theta);
 volScalarField p("p", pRef*pow(Exner, 1/kappa));
-volScalarField es("es", Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T + Tcc)));
+volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
 volScalarField condenseRate("condenseRate", -rl/dt);
 volScalarField thetaScale("thetaScale", theta/theta);
 volScalarField rvs("rvs", epsilon*(es/(p-es)));

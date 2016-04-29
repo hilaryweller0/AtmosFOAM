@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                 Lv = Lv0 - (Cpl - Cpv)*(T - T0);
         
                 // Calculate saturation vapour pressure and set rv to be saturated
-                es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+                es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
                 rvs = epsilon*es/(p-es);
                 // Update rv with under-relaxation
                 rv == max
@@ -176,7 +176,7 @@ int main(int argc, char *argv[])
     {
         theta = thetaRho0*(1 + rt0)/(1+rv/epsilon)*thetaScale;
         T = theta*Exner;
-        es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
         rvs = epsilon*es/(p-es);
         rv == max(min(rvs, rt0), scalar(0));
         Info << "Bouyancy perturbation " << iter << " theta at centre = "
