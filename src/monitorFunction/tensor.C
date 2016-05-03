@@ -25,7 +25,8 @@ License
 
 #include "tensor.H"
 #include "mathematicalConstants.H"
-
+using namespace std;
+# include "eispack.H"
 
 using namespace Foam::constant::mathematical;
 
@@ -93,102 +94,134 @@ Foam::vector Foam::eigenValues(const tensor& t)
     // The eigenvalues
     scalar i, ii, iii;
 
-    // diagonal matrix
-    if
-    (
-        (
-            mag(t.xy()) + mag(t.xz()) + mag(t.yx())
-            + mag(t.yz()) + mag(t.zx()) + mag(t.zy())
-        )
-        < SMALL
-    )
-    {
-        i = t.xx();
-        ii = t.yy();
-        iii = t.zz();
-    }
+    double a[3*3] = {
+        t.xx(), t.xy(), t.xz(), 
+        t.yx(), t.yy(), t.xz(), 
+        t.zx(), t.zy(), t.zz() };
+    //double a2[3*3];
 
-    // non-diagonal matrix
-    else
-    {
-        // Coefficients of the characteristic polynmial
-        // x^3 + a*x^2 + b*x + c = 0
-        scalar a =
-           - t.xx() - t.yy() - t.zz();
+    int ierr;
+    int matz;
+    int n = 3;
+    //    double *r;
+    double w[3];
+    double x[3*3];
 
-        scalar b =
-            t.xx()*t.yy() + t.xx()*t.zz() + t.yy()*t.zz()
-          - t.xy()*t.yx() - t.yz()*t.zy() - t.zx()*t.xz();
+    matz = 1;
 
-        scalar c =
-          - t.xx()*t.yy()*t.zz()
-          - t.xy()*t.yz()*t.zx() - t.xz()*t.zy()*t.yx()
-          + t.xx()*t.yz()*t.zy() + t.yy()*t.zx()*t.xz() + t.zz()*t.xy()*t.yx();
+    ierr = rs ( n, a, w, matz, x );
 
-        // Auxillary variables
-        scalar aBy3 = a/3;
-
-        scalar P = (a*a - 3*b)/9; // == -p_wikipedia/3
-        scalar PPP = P*P*P;
-
-        scalar Q = (2*a*a*a - 9*a*b + 27*c)/54; // == q_wikipedia/2
-        scalar QQ = Q*Q;
-
-        // Three identical roots
-        if (mag(P) < SMALL && mag(Q) < SMALL)
+    if ( ierr != 0 )
         {
-            return vector(- aBy3, - aBy3, - aBy3);
+            Info << "\n";
+            Info << "TEST06 - Warning!\n";
+            Info << "  The error return flag IERR = " << ierr << "\n";
+            //            return;
+            i = 0;
+            ii = 0;
+            iii = 0;
         }
 
-        // Two identical roots and one distinct root
-        else if (mag(PPP/QQ - 1) < 1000*SMALL)
-        {
-            scalar sqrtP = sqrt(P);
-            scalar signQ = sign(Q);
+    i = w[0];
+    ii = w[1];
+    iii = w[2];
 
-            i = ii = signQ*sqrtP - aBy3;
-            iii = - 2*signQ*sqrtP - aBy3;
-        }
+    // // diagonal matrix
+    // if
+    // (
+    //     (
+    //         mag(t.xy()) + mag(t.xz()) + mag(t.yx())
+    //         + mag(t.yz()) + mag(t.zx()) + mag(t.zy())
+    //     )
+    //     < SMALL
+    // )
+    // {
+    //     i = t.xx();
+    //     ii = t.yy();
+    //     iii = t.zz();
+    // }
 
-        // Three distinct roots
-        else if (PPP > QQ)
-        {
-            scalar sqrtP = sqrt(P);
-            scalar value = cos(acos(Q/sqrt(PPP))/3);
-            scalar delta = sqrt(3 - 3*value*value);
+    // // non-diagonal matrix
+    // else
+    // {
+    //     // Coefficients of the characteristic polynmial
+    //     // x^3 + a*x^2 + b*x + c = 0
+    //     scalar a =
+    //        - t.xx() - t.yy() - t.zz();
 
-            i = - 2*sqrtP*value - aBy3;
-            ii = sqrtP*(value + delta) - aBy3;
-            iii = sqrtP*(value - delta) - aBy3;
-        }
+    //     scalar b =
+    //         t.xx()*t.yy() + t.xx()*t.zz() + t.yy()*t.zz()
+    //       - t.xy()*t.yx() - t.yz()*t.zy() - t.zx()*t.xz();
 
-        // One real root, two imaginary roots
-        // based on the above logic, PPP must be less than QQ
-        else
-        {
+    //     scalar c =
+    //       - t.xx()*t.yy()*t.zz()
+    //       - t.xy()*t.yz()*t.zx() - t.xz()*t.zy()*t.yx()
+    //       + t.xx()*t.yz()*t.zy() + t.yy()*t.zx()*t.xz() + t.zz()*t.xy()*t.yx();
 
-            Info << "Warning in eigenvalues" << endl;
-            Info << "PPP = " << PPP << " QQ = " << QQ << endl;
-            Info << "SMALL = " << SMALL << endl;
-            Info << "mag(PPP/QQ - 1) = " << mag(PPP/QQ - 1) << endl;
-            WarningIn("eigenValues(const tensor&)")
-                << "complex eigenvalues detected for tensor: " << t
-                << endl;
+    //     // Auxillary variables
+    //     scalar aBy3 = a/3;
 
-            if (mag(P) < SMALL)
-            {
-                i = cbrt(QQ/2);
-            }
-            else
-            {
-                scalar w = cbrt(- Q - sqrt(QQ - PPP));
-                i = w + P/w - aBy3;
-            }
+    //     scalar P = (a*a - 3*b)/9; // == -p_wikipedia/3
+    //     scalar PPP = P*P*P;
 
-            //return vector(-VGREAT, i, VGREAT);
-            return vector(i, i, i);
-        }
-    }
+    //     scalar Q = (2*a*a*a - 9*a*b + 27*c)/54; // == q_wikipedia/2
+    //     scalar QQ = Q*Q;
+
+    //     // Three identical roots
+    //     if (mag(P) < SMALL && mag(Q) < SMALL)
+    //     {
+    //         return vector(- aBy3, - aBy3, - aBy3);
+    //     }
+
+    //     // Two identical roots and one distinct root
+    //     else if (mag(PPP/QQ - 1) < 1000*SMALL)
+    //     {
+    //         scalar sqrtP = sqrt(P);
+    //         scalar signQ = sign(Q);
+
+    //         i = ii = signQ*sqrtP - aBy3;
+    //         iii = - 2*signQ*sqrtP - aBy3;
+    //     }
+
+    //     // Three distinct roots
+    //     else if (PPP > QQ)
+    //     {
+    //         scalar sqrtP = sqrt(P);
+    //         scalar value = cos(acos(Q/sqrt(PPP))/3);
+    //         scalar delta = sqrt(3 - 3*value*value);
+
+    //         i = - 2*sqrtP*value - aBy3;
+    //         ii = sqrtP*(value + delta) - aBy3;
+    //         iii = sqrtP*(value - delta) - aBy3;
+    //     }
+
+    //     // One real root, two imaginary roots
+    //     // based on the above logic, PPP must be less than QQ
+    //     else
+    //     {
+
+    //         Info << "Warning in eigenvalues" << endl;
+    //         Info << "PPP = " << PPP << " QQ = " << QQ << endl;
+    //         Info << "SMALL = " << SMALL << endl;
+    //         Info << "mag(PPP/QQ - 1) = " << mag(PPP/QQ - 1) << endl;
+    //         WarningIn("eigenValues(const tensor&)")
+    //             << "complex eigenvalues detected for tensor: " << t
+    //             << endl;
+
+    //         if (mag(P) < SMALL)
+    //         {
+    //             i = cbrt(QQ/2);
+    //         }
+    //         else
+    //         {
+    //             scalar w = cbrt(- Q - sqrt(QQ - PPP));
+    //             i = w + P/w - aBy3;
+    //         }
+
+    //         //return vector(-VGREAT, i, VGREAT);
+    //         return vector(i, i, i);
+    //     }
+    // }
 
     // Sort the eigenvalues into ascending order
     if (i > ii)

@@ -81,6 +81,51 @@ int main(int argc, char *argv[])
 
     Info << "Iteration = " << runTime.timeName()
          << " PABe = " << PABe.value() << endl;
+
+    // Calculate the gradient of phiBar at cell centres and on faces
+    gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
+    gradPhi.boundaryField()
+        == (static_cast<volVectorField>(fvc::grad(Phi))).boundaryField();
+
+    runTime.write();
+    gradPhi.write();
+    Info << "should have written something " << endl;
+    // Interpolate gradPhi onto faces and correct the normal component
+    gradPhif = fvc::interpolate(gradPhi);
+    gradPhif += (fvc::snGrad(Phi) - (gradPhif & mesh.Sf())/mesh.magSf())
+        *mesh.Sf()/mesh.magSf();
+    
+    // Map gradPhi onto vertices in order to create the new mesh
+    //pointVectorField gradPhiP = fvc::faceToPointReconstruct(fvc::snGrad(Phi));
+    //rMesh.movePoints(mesh.points() + gradPhiP);
+    
+    // finite difference Hessian of phiBar and its determinant
+    Hessian = fvc::grad(gradPhif);
+    forAll(detHess, cellI)
+        {
+            detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
+        }
+    
+    // Geometric version of the Hessian
+    // detHess.internalField() =rMesh.V()/mesh.V();
+    
+
+    // map to or calculate the monitor function on the new mesh
+    monitorR = monitorFunc().map(rMesh, monitor);
+    monitorNew.internalField() = monitorR.internalField();
+    monitorNew.correctBoundaryConditions();
+    
+    // The Equidistribution
+    equiDist = monitorR*detHess;
+    equiDist.write();
+    monitorR.write();
+    detHess.write();
+
+    // mean equidistribution, c
+    equiDistMean = fvc::domainIntegrate(detHess)
+        /fvc::domainIntegrate(1/monitorNew);
+    
+
     
     // Use time-steps instead of iterations to solve the Monge-Ampere eqn
     bool converged = false;
