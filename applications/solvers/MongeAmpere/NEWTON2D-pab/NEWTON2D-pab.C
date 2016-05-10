@@ -74,8 +74,11 @@ int main(int argc, char *argv[])
     const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
     const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
-    scalar conv = readScalar(controlDict.lookup("conv"));
-
+    const scalar conv = readScalar(controlDict.lookup("conv"));
+    const dimensionedScalar matrixRelax =
+          readScalar(controlDict.lookup("matrixRelax"))
+       * dimensionedScalar("", dimLength,mesh.bounds().span().y())/min(mesh.V());
+    Info << "matrixRelax = " << matrixRelax << endl;
     dimensionedScalar Vtot("Vtot", dimVol, gSum(mesh.V()));
 
     #include "createFields.H"
@@ -130,6 +133,7 @@ int main(int argc, char *argv[])
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
+            fvm::Sp(matrixRelax,phi)
           - Gamma1*fvm::laplacian(matrixA, phi)
           + Gamma2*fvm::div(mesh.magSf() * snGradc_m, phi)
           - Gamma2*fvm::Sp(lapc_m,phi)
