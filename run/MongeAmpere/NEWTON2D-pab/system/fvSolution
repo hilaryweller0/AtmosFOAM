@@ -1,9 +1,8 @@
-/*--------------------------------*- C++ -*----------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
-|    \\/     M anipulation  |                                                 |
+/*--------------------------------*- C++ -*----------------------------------*| =========                 |                                                 |
+| \      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \    /   O peration     | Version:  1.5                                   |
+|   \  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
@@ -18,7 +17,7 @@ solvers
 {
     "Phi|phi"
     {
-        solver GAMG;
+        solver BICCG;
         smoother symGaussSeidel;
         preconditioner   DILU;
         tolerance        1e-12;
@@ -36,3 +35,4 @@ relaxationFactors
     }
 }
 // ************************************************************************* //
+

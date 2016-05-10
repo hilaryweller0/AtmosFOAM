@@ -26,13 +26,11 @@ ddtSchemes
 {
     default Euler;
 }
-offCentre 0.5;
 
 gradSchemes
 {
     default         none;
-    grad(Phi)       leastSquares; //Gauss linear; //pointLinear;//
-    grad(gradPhi)   Gauss linear; //leastSquares; //pointLinear; //Gauss linear;
+    grad(c_mR)      leastSquares;
 }
 
 divSchemes
@@ -42,7 +40,7 @@ divSchemes
 
 laplacianSchemes
 {
-    default         Gauss linear uncorrected;
+    default         none;
 }
 
 interpolationSchemes
@@ -53,8 +51,7 @@ interpolationSchemes
 snGradSchemes
 {
     default         none;
-    snGrad(((domainIntegrate(detHess)|domainIntegrate((1|monitorNew)))|monitorR)) uncorrected;
-    snGrad(c_mR) uncorrected;
+    snGrad(c_mR)    corrected;
 }
 
 fluxRequired
