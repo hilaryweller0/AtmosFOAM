@@ -37,7 +37,7 @@ gradSchemes
 divSchemes
 {
     default             none;
-    div((magSf*sngradc_m),phi) Gauss upwind;
+    div((magSf*snGradc_m),phi) Gauss upwind;
     div(sngradc_m,phi) Gauss upwind;
 }
 

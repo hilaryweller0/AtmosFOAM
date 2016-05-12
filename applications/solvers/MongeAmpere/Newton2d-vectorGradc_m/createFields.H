@@ -149,20 +149,28 @@ surfaceScalarField snGradc_mR
     IOobject("snGradc_mR", runTime.timeName(), rMesh),
     fvc::snGrad(c_mR)
 );
-// The surface gradient of c_m on on the computational mesh
-surfaceScalarField snGradc_m
-(
-    IOobject("snGradc_m", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar("sngradc_m", dimensionSet(0,-1,0,0,0), scalar(0)),
-    wordList(5,"calculated")
-);
-snGradc_m.internalField() = snGradc_mR.internalField();
 
-// The divergence of snGradc_mR
+// The gradient of c_m on on the computational mesh
+surfaceVectorField gradc_m
+(
+    IOobject("gradc_m", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    fvc::interpolate(fvc::grad(c_m))
+);
+
+// The gradient of c_m on the physical mesh
+surfaceVectorField gradc_mR
+(
+    IOobject("gradc_mR", runTime.timeName(), rMesh),
+    fvc::interpolate(fvc::grad(c_mR))
+);
+
+// The divergence of gradc_m on the computational mesh
 volScalarField lapc_m
 (
-    IOobject("lapc_m", runTime.timeName(), mesh),
-    fvc::div(mesh.magSf()*snGradc_m)
+    IOobject("lapc_m", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE
+             ),
+    fvc::div(mesh.Sf() & gradc_m)
 );
 

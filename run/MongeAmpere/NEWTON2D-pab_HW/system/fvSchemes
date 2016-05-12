@@ -17,45 +17,49 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          controlDict;
+    object          fvSchemes;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application buoyantFoam;
+ddtSchemes
+{
+    default Euler;
+}
 
-startFrom       startTime;
-//startFrom       latestTime;
+gradSchemes
+{
+    default         none;
+    grad(phiBar)    Gauss linear;
+    grad(phi)       Gauss linear;
+    grad(Phi)       Gauss linear;
+    grad(c_m)       Gauss linear;
+}
 
-startTime       0;
+divSchemes
+{
+    default             Gauss linear;
+}
 
-stopAt          endTime;
+laplacianSchemes
+{
+    default     Gauss linear uncorrected;
+}
 
-endTime         1000;
+interpolationSchemes
+{
+    default        linear;
+}
 
-deltaT          1;
+snGradSchemes
+{
+    default         uncorrected;
+}
 
-writeControl    runTime;
+fluxRequired
+{
+    default         no;
+}
 
-writeInterval   1000;
-
-purgeWrite      0;
-
-writeFormat     binary;
-
-writePrecision  6;
-
-writeCompression uncompressed;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable no;
-
-adjustTimeStep no;
-maxCo          0.5;
-
-libs            ();
 
 // ************************************************************************* //

@@ -31,17 +31,17 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1000;
+endTime         100;
 
 deltaT          1;
 
 writeControl    runTime;
 
-writeInterval   1000;
+writeInterval   100;
 
 purgeWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
 writePrecision  6;
 
@@ -51,11 +51,11 @@ timeFormat      general;
 
 timePrecision   6;
 
-runTimeModifiable no;
+runTimeModifiable yes;
 
 adjustTimeStep no;
 maxCo          0.5;
 
-libs            ();
+libs            ("libExnerTheta.so" "libfiniteVolumeUser.so");
 
 // ************************************************************************* //

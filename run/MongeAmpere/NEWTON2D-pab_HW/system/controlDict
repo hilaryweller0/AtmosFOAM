@@ -37,7 +37,7 @@ deltaT          1;
 
 writeControl    runTime;
 
-writeInterval   1000;
+writeInterval   100;
 
 purgeWrite      0;
 
@@ -51,7 +51,7 @@ timeFormat      general;
 
 timePrecision   6;
 
-runTimeModifiable no;
+runTimeModifiable yes;
 
 adjustTimeStep no;
 maxCo          0.5;

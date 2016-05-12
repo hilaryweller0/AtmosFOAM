@@ -8,6 +8,7 @@ volScalarField Phi
 
 // Create the perturbation from Phi
 volScalarField phi("phi", Phi);
+phi == dimensionedScalar("phi", dimArea, scalar(0));
 
 // Create phiBarLaplacian
 volScalarField phiBarLaplacian("phiBarLaplacian", fvc::laplacian(Phi));
@@ -76,11 +77,11 @@ matrixA = -Hessian + I*(1+fvc::laplacian(Phi));
 volScalarField volRatio
 (
     IOobject("volRatio", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    mesh, dimless, wordList(5,"zeroGradient")
+             IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
+    mesh,
+    dimensionedScalar("volRatio", dimless, scalar(1)),
+    wordList(5,"zeroGradient")
 );
-volRatio.internalField() = 1;
-volRatio.correctBoundaryConditions();
 
 // The original monitor function on the old mesh
 const volScalarField monitor
@@ -110,10 +111,6 @@ dimensionedScalar equiDistMean = fvc::domainIntegrate(detHess)
 
 dimensionedScalar equiDistMeanR = fvc::domainIntegrate(detHessR)
                                  /fvc::domainIntegrate(1/monitorR);
-Info << "Dimension of monitor    = " << monitor.dimensions() << endl;
-Info << "Dimension of monitorNew = " << monitorNew.dimensions() << endl;
-Info << "Dimension of monitorR   = " << monitorR.dimensions() << endl;
-
 
 equiDistMeanR = equiDistMean;
 
@@ -146,25 +143,24 @@ volScalarField c_mR
     equiDistMeanR/monitorR
 );
 
-// The surface gradient of c_m on on the computational mesh
-surfaceScalarField sngradc_m
+// The normalgradient of c_m on on the computational mesh
+surfaceScalarField snGradc_m
 (
-    IOobject("sngradc_m", runTime.timeName(), mesh),
+    IOobject("snGradc_m", runTime.timeName(), mesh),
     fvc::snGrad(c_m)
 );
 
-
-// The surface gradient of c_m on the physical mesh
-surfaceScalarField sngradc_mR
+// The normal gradient of c_m on the physical mesh
+surfaceScalarField snGradc_mR
 (
-    IOobject("sngradc_mR", runTime.timeName(), rMesh),
+    IOobject("snGradc_mR", runTime.timeName(), rMesh),
     fvc::snGrad(c_mR)
 );
 
-// The divergence of sngradc_mR
+// The divergence of snGradc_m on the computational mesh
 volScalarField lapc_m
 (
     IOobject("lapc_m", runTime.timeName(), mesh),
-    fvc::div(mesh.magSf()*sngradc_m)
+    fvc::div(mesh.magSf() * snGradc_m)
 );
 
