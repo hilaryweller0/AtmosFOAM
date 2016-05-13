@@ -1,0 +1,115 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          blockMeshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1000;
+
+a 6000;
+twoa 12000;
+foura 24000;
+threea 18000;
+sixa 36000;
+//am 4267.949192431;
+//ap 7732.050807569;
+am 6000;
+ap 6000;
+
+
+vertices
+(
+    (0 0 0)
+    ($threea 0 0)
+    ($sixa 0 0)
+    (0 $ap 0)
+    ($threea $am 0)
+    ($sixa $ap 0)
+    (0 $twoa 0)
+    ($threea $twoa 0)
+    ($sixa $twoa 0)
+    (0 0 1e-3)
+    ($threea 0 1e-3)
+    ($sixa 0 1e-3)
+    (0 $ap 1e-3)
+    ($threea $am 1e-3)
+    ($sixa $ap 1e-3)
+    (0 $twoa 1e-3)
+    ($threea $twoa 1e-3)
+    ($sixa $twoa 1e-3)
+);
+
+blocks
+(
+	hex (0 1 4 3 9 10 13 12) (75 25 1) simpleGrading (1 1 1)
+	hex (1 2 5 4 10 11 14 13) (75 25 1) simpleGrading (1 1 1)
+	hex (3 4 7 6 12 13 16 15) (75 25 1) simpleGrading (1 1 1)
+	hex (4 5 8 7 13 14 17 16) (75 25 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    equator
+    {
+        type            patch;
+        faces           ((0 1 10 9) (1 2 11 10));
+    }
+    pole
+    {
+        type            patch;
+        faces           ((15 16 7 6) (16 17 8 7));
+    }
+    inlet
+    {
+        type            cyclic;
+        neighbourPatch  outlet;
+        faces           ((9 12 3 0) (12 15 6 3));
+    }
+    outlet
+    {
+        type            cyclic;
+        neighbourPatch  inlet;
+        faces           ((2 5 14 11) (5 8 17 14));
+    }
+    front
+    {
+        type            empty;
+//        neighbourPatch  back;
+        faces           ((9 10 13 12) (10 11 14 13)
+                         (12 13 16 15) (13 14 17 16));
+    }
+    back
+    {
+        type            empty;
+//        neighbourPatch  front;
+        faces           ((0 3 4 1) (1 4 5 2) (3 6 7 4) (4 7 8 5));
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //

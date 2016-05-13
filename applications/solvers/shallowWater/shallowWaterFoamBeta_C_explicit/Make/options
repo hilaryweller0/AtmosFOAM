@@ -1,0 +1,12 @@
+EXE_INC = \
+    -ggdb3 -O0 \
+    -I../shallowWaterFoamBeta_C \
+    -I$(ATMOSFOAM_SRC)/shallowWater/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -lfiniteVolume -lmeshTools \
+    -L$(FOAM_USER_LIBBIN) \
+    -lshallowWater
+
