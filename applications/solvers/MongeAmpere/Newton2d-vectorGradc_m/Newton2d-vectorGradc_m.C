@@ -146,6 +146,8 @@ int main(int argc, char *argv[])
         lapc_m = fvc::div(flux);
         
         // Setup and solve the MA equation to find Phi(t+1) 
+        solverPerformance sp;
+        for (int i=0;i<3;i++) {
         fvScalarMatrix PhiEqn
         (
             fvm::Sp(matrixRelax,phi)
@@ -157,7 +159,8 @@ int main(int argc, char *argv[])
 
         // Solve the matrix and check for convergence
         //PhiEqn.setReference(610, scalar(0));
-        solverPerformance sp = PhiEqn.solve();
+        sp = PhiEqn.solve();
+        }
         Phi += phi;
         phi == dimensionedScalar("phi", dimArea, scalar(0));
 
@@ -200,7 +203,7 @@ int main(int argc, char *argv[])
         // The global equidistribution and its variance
         PABem = fvc::domainIntegrate(equiDist)/Vtot;
         PABe = sqrt(fvc::domainIntegrate(sqr(equiDist - PABem)))/(Vtot*PABem);
-        converged = PABe.value() < conv || sp.nIterations() <= 0;
+        converged = PABe.value() < conv; // || sp.nIterations() <= 0;
 
         Info << "Iteration = " << runTime.timeName()
              << " PABe = " << PABe.value() << endl;

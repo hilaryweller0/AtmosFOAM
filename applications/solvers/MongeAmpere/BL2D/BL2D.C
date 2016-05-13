@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
         // Calculate the matrix: matrixA = 1+fvc::laplacian(phiBar)-Hessian
         tensor localA (0,0,0,0,0,0,0,0,0);
         scalar localAew = 0.0;
+        bool print=true;
         forAll(matrixA, cellI)
         {
             
@@ -112,7 +113,10 @@ int main(int argc, char *argv[])
             localA = matrixA[cellI];
             localAew = eigenValues(localA)[0];
             if(localAew <= 0){
-                Info << "Minimum eigenvalue = " << localAew << endl;
+                if(print){
+                    Info << "Minimum eigenvalue = " << localAew << endl;
+                    print = false;
+                }
                 matrixA[cellI] = localA + (1.0e-5 - localAew)*diagTensor::one;
             }
             else
@@ -124,6 +128,8 @@ int main(int argc, char *argv[])
         source = detHess - equiDistMean/monitorNew;
 
         // Setup and solve the MA equation to find Psi(t+1) 
+        solverPerformance sp;
+        for (int i=0;i<1;i++) {
         fvScalarMatrix PhiEqn
         (
           Gamma*fvm::laplacian(matrixA, Phi)
@@ -132,7 +138,8 @@ int main(int argc, char *argv[])
         );
         PhiEqn.setReference(0, scalar(0));
 
-        solverPerformance sp = PhiEqn.solve();
+        sp = PhiEqn.solve();
+        }
         converged = sp.nIterations() <= 1;
      
 
