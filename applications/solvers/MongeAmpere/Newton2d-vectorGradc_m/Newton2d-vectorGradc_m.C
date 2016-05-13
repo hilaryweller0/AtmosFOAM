@@ -101,6 +101,7 @@ int main(int argc, char *argv[])
         phiBarLaplacian = fvc::laplacian(Phi);
         tensor localA (0,0,0,0,0,0,0,0,0);
         scalar localAew = 0.0;
+        bool disp=true;
         forAll(matrixA, cellI)
         {
             
@@ -109,9 +110,13 @@ int main(int argc, char *argv[])
             matrixA[cellI].yy() = 1.0;
             localA = 0.5*(matrixA[cellI] + matrixA[cellI].T());
             localAew = eigenValues(localA)[0];
+
             if(localAew <= 0)
             {
-                Info << "Minimum eigenvalue = " << localAew << endl;
+                if(disp) {
+                    Info << "Minimum eigenvalue = " << localAew << endl;
+                    disp = false;
+                }
                 matrixA[cellI] = localA + (1.0e-5 - localAew)*diagTensor::one;
               //matrixA[cellI] = localA -2*localAew*diagTensor::one;
             }
