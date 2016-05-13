@@ -1,0 +1,23 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/9c";
+projection2D XY;
+
+FieldsToPlot
+(
+    [vorticityz filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+);

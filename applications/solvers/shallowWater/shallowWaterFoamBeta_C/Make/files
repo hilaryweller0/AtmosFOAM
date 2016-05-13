@@ -1,0 +1,3 @@
+shallowWaterFoamBeta.C
+
+EXE = $(FOAM_USER_APPBIN)/shallowWaterFoamBeta_C
