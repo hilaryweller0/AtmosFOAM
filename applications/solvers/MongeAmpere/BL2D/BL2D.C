@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
 
     Info << "Iteration = " << runTime.timeName()
-	 << " PABe = " << PABe.value() << endl;
+         << " PABe = " << PABe.value() << endl;
 
     // Use time-steps instead of iterations to solve the Monge-Ampere eqn
     bool converged = false;
@@ -128,20 +128,18 @@ int main(int argc, char *argv[])
         source = detHess - equiDistMean/monitorNew;
 
         // Setup and solve the MA equation to find Psi(t+1) 
-        solverPerformance sp;
-        for (int i=0;i<1;i++) {
-        fvScalarMatrix PhiEqn
-        (
-          Gamma*fvm::laplacian(matrixA, Phi)
-          - Gamma*fvc::laplacian(matrixA, Phi)
-          + source
-        );
-        PhiEqn.setReference(0, scalar(0));
+        for (int i=0; i<1; i++)
+        {
+            fvScalarMatrix PhiEqn
+            (
+                Gamma*fvm::laplacian(matrixA, Phi)
+              - Gamma*fvc::laplacian(matrixA, Phi)
+              + source
+            );
+            PhiEqn.setReference(0, scalar(0));
 
-        sp = PhiEqn.solve();
+            PhiEqn.solve();
         }
-        converged = sp.nIterations() <= 1;
-     
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -167,7 +165,7 @@ int main(int argc, char *argv[])
 
        
         // Geometric version of the Hessian
-	// detHess.internalField() =rMesh.V()/mesh.V();
+        // detHess.internalField() =rMesh.V()/mesh.V();
         
         
         // map to or calculate the monitor function on the new mesh
@@ -181,25 +179,19 @@ int main(int argc, char *argv[])
         // mean equidistribution, c
         equiDistMean = fvc::domainIntegrate(detHess)/fvc::domainIntegrate(1/monitorNew);
 
-	// The global equidistribution
-	PABem = sum(equiDist)/mesh.nCells();
-	PABe = pow((sum(pow((equiDist-PABem),2))/mesh.nCells()),0.5)/PABem;
-	converged = PABe.value() < conv;
-
-
-
+       // The global equidistribution
+       PABem = sum(equiDist)/mesh.nCells();
+       PABe = pow((sum(pow((equiDist-PABem),2))/mesh.nCells()),0.5)/PABem;
+       converged = PABe.value() < conv;
 
         Info << "Iteration = " << runTime.timeName()
              << " PABe = " << PABe.value() << endl;
 
-
         if (converged)
         {
-
-	  Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-	       << nl << endl;
-	  
-	  runTime.writeAndEnd();
+            Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+                 << nl <<endl;
+            runTime.writeAndEnd();
         }
         runTime.write();
     }
