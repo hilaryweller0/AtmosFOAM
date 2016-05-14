@@ -12,6 +12,9 @@ volScalarField T
     ),
     mesh
 );
+// Ensure that T.oldTime() and T.oldTime.oldTime() are stored
+T.oldTime();
+T.oldTime().oldTime();
 
 Info<< "Reading field U if present\n" << endl;
 
