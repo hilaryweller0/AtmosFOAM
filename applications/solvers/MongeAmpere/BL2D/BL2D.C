@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
     );
 
     scalar conv = readScalar(controlDict.lookup("conv"));
-
+    const int nCorr = readLabel(mesh.solutionDict().lookup("nCorrectors"));
        
     #include "createFields.H"
 
@@ -112,28 +112,30 @@ int main(int argc, char *argv[])
             //            localA = 0.5*(matrixA[cellI]+matrixA[cellI].T());
             localA = matrixA[cellI];
             localAew = eigenValues(localA)[0];
-            if(localAew <= 0){
-                if(print){
+            if(localAew <= 0)
+            {
+                if(print)
+                {
                     Info << "Minimum eigenvalue = " << localAew << endl;
                     print = false;
                 }
                 matrixA[cellI] = localA + (1.0e-5 - localAew)*diagTensor::one;
             }
             else
-                {
-                    matrixA[cellI] = localA;
-                }
+            {
+                matrixA[cellI] = localA;
+            }
         }
         // Calculate the source terms for the MA equation
         source = detHess - equiDistMean/monitorNew;
 
         // Setup and solve the MA equation to find Psi(t+1) 
-        for (int i=0; i<1; i++)
+        for (int iCorr = 0; iCorr < nCorr; iCorr++)
         {
             fvScalarMatrix PhiEqn
             (
                 Gamma*fvm::laplacian(matrixA, Phi)
-              - Gamma*fvc::laplacian(matrixA, Phi)
+              - Gamma*fvc::laplacian(matrixA, Phi.oldTime())
               + source
             );
             PhiEqn.setReference(0, scalar(0));

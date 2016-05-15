@@ -27,6 +27,8 @@ solvers
     };
 }
 
+nCorrectors 3;
+
 relaxationFactors
 {
     equations

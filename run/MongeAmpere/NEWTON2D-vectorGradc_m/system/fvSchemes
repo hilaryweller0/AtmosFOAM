@@ -33,6 +33,7 @@ gradSchemes
     grad(phiBar)    Gauss linear;
     grad(phi)       Gauss linear;
     grad(Phi)       Gauss linear;
+    grad(Phi_0)     Gauss linear;
     grad(c_m)       Gauss linear;
 }
 

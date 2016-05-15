@@ -30,8 +30,8 @@ ddtSchemes
 gradSchemes
 {
     default         none;
-    //grad(c_mR)      Gauss downwind snGradc_mR;
-    grad(c_mR)      leastSquares;
+    grad(c_mR)      Gauss linear snGradc_mR;
+    //grad(c_mR)      leastSquares;
 }
 
 divSchemes

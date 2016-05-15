@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
           readScalar(controlDict.lookup("matrixRelax"))
        * dimensionedScalar("", dimLength,mesh.bounds().span().y())/min(mesh.V());
     Info << "matrixRelax = " << matrixRelax << endl;
+    const int nCorr = readLabel(mesh.solutionDict().lookup("nCorrectors"));
 
     #include "createFields.H"
 
@@ -147,19 +148,19 @@ int main(int argc, char *argv[])
         
         // Setup and solve the MA equation to find Phi(t+1) 
         solverPerformance sp;
-        for (int i=0;i<3;i++) {
-        fvScalarMatrix PhiEqn
-        (
-            fvm::Sp(matrixRelax,phi)
-          - Gamma1*fvm::laplacian(matrixA, phi)
-          + Gamma2*fvm::div(flux, phi)
-          - Gamma2*fvm::Sp(lapc_m, phi)
-          - detHess + c_m
-        );
+        for (int iCorr = 0; iCorr < nCorr; iCorr++)
+        {
+            fvScalarMatrix PhiEqn
+            (
+                fvm::Sp(matrixRelax,phi)
+              - Gamma1*fvm::laplacian(matrixA, phi)
+              + Gamma2*fvm::div(flux, phi)
+              - Gamma2*fvm::Sp(lapc_m, phi)
+              - detHess + c_m
+            );
 
-        // Solve the matrix and check for convergence
-        //PhiEqn.setReference(610, scalar(0));
-        sp = PhiEqn.solve();
+            // Solve the matrix
+            sp = PhiEqn.solve();
         }
         Phi += phi;
         phi == dimensionedScalar("phi", dimArea, scalar(0));
