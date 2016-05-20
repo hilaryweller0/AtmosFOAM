@@ -24,6 +24,7 @@ int rsb ( int n, int mb, double a[], double w[], int matz, double z[] );
 void timestamp ( );
 int tql2 ( int n, double d[], double e[], double z[] );
 int tqlrat ( int n, double w[], double fv2[] );
+int tql1 ( int n, double w[], double fv2[] );
 void tred1 ( int n, double a[], double w[], double fv1[], double fv2[] );
 void tred2 ( int n, double a[], double d[], double e[], double z[] );
 

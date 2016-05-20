@@ -1549,14 +1549,15 @@ int rs ( int n, double a[], double w[], int matz, double z[] )
   double *fv1;
   double *fv2;
   int ierr;
-
+  cout << "pab A = " << a[0] << " " << a[1] << " " << a[2] << " " << a[3] << " " << a[4] << " " << a[5] << " " << a[6] << " " << a[7] << " " << a[8] << " " << endl;
   if ( matz == 0 )
   {
     fv1 = new double[n];
     fv2 = new double[n];
 
     tred1 ( n, a, w, fv1, fv2 );
-    ierr = tqlrat ( n, w, fv2 );
+    //ierr = tqlrat ( n, w, fv2 );
+    ierr = tql1 ( n, w, fv1 );
 
     delete [] fv1;
     delete [] fv2;
@@ -2213,6 +2214,273 @@ int tqlrat ( int n, double d[], double e2[] )
 }
 //****************************************************************************80
 
+
+int tql1 ( int n, double d[], double e[] )
+//****************************************************************************80
+//
+//     this subroutine is a translation of the algol procedure tql1,
+//     num. math. 11, 293-306(1968) by bowdler, martin, reinsch, and
+//     wilkinson.
+//     handbook for auto. comp., vol.ii-linear algebra, 227-240(1971).
+//
+//     this subroutine finds the eigenvalues of a symmetric
+//     tridiagonal matrix by the ql method.
+//
+//     on input
+//
+//        n is the order of the matrix.
+//
+//        d contains the diagonal elements of the input matrix.
+//
+//        e contains the subdiagonal elements of the input matrix
+//          in its last n-1 positions.  e(1) is arbitrary.
+//
+//      on output
+//
+//        d contains the eigenvalues in ascending order.  if an
+//          error exit is made, the eigenvalues are correct and
+//          ordered for indices 1,2,...ierr-1, but may not be
+//          the smallest eigenvalues.
+//
+//        e has been destroyed.
+//
+//        ierr is set to
+//          zero       for normal return,
+//          j          if the j-th eigenvalue has not been
+//                     determined after 30 iterations.
+//
+//     calls pythag for  dsqrt(a*a + b*b) .
+//
+//     questions and comments should be directed to burton s. garbow,
+//     mathematics and computer science div, argonne national laboratory
+//
+//     this version dated august 1983.
+//
+//     ------------------------------------------------------------------
+//
+{
+  int i;
+  int j;
+  int l;
+  int m;
+  //  int n;
+  int ii;
+  int l1;
+  int l2;
+  int mml;
+  int ierr;
+
+
+  double c;
+  double c2;
+  double c3;
+  double dl1;
+  double el1;
+  double f;
+  double g;
+  double h;
+  double p;
+  double r;
+  double s;
+  double s2;
+  double tst1;
+  double tst2;
+
+  ierr = 0;
+
+  if ( n == 1 )
+  {
+    return ierr;
+  }
+  //pab okay so far
+  for ( i = 1; i < n; i++ )
+  {
+    e[i-1] = e[i];
+  }
+  //pab okay, noting c++ indexing from 0 not 1
+
+  f = 0.0; //pab yes
+  tst1 = 0.0; //pab yup
+  e[n-1] = 0.0; // pab yes, indexing
+
+
+  for ( l = 0; l < n; l++ ) // l is one less than the fortran version
+                            // this is fortran 290
+  {
+      //cout << "fortran 290 \n";
+      //cout << l << "\n";
+     j = 0;
+     h = r8_abs ( d[l] ) + r8_abs ( e[l] );
+     //pab okay so far
+
+     if ( tst1 <= h )
+     {
+         tst1 = h;
+     }
+//
+//  Look for small squared sub-diagonal element.
+//
+    for ( m = l; m < n; m++ )
+    {  
+        //cout << " m = " << m << "\n";
+        tst2 = tst1 + r8_abs( e[m] );
+        if (tst2 == tst1)
+            {
+                break;
+            }
+        // .......... e(n) is always zero, so there is no exit
+        //            through the bottom of the loop ..........
+    }
+    //this is fortran 110
+    //cout << "fortran 110\n";
+    
+    if ( m != l )
+        {
+            //cout << "fortran 120\n";
+            for ( ; ; )
+                {
+                    //cout << "fortran 130\n";
+                    if ( 30 <= j ) //this is fortran 130
+                        {
+                            //cout << "fortran 1000\n";
+                            // this is fortran 1000
+                            ierr = l + 1;
+                            return ierr;
+                        }
+                    //cout << " j = " << j << "\n";
+                    //cout << " l = " << l << "\n";
+                    j = j + 1;
+                    //
+                    //  Form shift.
+                    //
+                    l1 = l + 1;
+                    l2 = l1 + 1;
+                    //cout << " l2 = " << l2 << "\n";
+                    //cout << "ok...l = " << l << " l1 = " << l1 << " l2 = " << l2 << "\n";
+                    g = d[l];
+                    //cout << "oops\n";
+                    //cout << "e[l] = " << e[l] << "\n";
+                    p = ( d[l1] - g ) / ( 2.0 * e[l] );
+                    //cout << "before pythag\n"; 
+                    r = pythag ( p, 1.0 );
+                    d[l] = e[l] / ( p + r8_abs ( r ) * r8_sign ( p ) );
+                    d[l1] = e[l] * ( p + r8_abs ( r ) * r8_sign ( p ) );
+                    //cout << "after sign\n";
+                    dl1 = d[l1];
+                    h = g - d[l];
+                    //cout << "spock\n";
+                    if( l2 <= n )
+                        {
+                            for ( i = l2; i < n; i++ )
+                                {
+                                    //cout << "i = " << i << "\n";
+                                    d[i] = d[i] - h;
+                                }
+                            //cout << "fortran 140\n";
+                        }
+                    //this is fortran 145
+                    f = f + h;
+                    //cout << "fortran 145\n";
+
+                    //
+                    //  .......... QL transformation ..........
+                    //
+                    //cout << "doing ql trans m = " << m << " l1 = " << l1 << "\n";
+                    p = d[m];
+                    c = 1.0;
+                    c2 = c;
+                    el1 = e[l1];
+                    s = 0.0;
+                    mml = m - l;
+                    
+                    // .......... for i=m-1 step -1 until l do -- ..........
+                    for ( ii = 1; ii <= mml; ii++ )
+                        {
+                            //cout << "loop started\nii = " << ii << "\n";
+                            //cout << "c2 = " << c2 << "\n";
+                            //cout << "c = " << c << "\n";
+                            //cout << "s = " << s << "\n";
+                            //cout << "ii = " << ii << "\n";
+                            //cout << "m = " << m << "\n";
+                            c3 = c2;
+                            c2 = c;
+                            s2 = s;
+                            i = m - ii;
+                            g = c * e[i]; //changing to c++ indexing
+                            h = c * p;
+                            //cout << "in loop p = " << p << "\n";
+                            //cout << "in loop i = " << i << "\n";
+                            //cout << "other = " << e[i] << "\n";
+                            //cout << " e[0] = " << e[0] << "\n";
+                            //cout << " e[1] = " << e[1] << "\n";
+                            //cout << " e[2] = " << e[2] << "\n";
+                            //cout << " d[0] = " << d[0] << "\n";
+                            //cout << " d[1] = " << d[1] << "\n";
+                            //cout << " d[2] = " << d[2] << "\n";
+
+                            r = pythag(p,e[i]); //changing to c++ indexing
+                            e[i+1] = s * r; //changing to c++ indexing
+                            //cout << "in loop setting e[" << i+1 << "] to " << s*r << "\n";
+                            //cout << "in loop r = " << r << "\n";
+                            s = e[i] / r; //changing to c++ indexing
+                            c = p / r;
+                            p = c * d[i] - s * g; //changing to c++ indexing
+                            d[i+1] = h + s * (c * g + s * d[i]); //changing to c++ indexing
+                        } 
+                    //cout << "fortran 200\n";
+                    // this is fortran 200
+                    //cout << " s = " << s << "\n";
+                    //cout << " s2 = " << s2 << "\n";
+                    //cout << " c3 = " << c3 << "\n";
+                    //cout << " el1 = " << el1 << "\n";
+                    //cout << " l = " << l << "\n";
+                    //cout << " e[l] = " << e[l] << "\n";
+                    //cout << " dl1 = " << dl1 << "\n";
+                    p = -s * s2 * c3 * el1 * e[l] / dl1;
+                    e[l] = s * p;
+                    //cout << "outside loop setting e[" << i << "] to " << s*p << "\n";
+                    d[l] = c * p;
+                    tst2 = tst1 + r8_abs( e[l] );
+                    
+                    // need to go back to 130 somehow...
+                    if (tst2 <= tst1) 
+                        {
+                            break;   
+                        }
+                }
+        } // this is fortran 210
+    
+    p = d[l] + f;
+    //cout << "fortran 210\n";
+//
+//  Order the eigenvalues.
+//
+    for ( i = l; 0 <= i; i-- )
+        {
+            if ( i == 0 ) // this is fortran 270
+                {
+                    //cout << "fortran 270\n";
+                    d[i] = p;
+                    break;
+                }
+            else if ( d[i-1] <= p ) // this is fortran 250 and 270
+                {
+                    //cout << "fortran 250\n";
+                    //cout << "fortran 270\n";
+                    d[i] = p;
+                    break;
+                }
+            d[i] = d[i-1];
+        }
+  } // this is fortran 290
+  //cout << "fortran 290\n";
+
+  return ierr;
+}
+//****************************************************************************80
+
+
+
 void tred1 ( int n, double a[], double d[], double e[], double e2[] )
 
 //****************************************************************************80
@@ -2657,4 +2925,6 @@ void tred2 ( int n, double a[], double d[], double e[], double z[] )
 
   return;
 }
+
+
 

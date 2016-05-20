@@ -25,10 +25,18 @@ License
 
 #include "tensor.H"
 #include "mathematicalConstants.H"
+
 using namespace std;
 # include "eispack.H"
 
+
 using namespace Foam::constant::mathematical;
+
+namespace SomeNameSpace
+{
+    #include "lapacke.h"
+}
+
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -87,10 +95,14 @@ namespace Foam
 }
 
 
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Foam::vector Foam::eigenValues(const tensor& t)
 {
+    
+
+
     // The eigenvalues
     scalar i, ii, iii;
 
@@ -258,8 +270,34 @@ Foam::vector Foam::eigenValues(const tensor& t)
     }
 
 
+    Info().precision(16); //PAB THIS IS HOW YOU GET MORE DP IN THE OUTPUT
+    Info << "of eigenvalues = " << i << " " << ii << " " << iii << endl;
+    // EISPACK STUFF
+    double aa[3*3] = {
+        t.xx(), t.xy(), t.xz(), 
+        t.yx(), t.yy(), t.xz(), 
+        t.zx(), t.zy(), t.zz() };
+    //double a2[3*3];
+    
+    //Info().precision(5); //PAB THIS IS HOW YOU GET MORE DP IN THE OUTPUT
+    
+    int ierr;
+    int matz;
+    int n = 3;
+    //    double *r;
+    double w[3];
+    double x[3*3];
+    
+    matz = 0;
+    
+    ierr = rs ( n, aa, w, matz, x );
+    
+    Info << "eiseigenvalues = " << w[0] << " " << w[1] << " " << w[2] << " " << ierr << endl;
+    Info().precision(5);
 
-
+    // int LAPACKE_dsyev(int matrix_order, lapack_int n, lapack_int nrhs,
+    //                          double * a, lapack_int lda, lapack_int * ipiv,
+    //                          double * b, lapack_int ldb);
 
     return vector(i, ii, iii);
 }
