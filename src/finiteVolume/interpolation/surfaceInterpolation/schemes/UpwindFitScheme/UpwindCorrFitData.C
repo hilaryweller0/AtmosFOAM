@@ -87,6 +87,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
+    Info << "===OWNER===" << endl;
     stencilWeights ownerWeights(mesh, "owner");
     fit(owncoeffs_, stencilPoints, ownerWeights);
     ownerWeights.write();
@@ -99,6 +100,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
+    Info << "===NEIGHBOUR===" << endl;
     stencilWeights neiWeights(mesh, "nei");
     fit(neicoeffs_, stencilPoints, neiWeights);
     neiWeights.write();
@@ -180,13 +182,14 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
 
     if (!fit->good)
     {
-        WarningIn
+/*        WarningIn
         (
             "FitData<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << faceI
             << " at " << this->mesh().Cf()[faceI]
             << "    Weights = " << coefficients
             << ", reverting to upwind/linear." << endl;
+            */
     }
 
     return fit;

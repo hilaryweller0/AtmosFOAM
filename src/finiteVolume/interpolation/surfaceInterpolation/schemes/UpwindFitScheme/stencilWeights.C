@@ -97,6 +97,8 @@ void Foam::stencilWeights::fitted(
         const List<point>& stencil
 )
 {
+    const point& p = mesh.Cf()[faceI];
+    Info << faceI << " " << p.x() << " " << p.y() << " " << p.z() << " " << 1 + fit->coefficients[0] << " " << fit->coefficients[1] << " " << fit->polynomialTerms << endl;
     if (faceI == debugFaceI)
     {
         populateStencilWeights(fit(), stencil);

@@ -170,24 +170,23 @@ void Foam::cellToFaceStencil::merge
 
 void Foam::cellToFaceStencil::validBoundaryFaces(boolList& isValidBFace) const
 {
-    //const polyBoundaryMesh& patches = mesh().boundaryMesh();
+    const polyBoundaryMesh& patches = mesh().boundaryMesh();
 
-    isValidBFace.setSize(mesh().nFaces()-mesh().nInternalFaces(), false);
-    Info << "cellToFaceStencil::validBoundaryFaces: No boundary faces in stencils" << endl;
+    isValidBFace.setSize(mesh().nFaces()-mesh().nInternalFaces(), true);
 
-//    forAll(patches, patchI)
-//    {
-//        const polyPatch& pp = patches[patchI];
+    forAll(patches, patchI)
+    {
+        const polyPatch& pp = patches[patchI];
 
-//        if (pp.coupled() || isA<emptyPolyPatch>(pp))
-//        {
-//            label bFaceI = pp.start()-mesh().nInternalFaces();
-//            forAll(pp, i)
-//            {
-//                isValidBFace[bFaceI++] = false;
-//            }
-//        }
-//    }
+        if (pp.coupled() || isA<emptyPolyPatch>(pp) || pp.name() != "inlet") 
+        {
+            label bFaceI = pp.start()-mesh().nInternalFaces();
+            forAll(pp, i)
+            {
+                isValidBFace[bFaceI++] = false;
+            }
+        }
+    }
 }
 
 
