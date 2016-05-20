@@ -30,8 +30,8 @@ ddtSchemes
 gradSchemes
 {
     default         none;
-    grad(c_mR)      Gauss linear snGradc_mR;
-    //grad(c_mR)      leastSquares;
+    //grad(c_mR)      Gauss linear snGradc_mR;
+    grad(c_mR)      leastSquares;
 }
 
 divSchemes
@@ -42,12 +42,14 @@ divSchemes
 laplacianSchemes
 {
     default         none;
+    laplacian(sqr((1|deltaCoeffs)),grad(c_mR)) Gauss linear uncorrected;
 }
 
 interpolationSchemes
 {
     default        none;
     interpolate(grad(c_mR)) downwind snGradc_mR; //linear;
+    interpolate(laplacian(sqr((1|deltaCoeffs)),grad(c_mR))) downwind snGradc_mR;
 }
 
 snGradSchemes

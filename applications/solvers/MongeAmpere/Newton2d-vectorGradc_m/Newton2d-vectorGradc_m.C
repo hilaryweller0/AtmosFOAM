@@ -135,12 +135,30 @@ int main(int argc, char *argv[])
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
         gradc_mR = fvc::interpolate(fvc::grad(c_mR));
+
+        // test laplacian smoothing of the gradient
+        gradc_mR = fvc::interpolate( 
+                    fvc::laplacian( sqr( 1/rMesh.deltaCoeffs()) ,fvc::grad(c_mR)) 
+                                     );
+
+
 //        surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
 //        gradc_mR += fvc::snGrad(c_mR) * deltaRHat
 //                  - (gradc_mR & deltaRHat) * deltaRHat;
 
         // transfer the gradient to the computational mesh
         gradc_m.internalField() = gradc_mR.internalField();
+
+        //gradc_m = fvc::interpolate(Hessian) & fvc::interpolate(fvc::grad(c_m));
+        //gradc_m = fvc::interpolate(Hessian & fvc::grad(c_m));
+        //        gradc_m_cov = fvc::interpolate(inv(Hessian + dimensionedTensor("", dimless, tensor(1,0,0,0,1,0,0,0,1))) & fvc::grad(c_m));
+        //gradc_m = fvc::interpolate(inv(Hessian + dimensionedTensor("", dimless, tensor(1,0,0,0,1,0,0,0,1))) & fvc::grad(c_m));
+        //gradc_m_cov = fvc::interpolate(fvc::grad(c_m));
+        
+        
+        //gradc_m = fvc::interpolate( fvc::grad(c_m) / detHess );
+        
+
 
         // The divergence of sngradc_m
         surfaceScalarField flux = mesh.Sf() & gradc_m;

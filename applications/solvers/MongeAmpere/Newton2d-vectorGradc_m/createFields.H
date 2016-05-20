@@ -158,6 +158,14 @@ surfaceVectorField gradc_m
     fvc::interpolate(fvc::grad(c_m))
 );
 
+surfaceVectorField gradc_m_cov
+(
+    IOobject("gradc_m_cov", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    fvc::interpolate(fvc::grad(c_m))
+);
+
+
 // The gradient of c_m on the physical mesh
 surfaceVectorField gradc_mR
 (
