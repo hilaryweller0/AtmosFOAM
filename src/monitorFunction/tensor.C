@@ -27,15 +27,15 @@ License
 #include "mathematicalConstants.H"
 
 using namespace std;
-# include "eispack.H"
-
+#include "eispack.H"
 
 using namespace Foam::constant::mathematical;
 
-namespace SomeNameSpace
-{
-    #include "lapacke.h"
-}
+//namespace SomeNameSpace
+//{
+    #include <lapacke.h>
+    #undef I
+//}
 
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
@@ -95,14 +95,10 @@ namespace Foam
 }
 
 
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Foam::vector Foam::eigenValues(const tensor& t)
 {
-    
-
-
     // The eigenvalues
     scalar i, ii, iii;
 
@@ -192,66 +188,67 @@ Foam::vector Foam::eigenValues(const tensor& t)
                 << endl;
 
             //now call eispack instead...
-            if (eispack) {
+            if (eispack)
+            {
                 Info << "Calling EISPACK for the eigenvalue computation" << endl;
                 
                 
                 // EISPACK STUFF
-                double aa[3*3] = {
+                double aa[3*3] =
+                {
                     t.xx(), t.xy(), t.xz(), 
                     t.yx(), t.yy(), t.xz(), 
-                    t.zx(), t.zy(), t.zz() };
+                    t.zx(), t.zy(), t.zz()
+                };
                 //double a2[3*3];
-                
+            
                 //Info().precision(5); //PAB THIS IS HOW YOU GET MORE DP IN THE OUTPUT
-                
+            
                 int ierr;
                 int matz;
                 int n = 3;
                 //    double *r;
                 double w[3];
                 double x[3*3];
-                
+            
                 matz = 1;
-                
-                ierr = rs ( n, aa, w, matz, x );
-                
+            
+                ierr = rs( n, aa, w, matz, x );
+            
                 if ( ierr != 0 )
-                    {
-                        Info << "\n";
-                        Info << "TEST06 - Warning!\n";
-                        Info << "  The error return flag IERR = " << ierr << "\n";
-                        //            return;
-                        i = 0;
-                        ii = 0;
-                        iii = 0;
-                    }
-                
+                {
+                    Info << "\n";
+                    Info << "TEST06 - Warning!\n";
+                    Info << "  The error return flag IERR = " << ierr << "\n";
+                    //            return;
+                    i = 0;
+                    ii = 0;
+                    iii = 0;
+                }
+            
                 i = w[0];
                 ii = w[1];
                 iii = w[2];
-                
+            
                 // END OF EISPACK STUFF
             }
             else
+            {
+                if (mag(P) < SMALL)
                 {
-                    if (mag(P) < SMALL)
-                        {
-                            i = cbrt(QQ/2);
-                        }
-                    else
-                        {
-                            scalar w = cbrt(- Q - sqrt(QQ - PPP));
-                            i = w + P/w - aBy3;
-                        }
-                    
-                    //return vector(-VGREAT, i, VGREAT);
-                    return vector(i, i, i);
+                    i = cbrt(QQ/2);
                 }
+                else
+                {
+                    scalar w = cbrt(- Q - sqrt(QQ - PPP));
+                    i = w + P/w - aBy3;
+                }
+                
+                //return vector(-VGREAT, i, VGREAT);
+                return vector(i, i, i);
+            }
         }
     }
-
-    //}
 
     // Sort the eigenvalues into ascending order
     if (i > ii)
@@ -273,10 +270,12 @@ Foam::vector Foam::eigenValues(const tensor& t)
     Info().precision(16); //PAB THIS IS HOW YOU GET MORE DP IN THE OUTPUT
     Info << "of eigenvalues = " << i << " " << ii << " " << iii << endl;
     // EISPACK STUFF
-    double aa[3*3] = {
+    double aa[3*3] =
+    {
         t.xx(), t.xy(), t.xz(), 
         t.yx(), t.yy(), t.xz(), 
-        t.zx(), t.zy(), t.zz() };
+        t.zx(), t.zy(), t.zz()
+    };
     //double a2[3*3];
     
     //Info().precision(5); //PAB THIS IS HOW YOU GET MORE DP IN THE OUTPUT
@@ -290,7 +289,7 @@ Foam::vector Foam::eigenValues(const tensor& t)
     
     matz = 0;
     
-    ierr = rs ( n, aa, w, matz, x );
+    ierr = rs(n, aa, w, matz, x);
     
     Info << "eiseigenvalues = " << w[0] << " " << w[1] << " " << w[2] << " " << ierr << endl;
     Info().precision(5);
