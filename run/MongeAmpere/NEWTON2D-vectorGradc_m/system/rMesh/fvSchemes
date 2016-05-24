@@ -49,7 +49,9 @@ interpolationSchemes
 {
     default        none;
     interpolate(grad(c_mR)) downwind snGradc_mR; //linear;
-    interpolate(laplacian(sqr((1|deltaCoeffs)),grad(c_mR))) downwind snGradc_mR;
+    // the following is for laplacian smoothing of gradc_m
+    interpolate((grad(c_mR)+laplacian(sqr((1|deltaCoeffs)),grad(c_mR)))) downwind snGradc_mR;
+    interpolate((grad(c_mR)+(0.2*laplacian(sqr((1|deltaCoeffs)),grad(c_mR))))) downwind snGradc_mR;
 }
 
 snGradSchemes

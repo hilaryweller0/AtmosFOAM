@@ -134,11 +134,11 @@ int main(int argc, char *argv[])
         // calculate the gradient of c_m in physical space (with compact
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
-        gradc_mR = fvc::interpolate(fvc::grad(c_mR));
+        //gradc_mR = fvc::interpolate(fvc::grad(c_mR));
 
         // test laplacian smoothing of the gradient
-        gradc_mR = fvc::interpolate( 
-                    fvc::laplacian( sqr( 1/rMesh.deltaCoeffs()) ,fvc::grad(c_mR)) 
+                gradc_mR = fvc::interpolate( fvc::grad(c_mR)+
+                    0.2*fvc::laplacian(sqr( 1/rMesh.deltaCoeffs()) ,fvc::grad(c_mR)) 
                                      );
 
 
