@@ -86,6 +86,11 @@ int main(int argc, char *argv[])
        * dimensionedScalar("", dimLength,mesh.bounds().span().y())/min(mesh.V());
     Info << "matrixRelax = " << matrixRelax << endl;
     const int nCorr = readLabel(mesh.solutionDict().lookup("nCorrectors"));
+    const scalar gradientSmoothingCoeff = readScalar
+    (
+        controlDict.lookup("gradientSmoothingCoeff")
+    );
+    const label nSmooth = readLabel(controlDict.lookup("nSmooth"));
 
     #include "createFields.H"
 
@@ -131,34 +136,20 @@ int main(int argc, char *argv[])
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
-        // calculate the gradient of c_m in physical space (with compact
+        // calculate the gradient of c_m in physical space (without compact
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
-        //gradc_mR = fvc::interpolate(fvc::grad(c_mR));
+        volVectorField gradc_mR_c("gradc_mR_c",fvc::grad(c_mR));
 
-        // test laplacian smoothing of the gradient
-                gradc_mR = fvc::interpolate( fvc::grad(c_mR)+
-                    0.2*fvc::laplacian(sqr( 1/rMesh.deltaCoeffs()) ,fvc::grad(c_mR)) 
-                                     );
-
-
-//        surfaceVectorField deltaRHat = rMesh.delta()/mag(rMesh.delta());
-//        gradc_mR += fvc::snGrad(c_mR) * deltaRHat
-//                  - (gradc_mR & deltaRHat) * deltaRHat;
-
-        // transfer the gradient to the computational mesh
-        gradc_m.internalField() = gradc_mR.internalField();
-
-        //gradc_m = fvc::interpolate(Hessian) & fvc::interpolate(fvc::grad(c_m));
-        //gradc_m = fvc::interpolate(Hessian & fvc::grad(c_m));
-        //        gradc_m_cov = fvc::interpolate(inv(Hessian + dimensionedTensor("", dimless, tensor(1,0,0,0,1,0,0,0,1))) & fvc::grad(c_m));
-        //gradc_m = fvc::interpolate(inv(Hessian + dimensionedTensor("", dimless, tensor(1,0,0,0,1,0,0,0,1))) & fvc::grad(c_m));
-        //gradc_m_cov = fvc::interpolate(fvc::grad(c_m));
-        
-        
-        //gradc_m = fvc::interpolate( fvc::grad(c_m) / detHess );
-        
-
+        // Transfer the cell centre gradient to the computational mesh, 
+        // smooth then interpolate
+        gradc_m_c.internalField() = gradc_mR_c.internalField();
+        for(int i = 0; i < nSmooth; i++)
+        {
+            gradc_m_c += gradientSmoothingCoeff
+                        *fvc::laplacian(sqr(1/mesh.deltaCoeffs()), gradc_m_c);
+        }
+        gradc_m = fvc::interpolate(gradc_m_c);
 
         // The divergence of sngradc_m
         surfaceScalarField flux = mesh.Sf() & gradc_m;

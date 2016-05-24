@@ -150,21 +150,21 @@ surfaceScalarField snGradc_mR
     fvc::snGrad(c_mR)
 );
 
+// Cell centred gradc_m on the computational mesh
+volVectorField gradc_m_c
+(
+    IOobject("gradc_m_c", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    fvc::grad(c_m)
+);
+
 // The gradient of c_m on on the computational mesh
 surfaceVectorField gradc_m
 (
     IOobject("gradc_m", runTime.timeName(), mesh,
              IOobject::NO_READ, IOobject::AUTO_WRITE),
-    fvc::interpolate(fvc::grad(c_m))
+    fvc::interpolate(gradc_m_c)
 );
-
-surfaceVectorField gradc_m_cov
-(
-    IOobject("gradc_m_cov", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    fvc::interpolate(fvc::grad(c_m))
-);
-
 
 // The gradient of c_m on the physical mesh
 surfaceVectorField gradc_mR
