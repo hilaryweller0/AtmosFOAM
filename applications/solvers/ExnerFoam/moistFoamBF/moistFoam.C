@@ -52,6 +52,10 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
+    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
+    #include "initEnergy.H"
+    #include "energy.H"
+    #include "initCourantFile.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -75,38 +79,44 @@ int main(int argc, char *argv[])
 
         #include "rhoEqn.H"
         #include "moisture.H"
-        Info << "condenseRate goes from " << min(condenseRate).value()
-             << " to " << max(condenseRate).value() << endl;
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
             #include "rhoThetaEqn.H"
             #include "moisture.H"
             #include "exnerEqn.H"
-            p = pRef*pow(Exner, 1/kappam);
+            p = pRef*pow(Exner, 1/kappa);
         }
         
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
         
         // Updates for next time step
-        dVdt += rhof*gd
-          - R*H.magd()*rhof*fvc::interpolate(thetaRho/kappam)*fvc::snGrad(Exner)
-             - muSponge*V;
+        
+        thetaRho = fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta");
+        dVdt += rhof*gd - H.magd()*Cp*rhof*thetaRho*fvc::snGrad(Exner)
+              - muSponge*V;
+        divU = fvc::div(U);
+        divUtheta = fvc::div(U, theta);
+        divUrv = fvc::div(U, rv);
+        divUrl = fvc::div(U, rl);
         
         #include "compressibleContinuityErrs.H"
 
-        thetae = T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(qv+ql)/qd))
-                *Foam::exp(Lv*rv/((Cp+Cpl*(qv+ql)/qd)*T));
+        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
+                                        - initHeat;
+        normalisedHeatDiff = (totalHeatDiff/initHeat).value();
+        #include "energy.H"
 
-        Info << "ql goes from " << min(ql).value() << " to "<<max(ql).value()
+        thetae = T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(rv+rl)))
+                *Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T));
+
+        Info << "rl goes from " << min(rl).value() << " to "<<max(rl).value()
              <<endl;
-        Info << "qv goes from " << min(qv).value() << " to "<<max(qv).value()
+        Info << "rv goes from " << min(rv).value() << " to "<<max(rv).value()
              << endl;
         Info << "thetae goes from " << min(thetae).value()
              << " to "<<max(thetae).value() << endl;
-        Info << "condenseRate goes from " << min(condenseRate).value()
-             << " to " << max(condenseRate).value() << endl;
 
        runTime.write();
 

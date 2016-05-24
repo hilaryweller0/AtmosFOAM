@@ -1,11 +1,10 @@
 {
-    kappam = Rm/cpml;
-    
-    Psi = rho*pow(rho*R*thetaRho/pRef, kappam/(kappam-1));
+    Psi = rho*pow(R*rho*theta/pRef*(1+rv/epsilon), kappa/(kappa-1));
     rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
     
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
+    thetaRho = fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta");
 
     for (int corr=0; corr<nCorr; corr++)
     {
@@ -24,20 +23,20 @@
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
-        gradPcoeff = R*fvc::interpolate(thetaRho/kappam);
-        gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
+        surfaceScalarField gradPcoeff = G*offCentre*Cp*dt
+                                        *rhof*thetaRho;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
             U = H.ddirToFlux(V)
-              - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
+              - H.ddirToFluxCorr(gradPcoeff*fvc::snGrad(Exner)*H.magd());
 
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              - (1-offCentre)*drhodt.oldTime()
+              + (1-offCentre)*divU
               + offCentre*fvc::div(U)
-              - fvm::laplacian(offCentre*gradPcoeff2, Exner)
+              - fvm::laplacian(offCentre*gradPcoeff, Exner)
             );
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
@@ -53,7 +52,7 @@
             {
                 U += ExnerEqn.flux()/offCentre;
                 //Uv = U/rhof;
-                V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
+                V -= gradPcoeff*fvc::snGrad(Exner)*H.magd();
                 u = H.reconstructd(V/rhof);
                 Uf = fvc::interpolate(u);
             }
