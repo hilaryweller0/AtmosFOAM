@@ -46,7 +46,7 @@ centre (0 0 0);
 Gamma1 Gamma1 [0 0 0 0 0] 1;
 Gamma2 Gamma2 [0 0 0 0 0] 1;
 gradientSmoothingCoeff 0.2;
-nSmooth 100;
+nSmooth 2;
 conv 1.0e-8;
 matrixRelax 1e-4;
 

@@ -46,7 +46,8 @@ laplacianSchemes
 
 interpolationSchemes
 {
-    default        linear;
+    default        none;
+    interpolate(grad(c_mR)) downwind snGradc_mR;
 }
 
 snGradSchemes

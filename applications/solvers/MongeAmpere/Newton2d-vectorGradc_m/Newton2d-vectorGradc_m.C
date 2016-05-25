@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
         // calculate the gradient of c_m in physical space (without compact
         // correction of the normal component)
         snGradc_mR = fvc::snGrad(c_mR);
-        volVectorField gradc_mR_c("gradc_mR_c",fvc::grad(c_mR));
+        volVectorField gradc_mR_c("gradc_mR_c", fvc::grad(c_mR));
 
         // Transfer the cell centre gradient to the computational mesh, 
         // smooth then interpolate
