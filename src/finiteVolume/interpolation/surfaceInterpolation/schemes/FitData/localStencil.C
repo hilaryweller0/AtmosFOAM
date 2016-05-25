@@ -20,6 +20,19 @@ localPoints(stencilPoints.size(), point(0, 0, 0))
     }
 }
 
+void Foam::localStencil::upwindUpwindIndices(List<label>& indices) const
+{
+    point upwind = localPoints[0];
+
+    forAll(localPoints, i)
+    {
+        if (localPoints[i].x() < upwind.x())
+        {
+            indices.append(i);
+        }
+    }
+}
+
 scalar Foam::localStencil::scaleLocalCoordinates
 (
     const point& origin,
