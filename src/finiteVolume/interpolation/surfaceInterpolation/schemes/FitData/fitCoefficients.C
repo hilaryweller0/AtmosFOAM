@@ -82,10 +82,15 @@ void Foam::fitCoefficients::applyCorrection(const bool goodFit)
 
 bool Foam::fitCoefficients::stable() const
 {
-    scalar upwind = coefficients[0];
-    scalar downwind = coefficients[1];
+    scalar upwind = coefficients[0];                                            
+    scalar magSumOfOthers = 0.0;
 
-    return mag(downwind) < upwind && upwind <= 1 + downwind && upwind >= 0.5 && central_are_largest();
+    for (int i=1; i < coefficients.size(); i++)
+    {
+        magSumOfOthers += mag(coefficients[i]);
+    
+
+    return upwind >= magSumOfOthers;
 }
 
 bool Foam::fitCoefficients::central_are_largest() const
