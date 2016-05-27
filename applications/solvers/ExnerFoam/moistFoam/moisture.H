@@ -12,8 +12,8 @@ condenseRate =
     (condForce - condLim + Foam::sqrt(sqr(condForce) + sqr(condLim)))/dt
 );
 
-drhovdt = fvc::div(U, qv) - condenseRate;
-drholdt = fvc::div(U, ql) + condenseRate;
+drhovdt = -fvc::div(U, qv) - condenseRate;
+drholdt = -fvc::div(U, ql) + condenseRate;
 
 // Update mass mixing ratios without splitting
 qv =
@@ -26,7 +26,7 @@ qv =
 
 ql =
 (
-    ql.oldTime()*rho.oldTime() - dt*
+    ql.oldTime()*rho.oldTime() + dt*
     (
         offCentre*drholdt + (1-offCentre)*drholdt.oldTime()
     )

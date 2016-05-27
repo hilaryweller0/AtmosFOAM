@@ -13,12 +13,12 @@ volScalarField Exner
     mesh
 );
 
-Info<< "Reading field theta\n" << endl;
-volScalarField theta
+Info<< "Reading field thetaRho\n" << endl;
+volScalarField thetaRho
 (
     IOobject
     (
-        "theta",
+        "thetaRho",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -28,31 +28,43 @@ volScalarField theta
 );
 
 // Water vapour and liquid water mass mixing ratios
-volScalarField rv
+volScalarField qv
 (
     IOobject
     (
-        "rv", runTime.timeName(), mesh,
+        "qv", runTime.timeName(), mesh,
         IOobject::MUST_READ, IOobject::AUTO_WRITE
     ),
     mesh
 );
-rv == 0.5*rt0;
-volScalarField rl
-(
-    IOobject
-    (
-        "rl", runTime.timeName(), mesh,
-        IOobject::MUST_READ, IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-rl == 0.1*rt0;
+qv == 0.5*qt0;
 
-volScalarField T("T", Exner*theta);
-volScalarField p("p", pRef*pow(Exner, 1/kappa));
+volScalarField ql
+(
+    IOobject
+    (
+        "ql", runTime.timeName(), mesh,
+        IOobject::MUST_READ, IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+ql == 0.5*qt0;
+
+// Related mixing ratios
+volScalarField qd("qd", 1 - qv - ql);
+volScalarField rv("rv", qv/qd);
+
+// Thermodynamics variable kappa as a function of mixing ratios
+volScalarField cpml("cpml", Cp + Cpv*rv);
+volScalarField Rm("Rm", R + Rv*rv);
+volScalarField kappam("kappam", Rm/cpml);
+
+// Primitive thermodynamic variables
+volScalarField p("p", pRef*pow(Exner, 1/kappam));
+volScalarField T("T", thetaRho*Exner/(1 + qv*(Rv/R-1) - ql));
+
 volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
-volScalarField condenseRate("condenseRate", -rl/dt);
+volScalarField condenseRate("condenseRate", -ql/dt*0);
 volScalarField thetaScale("thetaScale", theta/theta);
 volScalarField rvs("rvs", epsilon*(es/(p-es)));
 
@@ -68,16 +80,9 @@ surfaceScalarField U
 
 
 // Moist theta on the face
-volScalarField thetaRho
+surfaceScalarField gradPcoeff2
 (
-    IOobject("thetaRho", runTime.timeName(), mesh),
-    theta*(1+rv/epsilon)/(1+rt0),
-    theta.boundaryField().types()
-);
-surfaceScalarField thetaf
-(
-    IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(thetaRho)
+    "gradPcoeff2", R*fvc::interpolate(thetaRho/kappam)
 );
 
 label groundBC = -1;

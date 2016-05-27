@@ -14,6 +14,7 @@ IOdictionary initDict
 
 const dimensionedScalar thetae0(initDict.lookup("thetae"));
 const dimensionedScalar rt0(initDict.lookup("totalWaterRatio"));
+const dimensionedScalar qt0 = rt0/(1+rt0);
 const label maxIters = readLabel(initDict.lookup("maxIters"));
 const scalar underRelax = readScalar(initDict.lookup("underRelax"));
 const int BCiters  = readLabel(initDict.lookup("BCiters"));

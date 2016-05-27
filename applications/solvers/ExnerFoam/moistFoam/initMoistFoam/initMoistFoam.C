@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian(Cp*thetaf, Exner)
+              - fvm::laplacian(gradPcoeff2, Exner)
             );
             innerConverged
                 = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
 
             // More inner iterations for moisture variables
-            p = pRef*pow(Exner, 1/kappa);
+            p = pRef*pow(Exner, 1/kappam);
             for(label it = 0; it < 4; it++)
             {
                 // Rosenbrock step to find temperatures, and vapour pressures
@@ -98,15 +98,15 @@ int main(int argc, char *argv[])
         
                 // Calculate saturation vapour pressure and set rv to be saturated
                 es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-                rvs = epsilon*es/(p-es);
-                // Update rv with under-relaxation
-                rv == max
+                qvs = es/p;
+                // Update qv with under-relaxation
+                qv == max
                 (
-                    min((1-underRelax)*rv + underRelax*rvs, rt0),
+                    min((1-underRelax)*qv + underRelax*qvs, qt0),
                     scalar(0)
                 );
                 
-                condenseRate = (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T))));
+                condenseRate = qv - qvs;
                 Info << "condenseRate goes from "  << min(condenseRate).value() 
                      << " to " << max(condenseRate).value() << endl;
             }
