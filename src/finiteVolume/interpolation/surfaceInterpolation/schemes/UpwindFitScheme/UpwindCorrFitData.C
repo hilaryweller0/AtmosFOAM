@@ -56,7 +56,7 @@ Foam::UpwindCorrFitData<Polynomial>::UpwindCorrFitData
 {
     if (debug)
     {
-        Info<< "Contructing UpwindCorrFitData<Polynomial>" << endl;
+        Info<< "Constructing UpwindCorrFitData<Polynomial>" << endl;
     }
 
     calcFit();
