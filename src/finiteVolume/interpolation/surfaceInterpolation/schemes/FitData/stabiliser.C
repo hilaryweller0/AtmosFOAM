@@ -24,6 +24,21 @@ label Foam::stabiliser::stabilise
         weights.downwind() -= 1.0;
     } while (!c.stable() && weights.downwind() >= 1.0);
 
+    // revert to something akin to linearUpwind
+    if (!c.stable())
+    {
+        weights.downwind() = 1.0;
+        weightedMatrix matrix(B, weights);
+        // include constant and linear terms
+        labelList columnIndices(0, 0);
+        columnIndices.append(0);
+        columnIndices.append(1);
+//        columnIndices.append(2); // FIXME: hardwired for 2D stencils
+        columns = 2;
+        autoPtr<weightedMatrix> m = matrix.subset(columnIndices);
+        m->populate(c);
+    }
+
     coefficients.copyFrom(c);
 
     return c.stable() ? columns : 0;
@@ -56,8 +71,6 @@ autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
             }
             autoPtr<weightedMatrix> m = matrix.subset(columnIndices);
             m->populate(c);
-            //weightedMatrix unweighted(B);
-            //return unweighted.subset(columnIndices);
             if (c.central_are_largest())
             {
                 weightedMatrix unweighted(B);
