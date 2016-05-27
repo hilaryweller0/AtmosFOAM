@@ -23,7 +23,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
 
     stabiliser stabiliser;
-    const label columns = stabiliser.stabilise(B(), weights, coefficients, stencil);
+    const label columns = stabiliser.stabilise(B(), weights, coefficients);
     bool goodFit = (columns > 0);
 
     coefficients.applyCorrection(goodFit);
