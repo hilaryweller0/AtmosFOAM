@@ -7,7 +7,8 @@ label Foam::stabiliser::stabilise
 (
     const scalarRectangularMatrix& B,
     fitWeights& weights,
-    fitCoefficients& coefficients
+    fitCoefficients& coefficients,
+    const localStencil& stencil
 ) const
 {
     autoPtr<weightedMatrix> unweightedMatrix = findStabilisableMatrix(B, weights, coefficients);
@@ -22,7 +23,7 @@ label Foam::stabiliser::stabilise
         matrix.populate(c);
 
         weights.downwind() -= 1.0;
-    } while (!c.stable() && weights.downwind() >= 1.0);
+    } while (!c.stable(stencil) && weights.downwind() >= 1.0);
 
     // revert to something akin to linearUpwind
     if (!c.stable())
@@ -41,7 +42,7 @@ label Foam::stabiliser::stabilise
 
     coefficients.copyFrom(c);
 
-    return c.stable() ? columns : 0;
+    return c.stable(stencil) ? columns : 0;
 }
 
 autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
