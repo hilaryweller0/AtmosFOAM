@@ -26,7 +26,7 @@ label Foam::stabiliser::stabilise
     } while (!c.stable(stencil) && weights.downwind() >= 1.0);
 
     // revert to something akin to linearUpwind
-    if (!c.stable())
+    if (!c.stable(stencil))
     {
         weights.downwind() = 1.0;
         weightedMatrix matrix(B, weights);
