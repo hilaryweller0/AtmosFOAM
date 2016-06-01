@@ -14,8 +14,7 @@ namespace Foam
         (
             const scalarRectangularMatrix& B,
             fitWeights& weights,
-            fitCoefficients& coefficients,
-            const localStencil& stencil
+            fitCoefficients& coefficients
         ) const;
 
     private:

@@ -80,15 +80,14 @@ void Foam::fitCoefficients::applyCorrection(const bool goodFit)
     }
 }
 
-bool Foam::fitCoefficients::stable(const localStencil& stencil) const
+bool Foam::fitCoefficients::stable() const
 {
     scalar upwind = coefficients[0];                                            
     scalar downwind = coefficients[1];
-    scalar magSumOfUpwindUpwind = 0.0;
 
     for (int i=2; i < coefficients.size(); i++)
     {
-        if (coefficients[0] < mag(coefficients[i]) + downwind) return false;
+        if (upwind < mag(coefficients[i]) + downwind) return false;
     }
 
     return true;
