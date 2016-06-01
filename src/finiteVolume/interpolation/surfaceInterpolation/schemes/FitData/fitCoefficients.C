@@ -86,12 +86,15 @@ bool Foam::fitCoefficients::stable(const localStencil& stencil) const
     scalar downwind = coefficients[1];
     scalar magSumOfUpwindUpwind = 0.0;
 
-    for (int i=2; i < coefficients.size(); i++)
+    List<label> upwindUpwindIndices;
+    stencil.upwindUpwindIndices(upwindUpwindIndices);
+
+    forAll(upwindUpwindIndices, i)
     {
-        if (coefficients[0] < mag(coefficients[i]) + downwind) return false;
+        magSumOfUpwindUpwind += mag(coefficients[upwindUpwindIndices[i]]);
     }
 
-    return true;
+    return upwind >= magSumOfUpwindUpwind + downwind;
 }
 
 bool Foam::fitCoefficients::central_are_largest() const
