@@ -25,7 +25,7 @@ namespace Foam
         void copyFrom(const fitCoefficients& source);
         void copyInto(scalarList& target);
         void applyCorrection(const bool goodFit);
-        bool stable(const localStencil& stencil) const;
+        bool stable() const;
         bool central_are_largest() const;
 
     private:
