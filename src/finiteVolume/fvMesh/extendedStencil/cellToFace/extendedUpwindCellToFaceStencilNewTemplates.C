@@ -81,7 +81,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
                 corr += stField[i]*stWeight[i];
             }
 
-            Info << "*** owner " << corr << " for facei " << faceI << endl;
+            //Info << "*** owner " << corr << " for facei " << faceI << endl;
     }
 
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
@@ -96,7 +96,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
                 corr += stField[i]*stWeight[i];
             }
 
-            Info << "*** nei " << corr << " for facei " << faceI << endl;
+            //Info << "*** nei " << corr << " for facei " << faceI << endl;
     }
 
     // Internal faces
