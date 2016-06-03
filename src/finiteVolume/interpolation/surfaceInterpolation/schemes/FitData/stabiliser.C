@@ -25,7 +25,7 @@ label Foam::stabiliser::stabilise
     } while (!c.stable() && weights.downwind() >= 1.0);
 
     // revert to something akin to linearUpwind
-    if (!c.stable(stencil))
+    if (!c.stable())
     {
         weights.downwind() = 1.0;
         weightedMatrix matrix(B, weights);
@@ -33,8 +33,8 @@ label Foam::stabiliser::stabilise
         labelList columnIndices(0, 0);
         columnIndices.append(0);
         columnIndices.append(1);
-//        columnIndices.append(2); // FIXME: hardwired for 2D stencils
-        columns = 2;
+        columnIndices.append(2); // FIXME: hardwired for 2D stencils
+        columns = 3;
         autoPtr<weightedMatrix> m = matrix.subset(columnIndices);
         m->populate(c);
     }
