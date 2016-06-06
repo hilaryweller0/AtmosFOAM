@@ -99,6 +99,13 @@ public:
             const fvMesh& newMesh,
             const volScalarField& oldMonitor
         ) const;
+
+        tmp<surfaceVectorField> grad
+        (
+            const fvMesh& newMesh,
+            const surfaceVectorField& oldMonitor
+        ) const;
+
 };
 
 

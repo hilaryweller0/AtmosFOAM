@@ -115,6 +115,15 @@ tmp<volScalarField> monitorFunctionTanh::map
     return tMon;
 }
 
+
+tmp<surfaceVectorField> monitorFunctionTanh::grad
+(
+    const fvMesh& newMesh,
+    const surfaceVectorField& oldMonitor
+) const
+{
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 

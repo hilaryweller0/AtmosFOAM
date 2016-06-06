@@ -74,6 +74,31 @@ tmp<volScalarField> monitorFunctionMapped::map
     return tMon;
 }
 
+
+tmp<surfaceVectorField> monitorFunctionMapped::grad
+(
+    const fvMesh& newMesh,
+    const surfaceVectorField& oldMonitor
+) const
+{
+    // meshToMesh meshMap
+    // (
+    //     oldMonitor.mesh(), newMesh, meshToMesh::imCellVolumeWeight, false
+    // );
+    
+    // tmp<volVectorField> tMon
+    // (
+    //     new volVectorField
+    //     (
+    //         IOobject("monitor", newMesh.time().timeName(), newMesh,
+    //                  IOobject::NO_READ, IOobject::AUTO_WRITE),
+    //         meshMap.mapSrcToTgt(oldMonitor)
+    //     )
+    // );
+    
+    // return tMon;
+}
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 

@@ -26,6 +26,7 @@ License
 #include "monitorFunctionSech.H"
 #include "addToRunTimeSelectionTable.H"
 #include "volFields.H"
+#include "surfaceFields.H"
 #include "VectorSpaceFunctions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -104,6 +105,52 @@ tmp<volScalarField> monitorFunctionSech::map
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+tmp<surfaceVectorField> monitorFunctionSech::grad
+(
+    const fvMesh& newMesh,
+    const surfaceVectorField& oldMonitor
+) const
+{
+    tmp<surfaceVectorField> tMon
+        (
+         new surfaceVectorField
+         (
+          IOobject
+          (
+           "gradc_m",
+           newMesh.time().timeName(),
+           newMesh,
+           IOobject::NO_READ,
+           IOobject::NO_WRITE
+           ),
+          newMesh,
+          dimensionedVector("zero", dimless/dimLength, vector::zero)
+
+          )
+         );
+    surfaceVectorField& mon = tMon();
+    
+    forAll(mon, faceI)
+    {
+        scalar R = mag(newMesh.Cf()[faceI] - centre_);
+        scalar T = alpha2_*sqr(R) - sqra_;
+        
+        scalar sinhT = sinh(T);
+        scalar coshT = cosh(T);
+        
+        scalar thing = 4*alpha1_*alpha2_*sinhT/(sqr((alpha1_/sqr(coshT))+1)*(coshT*coshT*coshT));
+
+        mon[faceI] = thing*(newMesh.Cf()[faceI] - centre_);
+
+    }
+    
+    //    mon.correctBoundaryConditions();
+       return tMon;
+    
+}
+
+
 
 
 
