@@ -85,12 +85,7 @@ bool Foam::fitCoefficients::stable() const
     scalar upwind = coefficients[0];                                            
     scalar downwind = coefficients[1];
 
-    for (int i=2; i < coefficients.size(); i++)
-    {
-        if (upwind < mag(coefficients[i]) + downwind) return false;
-    }
-
-    return true;
+    return mag(downwind) < upwind && downwind <= 0.5;
 }
 
 bool Foam::fitCoefficients::central_are_largest() const
@@ -98,7 +93,7 @@ bool Foam::fitCoefficients::central_are_largest() const
     scalar smallest_central_coefficient = min(coefficients[0], coefficients[1]);
     for (int i=2; i < coefficients.size(); i++)
     {
-        if (mag(coefficients[i]) > smallest_central_coefficient) return false;
+        if (-coefficients[i] > smallest_central_coefficient) return false;
     }
     return true;
 }
