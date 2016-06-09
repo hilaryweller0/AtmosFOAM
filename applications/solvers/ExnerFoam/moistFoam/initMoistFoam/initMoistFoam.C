@@ -73,11 +73,14 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
-            thetaf = fvc::interpolate(thetaRho);
+            Rm = R + Rv*rv;
+            cpml = Cp + Cpv*rv;
+            kappam = Rm/cpml;
+            gradPcoeff = R*fvc::interpolate(thetaRho/kappam);
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian(gradPcoeff2, Exner)
+              - fvm::laplacian(gradPcoeff, Exner)
             );
             innerConverged
                 = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
@@ -86,35 +89,39 @@ int main(int argc, char *argv[])
             p = pRef*pow(Exner, 1/kappam);
             for(label it = 0; it < 4; it++)
             {
-                // Rosenbrock step to find temperatures, and vapour pressures
-                // Partial pressure of dry air
-                volScalarField pd = p*epsilon/(rv + epsilon);
+                // Temperature from thetae0
+                T = thetae0/pow
+                    (
+                        p/pRef*epsilon/(rv + epsilon),
+                       -R/(Cp+Cpl*(rv+rl))
+                    )
+                    / Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T));
 
-                // Temperature from thetae0 using Rosenbrock step
-                volScalarField a = pow(pd/pRef, -R/(Cp+Cpl*rt0));
-                volScalarField b = Lv*rv/(Cp + Cpl*rt0);
-                T -= (T*a - thetae0*Foam::exp(-b/T))/(a*(1 - b/T));
+                // Latent heat and saturation vapour pressure from T
                 Lv = Lv0 - (Cpl - Cpv)*(T - T0);
-        
-                // Calculate saturation vapour pressure and set rv to be saturated
                 es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-                qvs = es/p;
+                volScalarField qvs = epsilon*es/p
+                                    *(1 + qv*(1-epsilon)/epsilon - ql);
+ 
                 // Update qv with under-relaxation
                 qv == max
                 (
                     min((1-underRelax)*qv + underRelax*qvs, qt0),
                     scalar(0)
                 );
-                
-                condenseRate = qv - qvs;
-                Info << "condenseRate goes from "  << min(condenseRate).value() 
-                     << " to " << max(condenseRate).value() << endl;
+                rv == qv/(1-qt0);
+                rl == rt0 - rv;
+                Info << "Inner iteration, T goes from " << min(T).value()
+                     << " to " << max(T).value() << nl;
             }
-            rl == max(rt0 - rv, scalar(0));
+            ql == qt0 - qv;
         
-            // Calculate theta and thetaRho for hydrostatic balance
-            theta == T/Exner;
-            thetaRho == theta*(1+rv/epsilon)/(1+rt0);
+            // Calculate thetaRho for hydrostatic balance
+            thetaRho == T/Exner*(1 + rv/epsilon)/(1+rt0);
+            
+            Info << "T goes from " << min(T).value() << " to " <<max(T).value()
+                 << "\nthetaRho goes from " << min(thetaRho).value()
+                 << " to " << max(thetaRho).value() << endl;
         }
         scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -132,28 +139,26 @@ int main(int argc, char *argv[])
         Info << topBCval << endl;
         Exner.boundaryField()[topBC] == topBCval;
         
-        Info << "thata goes from " << min(theta).value()
-             << " to " << max(theta).value() << " rl from "
-             << min(rl).value() << " to " << max(rl).value() 
-             << " rv from " << min(rv).value() << " to " << max(rv).value()
+        Info << "ql from " << min(ql).value() << " to " << max(ql).value() 
+             << " qv from " << min(qv).value() << " to " << max(qv).value()
              << endl;
     }
 
-    // Reference profiles of theta, rv and rl for calculating differences
-    volScalarField thetaRef
+    // Reference profiles of thetaRho, qv and ql for calculating differences
+    volScalarField thetaRhoRef
     (
-        IOobject("thetaRef", runTime.constant(), mesh), theta
+        IOobject("thetaRhoRef", runTime.constant(), mesh), thetaRho
     );
-    volScalarField rvRef(IOobject("rvRef", runTime.constant(), mesh), rv);
-    volScalarField rlRef(IOobject("rlRef", runTime.constant(), mesh), rl);
-    thetaRef.write();
-    rvRef.write();
-    rlRef.write();
+    volScalarField qvRef(IOobject("qvRef", runTime.constant(), mesh), qv);
+    volScalarField qlRef(IOobject("qlRef", runTime.constant(), mesh), ql);
+    thetaRhoRef.write();
+    qvRef.write();
+    qlRef.write();
 
-    Info << "Adding bouyancy perturbation and re-calculating rv and rl" << endl;
+    Info << "Adding bouyancy perturbation and re-calculating qv and ql" << endl;
     // Cell where bouancy perturbation is maximum
     label cellMax = 0;
-    forAll(theta, celli)
+    forAll(thetaRho, celli)
     {
         scalar L = Foam::sqrt
         (
@@ -171,34 +176,37 @@ int main(int argc, char *argv[])
             }
         }
     }
-    // Interate so that new theta, rv and rl are in balance
-    for(label iter = 0; iter < 5; iter++)
-    {
-        theta = thetaRho*(1 + rt0)/(1+rv/epsilon)*thetaScale;
-        T = theta*Exner;
-        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-        rvs = epsilon*es/(p-es);
-        rv == max(min(rvs, rt0), scalar(0));
-        Info << "Bouyancy perturbation " << iter << " theta at centre = "
-             << theta[cellMax] << nl;
-    }
-    rl == max(rt0 - rv, scalar(0));
-    thetaRho == theta*(1+rv/epsilon)/(1+rt0);
+//    // Interate so that new thetaRho, qv and ql are in balance
+//    thetaRho *= thetaScale;
+//    for(label iter = 0; iter < 5; iter++)
+//    {
+//        T = thetaRho*Exner/(1 + qv*(Rv/R-1) - ql);
+//        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
+//        qv == max
+//        (
+//            min((1-underRelax)*qv + underRelax*es/p, qt0),
+//            scalar(0)
+//        );
+//    }
+    rv == qv/(1-qt0);
+    rl == rt0 - rv;
+    ql == max(qt0 - qv, scalar(0));
 
-    theta.write();
     thetaRho.write();
+    qv.write();
+    ql.write();
     rv.write();
     rl.write();
     
-//    // Additional diagnositcs for de-bugging
-//    p.write();
-//    T.write();
-//    Lv.write();
-//    es.write();
+    // Additional diagnositcs for de-bugging
+    p.write();
+    T.write();
+    Lv.write();
+    es.write();
 
-    // Change the top boundary type to be fixedFluxBuoyantExner
+    // Change the top boundary type to be fixedFluxBuoyantExnerMoist
     wordList ExnerBCs = Exner.boundaryField().types();
-    ExnerBCs[topBC] = "fixedFluxBuoyantExner";
+    ExnerBCs[topBC] = "fixedFluxBuoyantExnerMoist";
     volScalarField ExnerNew
     (
         IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
@@ -215,23 +223,9 @@ int main(int argc, char *argv[])
         T*pow(p*epsilon/(rv + epsilon)/pRef, -R/(Cp+Cpl*rt0))
        *Foam::exp(Lv*rv/((Cp+Cpl*rt0)*T))
     );
+    Info << "thetae goes from " << min(thetae).value() << " to "
+         << max(thetae).value() << endl;
     thetae.write();
-
-    // Calculate and write out mass mixing ratios
-    volScalarField qv
-    (
-        IOobject("qv", runTime.timeName(), mesh),
-        rv*(1 - rt0/(1+rt0)),
-        rv.boundaryField().types()
-    );
-    volScalarField ql
-    (
-        IOobject("ql", runTime.timeName(), mesh),
-        rl*(1 - rt0/(1+rt0)),
-        rl.boundaryField().types()
-    );
-    qv.write();
-    ql.write();
 
     return 0;
 }

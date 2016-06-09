@@ -5,7 +5,7 @@ cpml = Cp + Cpv*rv;
 Rm = R + Rv*rv;
 Lv = Lv0 - (Cpl - Cpv)*(T - T0);
 
-dRhoThetadt = thetaRho/qd*
+dRhoThetadt = thetaRho*Rm/Rv*
               (
                   Rv/Rm
                 - Foam::log(Exner)*(Rv/Rm + (Cpl - Cpv)/cpml)

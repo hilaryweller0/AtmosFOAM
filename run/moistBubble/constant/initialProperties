@@ -29,8 +29,8 @@ bubbleRadii  (2000 1 2000);
 
 thetae thetae [0 0 0 1 0] 320;
 totalWaterRatio totalWaterRatio [0 0 0 0 0] 0.02;
-maxIters 25;
-BCiters 40;
+maxIters 10;
+BCiters 3;
 BCtol 1e-4;
 boundaryRelaxation 0.5;
 // under-relaxation of rv (1 means no under-relaxation)

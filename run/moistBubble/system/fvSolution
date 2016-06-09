@@ -55,11 +55,4 @@ iterations
     nAdvectionSubSteps 1;
 }
 
-initialisation
-{
-    maxIters 50;
-    BCiters  3;
-    BCtol    1e-6;
-}
-
 // ************************************************************************* //

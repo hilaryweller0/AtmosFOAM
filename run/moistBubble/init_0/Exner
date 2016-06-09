@@ -23,24 +23,24 @@ boundaryField
 {
     ground
     {
-        type            fixedFluxBuoyantExner;
+        type            fixedFluxBuoyantExnerMoist;
         gradient        uniform 0;
         value           uniform 1;
     }
     top
     {
         type            fixedValue;
-        value           uniform 0.386449668753;
+        value           uniform 0.38639905179;
     }
     left
     {
-        type            fixedFluxBuoyantExner;
+        type            fixedFluxBuoyantExnerMoist;
         gradient        uniform 0;
         value           uniform 1;
     }
     right
     {
-        type            fixedFluxBuoyantExner;
+        type            fixedFluxBuoyantExnerMoist;
         gradient        uniform 0;
         value           uniform 1;
     }

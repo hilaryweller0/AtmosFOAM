@@ -19,7 +19,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [TDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [TDiff filledContours -2e-7 2e-7 2e-8 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 annotate "minMax -1e3 -100";

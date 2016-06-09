@@ -188,7 +188,7 @@ volScalarField drholdt("drhovdt", condenseRate);
 drholdt.oldTime();
 
 // Primitive thermodynamic variables
-volScalarField p("p", rho*R*thetaRho*Exner);
+volScalarField p("p", pRef*pow(Exner, 1/kappam));
 volScalarField T("T", thetaRho*Exner/(1 + qv*(Rv/R-1) - ql));
 
 // fix no flow boundaries

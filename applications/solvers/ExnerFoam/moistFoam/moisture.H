@@ -1,11 +1,11 @@
-// Calculate the condensation rate and advect the water vapour and liquid
+{// Calculate the condensation rate and advect the water vapour and liquid
 
 // Calculate the saturation vapour pressure, es
 volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
 
 // Calculation of condensation rate based on Jahn, Knoth, Konig and Vogelsberg
-volScalarField condForce = rho*qv - es/(T*Rv);
-volScalarField condLim = rho*ql;
+volScalarField condForce("condForce", rho*qv - es/(T*Rv));
+volScalarField condLim("condLim", rho*ql);
 
 condenseRate = 
 (
@@ -35,4 +35,4 @@ ql =
 // Update related mixing ratios
 qd = 1 - qv - ql;
 rv = qv/qd;
-
+}

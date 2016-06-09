@@ -14,11 +14,14 @@ mkdir 0
 cp -r init_0/* 0
 initMoistFoam
 ln -sf ../0/Exner constant/ExnerRef
-sed -i 's/fixedFluxBuoyantExner/fixedFluxBuoyantExnerMoist/g' 0/Exner
 
 time=0
 gmtFoam -time $time Exner
 gv $time/Exner.pdf &
+gmtFoam -time $time p
+gv $time/p.pdf &
+gmtFoam -time $time T
+gv $time/T.pdf &
 gmtFoam -time $time thetaRho
 gv $time/thetaRho.pdf &
 gmtFoam -time $time thetae
@@ -27,6 +30,13 @@ gmtFoam -time $time qv
 gv $time/qv.pdf &
 gmtFoam -time $time ql
 gv $time/ql.pdf &
+gmtFoam -time $time Lv
+gv $time/Lv.pdf &
+gmtFoam -time $time es
+gv $time/es.pdf &
+
+gmtFoam -time $time condenseRate
+gv $time/condenseRate.pdf &
 
 # run moistFoam
 moistFoam >& log &
