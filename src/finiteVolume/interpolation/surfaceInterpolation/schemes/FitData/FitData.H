@@ -147,7 +147,8 @@ public:
         (
             fitCoefficients& coefficients, // coefficients to be set
             const List<point>& stencilPoints,  // Stencil points
-            const label faci     // Current face index
+            const label faci,     // Current face index
+            bool owner
         );
 
         //- Calculate the fit for the specified face and set the coefficients
@@ -158,7 +159,7 @@ public:
             const List<point>&,  // Stencil points
             const scalar wLin,   // Weight for linear approximation (weights
                                  // nearest neighbours)
-            const label faci     // Current face index
+            const label faci    // Current face index
         );
 
         //- Calculate the fit for all the faces

@@ -14,7 +14,9 @@ namespace Foam
         (
             const scalarRectangularMatrix& B,
             fitWeights& weights,
-            fitCoefficients& coefficients
+            fitCoefficients& coefficients,
+            label faceI,
+            bool owner
         ) const;
 
     private:
@@ -22,7 +24,9 @@ namespace Foam
         (
             const scalarRectangularMatrix& B,
             const fitWeights& weights,
-            const fitCoefficients& coefficients
+            const fitCoefficients& coefficients,
+            label faceI,
+            bool owner
         ) const;
     };
 }

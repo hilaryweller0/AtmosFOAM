@@ -112,7 +112,8 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
 (
     fitCoefficients& coefficients,
     const List<point>& C,
-    const label facei
+    const label facei,
+    bool owner
 )
 {
     vector idir(1,0,0);
@@ -134,7 +135,7 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     const Basis basis(idir, jdir, kdir);
     const localStencil stencil(C, p0, basis);
 
-    return polynomialFit.fit(coefficients, weights, stencil);
+    return polynomialFit.fit(coefficients, weights, stencil, facei, owner);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

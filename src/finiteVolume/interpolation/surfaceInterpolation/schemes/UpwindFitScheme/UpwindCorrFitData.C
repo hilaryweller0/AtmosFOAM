@@ -89,7 +89,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 
     Info << "===OWNER===" << endl;
     stencilWeights ownerWeights(mesh, "owner");
-    fit(owncoeffs_, stencilPoints, ownerWeights);
+    fit(owncoeffs_, stencilPoints, ownerWeights, true);
     ownerWeights.write();
 
     this->stencil().collectData
@@ -102,7 +102,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 
     Info << "===NEIGHBOUR===" << endl;
     stencilWeights neiWeights(mesh, "nei");
-    fit(neicoeffs_, stencilPoints, neiWeights);
+    fit(neicoeffs_, stencilPoints, neiWeights, false);
     neiWeights.write();
 }
 
@@ -110,7 +110,9 @@ template<class Polynomial>
 void Foam::UpwindCorrFitData<Polynomial>::fit(
         List<scalarList>& coeffs,
         const List<List<point> >& stencilPoints,
-        stencilWeights& stencilWts)
+        stencilWeights& stencilWts,
+        bool owner
+)
 {
     const fvMesh& mesh = this->mesh();
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
@@ -127,7 +129,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
             >::linearCorrection(),
             w[facei]
         );
-        autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei]);
+        autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei], owner);
         coefficients.copyInto(coeffs[facei]);
         stencilWts.fitted(facei, f, stencilPoints[facei]);
     }
@@ -153,7 +155,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
                     >::linearCorrection(),
                     pw[i]
                 );
-                autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei]);
+                autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei], owner);
                 coefficients.copyInto(coeffs[facei]);
                 stencilWts.fitted(facei, f, stencilPoints[facei]);
                 facei++;
@@ -167,7 +169,8 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
 (
     const label faceI,
     fitCoefficients& coefficients,
-    const List<point>& stencilPoints
+    const List<point>& stencilPoints,
+    bool owner
 )
 {
     autoPtr<fitResult> fit = FitData
@@ -177,7 +180,7 @@ autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
         Polynomial
     >::calcFit
     (
-        coefficients, stencilPoints, faceI
+        coefficients, stencilPoints, faceI, owner
     );
 
     if (!fit->good)

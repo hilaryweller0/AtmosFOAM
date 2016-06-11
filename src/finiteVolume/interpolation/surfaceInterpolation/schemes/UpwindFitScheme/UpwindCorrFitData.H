@@ -124,14 +124,16 @@ private:
     (
             List<scalarList>& coeffs,
             const List<List<point> >& stencilPoints,
-            stencilWeights& stencilWts
+            stencilWeights& stencilWts,
+            bool owner
     );
 
     autoPtr<fitResult> fit
     (
         const label faceI,
         fitCoefficients& coefficients,
-        const List<point>& stencilPoints
+        const List<point>& stencilPoints,
+        bool owner
     );
 };
 

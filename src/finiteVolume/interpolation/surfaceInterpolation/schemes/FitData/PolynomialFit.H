@@ -24,7 +24,9 @@ namespace Foam
         (
             fitCoefficients& coefficients,
             fitWeights& weights,
-            const localStencil& stencil
+            const localStencil& stencil,
+            label faceI,
+            bool owner
         );
     
     private:

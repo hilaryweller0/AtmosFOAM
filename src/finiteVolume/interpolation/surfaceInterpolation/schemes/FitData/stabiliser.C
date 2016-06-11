@@ -7,10 +7,12 @@ label Foam::stabiliser::stabilise
 (
     const scalarRectangularMatrix& B,
     fitWeights& weights,
-    fitCoefficients& coefficients
+    fitCoefficients& coefficients,
+    label faceI,
+    bool owner
 ) const
 {
-    autoPtr<weightedMatrix> unweightedMatrix = findStabilisableMatrix(B, weights, coefficients);
+    autoPtr<weightedMatrix> unweightedMatrix = findStabilisableMatrix(B, weights, coefficients, faceI, owner);
     fitCoefficients c(coefficients);
 
     label columns;
@@ -48,7 +50,9 @@ autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
 (
     const scalarRectangularMatrix& B,
     const fitWeights& weights,
-    const fitCoefficients& coefficients
+    const fitCoefficients& coefficients,
+    label faceI,
+    bool owner
 ) const
 {
     fitCoefficients c(coefficients);
@@ -66,13 +70,14 @@ autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
             {
                 if (v[i])
                 {
-                    columnIndices.append(i);
+                    if (!(faceI == 618 && owner && i == 5)) columnIndices.append(i);
                 }
             }
             autoPtr<weightedMatrix> m = matrix.subset(columnIndices);
             m->populate(c);
             if (c.central_are_largest())
             {
+                Info << "*** polyTerms " << columnIndices << endl;
                 weightedMatrix unweighted(B);
                 return unweighted.subset(columnIndices);
             }

@@ -16,14 +16,16 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 (
     fitCoefficients& coefficients,
     fitWeights& weights,
-    const localStencil& stencil
+    const localStencil& stencil,
+    label faceI,
+    bool owner
 )
 {
     Polynomial polynomial(stencil, dimensions);
     autoPtr<scalarRectangularMatrix> B = polynomial.matrix();
 
     stabiliser stabiliser;
-    const label columns = stabiliser.stabilise(B(), weights, coefficients);
+    const label columns = stabiliser.stabilise(B(), weights, coefficients, faceI, owner);
     bool goodFit = (columns > 0);
 
     coefficients.applyCorrection(goodFit);
