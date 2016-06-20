@@ -70,7 +70,7 @@ autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
             {
                 if (v[i])
                 {
-                    if (!(faceI == 618 && owner && i == 5)) columnIndices.append(i);
+                    columnIndices.append(i);
                 }
             }
             autoPtr<weightedMatrix> m = matrix.subset(columnIndices);
