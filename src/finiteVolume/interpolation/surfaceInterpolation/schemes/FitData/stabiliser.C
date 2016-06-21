@@ -26,6 +26,8 @@ label Foam::stabiliser::stabilise
         weights.downwind() -= 1.0;
     } while (!c.stable() && weights.downwind() >= 1.0);
 
+    weights.downwind() += 1.0;
+
     // revert to something akin to linearUpwind
     if (!c.stable())
     {

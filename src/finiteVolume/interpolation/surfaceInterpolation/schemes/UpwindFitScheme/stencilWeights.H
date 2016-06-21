@@ -39,6 +39,7 @@ namespace Foam
         autoPtr<surfaceScalarField> polynomialTerms;
         autoPtr<surfaceScalarField> badFits;
         autoPtr<surfaceScalarField> smallUpwindWeights;
+        autoPtr<surfaceScalarField> downwindWeights;
     };
 }
 
