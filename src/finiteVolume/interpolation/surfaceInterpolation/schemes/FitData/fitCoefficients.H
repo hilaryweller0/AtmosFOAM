@@ -27,6 +27,7 @@ namespace Foam
         void applyCorrection(const bool goodFit);
         bool stable() const;
         bool central_are_largest() const;
+        scalar sum() const;
 
     private:
         scalarList coefficients;

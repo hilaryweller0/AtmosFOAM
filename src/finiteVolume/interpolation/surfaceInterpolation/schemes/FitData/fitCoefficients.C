@@ -47,6 +47,16 @@ scalar Foam::fitCoefficients::operator[](int i) const
     return coefficients[i];
 }
 
+scalar Foam::fitCoefficients::sum() const
+{
+    scalar sum = 0.0;
+    forAll(coefficients, i)
+    {
+        sum += coefficients[i];
+    }
+    return sum;
+}
+
 label Foam::fitCoefficients::size() const
 {
     return coefficients.size();
