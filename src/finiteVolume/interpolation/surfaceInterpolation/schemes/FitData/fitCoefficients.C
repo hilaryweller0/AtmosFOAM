@@ -100,16 +100,10 @@ bool Foam::fitCoefficients::stable() const
 
 bool Foam::fitCoefficients::central_are_largest() const
 {
-/*    scalar smallest_central_coefficient = min(coefficients[0], coefficients[1]);
+    scalar smallest_central_coefficient = min(coefficients[0], coefficients[1]);
     for (int i=2; i < coefficients.size(); i++)
     {
         if (-coefficients[i]+0.01 > smallest_central_coefficient) return false;
-    }
-    return true;
-    */
-    for (int i=2; i < coefficients.size(); i++)
-    {
-        if (coefficients[i] >= coefficients[0] - coefficients[1]) return false;
     }
     return true;
 }
