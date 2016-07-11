@@ -79,7 +79,14 @@ autoPtr<weightedMatrix> Foam::stabiliser::findStabilisableMatrix
             m->populate(c);
             if (c.central_are_largest())
             {
-                Info << "*** polyTerms " << columnIndices << endl;
+                scalar smallest_central_coefficient = min(c[0], c[1]);
+                for (int i=2; i < c.size(); i++)
+                {
+                    if (mag(c[i]) > smallest_central_coefficient) {
+                        Info << "*** faceI " << faceI << " coeffs would violate stricter central_are_largest " << c << endl;
+                        break;
+                    }
+                }
                 weightedMatrix unweighted(B);
                 return unweighted.subset(columnIndices);
             }
