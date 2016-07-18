@@ -17,7 +17,6 @@ namespace Foam
             const Basis& basis
         );
 
-        void upwindUpwindIndices(List<label>& indices) const;
         label size() const;
         point operator[](int i) const;
 

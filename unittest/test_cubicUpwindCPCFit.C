@@ -4,90 +4,33 @@
 #include "catch.hpp"
 #include "fvCFD.H"
 
-#include "AdaptivePolynomial.H"
+#include "PolynomialFit2.H"
 #include "cubicUpwindCPCFitPolynomial.H"
-#include "TestPolynomialFit.H"
-#include "TestStencils.H"
-#include "Checks.H"
 #include <assert.h>
 
-TEST_CASE("fit full-size stencil to uniform 2D mesh")
+TEST_CASE("uniform2DQuadInterior")
 {
-    const Foam::label faceI = 11;
+    List<point> stencilPoints(12, point(0, 0, 0));
+    stencilPoints[0] = point(-1, 0, 0);
+    stencilPoints[1] = point(1, 0, 0);
+    stencilPoints[2] = point(-3, 0, 0);
+    stencilPoints[3] = point(-5, 0, 0);
+    stencilPoints[4] = point(-1, -2, 0);
+    stencilPoints[5] = point(1, -2, 0);
+    stencilPoints[6] = point(-3, -2, 0);
+    stencilPoints[7] = point(-5, -2, 0);
+    stencilPoints[8] = point(-1, 2, 0);
+    stencilPoints[9] = point(1, 2, 0);
+    stencilPoints[10] = point(-3, 2, 0);
+    stencilPoints[11] = point(-5, 2, 0); 
 
-    Test::PolynomialFit fit(Test::Stencils::twelvePoints(), faceI);
+    const localStencil stencil(stencilPoints);
+    fitCoefficients coefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
 
-    check(fit.coefficients(), Test::Coefficients::twelvePoints());
-}
-
-TEST_CASE("fit full-size stencil to uniform set of points in local coords")
-{
-    Test::PolynomialFit fit(Test::Stencils::twelvePoints());
-
-    check(fit.coefficients(), Test::Coefficients::twelvePoints());
-}
-
-// while cubicUpwindCPCFit is a correction on upwind, 
-// I've added a test for linear correction to help ensure
-// that we don't break those particular code paths
-TEST_CASE("fit using linear correction")
-{
-    bool linearCorrection = true;
-
-    Test::PolynomialFit fit(Test::Stencils::twelvePoints(), linearCorrection);
-
-    check(fit.coefficients(), Test::Coefficients::twelvePoints());
-}
-
-TEST_CASE("a + bx with two points in horizontal line")
-{
     const direction dimensions = 2;
-    const localStencil stencil = Test::Stencils::twoPointsInHorizontalLine();
-    Foam::AdaptivePolynomial<cubicUpwindCPCFitPolynomial>
-        matrix(stencil, dimensions);
+    PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions);
+    polynomialFit.fit(coefficients, weights, stencil);
 
-    check<2, 2>(matrix.matrix(), Test::Matrices::xLinear);
-}
-
-TEST_CASE("a + by with two points in vertical line")
-{
-    const direction dimensions = 2;
-    const localStencil stencil = Test::Stencils::twoPointsInVerticalLine();
-    Foam::AdaptivePolynomial<cubicUpwindCPCFitPolynomial>
-        matrix(stencil, dimensions);
-
-    check<2, 2>(matrix.matrix(), Test::Matrices::yLinear);
-}
-
-TEST_CASE("2x3 stencil with diagonal gives a + bx + cy + dxy + ey^2")
-{
-    Test::PolynomialFit fit(Test::Stencils::twoByThreeWithDiagonal());
-
-    check(fit.coefficients(), Test::Coefficients::twoByThreeWithDiagonal());
-}
-
-/*
- * This test case is taken from a real BTF mesh where the von Neumann
- * analysis detected an instability.  When advectionFoam was run on this mesh,
- * this was the first stencil to become unstable.  The stabiliser class
- * is able to achieve stability by removing high-order polynomial terms
- * for (face, orientation) that would otherwise be unstable.
- */
-TEST_CASE("BTF stable")
-{
-    Test::PolynomialFit fit(Test::Stencils::btfStable());
-
-    checkStable(fit.coefficients());
-}
-
-/*
- * This test case is taken from a real slantedCell mesh where the von Neumann
- * analysis detected an instability.  When advectionFoam was run on this mesh,
- * this was the first stencil to become unstable.
- */
-TEST_CASE("slantedCell stable")
-{
-    Test::PolynomialFit fit(Test::Stencils::slantedCellStable());
-
-    checkStable(fit.coefficients());
+    // TODO: assert something
 }

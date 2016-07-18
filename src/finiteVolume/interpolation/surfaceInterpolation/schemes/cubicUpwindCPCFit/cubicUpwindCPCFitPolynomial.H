@@ -53,6 +53,46 @@ namespace Foam
             );
         }
 
+        static void candidates(List<uint32_t>& candidates, const direction dim)
+        {
+            if (dim == 2)
+            {
+                const label constant = 1 << 0;
+                const label x = 1 << 1;
+                const label y = 1 << 2;
+                const label xx = 1 << 3;
+                const label xy = 1 << 4;
+                const label yy = 1 << 5;
+                const label xxx = 1 << 6;
+                const label xxy = 1 << 7;
+                const label xyy = 1 << 8;
+                candidates.append(constant | x);
+                candidates.append(constant | y);
+                candidates.append(constant | x | y);
+                candidates.append(constant | x | xx);
+                candidates.append(constant | y | yy);
+                candidates.append(constant | x | y  | xy);
+                candidates.append(constant | x | y  | xx);
+                candidates.append(constant | x | y  | yy);
+                candidates.append(constant | x | xx | xxx);
+                candidates.append(constant | x | y  | xy  | xx);
+                candidates.append(constant | x | y  | xy  | yy);
+                candidates.append(constant | x | y  | xx  | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | yy);
+                candidates.append(constant | x | y  | xy  | xx  | xxy);
+                candidates.append(constant | x | y  | xy  | yy  | xyy);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xxy);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xyy);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | xxy | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xxy | xyy);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xxy | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xyy | xxx);
+                candidates.append(constant | x | y  | xy  | xx  | yy  | xxy | xyy | xxx);
+            }
+        }
+
         static void addCoeffs
         (
             scalar* coeffs,
