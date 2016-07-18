@@ -69,36 +69,6 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
     );
     GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr();
 
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
-    {
-            const List<Type>& stField = ownFld[faceI];
-            const List<scalar>& stWeight = ownWeights[faceI];
-            
-            Type corr = pTraits<Type>::zero;
-
-            forAll(stField, i)
-            {
-                corr += stField[i]*stWeight[i];
-            }
-
-            //Info << "*** owner " << corr << " for facei " << faceI << endl;
-    }
-
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
-    {
-            const List<Type>& stField = neiFld[faceI];
-            const List<scalar>& stWeight = neiWeights[faceI];
-            
-            Type corr = pTraits<Type>::zero;
-
-            forAll(stField, i)
-            {
-                corr += stField[i]*stWeight[i];
-            }
-
-            //Info << "*** nei " << corr << " for facei " << faceI << endl;
-    }
-
     // Internal faces
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
     {
