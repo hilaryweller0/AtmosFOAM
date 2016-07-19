@@ -17,6 +17,7 @@ namespace Foam
         void removeDownwindWeight();
         scalar downwind() const;
         scalar& downwind();
+        void copyFrom(const scalarList& source);
 
         friend Ostream& operator<< (Ostream& stream, const fitWeights& c);
         scalar& operator[](int i);

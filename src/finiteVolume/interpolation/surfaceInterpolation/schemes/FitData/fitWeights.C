@@ -19,6 +19,14 @@ Foam::fitWeights::fitWeights
     xLinearWeight(1)
 {}
 
+void Foam::fitWeights::copyFrom(const scalarList& source)
+{
+    forAll(source, i)
+    {
+        cellWeights[i] = source[i];
+    }
+}
+
 void Foam::fitWeights::setCentralWeight
 (
     const scalar weight,

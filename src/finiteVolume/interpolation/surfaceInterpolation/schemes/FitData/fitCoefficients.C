@@ -24,6 +24,14 @@ Foam::fitCoefficients::fitCoefficients
     wLin(wLin)
 {}
 
+void Foam::fitCoefficients::copyFrom(const scalarList& source)
+{
+    forAll(source, i)
+    {
+        coefficients[i] = source[i];
+    }
+}
+
 void Foam::fitCoefficients::copyFrom(const fitCoefficients& source)
 {
     forAll(source.coefficients, i)

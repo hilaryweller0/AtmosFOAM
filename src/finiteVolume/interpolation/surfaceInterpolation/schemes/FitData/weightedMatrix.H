@@ -1,7 +1,6 @@
 #ifndef weightedMatrix_H
 #define weightedMatrix_H
 
-#include <limits>
 #include "fvCFD.H"
 #include "fitCoefficients.H"
 #include "fitWeights.H"
@@ -37,7 +36,6 @@ namespace Foam
 
     private:
         void applyStencilPointWeights(const fitWeights& weights);
-        template<typename _Matrix_Type_> _Matrix_Type_ pseudoInverse(const _Matrix_Type_ &a, double epsilon = std::numeric_limits<double>::epsilon()) const;
 
         scalarRectangularMatrix B;
         const autoPtr<fitWeights> weights;

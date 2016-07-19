@@ -1,6 +1,11 @@
 #include "PolynomialFit2.H"
+#include "MatrixOps.H"
 #include "fitCoefficients.H"
-#include "stabiliser.H"
+#include "SortableList.H"
+
+#include <Eigen/Core>
+
+using Eigen::MatrixXd;
 
 template<class Polynomial>
 Foam::PolynomialFit2<Polynomial>::PolynomialFit2
@@ -19,6 +24,29 @@ autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
     const localStencil& stencil
 )
 {
+    label targetLength = findStable(coefficients, stencil, weights);
+
+    bool goodFit = targetLength > 0;
+
+    coefficients.applyCorrection(goodFit);
+
+    return autoPtr<fitResult>(new fitResult(
+            stencil,
+            coefficients,
+            weights,
+            goodFit,
+            targetLength
+    ));
+}
+
+template<class Polynomial>
+label Foam::PolynomialFit2<Polynomial>::findStable
+(
+        fitCoefficients& coefficients,
+        const localStencil& stencil,
+        fitWeights& weights
+)
+{
     label targetLength = min(stencil.size(), Polynomial::nTerms(dimensions));
 
     List<uint32_t> allCandidates;
@@ -35,23 +63,131 @@ autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
             }
         }
 
-        Info << "targetLength " << targetLength << endl;
-        Info << "targetLengthCandidates " << targetLengthCandidates << endl;
+        List<uint32_t> fullRankCandidates(0);
+        SortableList<scalar> fullRankMinSingularValues(0);
+
+        forAll(targetLengthCandidates, candidateI)
+        {
+            uint32_t candidate = targetLengthCandidates[candidateI];
+	        MatrixXd B(stencil.size(), targetLength);
+            populateMatrix(B, stencil, candidate);
+
+            JacobiSVD<MatrixXd> svd(B);
+            scalar minSingularValue = svd.singularValues().array().reverse()(0);
+
+            if (minSingularValue >= 0.6)
+            {
+                fullRankCandidates.append(candidate);
+                fullRankMinSingularValues.append(minSingularValue);
+            }
+        }
+
+        fullRankMinSingularValues.reverseSort();
+        const labelList& fullRankIndices = fullRankMinSingularValues.indices();
+
+        List<uint32_t> positiveCentralCandidates(0); 
+        forAll(fullRankIndices, candidateI)
+        {
+            uint32_t candidate = fullRankCandidates[candidateI];
+	        MatrixXd B(stencil.size(), targetLength);
+            populateMatrix(B, stencil, candidate);
+            MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(B);
+
+            scalar coefficients[targetLength]; 
+            for (label i=0; i<targetLength; i++)
+            {
+                coefficients[i] = Binv(0,i);
+            }
+
+            if (coefficients[0] > 0 && coefficients[1] > -SMALL)
+            {
+                positiveCentralCandidates.append(candidate);
+            }
+        }
+
+        forAll(positiveCentralCandidates, candidateI)
+        {
+            uint32_t candidate = positiveCentralCandidates[candidateI];
+            scalarList w(stencil.size(), scalar(1));
+            w[0] = 1000;
+            w[1] = 1000;
+
+            do
+            {
+                scalarList coeffs(stencil.size(), scalar(0));
+                populateCoefficients(coeffs, stencil, candidate, targetLength, w);
+                
+                if (coeffs[1] < coeffs[0] && coeffs[1] <= 0.5)
+                {
+                    coefficients.copyFrom(coeffs);
+                    weights.copyFrom(w);
+                    return targetLength;
+                }
+
+                w[1] -= 1;
+            } while (w[1] > 0);
+        }
 
         targetLength--;
     } while (targetLength > 0);
 
-    bool goodFit = (targetLength > 0);
+    return targetLength;
+}
 
-    coefficients.applyCorrection(goodFit);
+template<class Polynomial>
+void PolynomialFit2<Polynomial>::populateCoefficients
+(
+        scalarList& coefficients,
+        const localStencil& stencil,
+        uint32_t polynomial,
+        label termCount,
+        const scalarList& weights
+)
+{
+    MatrixXd B(stencil.size(), termCount);
+    populateMatrix(B, stencil, polynomial, weights);
+    MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(B);
 
-    return autoPtr<fitResult>(new fitResult(
-            stencil,
-            coefficients,
-            weights,
-            goodFit,
-            targetLength
-    ));
+    forAll(coefficients, i)
+    {
+        coefficients[i] = weights[i]*Binv(0,i);
+    }
+}
+
+template<class Polynomial>
+void PolynomialFit2<Polynomial>::populateMatrix
+(
+        MatrixXd& B,
+        const localStencil& stencil,
+        uint32_t polynomial
+)
+{
+    scalarList weights(stencil.size(), scalar(1));
+    populateMatrix(B, stencil, polynomial, weights);
+}
+
+template<class Polynomial>
+void PolynomialFit2<Polynomial>::populateMatrix
+(
+        MatrixXd& B,
+        const localStencil& stencil,
+        uint32_t polynomial,
+        const scalarList& weights
+)
+{
+    forAll(stencil, stencilI)
+    {
+        scalar coefficients[Polynomial::nTerms(dimensions)]; 
+        Polynomial::addCoeffs(coefficients, stencil[stencilI], 1, dimensions);
+        for (label term=0, col=0; term<Polynomial::nTerms(dimensions); term++)
+        {
+            if ((polynomial & (1 << term)) != 0)
+            {
+                B(stencilI, col) = coefficients[term] * weights[stencilI];
+                col++;
+            }
+        }
+    }
 }
 
 template<class Polynomial>

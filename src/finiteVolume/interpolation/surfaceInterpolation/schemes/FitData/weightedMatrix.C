@@ -1,9 +1,10 @@
 #include "weightedMatrix.H"
 
-#include <Eigen/SVD>
+#include "MatrixOps.H"
+
+#include <Eigen/Core>
 
 using Eigen::MatrixXd;
-using Eigen::JacobiSVD;
 
 Foam::weightedMatrix::weightedMatrix
 (
@@ -59,15 +60,6 @@ Foam::weightedMatrix::weightedMatrix
         this->B[i][1] *= this->weights->xLinear();
     }
 }
-//
-// from http://eigen.tuxfamily.org/bz/show_bug.cgi?id=257#c14
-template<typename _Matrix_Type_>
-_Matrix_Type_ Foam::weightedMatrix::pseudoInverse(const _Matrix_Type_ &a, double epsilon) const
-{
-    Eigen::JacobiSVD< _Matrix_Type_ > svd(a ,Eigen::ComputeThinU | Eigen::ComputeThinV);
-    double tolerance = epsilon * std::max(a.cols(), a.rows()) *svd.singularValues().array().abs()(0);
-    return svd.matrixV() *  (svd.singularValues().array().abs() > tolerance).select(svd.singularValues().array().inverse(), 0).matrix().asDiagonal() * svd.matrixU().adjoint();
-}
 
 void Foam::weightedMatrix::populate(fitCoefficients& coefficients) const
 {
@@ -80,7 +72,7 @@ void Foam::weightedMatrix::populate(fitCoefficients& coefficients) const
         }
     }
 
-    MatrixXd Binv = pseudoInverse(m);
+    MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(m);
 
     for (label i=0; i<coefficients.size(); i++)
     {

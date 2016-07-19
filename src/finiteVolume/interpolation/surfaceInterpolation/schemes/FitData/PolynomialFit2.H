@@ -9,6 +9,10 @@
 #include "fitWeights.H"
 #include "localStencil.H"
 
+#include <Eigen/Core>
+
+using Eigen::MatrixXd;
+
 namespace Foam
 {
     template<class Polynomial>
@@ -28,6 +32,37 @@ namespace Foam
         );
     
     private:
+        label findStable
+        (
+                fitCoefficients& coefficients,
+                const localStencil& stencil,
+                fitWeights& weights
+        );
+
+        void populateCoefficients
+        (
+                scalarList& coefficients,
+                const localStencil& stencil,
+                uint32_t polynomial,
+                label termCount,
+                const scalarList& weights
+        );
+
+        void populateMatrix
+        (
+                MatrixXd& B,
+                const localStencil& stencil,
+                uint32_t polynomial
+        );
+
+        void populateMatrix
+        (
+                MatrixXd& B,
+                const localStencil& stencil,
+                uint32_t polynomial,
+                const scalarList& weights
+        );
+
         label numberOfSetBits(uint32_t i);
 
         const direction dimensions;

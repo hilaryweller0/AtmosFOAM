@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "FitData.H"
+#include "PolynomialFit.H"
 #include "PolynomialFit2.H"
 #include "AdaptivePolynomial.H"
 #include "Basis.H"
@@ -136,7 +137,7 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     const Basis basis(idir, jdir, kdir);
     const localStencil stencil(C, p0, basis);
 
-    return polynomialFit.fit(coefficients, weights, stencil);
+    return polynomialFit.fit(coefficients, weights, stencil);//, facei, owner);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

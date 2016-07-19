@@ -31,6 +31,9 @@ TEST_CASE("uniform2DQuadInterior")
     const direction dimensions = 2;
     PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions);
     polynomialFit.fit(coefficients, weights, stencil);
+    coefficients[0] += 1;
 
+    Info << coefficients << endl;
+    Info << weights << endl;
     // TODO: assert something
 }
