@@ -24,9 +24,10 @@ autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
     const localStencil& stencil
 )
 {
-    label targetLength = findStable(coefficients, stencil, weights);
+    uint32_t polynomial = findStable(coefficients, stencil, weights);
+    label terms = numberOfSetBits(polynomial);
 
-    bool goodFit = targetLength > 0;
+    bool goodFit = terms > 0;
 
     coefficients.applyCorrection(goodFit);
 
@@ -35,12 +36,13 @@ autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
             coefficients,
             weights,
             goodFit,
-            targetLength
+            polynomial,
+            terms
     ));
 }
 
 template<class Polynomial>
-label Foam::PolynomialFit2<Polynomial>::findStable
+uint32_t Foam::PolynomialFit2<Polynomial>::findStable
 (
         fitCoefficients& coefficients,
         const localStencil& stencil,
@@ -102,7 +104,7 @@ label Foam::PolynomialFit2<Polynomial>::findStable
                 {
                     coefficients.copyFrom(coeffs);
                     weights.copyFrom(w);
-                    return targetLength;
+                    return candidate;
                 }
 
                 w[1] -= 1;
@@ -112,7 +114,7 @@ label Foam::PolynomialFit2<Polynomial>::findStable
         targetLength--;
     } while (targetLength > 0);
 
-    return targetLength;
+    return 0;
 }
 
 template<class Polynomial>

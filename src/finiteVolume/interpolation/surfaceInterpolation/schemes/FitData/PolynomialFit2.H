@@ -32,7 +32,7 @@ namespace Foam
         );
     
     private:
-        label findStable
+        uint32_t findStable
         (
                 fitCoefficients& coefficients,
                 const localStencil& stencil,
