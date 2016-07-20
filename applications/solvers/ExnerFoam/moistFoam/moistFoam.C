@@ -33,7 +33,7 @@ Description
 
 #include "Hops.H"
 #include "fvCFD.H"
-#include "ExnerTheta.H"
+#include "moistThermo.H"
 #include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -75,38 +75,38 @@ int main(int argc, char *argv[])
 
         #include "rhoEqn.H"
         #include "moisture.H"
-        Info << "condenseRate goes from " << min(condenseRate).value()
-             << " to " << max(condenseRate).value() << endl;
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
             #include "rhoThetaEqn.H"
             #include "moisture.H"
             #include "exnerEqn.H"
-            p = pRef*pow(Exner, 1/kappam);
+            //#include "momentumEqn.H"
+            p = pFromExner(Exner, kappam, pRef);
         }
         
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
-        
+
         // Updates for next time step
         dVdt += rhof*gd
-          - R*H.magd()*rhof*fvc::interpolate(thetaRho/kappam)*fvc::snGrad(Exner)
+             - H.magd()*rhof*gradPCoeff(cpml, thetaRho, rv, epsilon)
+                *fvc::snGrad(Exner)
              - muSponge*V;
         
         #include "compressibleContinuityErrs.H"
 
-        thetae = T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(qv+ql)/qd))
-                *Foam::exp(Lv*rv/((Cp+Cpl*(qv+ql)/qd)*T));
+        thetae = thetaeFromPrimitive(T,p,Lv,rv,rl,pRef,epsilon,Cp,Cpl,R);
 
-        Info << "ql goes from " << min(ql).value() << " to "<<max(ql).value()
-             <<endl;
-        Info << "qv goes from " << min(qv).value() << " to "<<max(qv).value()
-             << endl;
-        Info << "thetae goes from " << min(thetae).value()
-             << " to "<<max(thetae).value() << endl;
-        Info << "condenseRate goes from " << min(condenseRate).value()
-             << " to " << max(condenseRate).value() << endl;
+        Info << "ql goes from " << min(ql.internalField())
+             << " to " << max(ql.internalField()) << endl;
+        Info << "qv goes from " << min(qv.internalField())
+             << " to " << max(qv.internalField()) << endl;
+        Info << "thetae goes from " << min(thetae.internalField())
+             << " to "<<max(thetae.internalField()) << endl;
+        Info << "condenseRate goes from "
+             << min(condenseRate.internalField())
+             << " to " << max(condenseRate.internalField()) << endl;
 
        runTime.write();
 

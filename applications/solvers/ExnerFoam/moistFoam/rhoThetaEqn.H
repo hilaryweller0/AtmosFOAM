@@ -1,17 +1,18 @@
 // flux form rho theta equation
 
 // Variables needed to calculate the moist source term
-cpml = Cp + Cpv*rv;
+cpml = Cp + rv*Cpv + rl*Cpl;
 Rm = R + Rv*rv;
-Lv = Lv0 - (Cpl - Cpv)*(T - T0);
+T = TFromThetaRho(thetaRho, Exner, rv, rl, epsilon);
+Lv = latentHeat(T, Lv0, T0, Cpl, Cpv);
 
-dRhoThetadt = thetaRho*Rm/Rv*
-              (
-                  Rv/Rm
-                - Foam::log(Exner)*(Rv/Rm + (Cpl - Cpv)/cpml)
-                - Lv/(cpml*T)
-              )*condenseRate
-            - fvc::div(U, thetaRho);
+dRhoThetadt = -thetaRho/qd*
+(
+    Rv/Rm
+  - Foam::log(Exner)*(Rv/Rm + (Cpl - Cpv)/cpml)
+  - Lv/(cpml*T)
+)*condenseRate
+- fvc::div(U, thetaRho);
 
 thetaRho = 
 (
@@ -21,5 +22,4 @@ thetaRho =
     )
 )/rho;
 
-T = thetaRho*Exner/(1 + qv*(Rv/R-1) - ql);
-
+T = TFromThetaRho(thetaRho, Exner, rv, rl, epsilon);

@@ -1,8 +1,8 @@
 Info << "Reading additional thermophysical properties for moist air"
      << endl;
 
-// Read constant for the Clausius-Clapyron relation
-const scalar Pcc = readScalar(thermoDict.lookup("pClausiusClapyron"));
+// Saturation vapour pressure at standard temperature
+const dimensionedScalar pSat0(thermoDict.lookup("pSat0"));
 
 // Perfect gas properties of water vapour
 const constTransport<hConstThermo<perfectGas<specie> > > waterVapour
@@ -33,6 +33,9 @@ const scalar epsilon = (R/Rv).value();
 
 // Speicific heat of air at constant volume
 const dimensionedScalar Cvv("Cvv", Cpv - Rv);
+
+// Time-scale for condensation
+const dimensionedScalar tauCondense(thermoDict.lookup("tauCondense"));
 
 Info << "Moist thermodynamic constants Cpv = " << Cpv
      << " epsilon = " << epsilon << " Rv = " << Rv << " Cvv = " << Cvv << endl;

@@ -33,7 +33,7 @@ Description
 
 #include "Hops.H"
 #include "fvCFD.H"
-#include "ExnerTheta.H"
+#include "moistThermo.H"
 #include "mathematicalConstants.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -73,32 +73,27 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
-            thetaf = fvc::interpolate(thetaRho0);
+            gradPcoeff = gradPCoeff(theta, rv, rl, Cp, epsilon);
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian(Cp*thetaf, Exner)
+              - fvm::laplacian(gradPcoeff, Exner)
             );
             innerConverged
                 = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
 
             // More inner iterations for moisture variables
-            p = pRef*pow(Exner, 1/kappa);
+            p = pFromExner(Exner, kappa, pRef);
             for(label it = 0; it < 4; it++)
             {
-                // Rosenbrock step to find temperatures, and vapour pressures
-                // Partial pressure of dry air
-                volScalarField pd = p*epsilon/(rv + epsilon);
+                // Temperature from thetae
+                TfromThetae(T, thetae0, p, Lv, rv, rt0, pRef, epsilon,Cp,Cpl,R);
+                // Latent heat and saturation vapour pressure from T
+                Lv == latentHeat(T, Lv0, T0, Cpl, Cpv);
 
-                // Temperature from thetae0 using Rosenbrock step
-                volScalarField a = pow(pd/pRef, -R/(Cp+Cpl*rt0));
-                volScalarField b = Lv*rv/(Cp + Cpl*rt0);
-                T -= (T*a - thetae0*Foam::exp(-b/T))/(a*(1 - b/T));
-                Lv = Lv0 - (Cpl - Cpv)*(T - T0);
-        
                 // Calculate saturation vapour pressure and set rv to be saturated
-                es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-                rvs = epsilon*es/(p-es);
+                es == pSat(T, pSat0, Lv0, Rv, T0);
+                rvs == epsilon*es/(p-es);
                 // Update rv with under-relaxation
                 rv == max
                 (
@@ -112,9 +107,8 @@ int main(int argc, char *argv[])
             }
             rl == max(rt0 - rv, scalar(0));
         
-            // Calculate theta and thetaRho0 for hydrostatic balance
+            // Update theta
             theta == T/Exner;
-            thetaRho0 = theta*(1+rv/epsilon)/(1+rt0);
         }
         scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -172,12 +166,13 @@ int main(int argc, char *argv[])
         }
     }
     // Interate so that new theta, rv and rl are in balance
+    volScalarField thetaRho0 = theta*(1+rv/epsilon)/(1+rt0);
     for(label iter = 0; iter < 5; iter++)
     {
-        theta = thetaRho0*(1 + rt0)/(1+rv/epsilon)*thetaScale;
-        T = theta*Exner;
-        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-        rvs = epsilon*es/(p-es);
+        theta == thetaRho0*(1 + rt0)/(1+rv/epsilon)*thetaScale;
+        T == theta*Exner;
+        es == pSat(T, pSat0, Lv0, Rv, T0);
+        rvs == epsilon*es/(p-es);
         rv == max(min(rvs, rt0), scalar(0));
         Info << "Bouyancy perturbation " << iter << " theta at centre = "
              << theta[cellMax] << nl;
@@ -188,15 +183,14 @@ int main(int argc, char *argv[])
     rv.write();
     rl.write();
     
-//    // Additional diagnositcs for de-bugging
-//    p.write();
-//    T.write();
-//    Lv.write();
-//    es.write();
+    // Additional diagnositcs for de-bugging
+    p = pFromExner(Exner, kappa, pRef);
+    p.write();
+    T.write();
 
     // Change the top boundary type to be fixedFluxBuoyantExner
     wordList ExnerBCs = Exner.boundaryField().types();
-    ExnerBCs[topBC] = "fixedFluxBuoyantExner";
+    ExnerBCs[topBC] = "fixedFluxBuoyantExnerMoist";
     volScalarField ExnerNew
     (
         IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
@@ -207,11 +201,9 @@ int main(int argc, char *argv[])
     ExnerNew.write();
     
     // Check thetae
-    volScalarField thetae
+    volScalarField thetae = thetaeFromPrimitive
     (
-        "thetae",
-        T*pow(p*epsilon/(rv + epsilon)/pRef, -R/(Cp+Cpl*rt0))
-       *Foam::exp(Lv*rv/((Cp+Cpl*rt0)*T))
+        T, p, Lv, rv, rt0, pRef, epsilon, Cp, Cpl, R
     );
     thetae.write();
 

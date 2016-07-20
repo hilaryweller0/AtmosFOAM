@@ -49,15 +49,16 @@ volScalarField rl
 );
 rl == 0.1*rt0;
 
-volScalarField T("T", Exner*theta);
-volScalarField p("p", pRef*pow(Exner, 1/kappa));
-volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
+volScalarField p("p", pFromExner(Exner, kappa, pRef));
+volScalarField T("T", TFromTheta(theta, Exner));
+
+volScalarField es("es", pSat(T, pSat0, Lv0, Rv, T0));
 volScalarField condenseRate("condenseRate", -rl/dt);
 volScalarField thetaScale("thetaScale", theta/theta);
 volScalarField rvs("rvs", epsilon*(es/(p-es)));
 
 // Latent heat of vapoursation
-volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
+volScalarField Lv("Lv", latentHeat(T, Lv0, T0, Cpl, Cpv));
 
 // The flux, including only the gravity term
 surfaceScalarField U
@@ -66,14 +67,8 @@ surfaceScalarField U
     H.Hdiag()*gd
 );
 
-
-// Moist theta on the face
-volScalarField thetaRho0("thetaRho0", theta*(1+rv/epsilon)/(1+rt0));
-surfaceScalarField thetaf
-(
-    IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(thetaRho0)
-);
+// Pressure gradient coefficient to convert grad(Exner) to grad(p)
+surfaceScalarField gradPcoeff = gradPCoeff(theta, rv, rl, Cp, epsilon);
 
 label groundBC = -1;
 label topBC = -1;
@@ -95,5 +90,4 @@ if (groundBC == -1 || topBC == -1)
         << mesh.boundaryMesh().names()
         << exit(FatalError);
 }
-
 

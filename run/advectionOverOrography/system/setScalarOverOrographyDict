@@ -1,0 +1,25 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  2.3.0                                 |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      setScalarOverOrographyDict;
+}
+
+tracerCentre (500 500 50);
+tracerRadius 200;
+Tmax 1;
+rho0 1;
+x0 -50000; // initial tracer position
+z0 9000;
+Ax 25000; // half widths
+Az 3000;
+

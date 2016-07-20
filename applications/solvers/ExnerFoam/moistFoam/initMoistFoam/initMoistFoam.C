@@ -33,7 +33,7 @@ Description
 
 #include "Hops.H"
 #include "fvCFD.H"
-#include "ExnerTheta.H"
+#include "moistThermo.H"
 #include "mathematicalConstants.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
             Rm = R + Rv*rv;
-            cpml = Cp + Cpv*rv;
+            cpml = Cp + Cpv*rv + rl*Cpl;
             kappam = Rm/cpml;
-            gradPcoeff = R*fvc::interpolate(thetaRho/kappam);
+            gradPcoeff = gradPCoeff(cpml, thetaRho, rv, epsilon);
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
@@ -86,22 +86,19 @@ int main(int argc, char *argv[])
                 = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
 
             // More inner iterations for moisture variables
-            p = pRef*pow(Exner, 1/kappam);
+            p = pFromExner(Exner, kappam, pRef);
+
             for(label it = 0; it < 4; it++)
             {
                 // Temperature from thetae0
-                T = thetae0/pow
-                    (
-                        p/pRef*epsilon/(rv + epsilon),
-                       -R/(Cp+Cpl*(rv+rl))
-                    )
-                    / Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T));
-
+                TfromThetae(T, thetae0, p, Lv, rv, rt0, pRef, epsilon,Cp,Cpl,R);
                 // Latent heat and saturation vapour pressure from T
-                Lv = Lv0 - (Cpl - Cpv)*(T - T0);
-                es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-                volScalarField qvs = epsilon*es/p
-                                    *(1 + qv*(1-epsilon)/epsilon - ql);
+                Lv == latentHeat(T, Lv0, T0, Cpl, Cpv);
+
+                // Calculate saturation vapour pressure and set rv to be saturated
+                es == pSat(T, pSat0, Lv0, Rv, T0);
+                rho == moistGasPrimitiveRho(p, Rm, T, rt0);
+                qvs == es/(T*Rv*rho);
  
                 // Update qv with under-relaxation
                 qv == max
@@ -109,15 +106,15 @@ int main(int argc, char *argv[])
                     min((1-underRelax)*qv + underRelax*qvs, qt0),
                     scalar(0)
                 );
+                ql == qt0 - qv;
                 rv == qv/(1-qt0);
                 rl == rt0 - rv;
                 Info << "Inner iteration, T goes from " << min(T).value()
                      << " to " << max(T).value() << nl;
             }
-            ql == qt0 - qv;
         
             // Calculate thetaRho for hydrostatic balance
-            thetaRho == T/Exner*(1 + rv/epsilon)/(1+rt0);
+            thetaRho == thetaRhoFromT(T, Exner, rv, rt0, epsilon);
             
             Info << "T goes from " << min(T).value() << " to " <<max(T).value()
                  << "\nthetaRho goes from " << min(thetaRho).value()
@@ -176,22 +173,45 @@ int main(int argc, char *argv[])
             }
         }
     }
-//    // Interate so that new thetaRho, qv and ql are in balance
-//    thetaRho *= thetaScale;
-//    for(label iter = 0; iter < 5; iter++)
-//    {
-//        T = thetaRho*Exner/(1 + qv*(Rv/R-1) - ql);
-//        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
-//        qv == max
-//        (
-//            min((1-underRelax)*qv + underRelax*es/p, qt0),
-//            scalar(0)
-//        );
-//    }
-    rv == qv/(1-qt0);
-    rl == rt0 - rv;
-    ql == max(qt0 - qv, scalar(0));
+    // Calculate thetae
+    volScalarField thetae
+    (
+        "thetae",
+        thetaeFromPrimitive(T, p, Lv, rv, rt0, pRef, epsilon, Cp, Cpl, R)
+    );
+    // Interate so that new thetaRho, qv and ql are in balance
+    thetaRho *= thetaScale;
+    T == TFromThetaRho(thetaRho, Exner, rv, rl, epsilon);
+    es == pSat(T, pSat0, Lv0, Rv, T0);
+    for(label iter = 0; iter < 50; iter++)
+    {
+        //T == thetaRho*Exner*(1+rt0)/(1 + rv/epsilon);
+        rho == moistGasPrimitiveRho(p, Rm, T, rt0);
+        qvs == es/(T*Rv*rho);
+ 
+        // Update qv with under-relaxation
+        qv == max
+        (
+            min((1-underRelax)*qv + underRelax*qvs, qt0),
+            scalar(0)
+        );
+        ql == max(qt0 - qv, scalar(0));
+        rv == qv/(1-qt0);
+        rl == rt0 - rv;
+        T == TFromThetaRho(thetaRho, Exner, rv, rl, epsilon);
+        es == pSat(T, pSat0, Lv0, Rv, T0);
 
+        // Other re-calculations based on bouyancy perturbation
+        Rm = R + Rv*rv;
+        cpml = Cp + Cpv*rv + rl*Cpl;
+        kappam = Rm/cpml;
+        Lv = latentHeat(T, Lv0, T0, Cpl, Cpv);
+        p = pFromExner(Exner, kappam, pRef);
+        thetae = thetaeFromPrimitive(T, p, Lv, rv, rt0, pRef,epsilon, Cp,Cpl,R);
+        Info << "thetae goes from " << min(thetae).value() << " to "
+             << max(thetae).value() << endl;
+    }
+    
     thetaRho.write();
     qv.write();
     ql.write();
@@ -203,6 +223,11 @@ int main(int argc, char *argv[])
     T.write();
     Lv.write();
     es.write();
+    qvs.write();
+    rho.write();
+    kappam.write();
+    Rm.write();
+    cpml.write();
 
     // Change the top boundary type to be fixedFluxBuoyantExnerMoist
     wordList ExnerBCs = Exner.boundaryField().types();
@@ -216,16 +241,20 @@ int main(int argc, char *argv[])
     ExnerNew.correctBoundaryConditions();
     ExnerNew.write();
     
-    // Calculate thetae
-    volScalarField thetae
-    (
-        "thetae",
-        T*pow(p*epsilon/(rv + epsilon)/pRef, -R/(Cp+Cpl*rt0))
-       *Foam::exp(Lv*rv/((Cp+Cpl*rt0)*T))
-    );
-    Info << "thetae goes from " << min(thetae).value() << " to "
-         << max(thetae).value() << endl;
     thetae.write();
+    
+    Info << "kappa = " << kappa.value() << " kappam goes from "
+         << min(kappam.internalField()) << " to "
+         << max(kappam.internalField()) << endl;
+         
+    // Calculate the pressure gradient for debugging
+    gradPcoeff = gradPCoeff(cpml, thetaRho, rv, epsilon);
+    volVectorField gradp
+    (
+        "gradp",
+        fvc::reconstruct(gradPcoeff*mesh.magSf()*fvc::snGrad(Exner)) - g
+    );
+    gradp.write();
 
     return 0;
 }

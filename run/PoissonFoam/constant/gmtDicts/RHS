@@ -1,0 +1,48 @@
+FoamFile
+{
+    version         2.2;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;    
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";       // see man psxy for details on -J options
+                             // "X18c/12c" means linear scaling, 18cm by 18cm
+projection2D XY;             // how to go from 3d to 2d
+                             // either XY, XZ, YZ or latLon
+
+// A list of the fields to plot with plotting details
+FieldsToPlot
+1                               // number of fields to plot
+(
+
+// For each field to plot there should be a line like:
+//  [fieldName plotType min max delta colorScale]
+//  where plotType is one of filledContours, solidContours, dashedContours,
+//  vectors, vectorContours, mesh, meshPoints, meshCentres or rawValues
+
+    [RHS rawValues 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+);
+
+// other options:
+
+annotate "minMax 0 -0.01";
+
+// non-global region (see man psxy for details on -R option)
+//region "0/1/0/1";
+
+// boundary ticks, annotation and grid
+//     (see man psbasemap for detail on -B option)
+boundaryMarks "a0.1/a0.1";
+
+// should the legend be plotted separately on on the plot
+//separateLegend true;
+

@@ -49,17 +49,12 @@ if (mesh.nInternalFaces())
     volScalarField Ndt
     (
         "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(thetaRho))/theta))
+        dt*Foam::sqrt(mag((g & fvc::grad(theta))/theta))
     );
     maxNdt = gMax(Ndt);
 }
 
 Info<< "Courant Number mean: " << meanCoNum
     << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
-
-courantFile << runTime.timeName() << ' '
-            << meanCoNum << ' '
-            << CoNum << ' '
-            << maxNdt << endl;
 
 // ************************************************************************* //

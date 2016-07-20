@@ -33,7 +33,7 @@ Description
 
 #include "Hops.H"
 #include "fvCFD.H"
-#include "ExnerTheta.H"
+#include "moistThermo.H"
 #include "OFstream.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -52,10 +52,6 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
-    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
-    #include "initEnergy.H"
-    #include "energy.H"
-    #include "initCourantFile.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -85,38 +81,30 @@ int main(int argc, char *argv[])
             #include "rhoThetaEqn.H"
             #include "moisture.H"
             #include "exnerEqn.H"
-            p = pRef*pow(Exner, 1/kappa);
+            p = pFromExner(Exner, kappa, pRef);
         }
         
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
-        
+
         // Updates for next time step
-        
-        thetaRho = fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta");
-        dVdt += rhof*gd - H.magd()*Cp*rhof*thetaRho*fvc::snGrad(Exner)
-              - muSponge*V;
-        divU = fvc::div(U);
-        divUtheta = fvc::div(U, theta);
-        divUrv = fvc::div(U, rv);
-        divUrl = fvc::div(U, rl);
+        dVdt += rhof*gd
+             - H.magd()*rhof*gradPCoeff(theta, rv, rl, Cp, epsilon)
+                *fvc::snGrad(Exner)
+             - muSponge*V;
         
         #include "compressibleContinuityErrs.H"
 
-        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
-                                        - initHeat;
-        normalisedHeatDiff = (totalHeatDiff/initHeat).value();
-        #include "energy.H"
-
-        thetae = T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(rv+rl)))
-                *Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T));
-
-        Info << "rl goes from " << min(rl).value() << " to "<<max(rl).value()
-             <<endl;
-        Info << "rv goes from " << min(rv).value() << " to "<<max(rv).value()
-             << endl;
-        Info << "thetae goes from " << min(thetae).value()
-             << " to "<<max(thetae).value() << endl;
+        thetae = thetaeFromPrimitive(T,p,Lv,rv,rl,pRef,epsilon,Cp,Cpl,R);
+        Info << "rl goes from " << min(rl.internalField())
+             << " to " << max(rl.internalField()) << endl;
+        Info << "rv goes from " << min(rv.internalField())
+             << " to " << max(rv.internalField()) << endl;
+        Info << "thetae goes from " << min(thetae.internalField())
+             << " to "<<max(thetae.internalField()) << endl;
+        Info << "condenseRate goes from "
+             << min(condenseRate.internalField())
+             << " to " << max(condenseRate.internalField()) << endl;
 
        runTime.write();
 

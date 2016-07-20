@@ -1,8 +1,9 @@
 {
     kappam = Rm/cpml;
     
-    Psi = rho*pow(rho*R*thetaRho/pRef, kappam/(kappam-1));
-    rho = Exner*Psi;
+    // Eqn of state and compressibility
+    Exner = moistGasExner(rho, thetaRho, kappam, R, pRef);
+    Psi == rho/Exner;
     rhof = fvc::interpolate(rho);
     
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
@@ -17,14 +18,19 @@
         );
 
         // Vu is the flux without g or dpdz (to get the BCs right)
-        Vu = G*(V.oldTime() + offCentre*dt*dVdt);
+        Vu = G*
+        (
+            V.oldTime()
+          //+ (1-offCentre)*dt*dVdt.oldTime()
+          + offCentre*dt*dVdt
+        );
 
         // add the gravity terms
         V = Vu + G*offCentre*dt*rhof*gd;
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
-        gradPcoeff = R*fvc::interpolate(thetaRho/kappam);
+        gradPcoeff = gradPCoeff(cpml, thetaRho, rv, epsilon);
         gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
@@ -56,6 +62,10 @@
                 V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
                 u = H.reconstructd(V/rhof);
                 Uf = fvc::interpolate(u);
+//                dVdt += rhof*gd
+//                     - H.magd()*rhof*gradPCoeff(cpml, thetaRho, rv, epsilon)
+//                        *fvc::snGrad(Exner)
+//                     - muSponge*V;
             }
         }
     }

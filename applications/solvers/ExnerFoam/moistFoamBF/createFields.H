@@ -40,6 +40,7 @@ volScalarField theta
     ),
     mesh
 );
+theta.oldTime();
 
 // Water vapour and liquid water mixing ratios
 volScalarField rv
@@ -62,14 +63,6 @@ volScalarField rl
 );
 rl.oldTime();
 rv.oldTime();
-theta.oldTime();
-
-// Moist theta on the face
-surfaceScalarField thetaRho
-(
-    IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(theta*(1+rv/epsilon)/(1+rv+rl), "theta")
-);
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
@@ -84,17 +77,20 @@ surfaceScalarField muSponge
 Info << "Maximum sponge value = " << max(muSponge).value()*dt.value()
      << endl;
 
-Info<< "Creating field rho\n" << endl;
+Info<< "Creating field rho from eqn of state\n" << endl;
 volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh),
-    pRef/(R*theta*(1+rv/epsilon))*pow(Exner, (1-kappa)/kappa)
+    moistGasExnerRho(Exner, theta, rv, kappa, R, pRef, epsilon)
 );
 rho.oldTime();
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
+// Fields needed in the Helmholtz equation
 volScalarField Psi("Psi", rho/Exner);
 Psi.oldTime();
+
+surfaceScalarField gradPcoeff = gradPCoeff(theta, rv, rl, Cp, epsilon);
 
 // fixed flux boundary conditions
 wordList VuBCs(mesh.boundaryMesh().size(), "calculated");
@@ -166,27 +162,24 @@ surfaceScalarField dVdt
 (
     IOobject("dVdt", runTime.timeName(), mesh),
     -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
-    +rhof*(gd - H.magd()*Cp*thetaRho*fvc::snGrad(Exner)),
+    +rhof*(gd - H.magd()*gradPcoeff*fvc::snGrad(Exner)),
      VuBCs
 );
 dVdt.oldTime();
 
-volScalarField divU("divU", fvc::div(U));
-divU.oldTime();
-volScalarField divUtheta("divUtheta", fvc::div(U, theta));
-divUtheta.oldTime();
+volScalarField drhodt("drhodt", -fvc::div(U));
+drhodt.oldTime();
+volScalarField dRhoThetadt("dRhoThetadt", -fvc::div(U, theta));
+dRhoThetadt.oldTime();
+volScalarField condenseRate("condenseRate", rho*rv/dt*0);
+volScalarField drhovdt("drhovdt", -condenseRate);
+drhovdt.oldTime();
+volScalarField drholdt("drhovdt", condenseRate);
+drholdt.oldTime();
 
-// Other source terms and thermodynamic variables that need to be stored
-volScalarField condenseRate("condenseRate", rv/dt*0);
-condenseRate.oldTime();
-volScalarField divUrv("divUrv", fvc::div(U, rv));
-divUrv.oldTime();
-volScalarField divUrl("divUrl", fvc::div(U, rl));
-divUrl.oldTime();
-volScalarField rhoThetaSource("rhoThetaSource", rho*theta/dt*0);
-rhoThetaSource.oldTime();
-volScalarField p("p", pRef*pow(Exner, 1/kappa));
-volScalarField T("T", theta*Exner);
+// Primitive thermodynamic variables
+volScalarField p("p", pFromExner(Exner, kappa, pRef));
+volScalarField T("T", TFromTheta(theta, Exner));
 
 // fix no flow boundaries
 forAll(Vu.boundaryField(), patchi)
@@ -204,7 +197,7 @@ forAll(Vu.boundaryField(), patchi)
 }
 
 // thetae for diagnostics
-volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
+volScalarField Lv("Lv", latentHeat(T, Lv0, T0, Cpl, Cpv));
 volScalarField thetae
 (
     IOobject
@@ -212,7 +205,5 @@ volScalarField thetae
         "thetae", runTime.timeName(), mesh,
         IOobject::NO_READ, IOobject::AUTO_WRITE
     ),
-    T*pow(p/pRef*epsilon/(rv + epsilon), -R/(Cp+Cpl*(rv+rl)))
-   *Foam::exp(Lv*rv/((Cp+Cpl*(rv+rl))*T))
+    thetaeFromPrimitive(T, p, Lv, rv, rl, pRef, epsilon, Cp, Cpl, R)
 );
-thetae.write();

@@ -37,7 +37,6 @@ volScalarField qv
     ),
     mesh
 );
-//qv == 0.5*qt0;
 
 volScalarField ql
 (
@@ -48,12 +47,12 @@ volScalarField ql
     ),
     mesh
 );
-//ql == 0.5*qt0;
 
 // Related mixing ratios
 volScalarField qd("qd", 1 - qv - ql);
 volScalarField rv("rv", qv/qd);
 volScalarField rl("rl", 0*rv);
+volScalarField qvs("qvs", qv);
 
 // Thermodynamics variable kappa as a function of mixing ratios
 volScalarField cpml("cpml", Cp + Cpv*rv);
@@ -61,14 +60,15 @@ volScalarField Rm("Rm", R + Rv*rv);
 volScalarField kappam("kappam", Rm/cpml);
 
 // Primitive thermodynamic variables
-volScalarField p("p", pRef*pow(Exner, 1/kappam));
-volScalarField T("T", thetaRho*Exner/(1 + rv/epsilon)*(1+rv));
+volScalarField p("p", pFromExner(Exner, kappam, pRef));
+volScalarField T("T", TFromThetaRho(thetaRho, Exner, rv, rl, epsilon));
+volScalarField rho("rho", moistGasExnerRho(Exner, thetaRho, kappam, R, pRef));
 
-volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
+volScalarField es("es", pSat(T, pSat0, Lv0, Rv, T0));
 volScalarField thetaScale("thetaScale", thetaRho/thetaRho);
 
 // Latent heat of vapoursation
-volScalarField Lv("Lv", Lv0 - (Cpl - Cpv)*(T - T0));
+volScalarField Lv("Lv", latentHeat(T, Lv0, T0, Cpl, Cpv));
 
 // The flux, including only the gravity term
 surfaceScalarField U
@@ -79,10 +79,7 @@ surfaceScalarField U
 
 
 // Moist theta on the face
-surfaceScalarField gradPcoeff
-(
-    "gradPcoeff", R*fvc::interpolate(thetaRho/kappam)
-);
+surfaceScalarField gradPcoeff = gradPCoeff(cpml, thetaRho, rv, epsilon);
 
 label groundBC = -1;
 label topBC = -1;
@@ -104,5 +101,4 @@ if (groundBC == -1 || topBC == -1)
         << mesh.boundaryMesh().names()
         << exit(FatalError);
 }
-
 
