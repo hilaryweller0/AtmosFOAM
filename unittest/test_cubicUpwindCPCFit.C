@@ -4,9 +4,10 @@
 #include "catch.hpp"
 #include "fvCFD.H"
 
+#include <assert.h>
 #include "PolynomialFit2.H"
 #include "cubicUpwindCPCFitPolynomial.H"
-#include <assert.h>
+#include "checks.H"
 
 TEST_CASE("uniform2DQuadInterior")
 {
@@ -25,15 +26,27 @@ TEST_CASE("uniform2DQuadInterior")
     stencilPoints[11] = point(-5, 2, 0); 
 
     const localStencil stencil(stencilPoints);
-    fitCoefficients coefficients(stencil.size(), false, 0);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
     fitWeights weights(stencil.size());
 
     const direction dimensions = 2;
     PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions);
-    polynomialFit.fit(coefficients, weights, stencil);
-    coefficients[0] += 1;
+    polynomialFit.fit(actualCoefficients, weights, stencil);
+    actualCoefficients[0] += 1;
 
-    Info << coefficients << endl;
-    Info << weights << endl;
-    // TODO: assert something
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.8745;
+    expectedCoefficients[ 1] =  0.2969;
+    expectedCoefficients[ 2] = -0.1406;
+    expectedCoefficients[ 3] = -0.0312;
+    expectedCoefficients[ 4] =  0.0313;
+    expectedCoefficients[ 5] =  0.0078;
+    expectedCoefficients[ 6] = -0.0859;
+    expectedCoefficients[ 7] =  0.0469;
+    expectedCoefficients[ 8] =  0.0313;
+    expectedCoefficients[ 9] =  0.0078;
+    expectedCoefficients[10] = -0.0859;
+    expectedCoefficients[11] =  0.0469;
+
+    check(actualCoefficients, expectedCoefficients);
 }
