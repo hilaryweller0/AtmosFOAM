@@ -90,7 +90,7 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
         List<uint32_t> positiveCentralCandidates(0); 
         forAll(fullRankIndices, candidateI)
         {
-            uint32_t candidate = fullRankCandidates[candidateI];
+            uint32_t candidate = fullRankCandidates[fullRankIndices[candidateI]];
 	        MatrixXd B(stencil.size(), targetLength);
             populateMatrix(B, stencil, candidate);
             MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(B);
