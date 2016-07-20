@@ -182,10 +182,10 @@ volScalarField drhodt("drhodt", -fvc::div(U));
 drhodt.oldTime();
 volScalarField dRhoThetadt("dRhoThetadt", -fvc::div(U, thetaRho));
 dRhoThetadt.oldTime();
-volScalarField condenseRate("condenseRate", rho*qv/dt*0);
-volScalarField drhovdt("drhovdt", -condenseRate);
+volScalarField condenseRate("condenseRate", qv/dt*0);
+volScalarField drhovdt("drhovdt", -rho*condenseRate);
 drhovdt.oldTime();
-volScalarField drholdt("drhovdt", condenseRate);
+volScalarField drholdt("drhovdt", rho*condenseRate);
 drholdt.oldTime();
 
 // Primitive thermodynamic variables

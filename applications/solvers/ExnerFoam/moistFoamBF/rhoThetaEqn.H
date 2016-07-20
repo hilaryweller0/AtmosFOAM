@@ -1,22 +1,7 @@
 // flux form rho theta equation
 
-// Variables needed to calculate the moist source term
-volScalarField divu = fvc::div(U/rhof);
-volScalarField cvml = Cv + Cvv*rv;
-volScalarField cpml("cpml", Cp + Cpv*rv + rl*Cpl);
-volScalarField Rm("Rm", R + Rv*rv);
-T = TFromTheta(theta, Exner);
-Lv = latentHeat(T, Lv0, T0, Cpl, Cpv);
-
-// Could put splitting into theta eqn
-
-dRhoThetadt = theta*
-(
-  - (Rm/cvml - R*cpml/(Cp*cvml))*divu*rho
-  + (Cv*Lv/(cvml*Cp*T) - Rv/cvml*(1 - R/Cp*cpml/Rm))*condenseRate
-)
-- fvc::div(U,theta);
-
+// Advect theta
+dRhoThetadt = -fvc::div(U, theta);
 theta = 
 (
     theta.oldTime()*rho.oldTime() + dt*
@@ -25,4 +10,23 @@ theta =
     )
 )/rho;
 
+// Calculate source term
+volScalarField divu = fvc::div(U/rhof);
+volScalarField cvml = Cv + Cvv*rv;
+volScalarField cpml("cpml", Cp + Cpv*rv + rl*Cpl);
+volScalarField Rm("Rm", R + Rv*rv);
+T = TFromTheta(theta, Exner);
+Lv = latentHeat(T, Lv0, T0, Cpl, Cpv);
+
+volScalarField heatSource = theta*
+(
+  - (Rm/cvml - R*cpml/(Cp*cvml))*divu
+  + (Cv*Lv/(cvml*Cp*T) - Rv/cvml*(1 - R/Cp*cpml/Rm))*condenseRate
+);
+
+// Apply source term
+dRhoThetadt += rho*heatSource;
+theta += dt*offCentre*heatSource;
+
+// Update temperature
 T = TFromTheta(theta, Exner);

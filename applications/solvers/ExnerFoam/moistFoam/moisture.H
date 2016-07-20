@@ -2,6 +2,7 @@
 
 // Calculate the saturation vapour pressure, es
 volScalarField es("es", pSat(T, pSat0, Lv0, Rv, T0));
+volScalarField rvs = epsilon*es/(p-es);
 
 //// Condensation rate from KJJV15
 //// Calculation of condensation rate based on Jahn, Knoth, Konig and Vogelsberg
@@ -14,11 +15,10 @@ volScalarField es("es", pSat(T, pSat0, Lv0, Rv, T0));
 //   /tauCondense
 //);
 
-// Update mixing ratios without condensation
-drhovdt = -fvc::div(U, qv); // - condenseRate;
-drholdt = -fvc::div(U, ql); // + condenseRate;
+// Advect mixing ratios
+drhovdt = -fvc::div(U, qv);
+drholdt = -fvc::div(U, ql);
 
-// Update mass mixing ratios without splitting
 qv =
 (
     qv.oldTime()*rho.oldTime() + dt*
@@ -36,22 +36,24 @@ ql =
 )/rho;
 
 // Update related mixing ratios
-qd = 1 - qv - ql;
 rv = qv/qd;
 rl = ql/qd;
 
-// Condensation rate from BF02
-volScalarField rvs = epsilon*es/(p-es);
+// Calculate and apply the condensation
 condenseRate = max
 (
     (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T)))),
     -rl/dt
-)*rho;
+);
 
 // Apply condensation
-rv -= dt*condenseRate/rho;
-rl += dt*condenseRate/rho;
-qv = rv/(1+rv+rl);
-ql = rl/(1+rv+rl);
-qd = 1 - qv - ql;
+drhovdt -= rho*condenseRate;
+drholdt += rho*condenseRate;
 
+qv -= dt*offCentre*condenseRate;
+ql += dt*offCentre*condenseRate;
+
+// Update related mixing ratios
+qd = 1 - qv - ql;
+rv = qv/qd;
+rl = ql/qd;

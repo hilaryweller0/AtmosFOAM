@@ -2,18 +2,11 @@
 
 // Calculate the saturation vapour pressure, es
 volScalarField es("es", pSat(T, pSat0, Lv0, Rv, T0));
-
-// Condensation rate from BF02
 volScalarField rvs = epsilon*es/(p-es);
-condenseRate = max
-(
-    (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T)))),
-    -rl/dt
-)*rho;
 
-// Update rv and rl
-drhovdt = -fvc::div(U, rv) - condenseRate;
-drholdt = -fvc::div(U, rl) + condenseRate;
+// Advect mixing ratios
+drhovdt = -fvc::div(U, rv);
+drholdt = -fvc::div(U, rl);
 
 rv =
 (
@@ -30,4 +23,18 @@ rl =
         offCentre*drholdt + (1-offCentre)*drholdt.oldTime()
     )
 )/rho;
+
+// Calculate and apply the condensation
+condenseRate = max
+(
+    (rv - rvs)/(dt*(1 + sqr(Lv)*rvs/(Cp*Rv*sqr(T)))),
+    -rl/dt
+);
+
+// Apply condensation
+drhovdt -= rho*condenseRate;
+drholdt += rho*condenseRate;
+
+rv -= dt*offCentre*condenseRate;
+rl += dt*offCentre*condenseRate;
 
