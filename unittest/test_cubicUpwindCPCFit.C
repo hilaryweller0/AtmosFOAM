@@ -156,3 +156,119 @@ TEST_CASE("threeDownwindTwoUpwind2")
 
     check(actualCoefficients, expectedCoefficients);
 }
+
+TEST_CASE("eightPointsWithDiagonal")
+{
+    List<point> stencilPoints(8, point(0, 0, 0));
+    stencilPoints[0] = point(-1, 0.0425922049484, 0);
+    stencilPoints[1] = point(1.05781693914, -0.0369040044104, 0);
+    stencilPoints[2] = point(-5.10831948925, 0.22706220493, 0);
+    stencilPoints[3] = point(-3.05606764231, 0.133444521133, 0);
+    stencilPoints[4] = point(-5.17064352149, 1.10939830377, 0);
+    stencilPoints[5] = point(-3.1023861129, 1.10939830377, 0);
+    stencilPoints[6] = point(-1.0341287043, 1.10939830377, 0);
+    stencilPoints[7] = point(1.0341287043, 1.10939830377, 0);
+
+    const localStencil stencil(stencilPoints);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
+
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.8507;
+    expectedCoefficients[ 1] =  0.3320;
+    expectedCoefficients[ 2] =  0.0227;
+    expectedCoefficients[ 3] = -0.2036;
+    expectedCoefficients[ 4] =  0.0385;
+    expectedCoefficients[ 5] = -0.1051;
+    expectedCoefficients[ 6] =  0.0971;
+    expectedCoefficients[ 7] = -0.0323;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
+
+    check(actualCoefficients, expectedCoefficients);
+}
+
+TEST_CASE("eightPointsWithDiagonal2")
+{
+    List<point> stencilPoints(8, point(0, 0, 0));
+    stencilPoints[0] = point(-1, -0.0669388588762, 0);
+    stencilPoints[1] = point(0.833644437615, 0.0794066407836, 0);
+    stencilPoints[2] = point(-4.75714056459, -0.217550549489, 0);
+    stencilPoints[3] = point(-2.8731750957, -0.165967824541, 0);
+    stencilPoints[4] = point(-4.74883733854, 0.906972333924, 0);
+    stencilPoints[5] = point(-2.84930240312, 0.906972333924, 0);
+    stencilPoints[6] = point(-0.949767467708, 0.906972333924, 0);
+    stencilPoints[7] = point(0.949767467708, 0.906972333924, 0);
+
+    const localStencil stencil(stencilPoints);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
+
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.7690;
+    expectedCoefficients[ 1] =  0.4155;
+    expectedCoefficients[ 2] =  0.0338;
+    expectedCoefficients[ 3] = -0.2085;
+    expectedCoefficients[ 4] =  0.0250;
+    expectedCoefficients[ 5] = -0.0878;
+    expectedCoefficients[ 6] =  0.1040;
+    expectedCoefficients[ 7] = -0.0510;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
+
+    check(actualCoefficients, expectedCoefficients);
+}
+
+TEST_CASE("twoByThreeVerySmallDiagonal")
+{
+    List<point> stencilPoints(6, point(0, 0, 0));
+    stencilPoints[0] = point(-1, -0.000810356386742, 0);
+    stencilPoints[1] = point(1.00145581289, -8.74386005651e-14, 0);
+    stencilPoints[2] = point(-0.993588838779, 3.33540741754, 0);
+    stencilPoints[3] = point(-1.00145581289, -1.66909302149, 0);
+    stencilPoints[4] = point(1.00145581289, -1.66909302149, 0);
+    stencilPoints[5] = point(1.00145581289, 3.33818604298, 0);
+
+    const localStencil stencil(stencilPoints);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
+
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.5005;
+    expectedCoefficients[ 1] =  0.4996;
+    expectedCoefficients[ 2] =  0.0000;
+    expectedCoefficients[ 3] = -0.0002;
+    expectedCoefficients[ 4] =  0.0000;
+    expectedCoefficients[ 5] =  0.0000;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
+
+    check(actualCoefficients, expectedCoefficients);
+}
+
+TEST_CASE("twoByThreeDiagonal")
+{
+    List<point> stencilPoints(6, point(0, 0, 0));
+    stencilPoints[0] = point(-1, 0.0149698735917, 0);
+    stencilPoints[1] = point(1.02740059135, -2.24259694664e-14, 0);
+    stencilPoints[2] = point(-0.907001583868, -3.3816285968, 0);
+    stencilPoints[3] = point(-1.0162149057, 3.41915929803, 0);
+    stencilPoints[4] = point(1.02740059135, -3.42466863784, 0);
+    stencilPoints[5] = point(1.02740059135, 3.42466863784, 0);
+
+    const localStencil stencil(stencilPoints);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
+
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.5067;
+    expectedCoefficients[ 1] =  0.4932;
+    expectedCoefficients[ 2] =  0.0012;
+    expectedCoefficients[ 3] = -0.0011;
+    expectedCoefficients[ 4] = -0.0001;
+    expectedCoefficients[ 5] =  0.0000;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
+
+    check(actualCoefficients, expectedCoefficients);
+}
