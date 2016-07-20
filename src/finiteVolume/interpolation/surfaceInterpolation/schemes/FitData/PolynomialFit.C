@@ -35,6 +35,7 @@ autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
             coefficients,
             weights,
             goodFit,
+            0, // alas, polynomial terms not known at this position
             columns
     ));
 }

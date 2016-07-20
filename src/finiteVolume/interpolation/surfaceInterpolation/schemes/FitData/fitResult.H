@@ -17,6 +17,7 @@ namespace Foam
                 const fitCoefficients& coefficients,
                 const fitWeights& weights,
                 const bool good,
+                const uint32_t polynomial,
                 const label polynomialTerms
         );
 
@@ -24,6 +25,7 @@ namespace Foam
         const fitCoefficients& coefficients;
         const fitWeights weights;
         const bool good;
+        const uint32_t polynomial;
         const label polynomialTerms;
     };
 }

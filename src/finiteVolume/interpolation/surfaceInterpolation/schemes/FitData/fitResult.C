@@ -6,6 +6,7 @@ Foam::fitResult::fitResult
         const fitCoefficients& coefficients,
         const fitWeights& weights,
         const bool good,
+        const uint32_t polynomial,
         const label polynomialTerms
 )
 :
@@ -13,5 +14,6 @@ Foam::fitResult::fitResult
     coefficients(coefficients),
     weights(weights),
     good(good),
+    polynomial(polynomial),
     polynomialTerms(polynomialTerms)
 {};
