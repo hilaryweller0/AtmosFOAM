@@ -5,8 +5,7 @@
 #include "fvCFD.H"
 
 #include <assert.h>
-#include "PolynomialFit2.H"
-#include "cubicUpwindCPCFitPolynomial.H"
+#include "testablePolynomialFit.H"
 #include "checks.H"
 
 TEST_CASE("uniform2DQuadInterior")
@@ -29,11 +28,6 @@ TEST_CASE("uniform2DQuadInterior")
     fitCoefficients actualCoefficients(stencil.size(), false, 0);
     fitWeights weights(stencil.size());
 
-    const direction dimensions = 2;
-    PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions);
-    polynomialFit.fit(actualCoefficients, weights, stencil);
-    actualCoefficients[0] += 1;
-
     fitCoefficients expectedCoefficients(stencil.size(), false, 0);
     expectedCoefficients[ 0] =  0.8745;
     expectedCoefficients[ 1] =  0.2969;
@@ -47,6 +41,35 @@ TEST_CASE("uniform2DQuadInterior")
     expectedCoefficients[ 9] =  0.0078;
     expectedCoefficients[10] = -0.0859;
     expectedCoefficients[11] =  0.0469;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
+
+    check(actualCoefficients, expectedCoefficients);
+}
+
+TEST_CASE("sixPointsWithDiagonal")
+{
+    List<point> stencilPoints(6, point(0, 0, 0));
+    stencilPoints[0] = point(-1, 0.0330314, 0);
+    stencilPoints[1] = point(0.907926, -2.64e-14, 0);
+    stencilPoints[2] = point(-1.13441, 3.05716, 0);
+    stencilPoints[3] = point(-0.87524, -2.99221, 0);
+    stencilPoints[4] = point(0.907926, 3.02642, 0);
+    stencilPoints[5] = point(0.907926, -3.02642, 0);
+
+    const localStencil stencil(stencilPoints);
+    fitCoefficients actualCoefficients(stencil.size(), false, 0);
+    fitWeights weights(stencil.size());
+
+    fitCoefficients expectedCoefficients(stencil.size(), false, 0);
+    expectedCoefficients[ 0] =  0.5069;
+    expectedCoefficients[ 1] =  0.4931;
+    expectedCoefficients[ 2] = -0.0169;
+    expectedCoefficients[ 3] = -0.0138;
+    expectedCoefficients[ 4] =  0.0143;
+    expectedCoefficients[ 5] =  0.0164;
+
+    autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
 
     check(actualCoefficients, expectedCoefficients);
 }

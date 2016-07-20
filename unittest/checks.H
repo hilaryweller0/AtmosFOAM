@@ -7,6 +7,6 @@
 
 static Approx approx = Approx::custom().epsilon(0.001);
 
-void check(Foam::fitCoefficients actual, Foam::fitCoefficients expected);
+void check(Foam::fitCoefficients& actual, Foam::fitCoefficients& expected);
 
 #endif
