@@ -75,7 +75,7 @@ label Foam::PolynomialFit2<Polynomial>::findStable
             JacobiSVD<MatrixXd> svd(B);
             scalar minSingularValue = svd.singularValues().array().reverse()(0);
 
-            if (minSingularValue >= 0.6)
+            if (minSingularValue >= 0.2)
             {
                 fullRankCandidates.append(candidate);
                 fullRankMinSingularValues.append(minSingularValue);
@@ -85,29 +85,9 @@ label Foam::PolynomialFit2<Polynomial>::findStable
         fullRankMinSingularValues.reverseSort();
         const labelList& fullRankIndices = fullRankMinSingularValues.indices();
 
-        List<uint32_t> positiveCentralCandidates(0); 
         forAll(fullRankIndices, candidateI)
         {
-            uint32_t candidate = fullRankCandidates[candidateI];
-	        MatrixXd B(stencil.size(), targetLength);
-            populateMatrix(B, stencil, candidate);
-            MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(B);
-
-            scalar coefficients[targetLength]; 
-            for (label i=0; i<targetLength; i++)
-            {
-                coefficients[i] = Binv(0,i);
-            }
-
-            if (coefficients[0] > 0 && coefficients[1] > -SMALL)
-            {
-                positiveCentralCandidates.append(candidate);
-            }
-        }
-
-        forAll(positiveCentralCandidates, candidateI)
-        {
-            uint32_t candidate = positiveCentralCandidates[candidateI];
+            uint32_t candidate = fullRankCandidates[fullRankIndices[candidateI]];
             scalarList w(stencil.size(), scalar(1));
             w[0] = 1000;
             w[1] = 1000;
@@ -117,7 +97,8 @@ label Foam::PolynomialFit2<Polynomial>::findStable
                 scalarList coeffs(stencil.size(), scalar(0));
                 populateCoefficients(coeffs, stencil, candidate, targetLength, w);
                 
-                if (coeffs[1] < coeffs[0] && coeffs[1] <= 0.5)
+                if (coeffs[1] < coeffs[0] && coeffs[1] <= 0.5 &&
+                    coeffs[0] > 0 && coeffs[1] > -SMALL)
                 {
                     coefficients.copyFrom(coeffs);
                     weights.copyFrom(w);
