@@ -117,7 +117,21 @@ void Foam::stencilWeights::fitted(
 )
 {
     const point& p = mesh.Cf()[faceI];
-    Info << faceI << " " << p.x() << " " << p.y() << " " << p.z() << " " << 1 + fit->coefficients[0] << " " << fit->coefficients[1] << " " << fit->polynomialTerms << endl;
+//    Info << faceI << " " << p.x() << " " << p.y() << " " << p.z() << " " << 1 + fit->coefficients[0] << " " << fit->coefficients[1] << " " << fit->polynomialTerms << endl;
+    
+    scalar minP = VGREAT;
+    scalar maxP = -VGREAT;
+    scalar sumP = 0;
+    scalar sumMagP = 0;
+
+    for (int i=2; i < fit->coefficients.size(); i++)
+    {
+        if (fit->coefficients[i] < minP) minP = fit->coefficients[i];
+        if (fit->coefficients[i] > maxP) maxP = fit->coefficients[i];
+        sumP += fit->coefficients[i];
+        sumMagP += mag(fit->coefficients[i]);
+    }
+    Info << fit->coefficients[0] << " " << fit->coefficients[1] << " " << minP << " " << maxP << " " << sumP << " " << sumMagP << endl;
     if (faceI == debugFaceI)
     {
         populateStencilWeights(fit(), stencil);
@@ -125,11 +139,6 @@ void Foam::stencilWeights::fitted(
         Info << "# coefficients for face " << debugFaceI << " " << fit->coefficients << endl;
         Info << "# polynomialTerms for face " << debugFaceI << " " << fit->polynomialTerms << endl;
         Info << "# cell weights for face " << debugFaceI << " " << fit->weights << endl;
-    }
-    if (fit->coefficients[0] < 0.5-1)
-    {
-        Info << "##### " << faceI << " has stencil " << fit->coefficients << endl;
-        fieldAccess(smallUpwindWeights(), faceI) = 1;
     }
     fieldAccess(polynomialTerms(), faceI) = fit->polynomialTerms;
     fieldAccess(downwindWeights(), faceI) = fit->weights[1];
