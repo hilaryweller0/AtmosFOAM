@@ -1,3 +1,4 @@
+{
 // flux form rho theta equation
 
 // Advect theta
@@ -30,3 +31,4 @@ theta += dt*offCentre*heatSource;
 
 // Update temperature
 T = TFromTheta(theta, Exner);
+}

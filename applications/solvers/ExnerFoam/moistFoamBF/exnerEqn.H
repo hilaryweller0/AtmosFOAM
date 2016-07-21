@@ -2,8 +2,6 @@
     // Eqn of state and compressibility
     Exner = moistGasExner(rho, theta, rv, kappa, R, pRef, epsilon);
     Psi == rho/Exner;
-    // This is not how it is done in most compressible OpenFOAM codes
-    // Usually you do not reset Exner like this. You reset rho from Exner
     
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
 
