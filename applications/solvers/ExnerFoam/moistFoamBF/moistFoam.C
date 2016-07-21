@@ -73,17 +73,15 @@ int main(int argc, char *argv[])
         // update old time variables for Crank-Nicholson
         V.oldTime() += (1-offCentre)*dt*dVdt;
 
-        #include "rhoEqn.H"
-        #include "moisture.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
-            #include "rhoThetaEqn.H"
             #include "moisture.H"
+            #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
             p = pFromExner(Exner, kappa, pRef);
+            T = TFromTheta(theta, Exner);
         }
-        
         #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
 

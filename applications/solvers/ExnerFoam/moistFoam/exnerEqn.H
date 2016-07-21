@@ -4,7 +4,6 @@
     // Eqn of state and compressibility
     Exner = moistGasExner(rho, thetaRho, kappam, R, pRef);
     Psi == rho/Exner;
-    rhof = fvc::interpolate(rho);
     
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
 

@@ -12,7 +12,7 @@ theta =
 
 // Calculate source term
 volScalarField divu = fvc::div(U/rhof);
-volScalarField cvml = Cv + Cvv*rv;
+volScalarField cvml = Cv + Cvv*rv + Cpl*rl;
 volScalarField cpml("cpml", Cp + Cpv*rv + rl*Cpl);
 volScalarField Rm("Rm", R + Rv*rv);
 T = TFromTheta(theta, Exner);

@@ -36,6 +36,7 @@ ql =
 )/rho;
 
 // Update related mixing ratios
+qd = 1 - qv - ql;
 rv = qv/qd;
 rl = ql/qd;
 
