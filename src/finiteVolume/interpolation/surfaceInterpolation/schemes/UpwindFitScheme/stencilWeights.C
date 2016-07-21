@@ -131,7 +131,7 @@ void Foam::stencilWeights::fitted(
         sumP += fit->coefficients[i];
         sumMagP += mag(fit->coefficients[i]);
     }
-    Info << fit->coefficients[0] << " " << fit->coefficients[1] << " " << minP << " " << maxP << " " << sumP << " " << sumMagP << endl;
+    Info << fit->coefficients.size() << " " << fit->coefficients[0] << " " << fit->coefficients[1] << " " << minP << " " << maxP << " " << sumP << " " << sumMagP << endl;
     if (faceI == debugFaceI)
     {
         populateStencilWeights(fit(), stencil);
