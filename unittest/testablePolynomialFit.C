@@ -10,7 +10,7 @@ autoPtr<fitResult> fitPolynomial
 )
 {
     const direction dimensions = 2;
-    PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions);
+    PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions, 0.6);
     autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
     coefficients[0] += 1;
     return result;

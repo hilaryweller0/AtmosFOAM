@@ -10,10 +10,12 @@ using Eigen::MatrixXd;
 template<class Polynomial>
 Foam::PolynomialFit2<Polynomial>::PolynomialFit2
 (
-    const direction dimensions
+    const direction dimensions,
+    const scalar minSingularValueThreshold
 )
 :
-    dimensions(dimensions)
+    dimensions(dimensions),
+    minSingularValueThreshold(minSingularValueThreshold)
 {}
 
 template<class Polynomial>
@@ -77,7 +79,7 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
             JacobiSVD<MatrixXd> svd(B);
             scalar minSingularValue = svd.singularValues().array().reverse()(0);
 
-            if (minSingularValue >= 0.2)
+            if (minSingularValue >= minSingularValueThreshold)
             {
                 fullRankCandidates.append(candidate);
                 fullRankMinSingularValues.append(minSingularValue);

@@ -21,7 +21,8 @@ namespace Foam
     public:
         PolynomialFit2
         (
-            const direction dimensions
+            const direction dimensions,
+            const scalar minSingularValueThreshold = 0.2
         );
         
         autoPtr<fitResult> fit
@@ -66,6 +67,7 @@ namespace Foam
         label numberOfSetBits(uint32_t i);
 
         const direction dimensions;
+        const scalar minSingularValueThreshold;
     };
 }
 
