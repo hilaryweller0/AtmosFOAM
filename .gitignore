@@ -63,7 +63,7 @@ core
 *old
 *.bak
 
-# OpenFOAM build files and run directory #
+# OpenFOAM build files but not run directory #
 ########################
 *.dep
 linux*
