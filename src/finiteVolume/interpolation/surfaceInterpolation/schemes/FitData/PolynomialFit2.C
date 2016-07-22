@@ -93,8 +93,8 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
         {
             uint32_t candidate = fullRankCandidates[fullRankIndices[candidateI]];
             scalarList w(stencil.size(), scalar(1));
-            w[0] = 1000;
-            w[1] = 1000;
+            w[0] = 1024;
+            w[1] = 1024;
 
             do
             {
@@ -107,7 +107,8 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
                     if (mag(coeffs[i]) > maxMagP) maxMagP = mag(coeffs[i]);
                 }
                 
-                if (coeffs[1] < coeffs[0] && coeffs[1] <= 0.5 &&
+                if (coeffs[1] < coeffs[0] && 
+                    coeffs[0] >= 0.5 && coeffs[1] <= 0.5 &&
                     coeffs[0] > 0 && coeffs[1] > -SMALL &&
                     maxMagP*(coeffs.size()-2) < 2)
                 {
@@ -116,8 +117,8 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
                     return candidate;
                 }
 
-                w[1] -= 1;
-            } while (w[1] > 0);
+                w[1] /= 2;
+            } while (w[1] >= 1);
         }
 
         targetLength--;

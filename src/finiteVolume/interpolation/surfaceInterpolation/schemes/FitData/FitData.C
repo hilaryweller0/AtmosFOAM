@@ -131,21 +131,20 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
 
-    //PolynomialFit<AdaptivePolynomial<Polynomial> > polynomialFit(dim_);
-//    PolynomialFit2<Polynomial> polynomialFit(dim_, 0.2);
-    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 0.1);
+    PolynomialFit2<Polynomial> polynomialFit(dim_, 0.1);
+    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 1e-3);
 
     const Basis basis(idir, jdir, kdir);
     const localStencil stencil(C, p0, basis);
 
     autoPtr<fitResult> unstableResult = polynomialFitUnstable.fit(coefficients, weights, stencil);
-    fitCoefficients unstableCoeffs(coefficients);
+   /* fitCoefficients unstableCoeffs(coefficients);
     fitWeights unstableWeights(weights);
- //   autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
-/*
+   autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
+
     if (unstableResult->polynomial != result->polynomial || unstableCoeffs[0] != coefficients[0])
     {
-        Info << "+++ stable " << coefficients << " " << result->polynomial << " " << 
+        Info << "+++ " << facei << " stable " << coefficients << " " << result->polynomial << " " << 
             result->weights << " unstable " << unstableCoeffs << " " << unstableResult->polynomial << 
             " " << unstableResult->weights << endl;
     }
