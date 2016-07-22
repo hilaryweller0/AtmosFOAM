@@ -32,17 +32,17 @@ SIgravityWaves false;
 gradSchemes
 {
     default         none;
-    linearUpwind    Gauss linear;
-    grad(thetaRho)  Gauss linear;
+    //linearUpwind    Gauss linear;
+    grad(theta)  Gauss linear;
 }
 
 divSchemes
 {
-    default             Gauss none;
-    div(U,thetaRho)     Gauss linearUpwind linearUpwind;//cubicUpwindCPCFit 3; //
-    div(U,qv)           Gauss linearUpwind linearUpwind;//cubicUpwindCPCFit 3; //
-    div(U,ql)           Gauss linearUpwind linearUpwind;cubicUpwindCPCFit 3; //
-    div(U,u)            Gauss linearUpwind linearUpwind;cubicUpwindCPCFit 3; //
+    default             none;
+    div(U,theta)        Gauss quadraticUpwindCPCFit 3; //linearUpwind linearUpwind; //
+    div(U,rv)           Gauss  quadraticUpwindCPCFit 3; //linearUpwind linearUpwind; //
+    div(U,rl)           Gauss quadraticUpwindCPCFit 3; //linearUpwind linearUpwind; //
+    div(U,u)            Gauss quadraticUpwindCPCFit 3; //linearUpwind linearUpwind; //
 }
 
 laplacianSchemes

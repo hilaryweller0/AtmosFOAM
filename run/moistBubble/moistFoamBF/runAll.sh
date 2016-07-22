@@ -12,7 +12,7 @@ blockMesh
 rm -rf [0-9]* core
 mkdir 0
 cp -r init_0/* 0
-initMoistFoamBF
+initMoistFoam
 ln -sf ../0/Exner constant/ExnerRef
 
 time=0
@@ -31,7 +31,7 @@ gmtFoam -time $time condenseRate
 gv $time/condenseRate.pdf &
 
 # run moistFoam
-moistFoamBF >& log &
+moistFoam >& log &
 tail -f log
 
 # debugging (differences from initial conditions
