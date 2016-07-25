@@ -1,11 +1,24 @@
-# Compiled sources #
-###################
+# Compiled source and cached #
+##############################
 *.com
 *.class
 *.dll
 *.exe
 *.o
 *.so
+*.pyc
+
+# Large files #
+###############
+*pdf
+*ps
+*gif
+*dat
+*png
+
+# Build directories
+###################
+build
 
 # Packages #
 ############
@@ -19,14 +32,17 @@
 *.rar
 *.tar
 *.zip
+*.tgz
 
 # Logs and databases #
 ######################
 *log
+log*
 *Log
 *.sql
 *.sqlite
 gmt.history
+gmt.conf
 
 # OS generated files #
 ######################
@@ -38,19 +54,25 @@ gmt.history
 ehthumbs.db
 Thumbs.db
 *.swp
+core
 
 # backup files #
 ################
 *~
 *#
 *old
+*.bak
 
-# OpenFOAM build files and run directory #
+# OpenFOAM build files but not run directory #
 ########################
 *.dep
 linux*
 lnInclude
-run
+
+# Time and mesh directories #
+[0-9]*
+*[0-9]
+polyMesh
 
 # Modified source code #
 ########################
@@ -61,7 +83,14 @@ run
 # Latex generated files #
 #########################
 *.aux
+*.out
 *.spl
 *.dvi
+*.bbl
+*.blg
+*.fff
+*.lof
+*.lot
+*.ttt
 
 testcases/build

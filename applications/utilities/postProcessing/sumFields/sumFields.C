@@ -205,7 +205,8 @@ int main(int argc, char *argv[])
         Info << "Writing " << timeOut << "/" << fileNameOut << endl;
         vfOut.write();
 
-        Info << "Max = " << max(mag(vfOut)) << " min = " << min(mag(vfOut))
+        Info << "Max = " << max(mag(vfOut.internalField()))
+             << " min = " << min(mag(vfOut.internalField()))
              << endl;
     }
     else if (fieldHeader.headerClassName() == "surfaceScalarField")
@@ -230,7 +231,8 @@ int main(int argc, char *argv[])
         Info << "Writing " << timeOut << "/" << fileNameOut << endl;
         sfOut.write();
 
-        Info << "Max = " << max(sfOut) << " min = " << min(sfOut) << endl;
+        Info << "Max = " << max(sfOut.internalField())
+             << " Min = " << min(sfOut.internalField()) << endl;
     }
     else if (fieldHeader.headerClassName() == "surfaceVectorField")
     {
@@ -262,7 +264,8 @@ int main(int argc, char *argv[])
         Info << "Writing " << timeOut << "/" << fileNameOut << endl;
         vfOut.write();
 
-        Info << "Max = " << max(mag(vfOut)) << " min = " << min(mag(vfOut))
+        Info << "Max = " << max(mag(vfOut.internalField()))
+             << " Min = " << min(mag(vfOut.internalField()))
              << endl;
     }
     else

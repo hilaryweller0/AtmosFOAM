@@ -1,0 +1,30 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XZ;
+
+FieldsToPlot
+2
+(
+    [stencil rawValues 0 2 0.5 "$GMTU/colours/white_blue_red.cpt"]
+    [psif rawValues 0 2 0.5 "$GMTU/colours/white_black.cpt"]
+);
+
+//separateLegend true;
+region "-2500/-1500/0/1000";
+//annotate "minMax 0.01 -0.005";
+
