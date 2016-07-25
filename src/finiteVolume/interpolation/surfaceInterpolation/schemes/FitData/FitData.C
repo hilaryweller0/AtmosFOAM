@@ -131,8 +131,7 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
 
-    PolynomialFit2<Polynomial> polynomialFit(dim_, 0.1);
-    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 1e-9);
+    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 0.1);
 
     const Basis basis(idir, jdir, kdir);
     const localStencil stencil(C, p0, basis);
