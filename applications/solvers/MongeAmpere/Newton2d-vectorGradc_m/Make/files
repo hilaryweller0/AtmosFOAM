@@ -1,3 +1,0 @@
-Newton2d-vectorGradc_m.C
-
-EXE = $(FOAM_USER_APPBIN)/NEWTON2D-vectorGradc_m
