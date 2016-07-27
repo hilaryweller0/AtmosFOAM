@@ -98,24 +98,6 @@ void Foam::fitCoefficients::applyCorrection(const bool goodFit)
     }
 }
 
-bool Foam::fitCoefficients::stable() const
-{
-    scalar upwind = coefficients[0];                                            
-    scalar downwind = coefficients[1];
-
-    return mag(downwind) < upwind && downwind <= 0.5;
-}
-
-bool Foam::fitCoefficients::central_are_largest() const
-{
-    scalar smallest_central_coefficient = min(coefficients[0], coefficients[1]);
-    for (int i=2; i < coefficients.size(); i++)
-    {
-        if (-coefficients[i]+0.01 > smallest_central_coefficient) return false;
-    }
-    return true;
-}
-
 Foam::Ostream& Foam::operator<<
 (
     Ostream& stream,

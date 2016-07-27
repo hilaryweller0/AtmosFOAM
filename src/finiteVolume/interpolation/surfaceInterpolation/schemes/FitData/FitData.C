@@ -24,9 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "FitData.H"
-#include "PolynomialFit.H"
 #include "PolynomialFit2.H"
-#include "AdaptivePolynomial.H"
 #include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"

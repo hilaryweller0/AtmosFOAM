@@ -17,8 +17,6 @@ interpolation/surfaceInterpolation/schemes/FitData/fitCoefficients.C
 interpolation/surfaceInterpolation/schemes/FitData/fitResult.C
 interpolation/surfaceInterpolation/schemes/FitData/fitWeights.C
 interpolation/surfaceInterpolation/schemes/FitData/Basis.C
-interpolation/surfaceInterpolation/schemes/FitData/stabiliser.C
-interpolation/surfaceInterpolation/schemes/FitData/weightedMatrix.C
 interpolation/surfaceInterpolation/schemes/UpwindFitScheme/stencilWeights.C
 
 extendedStencil = fvMesh/extendedStencil

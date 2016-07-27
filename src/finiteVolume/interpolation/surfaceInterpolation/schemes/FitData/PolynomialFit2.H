@@ -5,7 +5,6 @@
 #include "autoPtr.H"
 #include "Basis.H"
 #include "fitResult.H"
-#include "weightedMatrix.H"
 #include "fitWeights.H"
 #include "localStencil.H"
 
