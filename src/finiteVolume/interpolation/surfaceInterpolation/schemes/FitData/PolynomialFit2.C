@@ -101,17 +101,17 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
                 scalarList coeffs(stencil.size(), scalar(0));
                 populateCoefficients(coeffs, stencil, candidate, targetLength, w);
 
-                scalar sumP = 0;
+                scalar maxMagP = 0;
                 for (int i=2; i < coeffs.size(); i++)
                 {
-                    sumP += coeffs[i];
+                    if (mag(coeffs[i]) > maxMagP) maxMagP = mag(coeffs[i]);
                 }
                 
                 if (
                         coeffs[1] < coeffs[0] && 
                         coeffs[0] >= 0.5 && coeffs[0] <= 1 &&
                         coeffs[1] > -SMALL && coeffs[1] <= 0.5 &&
-                        coeffs[0] - coeffs[1] >= sumP
+                        coeffs[0] - coeffs[1] >= maxMagP
                 )
                 {
                     coefficients.copyFrom(coeffs);
