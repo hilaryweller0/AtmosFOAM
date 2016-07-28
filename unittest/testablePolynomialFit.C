@@ -1,5 +1,5 @@
 #include "testablePolynomialFit.H"
-#include "PolynomialFit2.H"
+#include "PolynomialFit.H"
 #include "cubicUpwindCPCFitPolynomial.H"
 
 autoPtr<fitResult> fitPolynomial
@@ -10,7 +10,7 @@ autoPtr<fitResult> fitPolynomial
 )
 {
     const direction dimensions = 2;
-    PolynomialFit2<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions, 0.2);
+    PolynomialFit<cubicUpwindCPCFitPolynomial> polynomialFit(dimensions, 0.2);
     autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
     coefficients[0] += 1;
     return result;

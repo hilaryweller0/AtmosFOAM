@@ -1,4 +1,4 @@
-#include "PolynomialFit2.H"
+#include "PolynomialFit.H"
 #include "MatrixOps.H"
 #include "fitCoefficients.H"
 #include "SortableList.H"
@@ -8,7 +8,7 @@
 using Eigen::MatrixXd;
 
 template<class Polynomial>
-Foam::PolynomialFit2<Polynomial>::PolynomialFit2
+Foam::PolynomialFit<Polynomial>::PolynomialFit
 (
     const direction dimensions,
     const scalar minSingularValueThreshold
@@ -19,7 +19,7 @@ Foam::PolynomialFit2<Polynomial>::PolynomialFit2
 {}
 
 template<class Polynomial>
-autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
+autoPtr<fitResult> Foam::PolynomialFit<Polynomial>::fit
 (
     fitCoefficients& coefficients,
     fitWeights& weights,
@@ -44,7 +44,7 @@ autoPtr<fitResult> Foam::PolynomialFit2<Polynomial>::fit
 }
 
 template<class Polynomial>
-uint32_t Foam::PolynomialFit2<Polynomial>::findStable
+uint32_t Foam::PolynomialFit<Polynomial>::findStable
 (
         fitCoefficients& coefficients,
         const localStencil& stencil,
@@ -130,7 +130,7 @@ uint32_t Foam::PolynomialFit2<Polynomial>::findStable
 }
 
 template<class Polynomial>
-void PolynomialFit2<Polynomial>::populateCoefficients
+void PolynomialFit<Polynomial>::populateCoefficients
 (
         scalarList& coefficients,
         const localStencil& stencil,
@@ -150,7 +150,7 @@ void PolynomialFit2<Polynomial>::populateCoefficients
 }
 
 template<class Polynomial>
-void PolynomialFit2<Polynomial>::populateMatrix
+void PolynomialFit<Polynomial>::populateMatrix
 (
         MatrixXd& B,
         const localStencil& stencil,
@@ -162,7 +162,7 @@ void PolynomialFit2<Polynomial>::populateMatrix
 }
 
 template<class Polynomial>
-void PolynomialFit2<Polynomial>::populateMatrix
+void PolynomialFit<Polynomial>::populateMatrix
 (
         MatrixXd& B,
         const localStencil& stencil,
@@ -186,7 +186,7 @@ void PolynomialFit2<Polynomial>::populateMatrix
 }
 
 template<class Polynomial>
-label Foam::PolynomialFit2<Polynomial>::numberOfSetBits(uint32_t i)
+label Foam::PolynomialFit<Polynomial>::numberOfSetBits(uint32_t i)
 {
     i = i - ((i >> 1) & 0x55555555);
     i = (i & 0x33333333) + ((i >> 2) & 0x33333333);

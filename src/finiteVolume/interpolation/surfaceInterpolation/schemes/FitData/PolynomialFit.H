@@ -1,5 +1,5 @@
-#ifndef PolynomialFit2_H
-#define PolynomialFit2_H
+#ifndef PolynomialFit_H
+#define PolynomialFit_H
 
 #include "fvCFD.H"
 #include "autoPtr.H"
@@ -15,10 +15,10 @@ using Eigen::MatrixXd;
 namespace Foam
 {
     template<class Polynomial>
-    class PolynomialFit2
+    class PolynomialFit
     {
     public:
-        PolynomialFit2
+        PolynomialFit
         (
             const direction dimensions,
             const scalar minSingularValueThreshold = 0.2
@@ -71,7 +71,7 @@ namespace Foam
 }
 
 #ifdef NoRepository
-#   include "PolynomialFit2.C"
+#   include "PolynomialFit.C"
 #endif
 
 #endif

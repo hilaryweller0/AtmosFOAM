@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "FitData.H"
-#include "PolynomialFit2.H"
+#include "PolynomialFit.H"
 #include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"
@@ -129,26 +129,12 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);
 
-    PolynomialFit2<Polynomial> polynomialFit(dim_, 1e-9);
-//    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 1e-9);
+    PolynomialFit<Polynomial> polynomialFit(dim_, 1e-9);
 
     const Basis basis(idir, jdir, kdir);
     const localStencil stencil(C, p0, basis);
-/*
-    autoPtr<fitResult> unstableResult = polynomialFitUnstable.fit(coefficients, weights, stencil);
-    fitCoefficients unstableCoeffs(coefficients);
-    fitWeights unstableWeights(weights);
-*/
-    autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
-/*
-    if (unstableResult->polynomial != result->polynomial || unstableCoeffs[0] != coefficients[0])
-    {
-        Info << "+++ " << facei << " stable " << coefficients << " " << result->polynomial << " " << 
-            result->weights << " unstable " << unstableCoeffs << " " << unstableResult->polynomial << 
-            " " << unstableResult->weights << endl;
-    }
-*/
-    return result;
+
+    return polynomialFit.fit(coefficients, weights, stencil);
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
