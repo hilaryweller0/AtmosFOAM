@@ -1,0 +1,30 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+
+divSchemes {
+    default         none;
+    div(phi,T)      Gauss cubicUpwindCPCFit 3;
+    div(phi,T_0)    Gauss cubicUpwindCPCFit 3;
+}
+
+gradSchemes {
+    default         Gauss linear;
+}
+
+laplacianSchemes {
+    default         Gauss linear corrected;
+}
+
+ddtSchemes {
+    default         backward;
+}
+
+fluxRequired {
+    default         no;
+    T;
+}

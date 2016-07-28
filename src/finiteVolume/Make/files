@@ -1,4 +1,4 @@
-interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
+/*interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
 interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
 interpolation/surfaceInterpolation/schemes/biQuadraticUpwindFit/biQuadraticUpwindFit.C
 interpolation/surfaceInterpolation/schemes/quadraticUpwindCPCFit/quadraticUpwindCPCFit.C
@@ -9,16 +9,21 @@ interpolation/surfaceInterpolation/schemes/biLinearUpwindFit/biLinearUpwindFit.C
 interpolation/surfaceInterpolation/schemes/APVM/APVM.C
 interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
-
+*/
+interpolation/surfaceInterpolation/schemes/linearUpwindDebug/linearUpwindDebug.C
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
+interpolation/surfaceInterpolation/schemes/FitData/localStencil.C
+interpolation/surfaceInterpolation/schemes/FitData/fitCoefficients.C
+interpolation/surfaceInterpolation/schemes/FitData/fitResult.C
+interpolation/surfaceInterpolation/schemes/FitData/fitWeights.C
 interpolation/surfaceInterpolation/schemes/FitData/Basis.C
-interpolation/surfaceInterpolation/schemes/FitData/WeightedMatrix.C
-interpolation/surfaceInterpolation/schemes/FitData/Fit.C
-interpolation/surfaceInterpolation/schemes/UpwindFitScheme/StencilWeights.C
+interpolation/surfaceInterpolation/schemes/UpwindFitScheme/stencilWeights.C
 
 extendedStencil = fvMesh/extendedStencil
+$(extendedStencil)/cellToCell/globalIndexStencils/cellToCellStencil.C
 
 cellToFace = $(extendedStencil)/cellToFace
+$(cellToFace)/globalIndexStencils/cellToFaceStencil.C
 $(cellToFace)/globalIndexStencils/oneDCellToFaceStencil.C
 $(cellToFace)/extendedUpwindCellToFaceStencilNew.C
 $(cellToFace)/MeshObjects/pureUpwindCPCCellToFaceStencilObject.C

@@ -1,4 +1,6 @@
 EXE_INC = -g \
+    -Wno-old-style-cast \
+    -I$(WM_THIRD_PARTY_DIR)/eigen-eigen-07105f7124f9 \
     -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude

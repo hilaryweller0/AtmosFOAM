@@ -1,6 +1,6 @@
 testAtmosFOAM.C
-/*test_cubicUpwindCPCFit.C
-TestPolynomialFit.C*/
-TestStencils.C
+test_cubicUpwindCPCFit.C
+checks.C
+testablePolynomialFit.C
 
 EXE = $(FOAM_USER_APPBIN)/testAtmosFOAM

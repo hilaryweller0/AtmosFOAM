@@ -24,11 +24,12 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "FitData.H"
-#include "PolynomialFit.H"
-#include "FixedPolynomial.H"
+#include "PolynomialFit2.H"
 #include "Basis.H"
 #include "surfaceFields.H"
 #include "volFields.H"
+#include "fitCoefficients.H"
+#include "localStencil.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
@@ -105,9 +106,53 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     kdir = idir ^ jdir;
 }
 
+template<class FitDataType, class ExtendedStencil, class Polynomial>
+autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
+(
+    fitCoefficients& coefficients,
+    const List<point>& C,
+    const label facei,
+    bool owner
+)
+{
+    vector idir(1,0,0);
+    vector jdir(0,1,0);
+    vector kdir(0,0,1);
+    findFaceDirs(idir, jdir, kdir, facei);
+    
+    point p0 = this->mesh().faceCentres()[facei];
+
+    scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[0]-p0);
+    scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
+    bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
+
+    fitWeights weights(C.size());
+    weights.setCentralWeight(centralWeight_, pureUpwind);
+
+    PolynomialFit2<Polynomial> polynomialFit(dim_, 1e-9);
+//    PolynomialFit2<Polynomial> polynomialFitUnstable(dim_, 1e-9);
+
+    const Basis basis(idir, jdir, kdir);
+    const localStencil stencil(C, p0, basis);
+/*
+    autoPtr<fitResult> unstableResult = polynomialFitUnstable.fit(coefficients, weights, stencil);
+    fitCoefficients unstableCoeffs(coefficients);
+    fitWeights unstableWeights(weights);
+*/
+    autoPtr<fitResult> result = polynomialFit.fit(coefficients, weights, stencil);
+/*
+    if (unstableResult->polynomial != result->polynomial || unstableCoeffs[0] != coefficients[0])
+    {
+        Info << "+++ " << facei << " stable " << coefficients << " " << result->polynomial << " " << 
+            result->weights << " unstable " << unstableCoeffs << " " << unstableResult->polynomial << 
+            " " << unstableResult->weights << endl;
+    }
+*/
+    return result;
+}
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
-autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
+void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
 (
     scalarList& coeffsi,
     scalarList& wts,
@@ -116,26 +161,10 @@ autoPtr<Fit> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calcFit
     const label facei
 )
 {
-    vector idir(1,0,0);
-    vector jdir(0,1,0);
-    vector kdir(0,0,1);
-    findFaceDirs(idir, jdir, kdir, facei);
-    
-    // Reference point
-    point p0 = this->mesh().faceCentres()[facei];
-
-    scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[0]-p0);
-    scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
-    bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
-
-    PolynomialFit<FixedPolynomial<Polynomial> > polynomialFit(
-        linearCorrection_,
-        linearLimitFactor_,
-        centralWeight_, 
-        dim_
-    );
-    const Basis basis(idir, jdir, kdir);
-    return polynomialFit.fit(coeffsi, wts, C, wLin, p0, pureUpwind, basis);
+    fitCoefficients coefficients(C.size(), linearCorrection_, wLin);
+    calcFit(coefficients, C, facei);
+    coefficients.copyInto(coeffsi);
+    // FIXME: I should probably populate wts using some returned data inside fitResult
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>

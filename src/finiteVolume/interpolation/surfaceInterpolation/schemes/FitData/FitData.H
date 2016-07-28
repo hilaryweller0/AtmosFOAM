@@ -42,7 +42,9 @@ SourceFiles
 #include "autoPtr.H"
 #include "MeshObject.H"
 #include "fvMesh.H"
-#include "Fit.H"
+#include "fitResult.H"
+#include "fitWeights.H"
+#include "fitCoefficients.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -141,15 +143,23 @@ public:
             return linearCorrection_;
         }
 
+        autoPtr<fitResult> calcFit
+        (
+            fitCoefficients& coefficients, // coefficients to be set
+            const List<point>& stencilPoints,  // Stencil points
+            const label faci,     // Current face index
+            bool owner
+        );
+
         //- Calculate the fit for the specified face and set the coefficients
-        autoPtr<Fit> calcFit
+        void calcFit
         (
             scalarList& coeffsi, // coefficients to be set
-            scalarList& wts,     // weights to be set (for debugging)
+            scalarList& wts,
             const List<point>&,  // Stencil points
             const scalar wLin,   // Weight for linear approximation (weights
                                  // nearest neighbours)
-            const label faci     // Current face index
+            const label faci    // Current face index
         );
 
         //- Calculate the fit for all the faces

@@ -28,7 +28,7 @@ License
 #include "volFields.H"
 #include "SVD.H"
 #include "extendedUpwindCellToFaceStencilNew.H"
-#include "StencilWeights.H"
+#include "stencilWeights.H"
 
 // * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
@@ -56,7 +56,7 @@ Foam::UpwindCorrFitData<Polynomial>::UpwindCorrFitData
 {
     if (debug)
     {
-        Info<< "Contructing UpwindCorrFitData<Polynomial>" << endl;
+        Info<< "Constructing UpwindCorrFitData<Polynomial>" << endl;
     }
 
     calcFit();
@@ -87,8 +87,9 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    StencilWeights ownerWeights(mesh, "owner");
-    fit(owncoeffs_, stencilPoints, ownerWeights);
+    Info << "===OWNER===" << endl;
+    stencilWeights ownerWeights(mesh, "owner");
+    fit(owncoeffs_, stencilPoints, ownerWeights, true);
     ownerWeights.write();
 
     this->stencil().collectData
@@ -99,8 +100,9 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    StencilWeights neiWeights(mesh, "nei");
-    fit(neicoeffs_, stencilPoints, neiWeights);
+    Info << "===NEIGHBOUR===" << endl;
+    stencilWeights neiWeights(mesh, "nei");
+    fit(neicoeffs_, stencilPoints, neiWeights, false);
     neiWeights.write();
 }
 
@@ -108,15 +110,28 @@ template<class Polynomial>
 void Foam::UpwindCorrFitData<Polynomial>::fit(
         List<scalarList>& coeffs,
         const List<List<point> >& stencilPoints,
-        StencilWeights& stencilWeights)
+        stencilWeights& stencilWts,
+        bool owner
+)
 {
     const fvMesh& mesh = this->mesh();
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
     {
-        autoPtr<Fit> f = fit(facei, coeffs, stencilPoints, w[facei]);
-        stencilWeights.fitted(facei, f);
+        fitCoefficients coefficients
+        (
+            stencilPoints[facei].size(),
+            FitData<
+                UpwindCorrFitData<Polynomial>,
+                extendedUpwindCellToFaceStencilNew,
+                Polynomial
+            >::linearCorrection(),
+            w[facei]
+        );
+        autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei], owner);
+        coefficients.copyInto(coeffs[facei]);
+        stencilWts.fitted(facei, f, stencilPoints[facei]);
     }
 
     const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
@@ -130,8 +145,19 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 
             forAll(pw, i)
             {
-                autoPtr<Fit> f = fit(facei, coeffs, stencilPoints, pw[i]);
-                stencilWeights.fitted(facei, f);
+                fitCoefficients coefficients
+                (
+                    stencilPoints[facei].size(),
+                    FitData<
+                        UpwindCorrFitData<Polynomial>,
+                        extendedUpwindCellToFaceStencilNew,
+                        Polynomial
+                    >::linearCorrection(),
+                    pw[i]
+                );
+                autoPtr<fitResult> f = fit(facei, coefficients, stencilPoints[facei], owner);
+                coefficients.copyInto(coeffs[facei]);
+                stencilWts.fitted(facei, f, stencilPoints[facei]);
                 facei++;
             }
         }
@@ -139,35 +165,34 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 }
 
 template<class Polynomial>
-autoPtr<Fit> Foam::UpwindCorrFitData<Polynomial>::fit
+autoPtr<fitResult> Foam::UpwindCorrFitData<Polynomial>::fit
 (
     const label faceI,
-    List<scalarList>& coeffs,
-    const List<List<point> >& stencilPoints,
-    const scalar wLin
+    fitCoefficients& coefficients,
+    const List<point>& stencilPoints,
+    bool owner
 )
 {
-    scalarList wts(stencilPoints[faceI].size(), scalar(1));
-
-    autoPtr<Fit> fit = FitData
+    autoPtr<fitResult> fit = FitData
     <
         UpwindCorrFitData<Polynomial>,
         extendedUpwindCellToFaceStencilNew,
         Polynomial
     >::calcFit
     (
-        coeffs[faceI], wts, stencilPoints[faceI], wLin, faceI
+        coefficients, stencilPoints, faceI, owner
     );
 
     if (!fit->good)
     {
-        WarningIn
+/*        WarningIn
         (
             "FitData<Polynomial>::calcFit(..)"
         )   << "Could not fit face " << faceI
-            << "    Weights = " << coeffs[faceI]
-            << ", reverting to upwind/linear." << nl
-            << "    Linear weights " << wLin << " " << 1 - wLin << endl;
+            << " at " << this->mesh().Cf()[faceI]
+            << "    Weights = " << coefficients
+            << ", reverting to upwind/linear." << endl;
+            */
     }
 
     return fit;
