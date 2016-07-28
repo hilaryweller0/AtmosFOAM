@@ -108,7 +108,6 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
                 }
                 
                 if (
-                        coeffs[1] < coeffs[0] && 
                         coeffs[0] >= 0.5 && coeffs[0] <= 1 &&
                         coeffs[1] > -SMALL && coeffs[1] <= 0.5 &&
                         coeffs[0] - coeffs[1] >= maxMagP
