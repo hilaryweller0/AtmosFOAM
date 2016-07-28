@@ -62,12 +62,12 @@ TEST_CASE("sixPointsWithDiagonal")
     fitWeights weights(stencil.size());
 
     fitCoefficients expectedCoefficients(stencil.size(), false, 0);
-    expectedCoefficients[ 0] =  0.5069;
-    expectedCoefficients[ 1] =  0.4931;
-    expectedCoefficients[ 2] = -0.0169;
-    expectedCoefficients[ 3] = -0.0138;
-    expectedCoefficients[ 4] =  0.0143;
-    expectedCoefficients[ 5] =  0.0164;
+    expectedCoefficients[ 0] =  0.5804;
+    expectedCoefficients[ 1] =  0.4198;
+    expectedCoefficients[ 2] = -0.0513;
+    expectedCoefficients[ 3] = -0.0531;
+    expectedCoefficients[ 4] =  0.0486;
+    expectedCoefficients[ 5] =  0.0556;
 
     autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
 
