@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
-            thetaf = fvc::interpolate(thetaRho0);
+            thetaf = fvc::interpolate(thetaRho);
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
                 Lv = Lv0 - (Cpl - Cpv)*(T - T0);
         
                 // Calculate saturation vapour pressure and set rv to be saturated
-                es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+                es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
                 rvs = epsilon*es/(p-es);
                 // Update rv with under-relaxation
                 rv == max
@@ -112,9 +112,9 @@ int main(int argc, char *argv[])
             }
             rl == max(rt0 - rv, scalar(0));
         
-            // Calculate theta and thetaRho0 for hydrostatic balance
+            // Calculate theta and thetaRho for hydrostatic balance
             theta == T/Exner;
-            thetaRho0 = theta*(1+rv/epsilon)/(1+rt0);
+            thetaRho == theta*(1+rv/epsilon)/(1+rt0);
         }
         scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -174,17 +174,19 @@ int main(int argc, char *argv[])
     // Interate so that new theta, rv and rl are in balance
     for(label iter = 0; iter < 5; iter++)
     {
-        theta = thetaRho0*(1 + rt0)/(1+rv/epsilon)*thetaScale;
+        theta = thetaRho*(1 + rt0)/(1+rv/epsilon)*thetaScale;
         T = theta*Exner;
-        es = Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T - Tcc));
+        es = Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0));
         rvs = epsilon*es/(p-es);
         rv == max(min(rvs, rt0), scalar(0));
         Info << "Bouyancy perturbation " << iter << " theta at centre = "
              << theta[cellMax] << nl;
     }
     rl == max(rt0 - rv, scalar(0));
+    thetaRho == theta*(1+rv/epsilon)/(1+rt0);
 
     theta.write();
+    thetaRho.write();
     rv.write();
     rl.write();
     
@@ -206,7 +208,7 @@ int main(int argc, char *argv[])
     ExnerNew.correctBoundaryConditions();
     ExnerNew.write();
     
-    // Check thetae
+    // Calculate thetae
     volScalarField thetae
     (
         "thetae",
@@ -214,6 +216,22 @@ int main(int argc, char *argv[])
        *Foam::exp(Lv*rv/((Cp+Cpl*rt0)*T))
     );
     thetae.write();
+
+    // Calculate and write out mass mixing ratios
+    volScalarField qv
+    (
+        IOobject("qv", runTime.timeName(), mesh),
+        rv*(1 - rt0/(1+rt0)),
+        rv.boundaryField().types()
+    );
+    volScalarField ql
+    (
+        IOobject("ql", runTime.timeName(), mesh),
+        rl*(1 - rt0/(1+rt0)),
+        rl.boundaryField().types()
+    );
+    qv.write();
+    ql.write();
 
     return 0;
 }

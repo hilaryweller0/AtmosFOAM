@@ -51,7 +51,7 @@ timeFormat      general;
 
 timePrecision   6;
 
-runTimeModifiable yes;
+runTimeModifiable no;
 
 adjustTimeStep no;
 maxCo          0.5;

@@ -96,9 +96,7 @@ int main(int argc, char *argv[])
               + 0.5*divPhiT.oldTime()
             );
 
-            // Only solve to full tolerance on final outer iteration
-            if (corr < nCorr-1) TEqn.solve();
-            else TEqn.solve(mesh.solver(T.name() + "Final"));
+           TEqn.solve();
 
             // Map T to ghost mesh, calculate divergence and map back
             TGhost = ghostMesh.mapToGhost(T);

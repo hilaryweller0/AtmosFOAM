@@ -1,3 +1,0 @@
-Newton_HW.C
-
-EXE = $(FOAM_USER_APPBIN)/Newton_HW

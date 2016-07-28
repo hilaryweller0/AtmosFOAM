@@ -1,0 +1,24 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/9c";
+projection2D XY;
+
+FieldsToPlot
+(
+    [h filledContours 8.6e3 10.1e3 100 "$GMTU/colours/white_colour_white.cpt"]
+    [U vectors 1e4 2 "black"]
+);

@@ -27,7 +27,7 @@ volScalarField theta
     mesh
 );
 
-// Water vapour and liquid water mixing ratios
+// Water vapour and liquid water mass mixing ratios
 volScalarField rv
 (
     IOobject
@@ -51,7 +51,7 @@ rl == 0.1*rt0;
 
 volScalarField T("T", Exner*theta);
 volScalarField p("p", pRef*pow(Exner, 1/kappa));
-volScalarField es("es", Pcc*pRef*Foam::exp(TccScale*(T - T0)/(T + Tcc)));
+volScalarField es("es", Pcc*pRef*Foam::exp(-Lv0/Rv*(1/T - 1/T0)));
 volScalarField condenseRate("condenseRate", -rl/dt);
 volScalarField thetaScale("thetaScale", theta/theta);
 volScalarField rvs("rvs", epsilon*(es/(p-es)));
@@ -68,11 +68,16 @@ surfaceScalarField U
 
 
 // Moist theta on the face
-volScalarField thetaRho0("thetaRho0", theta*(1+rv/epsilon)/(1+rt0));
+volScalarField thetaRho
+(
+    IOobject("thetaRho", runTime.timeName(), mesh),
+    theta*(1+rv/epsilon)/(1+rt0),
+    theta.boundaryField().types()
+);
 surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh),
-    fvc::interpolate(thetaRho0)
+    fvc::interpolate(thetaRho)
 );
 
 label groundBC = -1;

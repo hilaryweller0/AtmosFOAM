@@ -26,8 +26,17 @@ License
 #include "tensor.H"
 #include "mathematicalConstants.H"
 
+using namespace std;
+//#include "eispack.H"
 
 using namespace Foam::constant::mathematical;
+
+//namespace SomeNameSpace
+//{
+#include <lapacke.h>
+#undef I
+//}
+
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -93,6 +102,36 @@ Foam::vector Foam::eigenValues(const tensor& t)
     // The eigenvalues
     scalar i, ii, iii;
 
+    bool lapack=true;
+
+    if (lapack)
+        {
+            int ierr;
+            int n = 3;
+            double b[3];
+            double aaa[3*3] = 
+                {
+                    t.xx(), t.xy(), t.xz(),
+                    0.0,    t.yy(), t.yz(), 
+                    0.0,    0.0   , t.zz(),
+                };        
+            
+            ierr = LAPACKE_dsyev(LAPACK_ROW_MAJOR, 'N','U',n,
+                                aaa, n, b);
+            
+            if (ierr != 0) {
+            WarningIn("eigenValues(const tensor&)")
+                << "LAPACK failed calculating eigenvalues for tensor: " << t
+                << endl;
+            }
+            // Info << "lapack eigenvalues = " << b[0] << " " << b[1] << " " << b[2] << " " << ierr << endl;
+            i = b[0];
+            ii = b[1];
+            iii = b[2];
+
+        }
+    else
+        {
     // diagonal matrix
     if
     (
@@ -141,7 +180,8 @@ Foam::vector Foam::eigenValues(const tensor& t)
         }
 
         // Two identical roots and one distinct root
-        else if (mag(PPP/QQ - 1) < 1000*SMALL)
+        else if (mag(PPP/QQ - 1) < SMALL) // PAB NOTE: made this check 
+                                          // 1000*SMALL to make it work
         {
             scalar sqrtP = sqrt(P);
             scalar signQ = sign(Q);
@@ -166,11 +206,6 @@ Foam::vector Foam::eigenValues(const tensor& t)
         // based on the above logic, PPP must be less than QQ
         else
         {
-
-            Info << "Warning in eigenvalues" << endl;
-            Info << "PPP = " << PPP << " QQ = " << QQ << endl;
-            Info << "SMALL = " << SMALL << endl;
-            Info << "mag(PPP/QQ - 1) = " << mag(PPP/QQ - 1) << endl;
             WarningIn("eigenValues(const tensor&)")
                 << "complex eigenvalues detected for tensor: " << t
                 << endl;
@@ -184,10 +219,11 @@ Foam::vector Foam::eigenValues(const tensor& t)
                 scalar w = cbrt(- Q - sqrt(QQ - PPP));
                 i = w + P/w - aBy3;
             }
-
-            //return vector(-VGREAT, i, VGREAT);
-            return vector(i, i, i);
+                
+            return vector(-VGREAT, i, VGREAT);
+            
         }
+    }
     }
 
     // Sort the eigenvalues into ascending order
@@ -205,6 +241,7 @@ Foam::vector Foam::eigenValues(const tensor& t)
     {
         Swap(i, ii);
     }
+
 
     return vector(i, ii, iii);
 }

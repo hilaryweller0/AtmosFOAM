@@ -6,11 +6,12 @@ EXE_INC = \
     -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude \
     -I$(ATMOSFOAM_SRC)/sampling/lnInclude \
     -I$(LIB_SRC)/sampling/lnInclude \
-    -I$(LIB_SRC)/meshTools/lnInclude
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I/usr/include
 
 LIB_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lOpenFOAM \
     -lfiniteVolumeAtmos -lfiniteVolume \
     -ltriSurface \
-    -lsampling -lmeshTools
+    -lsampling -lmeshTools -llapacke

@@ -1,15 +1,8 @@
 Info << "Reading additional thermophysical properties for moist air"
      << endl;
 
-// Read constants for the Clausius-Clapyron relation
+// Read constant for the Clausius-Clapyron relation
 const scalar Pcc = readScalar(thermoDict.lookup("pClausiusClapyron"));
-
-const scalar TccScale = readScalar
-(
-    thermoDict.lookup("TscaleClausiusClapyron")
-);
-
-const dimensionedScalar Tcc(thermoDict.lookup("TClausiusClapyron"));
 
 // Perfect gas properties of water vapour
 const constTransport<hConstThermo<perfectGas<specie> > > waterVapour
@@ -32,11 +25,11 @@ const dimensionedScalar Cpv
 // Specific heat of liquid water at constant pressure
 const dimensionedScalar Cpl(thermoDict.lookup("specificHeatLiquidWater"));
 
-// Ratio between molecular weight of water vapour and dry air
-const scalar epsilon = air.W()/waterVapour.W();
-
 // Gas constant of water vapour
 const dimensionedScalar Rv("Rv", dimGasConstant, waterVapour.R());
+
+// Ratio between molecular weight of water vapour and dry air
+const scalar epsilon = (R/Rv).value();
 
 // Speicific heat of air at constant volume
 const dimensionedScalar Cvv("Cvv", Cpv - Rv);

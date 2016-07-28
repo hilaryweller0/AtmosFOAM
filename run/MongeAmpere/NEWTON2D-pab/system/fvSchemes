@@ -1,9 +1,8 @@
-/*---------------------------------------------------------------------------*\
-| =========                 |                                                 |
-| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.4                                   |
-|   \\  /    A nd           | Web:      http://www.openfoam.org               |
-|    \\/     M anipulation  |                                                 |
+/*---------------------------------------------------------------------------*| =========                 |                                                 |
+| \      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \    /   O peration     | Version:  1.4                                   |
+|   \  /    A nd           | Web:      http://www.openfoam.org               |
+|    \/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 
 FoamFile
@@ -38,7 +37,7 @@ gradSchemes
 divSchemes
 {
     default             none;
-    div((magSf*sngradc_m),phi) Gauss upwind;
+    div((magSf*snGradc_m),phi) Gauss upwind;
     div(sngradc_m,phi) Gauss upwind;
 }
 

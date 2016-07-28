@@ -69,24 +69,28 @@ int main(int argc, char *argv[])
     // The monitor funciton
     autoPtr<monitorFunction> monitorFunc(monitorFunction::New(controlDict));
     
-    // The ratio of the finite different to the geometric Hessian
+    // The under-relaxation factors for the differnet parts of the Newton
+    // solver
     const dimensionedScalar Gamma1(controlDict.lookup("Gamma1"));
     const dimensionedScalar Gamma2(controlDict.lookup("Gamma2"));
 
-    scalar conv = readScalar(controlDict.lookup("conv"));
-
+    const scalar conv = readScalar(controlDict.lookup("conv"));
+    const dimensionedScalar matrixRelax =
+          readScalar(controlDict.lookup("matrixRelax"))
+       * dimensionedScalar("", dimLength,mesh.bounds().span().y())/min(mesh.V());
+    Info << "matrixRelax = " << matrixRelax << endl;
     dimensionedScalar Vtot("Vtot", dimVol, gSum(mesh.V()));
 
     #include "createFields.H"
 
     Info << "Iteration = " << runTime.timeName()
          << " PABe = " << PABe.value() << endl;
-    
+
     // Use time-steps instead of iterations to solve the Monge-Ampere eqn
     bool converged = false;
     while (runTime.loop())
     {
-        Info<< "Time = " << runTime.timeName() << flush << nl;
+        Info<< "Time = " << runTime.timeName() << endl;
 
         // Calculate the matrix: matrixA = 1+fvc::laplacian(phiBar)-Hessian
         phiBarLaplacian = fvc::laplacian(Phi);
@@ -116,42 +120,43 @@ int main(int argc, char *argv[])
         c_m = equiDistMean/monitorNew;
         c_mR = equiDistMean/monitorR;
 
-        // calculate the gradient of c_m in physical space
-        sngradc_mR = fvc::snGrad(c_mR);
+        // The normal gradient of c_m in physical space
+        snGradc_mR = fvc::snGrad(c_mR);
 
         // transfer the gradient to the computational mesh
-        sngradc_m.internalField() = sngradc_mR.internalField();
+        snGradc_m.internalField() = snGradc_mR.internalField();
 
         // The divergence of sngradc_m (correct so that it sums to zero)
-        lapc_m = fvc::div(mesh.magSf()*sngradc_m);
-        lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
+        lapc_m = fvc::div(mesh.magSf() * snGradc_m);
+        //lapc_m -= fvc::domainIntegrate(lapc_m)/Vtot;
 
         // Setup and solve the MA equation to find Phi(t+1) 
         fvScalarMatrix PhiEqn
         (
+            fvm::Sp(matrixRelax,phi)
           - Gamma1*fvm::laplacian(matrixA, phi)
-          + Gamma2*fvm::div(mesh.magSf()*sngradc_m,phi)
+          + Gamma2*fvm::div(mesh.magSf() * snGradc_m, phi)
           - Gamma2*fvm::Sp(lapc_m,phi)
           - detHess + c_m
         );
-        // Diagonal and off-diagonal components of the matrix
-        scalarField diag = PhiEqn.diag();
-        scalarField sumOff(mesh.nCells(), 0.0);
-        PhiEqn.sumMagOffDiag(sumOff);
-        scalarField nonDom = (sumOff - diag)/mag(diag);
-        Info << "Diagonal goes from " << min(diag) << " to " << max(diag)
-             << endl;
-        Info << "Sum off diagonal goes from " << min(sumOff) << " to "
-             << max(sumOff) << endl;
-        Info << "Non-dominance goes from " << min(nonDom) << " to "
-             << max(nonDom) << endl;
+//        // Diagonal and off-diagonal components of the matrix
+//        scalarField diag = PhiEqn.diag();
+//        scalarField sumOff(mesh.nCells(), 0.0);
+//        PhiEqn.sumMagOffDiag(sumOff);
+//        scalarField nonDom = (sumOff - diag)/mag(diag);
+//        Info << "Diagonal goes from " << min(diag) << " to " << max(diag)
+//             << endl;
+//        Info << "Sum off diagonal goes from " << min(sumOff) << " to "
+//             << max(sumOff) << endl;
+//        Info << "Non-dominance goes from " << min(nonDom) << " to "
+//             << max(nonDom) << endl;
         
         // Solve the matrix and check for convergence
         //PhiEqn.setReference(1650, scalar(0));
-        PhiEqn.relax();
+        //PhiEqn.relax();
         solverPerformance sp = PhiEqn.solve();
         Phi += phi;
-        phi = dimensionedScalar("phi", dimArea, scalar(0));
+        phi == dimensionedScalar("phi", dimArea, scalar(0));
 
         // Calculate the gradient of phiBar at cell centres and on faces
         gradPhi = fvc::reconstruct(fvc::snGrad(Phi)*mesh.magSf());
@@ -175,9 +180,6 @@ int main(int argc, char *argv[])
             detHess[cellI] = det(diagTensor::one + Hessian[cellI]);
         }
 
-        // Geometric version of the Hessian
-        // detHess.internalField() =rMesh.V()/mesh.V();
-        
         runTime.write();
         // map to or calculate the monitor function on the new mesh
         monitorR = monitorFunc().map(rMesh, monitor);
