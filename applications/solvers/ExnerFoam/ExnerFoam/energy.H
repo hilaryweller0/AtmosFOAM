@@ -1,7 +1,7 @@
 {
     KE = 0.25*fvc::surfaceSum(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))
         /dimensionedScalar("V", dimVol, scalar(1));
-    KE.internalField() /= mesh.V();
+    KE.ref() /= mesh.V();
     internalEnergy = rho*theta*Exner*Cv;
     potentialEnergy = -rho*(g & mesh.C());
 

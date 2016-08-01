@@ -79,7 +79,7 @@ class VelocityField
         forAll(field.boundaryField()[boundaryI], cellI)
         {
             const point& face = field.mesh().Cf().boundaryField()[boundaryI][cellI];
-            field.boundaryField()[boundaryI][cellI] = profile.velocityAt(face);
+            field.boundaryFieldRef()[boundaryI][cellI] = profile.velocityAt(face);
         }
     }
     
@@ -88,7 +88,7 @@ class VelocityField
     void applyToBoundary(surfaceScalarField& phi, const label patchI) const
     {
         const fvMesh& mesh = phi.mesh();
-        scalarField& bf = phi.boundaryField()[patchI];
+        scalarField& bf = phi.boundaryFieldRef()[patchI];
         forAll(bf, faceI)
         {
             const face& f = mesh.boundaryMesh()[patchI][faceI];

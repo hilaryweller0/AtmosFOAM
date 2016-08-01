@@ -52,7 +52,7 @@ Foam::fvGhostMesh::mapToGhost
             "zeroGradient"
         )
     );
-    GeometricField<Type, fvPatchField, volMesh>& vfg = tvfg();
+    GeometricField<Type, fvPatchField, volMesh>& vfg = tvfg.ref();
     
     // Transfer the original cells
     forAll(vf, cellI) {vfg[cellI] = vf[cellI];}
@@ -86,7 +86,7 @@ Foam::fvGhostMesh::mapFromGhost
             "zeroGradient"
         )
     );
-    GeometricField<Type, fvPatchField, volMesh>& vf = tvf();
+    GeometricField<Type, fvPatchField, volMesh>& vf = tvf.ref();
 
     // Transfer the original cells
     forAll(vf, cellI) { vf[cellI] = vfg[cellI]; }

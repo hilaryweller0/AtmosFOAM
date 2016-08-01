@@ -77,7 +77,7 @@ Foam::tmp<Foam::volScalarField> Foam::gaussian::field(const fvMesh& mesh)
             dimensionedScalar(max_.name(), max_.dimensions(), scalar(0))
         )
     );
-    volScalarField& vf = tvf();
+    volScalarField& vf = tvf.ref();
     
     vf = max_*exp(-0.5*magSqr(mesh.C() - centre_)/sqr(radius_));
     

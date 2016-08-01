@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
     }
     forAll(thetaf.boundaryField(), patchI)
     {
-        fvsPatchField<scalar>& thetap = thetaf.boundaryField()[patchI];
+        fvsPatchField<scalar>& thetap = thetaf.boundaryFieldRef()[patchI];
         forAll(thetap, faceI)
         {
             thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
         }
         forAll(theta.boundaryField(), patchI)
         {
-            fvPatchField<scalar>& thetap = theta.boundaryField()[patchI];
+            fvPatchField<scalar>& thetap = theta.boundaryFieldRef()[patchI];
             if (thetap.type() == "fixedGradient")
             {
                 fixedGradientFvPatchField<scalar>& thetag = dynamic_cast<fixedGradientFvPatchField<scalar>& >(thetap);
