@@ -134,7 +134,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
         stencilWts.fitted(facei, f, stencilPoints[facei]);
     }
 
-    const surfaceScalarField::GeometricBoundaryField& bw = w.boundaryField();
+    const surfaceScalarField::Boundary& bw = w.boundaryField();
     forAll(bw, patchi)
     {
         const fvsPatchScalarField& pw = bw[patchi];

@@ -10,7 +10,6 @@ interpolation/surfaceInterpolation/schemes/APVM/APVM.C
 interpolation/surfaceInterpolation/limitedSchemes/TVDlimited/TVDlimited.C
 interpolation/surfaceInterpolation/limitedSchemes/smoothScheme/smoothScheme.C
 */
-interpolation/surfaceInterpolation/schemes/linearUpwindDebug/linearUpwindDebug.C
 interpolation/surfaceInterpolation/schemes/cubicUpwindCPCFit/cubicUpwindCPCFit.C
 interpolation/surfaceInterpolation/schemes/FitData/localStencil.C
 interpolation/surfaceInterpolation/schemes/FitData/fitCoefficients.C
