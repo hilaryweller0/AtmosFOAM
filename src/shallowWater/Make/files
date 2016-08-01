@@ -1,3 +1,0 @@
-BCs/geostrophicZeroFluxFvPatchScalarField.C
-
-LIB = $(FOAM_USER_LIBBIN)/libshallowWater

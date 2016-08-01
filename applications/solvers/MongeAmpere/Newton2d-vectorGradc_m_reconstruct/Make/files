@@ -1,3 +1,0 @@
-Newton2d-vectorGradc_m_reconstruct.C
-
-EXE = $(FOAM_USER_APPBIN)/Newton2d-vectorGradc_m_reconstruct

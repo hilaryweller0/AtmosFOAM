@@ -17,4 +17,3 @@ wmake $makeType ghostMesh
 wmake $makeType Hops
 wmake $makeType orography
 wmake $makeType sampling
-wmake $makeType monitorFunction

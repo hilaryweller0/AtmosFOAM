@@ -100,7 +100,7 @@ void Foam::stencilWeights::populateStencilWeights
         forAll(mesh.boundary(), patchI)
         {
             const fvPatch& boundaryPatch = mesh.boundary()[patchI];
-            fvPatchField<scalar>& weightsPatch = weights->boundaryField()[patchI];
+            fvPatchField<scalar>& weightsPatch = weights->boundaryFieldRef()[patchI];
             forAll(boundaryPatch.Cf(), boundaryFaceI)
             {
                 if (boundaryPatch.Cf()[boundaryFaceI] == stencil[stencilI])

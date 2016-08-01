@@ -39,7 +39,7 @@ namespace Foam
 {
 
 // The unit vector of a vector
-template<class Form, class Cmpt, int nCmpt>
+template<class Form, class Cmpt, direction nCmpt>
 inline VectorSpace<Form, Cmpt, nCmpt> unitVector
 (
     const VectorSpace<Form, Cmpt, nCmpt>& vs

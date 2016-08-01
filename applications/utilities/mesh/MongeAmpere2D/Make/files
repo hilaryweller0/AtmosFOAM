@@ -1,3 +1,0 @@
-MongeAmpere2D.C
-
-EXE = $(FOAM_USER_APPBIN)/MongeAmpere2D

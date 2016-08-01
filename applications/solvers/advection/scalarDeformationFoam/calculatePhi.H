@@ -3,7 +3,7 @@
 
 {
     const scalar t = runTime.time().value();
-    phi.internalField() = 0;
+    phi.ref() = 0;
 
     // Set all internal values of phi
     forAll(phi, faceI)

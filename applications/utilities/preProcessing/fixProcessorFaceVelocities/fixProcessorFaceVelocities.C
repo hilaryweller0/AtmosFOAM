@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     {
         if (mesh.boundaryMesh().types()[patchi] == word("processor"))
         {
-            Field<vector>& boundaryField = uf.boundaryField()[patchi];
+            Field<vector>& boundaryField = uf.boundaryFieldRef()[patchi];
             forAll(boundaryField, i)
             {
                 if (boundaryField[i][0] < 0)

@@ -67,7 +67,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
             )
         )
     );
-    GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr();
+    GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr.ref();
 
     // Internal faces
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
@@ -98,7 +98,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
     // Boundaries. Either constrained or calculated so assign value
     // directly (instead of nicely using operator==)
     typename GeometricField<Type, fvsPatchField, surfaceMesh>::
-        GeometricBoundaryField& bSfCorr = sf.boundaryField();
+        Boundary bSfCorr = sf.boundaryField();
 
     forAll(bSfCorr, patchi)
     {

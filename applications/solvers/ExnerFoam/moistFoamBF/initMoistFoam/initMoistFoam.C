@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
                        /maxGroundExner;
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
-        Exner.boundaryField()[topBC] == topBCval;
+        Exner.boundaryFieldRef()[topBC] = topBCval;
         
         Info << "thata goes from " << min(theta).value()
              << " to " << max(theta).value() << " rl from "

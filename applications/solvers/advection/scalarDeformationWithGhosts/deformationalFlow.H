@@ -90,7 +90,7 @@ public:
         const scalar t = mesh.time().value();
 
         // Set internal values of phi
-        phi.internalField() = 0;
+        phi.ref() = 0;
         forAll(phi, faceI)
         {
             const face& f = mesh.faces()[faceI];
@@ -132,7 +132,7 @@ public:
                 forAll(phi.boundaryField()[patchI], fi)
                 {
                     // Initialise the flux to zero before adding contributions
-                    phi.boundaryField()[patchI][fi] = 0;
+                    phi.boundaryFieldRef()[patchI][fi] = 0;
                 
                     // Loop around edges of the face and set the flux
                     const face& f = mesh.boundaryMesh()[patchI][fi];
@@ -155,7 +155,7 @@ public:
                             *cos(M_PI*t/endTime_)
                           - L_.x()*z/endTime_
                         );
-                        phi.boundaryField()[patchI][fi] 
+                        phi.boundaryFieldRef()[patchI][fi] 
                             += streamFunction & (p0 - p1);
                     }
                 }

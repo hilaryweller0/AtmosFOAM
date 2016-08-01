@@ -144,8 +144,8 @@ forAll(phiU.boundaryField(), patchi)
         btype == "wall" || btype == "symmetryPlane" || btype == "empty"
     )
     {
-        phiU.boundaryField()[patchi] == 0;
-        dPhidt.boundaryField()[patchi] == 0;
+        phiU.boundaryFieldRef()[patchi] = 0;
+        dPhidt.boundaryFieldRef()[patchi] = 0;
     }
 }
 

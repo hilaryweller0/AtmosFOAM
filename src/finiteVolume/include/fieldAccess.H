@@ -57,7 +57,7 @@ inline Type& fieldAccess
     const label patchID = bmesh.whichPatch(i);
     const label patchFace = i - bmesh[patchID].start();
     
-    return f.boundaryField()[patchID][patchFace];
+    return f.boundaryFieldRef()[patchID][patchFace];
 }
 
 
