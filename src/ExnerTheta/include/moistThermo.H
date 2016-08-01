@@ -510,7 +510,7 @@ void TfromThetae
 
     // The residual to miniminse every Newton step
     volScalarField resid = thetae0 - T*a*exp(b/T);
-    scalar RMSresid = sqrt(sum(sqr(resid.internalField())));
+    scalar RMSresid = sqrt(sum(sqr(resid.internalField())).value());
     
     // convergence criterial
     scalar conv = 1e-6;
@@ -520,7 +520,7 @@ void TfromThetae
     {
         T -= resid/(a*exp(b/T)*(b/T - 1));
         resid = thetae0 - T*a*exp(b/T);
-        RMSresid = sqrt(sum(sqr(resid.internalField())));
+        RMSresid = sqrt(sum(sqr(resid.internalField())).value());
     }
 }
 
