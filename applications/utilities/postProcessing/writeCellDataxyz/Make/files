@@ -1,3 +1,0 @@
-writeCellDataxyz.C
-
-EXE = $(FOAM_USER_APPBIN)/writeCellDataxyz
