@@ -133,6 +133,28 @@ private:
         template<class Type>
         void add(UList<Type>& fld, const label offset) const;
 
+        //- Helper function to interpolate patch field. Template
+        //  specialisations  below
+        template<class Type, class CombineOp>
+        void mapAndOpSrcToTgt
+        (
+            const AMIPatchToPatchInterpolation& AMI,
+            const Field<Type>& srcField,
+            Field<Type>& tgtField,
+            const CombineOp& cop
+        ) const;
+
+        //- Helper function to interpolate patch field. Template
+        //  specialisations  below
+        template<class Type, class CombineOp>
+        void mapAndOpTgtToSrc
+        (
+            const AMIPatchToPatchInterpolation& AMI,
+            Field<Type>& srcField,
+            const Field<Type>& tgtField,
+            const CombineOp& cop
+        ) const;
+
         //- Return src cell IDs for the overlap region
         labelList maskCells(const polyMesh& src, const polyMesh& tgt) const;
 
