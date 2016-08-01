@@ -38,6 +38,7 @@ SourceFiles
 #define Hops_H
 
 #include "fvc.H"
+#include "zeroGradientFvPatchField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

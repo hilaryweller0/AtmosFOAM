@@ -52,7 +52,7 @@ inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFlux
     );
     
     // add central ddir component
-    tU() += V*Hdiag();
+    tU.ref() += V*Hdiag();
     
     return tU;
 }
@@ -83,7 +83,7 @@ inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFluxOffDiag
             V.dimensions()*dimLength
         )
     );
-    surfaceScalarField& U = tU();
+    surfaceScalarField& U = tU.ref();
     
     surfaceVectorField delHat = delta()/mag(delta());
     
@@ -135,7 +135,7 @@ inline Foam::tmp<Foam::surfaceScalarField> Foam::Hops::ddirToFluxCorr
     );
     
     // Remove uncorrected components
-    tU() -= V*mesh_.magSf()/mag(delta());
+    tU.ref() -= V*mesh_.magSf()/mag(delta());
     
     return tU;
 }
@@ -212,7 +212,7 @@ inline Foam::tmp<Foam::volVectorField> Foam::Hops::reconstruct
         )
     );
     
-    tu().correctBoundaryConditions();
+    tu.ref().correctBoundaryConditions();
     
     return tu;    
 }
