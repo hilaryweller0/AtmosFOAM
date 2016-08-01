@@ -65,8 +65,6 @@ int main(int argc, char *argv[])
         innerConverged = false;
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
-//            rho = pRef/(R*theta)*pow(Exner, (1-kappa)/kappa);
-//            rhof = fvc::interpolate(rho);
             phi = gSf;
             fvScalarMatrix ExnerEqn
             (
@@ -89,9 +87,7 @@ int main(int argc, char *argv[])
                        /maxGroundExner;
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
-        Exner.boundaryField()[topBC] == topBCval;
-    	
-        //Exner.write();
+        Exner.boundaryFieldRef()[topBC] = topBCval;
 	}
 	
 	// Change the top boundary type to be fixedFluxBuoyantExner

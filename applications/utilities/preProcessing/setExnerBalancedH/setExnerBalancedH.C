@@ -74,10 +74,7 @@ int main(int argc, char *argv[])
                 fvc::div(U)
               - fvm::laplacian(gradPcoeff, Exner)
             );
-            //ExnerEqn.relax(0.85);
             innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
-            //Exner = mag(Exner);
-
     	}
     	scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
@@ -93,9 +90,7 @@ int main(int argc, char *argv[])
                        /maxGroundExner;
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
-        Exner.boundaryField()[topBC] == topBCval;
-    	
-        //Exner.write();
+        Exner.boundaryFieldRef()[topBC] = topBCval;
 	}
 
 	// Change the top boundary type to be fixedFluxBuoyantExner
