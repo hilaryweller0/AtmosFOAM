@@ -48,6 +48,8 @@ namespace Foam
                 SortableList<scalar>& fullRankMinSingularValues
         );
 
+        bool stable(const scalarList& coefficients);
+
         void populateCoefficients
         (
                 scalarList& coefficients,

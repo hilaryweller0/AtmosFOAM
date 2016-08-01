@@ -90,18 +90,8 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
             {
                 scalarList coeffs(stencil.size(), scalar(0));
                 populateCoefficients(coeffs, stencil, candidate, targetLength, w);
-
-                scalar maxMagP = 0;
-                for (int i=2; i < coeffs.size(); i++)
-                {
-                    if (mag(coeffs[i]) > maxMagP) maxMagP = mag(coeffs[i]);
-                }
                 
-                if (
-                        coeffs[0] >= 0.5 && coeffs[0] <= 1 &&
-                        coeffs[1] > -SMALL && coeffs[1] <= 0.5 &&
-                        coeffs[0] - coeffs[1] >= maxMagP
-                )
+                if (stable(coeffs))
                 {
                     coefficients.copyFrom(coeffs);
                     weights.copyFrom(w);
@@ -145,6 +135,20 @@ void PolynomialFit<Polynomial>::findFullRankCandidates
     }
 
     fullRankMinSingularValues.reverseSort();
+}
+
+template<class Polynomial>
+bool PolynomialFit<Polynomial>::stable(const scalarList& coefficients)
+{
+    scalar maxMagP = 0;
+    for (int i=2; i < coefficients.size(); i++)
+    {
+        if (mag(coefficients[i]) > maxMagP) maxMagP = mag(coefficients[i]);
+    }
+
+    return  coefficients[0] >= 0.5 && coefficients[0] <= 1 &&
+            coefficients[1] > -SMALL && coefficients[1] <= 0.5 &&
+            coefficients[0] - coefficients[1] >= maxMagP;
 }
 
 template<class Polynomial>
