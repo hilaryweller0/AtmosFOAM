@@ -1,7 +1,0 @@
-monitorFunction.C
-monitorFunctionTanh.C
-monitorFunctionSech.C
-monitorFunctionMapped.C
-tensor.C
-
-LIB = $(FOAM_USER_LIBBIN)/libmonitorFunction
