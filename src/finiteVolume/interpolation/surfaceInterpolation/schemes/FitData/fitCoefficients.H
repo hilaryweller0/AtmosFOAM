@@ -23,10 +23,8 @@ namespace Foam
         scalar operator[](int i) const;
         friend Ostream& operator<< (Ostream& stream, const fitCoefficients& c);
         void copyFrom(const scalarList& source);
-        void copyFrom(const fitCoefficients& source);
         void copyInto(scalarList& target);
         void applyCorrection(const bool goodFit);
-        scalar sum() const;
 
     private:
         scalarList coefficients;

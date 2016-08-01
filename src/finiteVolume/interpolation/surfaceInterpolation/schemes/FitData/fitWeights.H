@@ -12,9 +12,6 @@ namespace Foam
         fitWeights(const label cells);
 
         void setCentralWeight(const scalar weight, const bool pureUpwind);
-        void removeDownwindWeight();
-        scalar downwind() const;
-        scalar& downwind();
         void copyFrom(const scalarList& source);
 
         friend Ostream& operator<< (Ostream& stream, const fitWeights& c);

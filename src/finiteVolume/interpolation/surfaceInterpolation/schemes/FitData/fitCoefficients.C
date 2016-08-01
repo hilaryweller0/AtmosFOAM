@@ -32,14 +32,6 @@ void Foam::fitCoefficients::copyFrom(const scalarList& source)
     }
 }
 
-void Foam::fitCoefficients::copyFrom(const fitCoefficients& source)
-{
-    forAll(source.coefficients, i)
-    {
-        coefficients[i] = source.coefficients[i];
-    }
-}
-
 void Foam::fitCoefficients::copyInto(scalarList& target)
 {
     target.append(coefficients);
@@ -53,16 +45,6 @@ scalar& Foam::fitCoefficients::operator[](int i)
 scalar Foam::fitCoefficients::operator[](int i) const
 {
     return coefficients[i];
-}
-
-scalar Foam::fitCoefficients::sum() const
-{
-    scalar sum = 0.0;
-    forAll(coefficients, i)
-    {
-        sum += coefficients[i];
-    }
-    return sum;
 }
 
 label Foam::fitCoefficients::size() const
