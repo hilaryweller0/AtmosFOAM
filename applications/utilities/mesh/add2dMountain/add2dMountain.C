@@ -2,7 +2,6 @@
 #include "mathematicalConstants.H"
 #include "mountainTypes.H"
 #include "HashTable.H"
-#include "fvMeshSubset.H"
 #include <cmath>
 
 using namespace Foam::constant::mathematical;
