@@ -39,6 +39,15 @@ namespace Foam
                 fitWeights& weights
         );
 
+        void findFullRankCandidates
+        (
+                const List<uint32_t>& targetLengthCandidates,
+                const localStencil& stencil,
+                const label targetLength,
+                List<uint32_t>& fullRankCandidates,
+                SortableList<scalar>& fullRankMinSingularValues
+        );
+
         void populateCoefficients
         (
                 scalarList& coefficients,

@@ -69,24 +69,14 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
 
         List<uint32_t> fullRankCandidates(0);
         SortableList<scalar> fullRankMinSingularValues(0);
-
-        forAll(targetLengthCandidates, candidateI)
-        {
-            uint32_t candidate = targetLengthCandidates[candidateI];
-	        MatrixXd B(stencil.size(), targetLength);
-            populateMatrix(B, stencil, candidate);
-
-            JacobiSVD<MatrixXd> svd(B);
-            scalar minSingularValue = svd.singularValues().array().reverse()(0);
-
-            if (minSingularValue >= minSingularValueThreshold)
-            {
-                fullRankCandidates.append(candidate);
-                fullRankMinSingularValues.append(minSingularValue);
-            }
-        }
-
-        fullRankMinSingularValues.reverseSort();
+        findFullRankCandidates
+        (
+                targetLengthCandidates,
+                stencil,
+                targetLength,
+                fullRankCandidates,
+                fullRankMinSingularValues
+        );
         const labelList& fullRankIndices = fullRankMinSingularValues.indices();
 
         forAll(fullRankIndices, candidateI)
@@ -126,6 +116,35 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
     } while (targetLength > 0);
 
     return 0;
+}
+
+template<class Polynomial>
+void PolynomialFit<Polynomial>::findFullRankCandidates
+(
+        const List<uint32_t>& targetLengthCandidates,
+        const localStencil& stencil,
+        const label targetLength,
+        List<uint32_t>& fullRankCandidates,
+        SortableList<scalar>& fullRankMinSingularValues
+)
+{
+    forAll(targetLengthCandidates, candidateI)
+    {
+        uint32_t candidate = targetLengthCandidates[candidateI];
+        MatrixXd B(stencil.size(), targetLength);
+        populateMatrix(B, stencil, candidate);
+
+        JacobiSVD<MatrixXd> svd(B);
+        scalar minSingularValue = svd.singularValues().array().reverse()(0);
+
+        if (minSingularValue >= minSingularValueThreshold)
+        {
+            fullRankCandidates.append(candidate);
+            fullRankMinSingularValues.append(minSingularValue);
+        }
+    }
+
+    fullRankMinSingularValues.reverseSort();
 }
 
 template<class Polynomial>
