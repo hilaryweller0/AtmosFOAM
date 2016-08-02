@@ -1,11 +1,7 @@
 #include "PolynomialFit.H"
-#include "MatrixOps.H"
 #include "fitCoefficients.H"
 #include "SortableList.H"
-
-#include <Eigen/Core>
-
-using Eigen::MatrixXd;
+#include "SVD.H"
 
 template<class Polynomial>
 Foam::PolynomialFit<Polynomial>::PolynomialFit
@@ -121,16 +117,14 @@ void PolynomialFit<Polynomial>::findFullRankCandidates
     forAll(targetLengthCandidates, candidateI)
     {
         uint32_t candidate = targetLengthCandidates[candidateI];
-        MatrixXd B(stencil.size(), targetLength);
+        scalarRectangularMatrix B(stencil.size(), targetLength);
         populateMatrix(B, stencil, candidate);
 
-        JacobiSVD<MatrixXd> svd(B);
-        scalar minSingularValue = svd.singularValues().array().reverse()(0);
-
-        if (minSingularValue >= minSingularValueThreshold)
+        const SVD svd(B);
+        if (svd.minNonZeroS() >= minSingularValueThreshold)
         {
             fullRankCandidates.append(candidate);
-            fullRankMinSingularValues.append(minSingularValue);
+            fullRankMinSingularValues.append(svd.minNonZeroS());
         }
     }
 
@@ -161,9 +155,10 @@ void PolynomialFit<Polynomial>::populateCoefficients
         const scalarList& weights
 )
 {
-    MatrixXd B(stencil.size(), termCount);
+    scalarRectangularMatrix B(stencil.size(), termCount);
     populateMatrix(B, stencil, polynomial, weights);
-    MatrixXd Binv = MatrixOps<MatrixXd>::pseudoInverse(B);
+    const SVD svd(B);
+    const scalarRectangularMatrix& Binv = svd.VSinvUt();
 
     forAll(coefficients, i)
     {
@@ -174,7 +169,7 @@ void PolynomialFit<Polynomial>::populateCoefficients
 template<class Polynomial>
 void PolynomialFit<Polynomial>::populateMatrix
 (
-        MatrixXd& B,
+        scalarRectangularMatrix& B,
         const localStencil& stencil,
         uint32_t polynomial
 )
@@ -186,7 +181,7 @@ void PolynomialFit<Polynomial>::populateMatrix
 template<class Polynomial>
 void PolynomialFit<Polynomial>::populateMatrix
 (
-        MatrixXd& B,
+        scalarRectangularMatrix& B,
         const localStencil& stencil,
         uint32_t polynomial,
         const scalarList& weights

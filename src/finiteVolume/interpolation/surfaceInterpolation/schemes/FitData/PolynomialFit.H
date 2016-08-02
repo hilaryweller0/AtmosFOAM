@@ -8,10 +8,6 @@
 #include "fitWeights.H"
 #include "localStencil.H"
 
-#include <Eigen/Core>
-
-using Eigen::MatrixXd;
-
 namespace Foam
 {
     template<class Polynomial>
@@ -61,14 +57,14 @@ namespace Foam
 
         void populateMatrix
         (
-                MatrixXd& B,
+                scalarRectangularMatrix& B,
                 const localStencil& stencil,
                 uint32_t polynomial
         );
 
         void populateMatrix
         (
-                MatrixXd& B,
+                scalarRectangularMatrix& B,
                 const localStencil& stencil,
                 uint32_t polynomial,
                 const scalarList& weights
