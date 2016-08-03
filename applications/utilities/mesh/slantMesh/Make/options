@@ -8,4 +8,5 @@ EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lOrography \
     -lmeshTools \
-    -lfiniteVolume
+    -lfiniteVolume \
+    -lgdal
