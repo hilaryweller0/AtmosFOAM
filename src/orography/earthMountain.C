@@ -9,7 +9,9 @@ addToRunTimeSelectionTable(Mountain, earthMountain, dict);
 
 earthMountain::earthMountain(const IOdictionary& dict) :
     xResolution(readScalar(dict.lookup("xResolution"))),
-    yResolution(readScalar(dict.lookup("yResolution")))
+    yResolution(readScalar(dict.lookup("yResolution"))),
+    dimensions(readDirection(dict.lookup("dimensions"))),
+    yIndex(dict.lookupOrDefault("yIndex", 0))
 {
     GDALAllRegister();
     const string filename(dict.lookup("filename"));
@@ -29,7 +31,7 @@ earthMountain::earthMountain(const IOdictionary& dict) :
 scalar earthMountain::heightAt(const point& p) const
 {
     label xi = floor(p.x() / xResolution);
-    label yi = floor(p.y() / xResolution);
+    label yi = (dimensions == 2) ? yIndex : floor(p.y() / xResolution);
     if (xi < 0 || xi >= xSize)
     {
         FatalErrorIn("earthMountain::heightAt") << "mesh domain larger than terrain data (xi=" << xi << " outside bounds)" << exit(FatalError);
