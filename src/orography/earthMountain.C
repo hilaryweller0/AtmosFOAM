@@ -8,7 +8,8 @@ defineTypeNameAndDebug(earthMountain, 0);
 addToRunTimeSelectionTable(Mountain, earthMountain, dict);
 
 earthMountain::earthMountain(const IOdictionary& dict) :
-    xResolution(readScalar(dict.lookup("xResolution")))
+    xResolution(readScalar(dict.lookup("xResolution"))),
+    yResolution(readScalar(dict.lookup("yResolution")))
 {
     GDALAllRegister();
     const string filename(dict.lookup("filename"));
@@ -21,18 +22,23 @@ earthMountain::earthMountain(const IOdictionary& dict) :
     GDALRasterBand* band = terrain->GetRasterBand(1);
     xSize = band->GetXSize();
     ySize = band->GetYSize();
-    scanlines = reinterpret_cast<float*>(CPLMalloc(sizeof(float)*xSize));
-    band->RasterIO(GF_Read, 0, 3000, xSize, 1, scanlines, xSize, 1, GDT_Float32, 0, 0);
+    scanlines = new float[xSize*ySize];
+    band->RasterIO(GF_Read, 0, 0, xSize, ySize, scanlines, xSize, ySize, GDT_Float32, 0, 0);
 }
 
 scalar earthMountain::heightAt(const point& p) const
 {
     label xi = floor(p.x() / xResolution);
+    label yi = floor(p.y() / xResolution);
     if (xi < 0 || xi >= xSize)
     {
-        FatalErrorIn("earthMountain::heightAt") << "mesh domain larger than terrain data (xi " << xi << " outside bounds)" << exit(FatalError);
+        FatalErrorIn("earthMountain::heightAt") << "mesh domain larger than terrain data (xi=" << xi << " outside bounds)" << exit(FatalError);
     }
-    return scanlines[xi];
+    if (yi < 0 || yi >= ySize)
+    {
+        FatalErrorIn("earthMountain::heightAt") << "mesh domain larger than terrain data (yi=" << yi << " outside bounds)" << exit(FatalError);
+    }
+    return scanlines[yi*xSize + xi];
 }
 
 scalar earthMountain::gradientAt(const scalar x) const
