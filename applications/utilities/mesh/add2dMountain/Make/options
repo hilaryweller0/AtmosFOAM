@@ -5,5 +5,4 @@ EXE_INC = \
 
 EXE_LIBS = \
     -lmeshTools \
-    -L$(FOAM_USER_LIBBIN) \
     -lfiniteVolume

@@ -2,6 +2,7 @@ BTF.C
 VelocityProfile.C
 HorizontalVelocityProfile.C
 BtfVelocityProfile.C
+earthMountain.C
 Mountain.C
 SchaerCosMountain.C
 SchaerExpMountain.C
