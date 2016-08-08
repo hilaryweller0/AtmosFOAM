@@ -18,7 +18,7 @@ class earthMountain : public Mountain
     private:
     const scalar xResolution;
     const scalar yResolution;
-    const direction dimensions;
+    const label dimensions;
     const label yIndex;
     GDALDataset* terrain;
     float* scanlines;

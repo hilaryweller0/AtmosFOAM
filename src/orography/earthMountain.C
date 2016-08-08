@@ -10,7 +10,7 @@ addToRunTimeSelectionTable(Mountain, earthMountain, dict);
 earthMountain::earthMountain(const IOdictionary& dict) :
     xResolution(readScalar(dict.lookup("xResolution"))),
     yResolution(readScalar(dict.lookup("yResolution"))),
-    dimensions(readDirection(dict.lookup("dimensions"))),
+    dimensions(readLabel(dict.lookup("dimensions"))),
     yIndex(dict.lookupOrDefault("yIndex", 0))
 {
     GDALAllRegister();
