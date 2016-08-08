@@ -14,6 +14,5 @@ makeType=${1:-libso}
 wmake $makeType ExnerTheta
 wmake $makeType finiteVolume
 wmake $makeType ghostMesh
-wmake $makeType Hops
 wmake $makeType orography
-wmake $makeType sampling
+

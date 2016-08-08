@@ -2,7 +2,7 @@ EXE_INC = \
     -ggdb3 -O0 \
     -Wno-old-style-cast \
     -IlnInclude \
-    -I$(ATMOSFOAM_SRC)/sampling/lnInclude \
+    -I$(ATMOSFOAM_TOOLS_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/triSurface/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
