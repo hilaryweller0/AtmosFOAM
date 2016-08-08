@@ -21,7 +21,7 @@ class earthMountain : public Mountain
     const direction dimensions;
     const label yIndex;
     GDALDataset* terrain;
-    float* scanlines;
+    uint32_t* scanlines;
     label xSize;
     label ySize;
 };
