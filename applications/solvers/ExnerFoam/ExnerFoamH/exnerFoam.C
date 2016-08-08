@@ -31,7 +31,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "Hops.H"
+#include "HodgeOps.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     #include "orthogonalBoundaries.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
-    Hops H(mesh);
+    HodgeOps H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"

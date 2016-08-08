@@ -38,7 +38,5 @@ $(faceToFace)/MeshObjects/centredCFCFaceToFaceStencilObject.C
 $(extendedStencil)/cellToCell/globalIndexStencils/CFCFCCellToCellStencil.C
 $(extendedStencil)/cellToCell/MeshObjects/centredCFCFCCellToCellStencilObject.C
 
-interpolation/approxTypes/approxType.C
-
 LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeAtmos
 

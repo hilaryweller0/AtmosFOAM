@@ -1,6 +1,6 @@
 EXE_INC = \
     -ggdb3 -O0 \
-    -I$(ATMOSFOAM_SRC)/Hops/lnInclude \
+    -I$(ATMOSFOAM_TOOLS_SRC)/HodgeOps/lnInclude \
     -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude \
@@ -10,7 +10,7 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lfiniteVolumeAtmos \
-    -lHops \
+    -lHodgeOps \
     -lExnerTheta \
     -lspecie \
     -lmeshTools \

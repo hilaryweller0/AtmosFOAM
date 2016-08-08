@@ -1,3 +1,0 @@
-Hops.C
-
-LIB = $(FOAM_USER_LIBBIN)/libHops

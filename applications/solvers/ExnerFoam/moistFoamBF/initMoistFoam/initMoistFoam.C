@@ -31,7 +31,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "Hops.H"
+#include "HodgeOps.H"
 #include "fvCFD.H"
 #include "moistThermo.H"
 #include "mathematicalConstants.H"
@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     #include "readThermoProperties.H"
     #include "readThermoPropertiesMoist.H"
     #include "readInitProps.H"
-    Hops H(mesh);
+    HodgeOps H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
