@@ -30,7 +30,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "Hops.H"
+#include "HodgeOps.H"
 #include "fvCFD.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    Hops H(mesh);
+    HodgeOps H(mesh);
     
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
