@@ -1,6 +1,5 @@
 #include "fvCFD.H"
 #include "cellSet.H"
-#include "Mountain.H"
 
 int main(int argc, char *argv[])
 {
