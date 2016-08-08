@@ -24,14 +24,14 @@ earthMountain::earthMountain(const IOdictionary& dict) :
     GDALRasterBand* band = terrain->GetRasterBand(1);
     xSize = band->GetXSize();
     ySize = band->GetYSize();
-    scanlines = new float[xSize*ySize];
-    band->RasterIO(GF_Read, 0, 0, xSize, ySize, scanlines, xSize, ySize, GDT_Float32, 0, 0);
+    scanlines = new uint32_t[xSize*ySize];
+    band->RasterIO(GF_Read, 0, 0, xSize, ySize, scanlines, xSize, ySize, GDT_UInt32, 0, 0);
 }
 
 scalar earthMountain::heightAt(const point& p) const
 {
-    label xi = floor(p.x() / xResolution);
-    label yi = (dimensions == 2) ? yIndex : floor(p.y() / xResolution);
+    label xi = floor(0.5 + p.x() / xResolution);
+    label yi = (dimensions == 2) ? yIndex : floor(p.y() / yResolution);
     if (xi < 0 || xi >= xSize)
     {
         FatalErrorIn("earthMountain::heightAt") << "mesh domain larger than terrain data (xi=" << xi << " outside bounds)" << exit(FatalError);
