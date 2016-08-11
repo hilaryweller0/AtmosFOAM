@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,38 +21,40 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Global
+    CourantNo
+
+Description
+    Calculates and outputs the mean and maximum Courant Numbers and Ndt
+
 \*---------------------------------------------------------------------------*/
 
-#include "liquidPhase.H"
+scalar CoNum = 0.0;
+scalar meanCoNum = 0.0;
+scalar maxNdt = 0.0;
 
-
-// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
-
-Foam::liquidPhase::liquidPhase
-(
-    const IOobject& io,
-    const fvMesh& mesh,
-    const dictionary& dict
-)
-:
-    Cp_(dict.lookup("Cp")),
-    rho_(dict.lookup("rho")),
-    v_(io, mesh),
-    dvdt_
-    (
-        IOobject("d"+v_.name()+"dt", mesh.time().timeName(), mesh),
-        mesh,
-        dimensionedScalar("", v_.dimensions()/dimTime, scalar(0))
-    )
+if (mesh.nInternalFaces())
 {
-    v_.oldTime();
-    dvdt_.oldTime();
+    scalarField sumPhi
+    (
+        fvc::surfaceSum(mag(U))().internalField()
+      / rho.internalField()
+    );
+
+    CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
+
+    meanCoNum =
+        0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+
+    volScalarField Ndt
+    (
+        "Ndt",
+        dt*Foam::sqrt(mag((g & fvc::grad(theta))/theta))
+    );
+    maxNdt = gMax(Ndt);
 }
 
-
-// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
-
-Foam::liquidPhase::~liquidPhase()
-{}
+Info<< "Courant Number mean: " << meanCoNum
+    << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
 
 // ************************************************************************* //

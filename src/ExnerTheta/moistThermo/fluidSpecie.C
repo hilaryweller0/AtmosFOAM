@@ -29,12 +29,14 @@ License
 
 Foam::fluidSpecie::fluidSpecie
 (
+    const word& name__,
     const IOobject& gasIO,
     const IOobject& liquidIO,
     const fvMesh& mesh,
     const dictionary& dict
 )
 :
+    name_(name__),
     gas_(gasIO, mesh, dict.lookup("gas"), dict.subDict("gasDict")),
     liquid_(liquidIO, mesh, dict.subDict("liquidDict")),
     Lv0_(dict.lookup("Lv0")),
@@ -87,7 +89,7 @@ Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::condensation
     const volScalarField& T
 )
 {
-    volScalarField Sf = gas_.rho()*(1 - pSat(T)/gas_.partialPressure(T));
+    volScalarField Sf = (gas_.partialPressure(T) - pSat(T))/(gas_.R()*T);
     volScalarField Sl = liquid_.v() * liquid_.rho();
 
     tmp<volScalarField> tS
@@ -95,7 +97,7 @@ Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::condensation
         new volScalarField
         (
             IOobject("Scond", T.time().timeName(), T.mesh()),
-            Sf - Sl + sqrt(sqr(Sf) + sqr(Sl))
+            0.5*(Sf - Sl + sqrt(sqr(Sf) + sqr(Sl)))
         )
     );
     return tS;

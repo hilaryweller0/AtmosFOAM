@@ -43,8 +43,17 @@ Foam::perfectGasPhase::perfectGasPhase
     Cp_("Cp", dimGasConstant, cp(p0_.value(),T0_.value())/W()),
     Cv_(Cp_-R_),
     kappa_(R_.value()/Cp_.value()),
-    rho_(io, mesh)
-{}
+    rho_(io, mesh),
+    dRhodt_
+    (
+        IOobject("d"+rho_.name()+"dt", mesh.time().timeName(), mesh),
+        mesh,
+        dimensionedScalar("", rho_.dimensions()/dimTime, scalar(0))
+    )
+{
+    rho_.oldTime();
+    dRhodt_.oldTime();
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //

@@ -58,6 +58,9 @@ class liquidPhase
 
         //- Concentration (volume fraction) field of the liquid
         volScalarField v_;
+        
+        //- Rate of change of liquid volume fraction
+        volScalarField dvdt_;
 
     // Private Member Functions
 
@@ -95,6 +98,8 @@ public:
             
             //- volume fraction
             volScalarField& v() { return v_; }
+            //- Rate of change of liquid fraction
+            volScalarField& dvdt() { return dvdt_; }
 };
 
 

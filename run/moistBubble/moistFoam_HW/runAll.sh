@@ -16,3 +16,5 @@ cp -r init_0/* 0
 
 # run moistFoam
 moistFoam_HW
+
+

@@ -65,6 +65,9 @@ class perfectGasPhase
 
         //- Density field of the phase
         volScalarField rho_;
+        
+        //- Rate of change of density
+        volScalarField dRhodt_;
 
     // Private Member Functions
 
@@ -105,11 +108,18 @@ public:
             const dimensionedScalar& Cv() { return Cv_; }
             scalar kappa() { return kappa_; }
             
-            //- Density
+            //- Density and its rate of chage
             volScalarField& rho() { return rho_; }
+            volScalarField& dRhodt() { return dRhodt_; }
 
             //- Partial pressure (from perfect gas eqn of state)
             tmp<volScalarField> partialPressure(const volScalarField& T);
+            
+            //- Calculate pressure from Exner pressure
+            inline volScalarField pFromExner(const volScalarField& Exner)
+            {
+                return p0()*pow(Exner, 1/kappa());
+            }
 };
 
 

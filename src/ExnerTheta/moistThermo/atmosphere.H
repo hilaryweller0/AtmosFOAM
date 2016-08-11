@@ -81,18 +81,32 @@ public:
     // Member Functions
 
         // Access
-        tmp<volScalarField> gasConst();
-        tmp<volScalarField> Cp();
-        tmp<volScalarField> Cv();
+        //- Volume fraction occupied by gases
+        tmp<volScalarField> volGas();
+        //- Total density
         tmp<volScalarField> sumDensity();
-        tmp<volScalarField> sumPressure();
-        tmp<volScalarField> thetaRho(const volScalarField& theta);
+        //- Density weighted total gas constant
+        tmp<volScalarField> rhoRt();
+        //- Density weighted total heat capacity (constant pressure)
+        tmp<volScalarField> rhoCp();
+        //- Density weighted total heat capacity (constant volume)
+        tmp<volScalarField> rhoCv();
+        //- Sum of partial pressures
+        tmp<volScalarField> sumPressure(const volScalarField& T);
+        //- Density weighted density potential temperature/theta
+        tmp<volScalarField> rhoThetaRho(const volScalarField& T);
+        // Pressure from equation of state
         tmp<volScalarField> pFromT(const volScalarField& T);
+        // Exner from equation of state
         tmp<volScalarField> ExnerFromTheta(const volScalarField& theta);
-        tmp<volScalarField> ExnerFromThetaRho(const volScalarField& thetaRho);
+        // Exner from equation of state
+        //tmp<volScalarField> ExnerFromThetaRho(?);
+        // Source term in the theta equation (divided by theta)
         tmp<volScalarField> thetaSource
         (
-            const volScalarField& T, const volScalarField& Scond
+            const volScalarField& T,
+            const volScalarField& divu,
+            const volScalarField& Scond
         );
 
 };

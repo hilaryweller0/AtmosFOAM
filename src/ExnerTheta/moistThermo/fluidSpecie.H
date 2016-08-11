@@ -52,6 +52,9 @@ class fluidSpecie
 {
     // Private data
 
+        //- Name of this species
+        const word name_;
+
         //- gas and liquid phases
         perfectGasPhase gas_;
         liquidPhase liquid_;
@@ -77,6 +80,7 @@ public:
         //- Construct from Istreams, dictionaries and IOobjects
         fluidSpecie
         (
+            const word& name__,
             const IOobject& gasIO,
             const IOobject& liquidIO,
             const fvMesh& mesh,
@@ -93,6 +97,7 @@ public:
         // Access
 
             //- gas and liquid phases
+            const word& name() { return name_; }
             perfectGasPhase& gas() { return gas_; }
             liquidPhase& liquid() { return liquid_; }
             

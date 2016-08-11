@@ -38,11 +38,10 @@ gradSchemes
 
 divSchemes
 {
-    default             Gauss none;
-    div(U,thetaRho)     Gauss linearUpwind linearUpwind;//cubicUpwindCPCFit 3; //
-    div(U,qv)           Gauss linearUpwind linearUpwind;//cubicUpwindCPCFit 3; //
-    div(U,ql)           Gauss linearUpwind linearUpwind;cubicUpwindCPCFit 3; //
-    div(U,u)            Gauss linearUpwind linearUpwind;cubicUpwindCPCFit 3; //
+    div(un,airVapourRho)   Gauss linearUpwind linearUpwind;
+    div(un,airLiquidFrac)   Gauss linearUpwind linearUpwind;
+    div(un,waterVapourRho)   Gauss linearUpwind linearUpwind;
+    div(un,waterLiquidFrac)   Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes
