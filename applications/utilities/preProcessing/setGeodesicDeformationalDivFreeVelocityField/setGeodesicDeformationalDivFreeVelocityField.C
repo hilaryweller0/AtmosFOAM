@@ -1,5 +1,6 @@
 #include "fvCFD.H"
 #include "polarPoint.H"
+#include "sphericalVector.H"
 
 int main(int argc, char *argv[])
 {
@@ -35,14 +36,10 @@ int main(int argc, char *argv[])
             dimensionedScalar u = 10*radius/timeScale * sqr(Foam::sin(lonPrime)) * Foam::sin(2*lat) * Foam::cos(M_PI*t/timeScale) + 2*M_PI*radius/timeScale * Foam::cos(lat);
             dimensionedScalar v = 10*radius/timeScale * Foam::sin(2*lonPrime) * Foam::cos(lat) * Foam::cos(M_PI*t/timeScale);
 
-            scalar latRot = lat+M_PI/2;
-            scalar lonRot = lon+M_PI;
+            sphericalVector localWind(u.value(), v.value(), 0);
+            sphericalVector p(mesh.Cf()[faceI]);
 
-            scalar xGlobal = u.value() * Foam::cos(lonRot);
-            scalar yGlobal = v.value() * Foam::cos(latRot) + Foam::sin(latRot) * u.value() * Foam::sin(lonRot);
-            scalar zGlobal = v.value() * Foam::sin(latRot) - Foam::cos(latRot) * u.value() * Foam::sin(lonRot);
-
-            Uf[faceI] = vector(xGlobal, yGlobal, zGlobal);
+            Uf[faceI] = localWind.toCartesian(p);
         }
         Uf.write();
         runTime.loop();
