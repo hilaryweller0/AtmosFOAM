@@ -46,12 +46,62 @@ int main(int argc, char *argv[])
 
     Info<< "\nCalculating advection\n" << endl;
 
-    #include "CourantNo.H"
 
-    // go backwards in time by one time step to initialise leap-frog
-    T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
-    while (runTime.loop())
+    bool firstStep = true;
+
+    while (runTime.run())
     {
+        const volVectorField U
+        (
+            IOobject
+            (
+                "U",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            mesh,
+            dimensionedVector("U", dimVelocity, vector::zero),
+            "zeroGradient"
+        );
+
+        const surfaceVectorField Uf
+        (
+            IOobject
+            (
+                "Uf",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            linearInterpolate(U)
+        );
+
+        const surfaceScalarField phi
+        (
+            IOobject
+            (
+                "phi",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            Uf & mesh.Sf()
+        );
+
+        if (firstStep)
+        {
+            // go backwards in time by one time step to initialise leap-frog
+            T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
+            firstStep = false;
+        }
+
+        #include "CourantNo.H"
+
+        runTime.loop();
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("leapfrog"))
