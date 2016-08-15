@@ -16,10 +16,10 @@ Info << "Reading in air and water phases" << endl;
 wordList phaseNames(2);
 phaseNames[0] = "air";
 phaseNames[1] = "water";
-atmosphere atmos(phaseNames, runTime.timeName(), mesh, thermoDict);
+atmosphere atmos(phaseNames, mesh, thermoDict);
 
 perfectGasPhase& air = atmos[0].gas();
-fluidSpecie& water = atmos[1];
+//fluidSpecie& water = atmos[1];
 
 Info << "Reading in theta" << endl;
 volScalarField theta
@@ -34,7 +34,6 @@ volScalarField theta
     ),
     mesh
 );
-theta.oldTime();
 
 Info << "Calculating, density, Exner, pressure and temperature from atmos and theta" << endl;
 
@@ -42,6 +41,12 @@ volScalarField rho("rho", atmos.sumDensity());
 volScalarField Exner("Exner", atmos.ExnerFromTheta(theta));
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
+volScalarField rhoTheta("rhoTheta", theta*rho);
+rhoTheta.oldTime();
+volScalarField dRhoThetadt("dRhoThetadt", 0*rhoTheta/dt);
+dRhoThetadt.oldTime();
+volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
+surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
 rho.write();
 Exner.write();
@@ -65,6 +70,7 @@ surfaceVectorField Uf
 // Fields needed in the Helmholtz equation
 volScalarField Psi("Psi", rho/Exner);
 Psi.oldTime();
+surfaceScalarField gradPcoeff("gradPcoeff", fvc::interpolate(air.Cp()*theta));
 
 // fixed flux boundary conditions
 wordList VuBCs(mesh.boundaryMesh().size(), "calculated");
@@ -85,15 +91,70 @@ forAll(mesh.boundaryMesh(), patchi)
     }
 }
 
-// Cell centre velocity
-volVectorField u
+volVectorField rhoU
 (
-    IOobject("u", runTime.timeName(), mesh),
-    H.reconstruct(Uf & mesh.Sf()),
+    IOobject("rhoU", runTime.timeName(), mesh),
+    rho*H.reconstruct(Uf & mesh.Sf()),
     uBCs
 );
+
+Info<< "Calculating face flux field U\n" << endl;
+surfaceScalarField U
+(
+    IOobject
+    (
+       "U",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    rhof*(Uf & mesh.Sf())
+//    phiUBCs
+);
+U.oldTime();
+
+Info << "Calculating V mass circulation field\n" << endl;
+surfaceScalarField V
+(
+    IOobject("V", runTime.timeName(), mesh),
+    rhof*(Uf & H.delta())
+//    phiUBCs
+);
+V.oldTime();
 
 // Velocity flux
 surfaceScalarField un("un", Uf & mesh.Sf());
 volScalarField divu("divu", fvc::div(un));
+
+// Temporary flux with fixed boundary conditions (without hydrostatic terms)
+surfaceScalarField Vu
+(
+    IOobject("Vu", runTime.timeName(), mesh),
+    V,
+    VuBCs
+);
+
+// Rates of change for Crank-Nicholson
+surfaceScalarField dVdt
+(
+    IOobject("dVdt", runTime.timeName(), mesh),
+    -(H.delta() & (fvc::interpolate(fvc::div(un, rhoU))+2*rhof*(Omega^(Uf-Ug))))
+    +rhof*(gd - H.magd()*gradPcoeff*fvc::snGrad(Exner)),
+     VuBCs
+);
+dVdt.oldTime();
+
+// Reading in the sponge layer coefficients (if present)
+surfaceScalarField muSponge
+(
+    surfaceScalarField
+    (
+        IOobject("muSponge", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        mesh,
+        dimensionedScalar("muSponge", dimless, scalar(0))
+    )/dt
+);
+Info << "Maximum sponge value = " << max(muSponge).value()*dt.value()
+     << endl;
 

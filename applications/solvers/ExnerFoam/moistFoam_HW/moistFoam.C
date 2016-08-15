@@ -68,6 +68,9 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "phaseEqns.H"
+            #include "rhoThetaEqn.H"
+            #include "exnerEqn.H"
+            p = air.pFromExner(Exner);
         }
 
        runTime.write();

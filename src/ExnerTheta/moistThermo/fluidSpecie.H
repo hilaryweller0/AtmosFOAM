@@ -59,10 +59,12 @@ class fluidSpecie
         perfectGasPhase gas_;
         liquidPhase liquid_;
         
-        // Constants in equations for phase changes
+        //- Constants in equations for phase changes
         const dimensionedScalar Lv0_;
         const dimensionedScalar pvs0_;
 
+        //- Condensation of this phase
+        volScalarField condensation_;
 
     // Private Member Functions
 
@@ -101,6 +103,10 @@ public:
             perfectGasPhase& gas() { return gas_; }
             liquidPhase& liquid() { return liquid_; }
             
+            // Constants in equations for phase changes
+            const dimensionedScalar& Lv0() { return Lv0_; }
+            const dimensionedScalar& pvs0() { return pvs0_; }
+
             //- Latent heat of vaporisation
             tmp<volScalarField> latentHeat(const volScalarField& T);
 
@@ -108,7 +114,8 @@ public:
             tmp<volScalarField> pSat(const volScalarField& T);
 
             //- Condensation in one time interval
-            tmp<volScalarField> condensation(const volScalarField& T);
+            const volScalarField& condensation() { return condensation_; }
+            const volScalarField& updateCondensation(const volScalarField& T);
 };
 
 

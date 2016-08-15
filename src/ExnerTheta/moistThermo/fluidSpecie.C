@@ -40,7 +40,8 @@ Foam::fluidSpecie::fluidSpecie
     gas_(gasIO, mesh, dict.lookup("gas"), dict.subDict("gasDict")),
     liquid_(liquidIO, mesh, dict.subDict("liquidDict")),
     Lv0_(dict.lookup("Lv0")),
-    pvs0_(dict.lookup("pvs0"))
+    pvs0_(dict.lookup("pvs0")),
+    condensation_("condensationOf"+name_, 0*gas_.rho())
 {}
 
 
@@ -84,23 +85,15 @@ Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::pSat
     return tpSat;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::condensation
+const Foam::volScalarField& Foam::fluidSpecie::updateCondensation
 (
     const volScalarField& T
 )
 {
     volScalarField Sf = (gas_.partialPressure(T) - pSat(T))/(gas_.R()*T);
     volScalarField Sl = liquid_.v() * liquid_.rho();
-
-    tmp<volScalarField> tS
-    (
-        new volScalarField
-        (
-            IOobject("Scond", T.time().timeName(), T.mesh()),
-            0.5*(Sf - Sl + sqrt(sqr(Sf) + sqr(Sl)))
-        )
-    );
-    return tS;
+    condensation_ = 0.5*(Sf - Sl + sqrt(sqr(Sf) + sqr(Sl)));
+    return condensation_;
 }
 
 

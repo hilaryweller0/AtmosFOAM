@@ -12,7 +12,7 @@ blockMesh
 rm -rf [0-9]* core
 mkdir 0
 cp -r init_0/* 0
-#initMoistFoam_JKKV15
+initMoistFoam_HW
 
 # run moistFoam
 moistFoam_HW

@@ -23,12 +23,19 @@ for(label ip = 0; ip < atmos.size(); ip++)
 // Calculate the condensation for each species
 for(label ip = 0; ip < atmos.size(); ip++)
 {
-    volScalarField condenseRate(atmos[ip].condensation(T)/dt);
+    // Only apply condensation if the vapour pressure is close to ambient
+    if (atmos[ip].pvs0() < atmos[ip].gas().p0())
+    {
+        atmos[ip].updateCondensation(T);
     
-    atmos[ip].gas().rho()  -= offCentre*dt*condenseRate;
-    atmos[ip].liquid().v() += offCentre*dt*condenseRate
-                                /atmos[ip].liquid().rho();
-    atmos[ip].gas().dRhodt() -= condenseRate;
-    atmos[ip].liquid().dvdt() += condenseRate
-                                /atmos[ip].liquid().rho();
+        atmos[ip].gas().rho()  -= offCentre*atmos[ip].condensation();
+        atmos[ip].liquid().v() += offCentre*atmos[ip].condensation()
+                                    /atmos[ip].liquid().rho();
+        atmos[ip].gas().dRhodt() -= atmos[ip].condensation()/dt;
+        atmos[ip].liquid().dvdt() += atmos[ip].condensation()/dt
+                                    /atmos[ip].liquid().rho();
+    }
 }
+
+// Update the total density
+atmos.sumDensity();

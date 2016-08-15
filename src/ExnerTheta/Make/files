@@ -1,6 +1,7 @@
 ThermalProfile.C
 BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerMoistFvPatchScalarField.C
+BCs/hydrostaticExnerFvPatchScalarField.C
 moistThermo/perfectGasPhase.C
 moistThermo/liquidPhase.C
 moistThermo/fluidSpecie.C

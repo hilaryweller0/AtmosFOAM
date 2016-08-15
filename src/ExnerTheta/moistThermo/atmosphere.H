@@ -51,6 +51,11 @@ class atmosphere
 :
     public PtrList<fluidSpecie>
 {
+    // Private Data
+
+        //- The total density
+        volScalarField rho_;
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -68,7 +73,6 @@ public:
         atmosphere
         (
             const wordList& partNames,
-            const word timeName,
             const fvMesh& mesh,
             const dictionary dict
         );
@@ -81,10 +85,12 @@ public:
     // Member Functions
 
         // Access
+        volScalarField& rho() { return rho_; }
+        
         //- Volume fraction occupied by gases
         tmp<volScalarField> volGas();
         //- Total density
-        tmp<volScalarField> sumDensity();
+        volScalarField& sumDensity();
         //- Density weighted total gas constant
         tmp<volScalarField> rhoRt();
         //- Density weighted total heat capacity (constant pressure)
@@ -99,16 +105,23 @@ public:
         tmp<volScalarField> pFromT(const volScalarField& T);
         // Exner from equation of state
         tmp<volScalarField> ExnerFromTheta(const volScalarField& theta);
+        // rho from eqn of state
+        tmp<volScalarField> rhoFromP
+        (
+            const volScalarField& p,
+            const volScalarField& T
+        );
         // Exner from equation of state
         //tmp<volScalarField> ExnerFromThetaRho(?);
         // Source term in the theta equation (divided by theta)
         tmp<volScalarField> thetaSource
         (
             const volScalarField& T,
-            const volScalarField& divu,
-            const volScalarField& Scond
+            const volScalarField& divu
         );
 
+        // Output
+        void write();
 };
 
 
