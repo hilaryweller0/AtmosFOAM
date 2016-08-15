@@ -1,0 +1,4 @@
+deformationalNonDivergentGeodesic.C
+velocityField.C
+
+LIB = $(FOAM_USER_LIBBIN)/libprescribedFields
