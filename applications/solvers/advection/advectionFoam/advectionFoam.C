@@ -38,6 +38,7 @@ Description
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
+    Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -46,62 +47,15 @@ int main(int argc, char *argv[])
 
     Info<< "\nCalculating advection\n" << endl;
 
+    bool timeVaryingWind = args.options().found("timeVaryingWind");
+    
+    // go backwards in time by one time step to initialise leap-frog
+    T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
 
-    bool firstStep = true;
-
-    while (runTime.run())
+    while (runTime.loop())
     {
-        const volVectorField U
-        (
-            IOobject
-            (
-                "U",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::NO_WRITE
-            ),
-            mesh,
-            dimensionedVector("U", dimVelocity, vector::zero),
-            "zeroGradient"
-        );
-
-        const surfaceVectorField Uf
-        (
-            IOobject
-            (
-                "Uf",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::NO_WRITE
-            ),
-            linearInterpolate(U)
-        );
-
-        const surfaceScalarField phi
-        (
-            IOobject
-            (
-                "phi",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::NO_WRITE
-            ),
-            Uf & mesh.Sf()
-        );
-
-        if (firstStep)
-        {
-            // go backwards in time by one time step to initialise leap-frog
-            T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
-            firstStep = false;
-        }
-
         #include "CourantNo.H"
 
-        runTime.loop();
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("leapfrog"))
@@ -124,6 +78,50 @@ int main(int argc, char *argv[])
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << endl;
         runTime.write();
+
+        if (timeVaryingWind)
+        {
+            U = volVectorField
+            (
+                IOobject
+                (
+                    "U",
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                mesh,
+                dimensionedVector("U", dimVelocity, vector::zero),
+                "zeroGradient"
+            );
+
+            Uf = surfaceVectorField
+            (
+                IOobject
+                (
+                    "Uf",
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                linearInterpolate(U)
+            );
+
+            phi = surfaceScalarField
+            (
+                IOobject
+                (
+                    "phi",
+                    runTime.timeName(),
+                    mesh,
+                    IOobject::READ_IF_PRESENT,
+                    IOobject::NO_WRITE
+                ),
+                Uf & mesh.Sf()
+            );
+        }
     }
 
     Info<< "End\n" << endl;
