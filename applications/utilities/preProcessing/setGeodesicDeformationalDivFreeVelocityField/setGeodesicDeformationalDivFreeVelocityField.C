@@ -17,9 +17,21 @@ int main(int argc, char *argv[])
        "fixedValue"
     );
 
+    IOdictionary velocityFieldDict
+    (
+        IOobject
+        (
+            "velocityFieldDict",
+            mesh.time().constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+
     // section 2.3 doi:10.5194/gmd-5-887-2012
-    dimensionedScalar radius("radius", dimLength, 6.3712e6);
-    dimensionedScalar timeScale =runTime.endTime();
+    const dimensionedScalar radius("radius", dimLength, velocityFieldDict.lookupOrDefault<scalar>("radius", scalar(6.3712e6)));
+    dimensionedScalar timeScale = runTime.endTime();
 
     while (runTime.run())
     {
@@ -42,6 +54,7 @@ int main(int argc, char *argv[])
             Uf[faceI] = localWind.toCartesian(p);
         }
         Uf.write();
+
         runTime.loop();
     }
 
