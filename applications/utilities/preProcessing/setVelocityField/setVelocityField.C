@@ -33,7 +33,6 @@ Description
 
 #include "fvCFD.H"
 #include "VelocityField.H"
-#include "HorizontalVelocityProfile.H"
 
 int main(int argc, char *argv[])
 {
