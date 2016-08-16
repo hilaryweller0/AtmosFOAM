@@ -35,7 +35,6 @@ Description
 #include "fvCFD.H"
 #include "atmosphere.H"
 #include "mathematicalConstants.H"
-#include "TfromThetae.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,7 +71,7 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
-            gradPcoeff = fvc::interpolate(air.Cp()*theta);
+            gradPcoeff = fvc::interpolate(air.Cp()*theta/atmos.volAir());
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(un)
@@ -87,10 +86,9 @@ int main(int argc, char *argv[])
             for(label it = 0; it < 4; it++)
             {
                 // Temperature from thetae0
-                TfromThetae(T, atmos, thetae0, rt0);
+                atmos.TfromThetae(T, thetae0, rt0);
 
-                rho = atmos.rhoFromP(p,T);
-                air.rho() += rho - atmos.sumDensity();
+                air.rho() = atmos.rhoFromP(p,T);
 
                 // Set water vapour to be saturated (with under-relaxation)
                 water.gas().rho() == (1-underRelax)*water.gas().rho()
@@ -140,9 +138,74 @@ int main(int argc, char *argv[])
     );
     Exner.correctBoundaryConditions();
     Exner.write();
-    theta.write();
-    atmos.write();
+    
+    // Reference profiles of theta and atmos for calculating differences
+    volScalarField thetaRef
+    (
+        IOobject("thetaRef", runTime.constant(), mesh), theta
+    );
+    volScalarField airVapourRhoRef
+    (
+        IOobject("airVapourRhoRef", runTime.constant(), mesh),
+        air.rho()
+    );
+    volScalarField waterVapourRhoRef
+    (
+        IOobject("waterVapourRhoRef", runTime.constant(), mesh),
+        water.gas().rho()
+    );
+    volScalarField waterLiquidFracRef
+    (
+        IOobject("waterLiquidFracRef", runTime.constant(), mesh),
+        water.liquid().v()
+    );
+    thetaRef.write();
+    airVapourRhoRef.write();
+    waterVapourRhoRef.write();
+    waterLiquidFracRef.write();
+    
+    Info << "Adding bouyancy perturbation and re-calculating water variables"
+         << endl;
+    // Cell where bouancy perturbation is maximum
+    label cellMax = 0;
+    forAll(theta, celli)
+    {
+        scalar L = Foam::sqrt
+        (
+            sqr((mesh.C()[celli].x() - bubbleCentre.x())/bubbleRadii.x())
+          + sqr((mesh.C()[celli].y() - bubbleCentre.y())/bubbleRadii.y())
+          + sqr((mesh.C()[celli].z() - bubbleCentre.z())/bubbleRadii.z())
+        );
 
+        if (L < 1)
+        {
+            thetaScale[celli] += thetaPrime*sqr(Foam::cos(piby2*L));
+            if (thetaScale[celli] > thetaScale[cellMax])
+            {
+                cellMax = celli;
+            }
+        }
+    }
+    volScalarField thetaRho = theta/atmos.volAir();
+    thetaRho*= thetaScale;
+    // Iterate so that Exner, and water variables are in balance
+    for(label it = 0; it < 50; it++)
+    {
+        theta = thetaRho*atmos.volAir();
+        T == theta*Exner;
+        air.rho() = atmos.rhoFromP(p,T);
+
+        // Set water vapour to be saturated
+        water.gas().rho() == water.pSat(T)/(T*water.gas().R());
+
+        // Update liquid water
+        water.liquid().v() = (rt0*air.rho() - water.gas().rho())
+                    /water.liquid().rho();
+    }
+    
+    theta.write();
+    atmos.write(); 
+    
     return 0;
 }
 

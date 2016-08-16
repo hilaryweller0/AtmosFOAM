@@ -44,7 +44,11 @@ surfaceScalarField un
 );
 
 // Fields needed in the Helmholtz equation
-surfaceScalarField gradPcoeff("gradPcoeff", fvc::interpolate(air.Cp()*theta));
+surfaceScalarField gradPcoeff
+(
+    "gradPcoeff",
+    fvc::interpolate(air.Cp()*theta/atmos.volAir())
+);
 
 label groundBC = -1;
 label topBC = -1;
@@ -80,5 +84,7 @@ Exner.boundaryFieldRef()[topBC] == topBCval;
 
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
-volScalarField rho("rho", atmos.rhoFromP(p,T));
+
+// Scalaing to create the bubble
+volScalarField thetaScale("thetaScale", theta/theta);
 

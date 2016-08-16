@@ -16,13 +16,6 @@ FoamFile
 
 solvers
 {
-    "rho|rv|rl"
-    {
-        solver PCG;
-        preconditioner   DIC;
-        tolerance        0;
-        relTol           0;
-    };
     Exner
     {
         solver PCG;
@@ -37,14 +30,6 @@ solvers
         tolerance        1e-10;
         relTol           0;
     }
-    
-    theta
-    {
-        solver PBiCG;
-        preconditioner   DILU;
-        tolerance        1e-8;
-        relTol           0;
-    }
 }
 
 iterations
@@ -52,7 +37,6 @@ iterations
     nOuterCorrectors 4;
     nCorrectors      1;
     nNonOrthogonalCorrectors 0;
-    nAdvectionSubSteps 1;
 }
 
 // ************************************************************************* //

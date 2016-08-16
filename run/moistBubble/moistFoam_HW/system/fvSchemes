@@ -37,14 +37,11 @@ gradSchemes
 
 divSchemes
 {
-    default Gauss midPoint;
-/*    div(un,airVapourRho)   Gauss linearUpwind linearUpwind;
-    div(un,airLiquidFrac)   Gauss linearUpwind linearUpwind;
+    default none;
     div(un,waterVapourRho)   Gauss linearUpwind linearUpwind;
     div(un,waterLiquidFrac)   Gauss linearUpwind linearUpwind;
     div(un,rhoTheta)   Gauss linearUpwind linearUpwind;
     div(un,rhoU)   Gauss linearUpwind linearUpwind;
-*/
 }
 
 laplacianSchemes

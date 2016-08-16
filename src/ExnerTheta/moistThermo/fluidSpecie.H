@@ -108,10 +108,16 @@ public:
             const dimensionedScalar& pvs0() { return pvs0_; }
 
             //- Latent heat of vaporisation
-            tmp<volScalarField> latentHeat(const volScalarField& T);
+            inline volScalarField latentHeat(const volScalarField& T)
+            {
+                return Lv0_ - (liquid_.Cp() - gas_.Cp())*(T - gas_.T0());
+            }
 
             //- Saturation vapour pressure
-            tmp<volScalarField> pSat(const volScalarField& T);
+            inline volScalarField pSat(const volScalarField& T)
+            {
+                return pvs0_*exp(-Lv0_/gas_.R()*(1/T - 1/gas_.T0()));
+            }
 
             //- Condensation in one time interval
             const volScalarField& condensation() { return condensation_; }

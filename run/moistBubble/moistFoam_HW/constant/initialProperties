@@ -29,8 +29,8 @@ bubbleCentre (0 500 2e3);
 bubbleRadii  (2000 1 2000);
 
 thetae thetae [0 0 0 1 0] 320;
-totalWaterRatio 0; //0.02;
-initExnerTop 0.686921; // 0.694709; //0.703158;
+totalWaterRatio 0.02;
+initExnerTop 0.689021;
 initExnerGround 1;
 maxIters 50;
 BCiters 50;

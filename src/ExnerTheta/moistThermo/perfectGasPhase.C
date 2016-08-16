@@ -61,23 +61,4 @@ Foam::perfectGasPhase::perfectGasPhase
 Foam::perfectGasPhase::~perfectGasPhase()
 {}
 
-
-// * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::tmp<Foam::volScalarField> Foam::perfectGasPhase::partialPressure
-(
-    const volScalarField& T
-)
-{
-    tmp<volScalarField> tpp
-    (
-        new volScalarField
-        (
-            IOobject("pp", T.time().timeName(), T.mesh()),
-            rho_*R()*T
-        )
-    );
-    return tpp;
-}
-
 // ************************************************************************* //

@@ -53,38 +53,6 @@ Foam::fluidSpecie::~fluidSpecie()
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::latentHeat
-(
-    const volScalarField& T
-)
-{
-    tmp<volScalarField> tLv
-    (
-        new volScalarField
-        (
-            IOobject("Lv", T.time().timeName(), T.mesh()),
-            Lv0_ - (liquid_.Cp() - gas_.Cp())*(T - gas_.T0())
-        )
-    );
-    return tLv;
-}
-
-Foam::tmp<Foam::volScalarField> Foam::fluidSpecie::pSat
-(
-    const volScalarField& T
-)
-{
-    tmp<volScalarField> tpSat
-    (
-        new volScalarField
-        (
-            IOobject("pSat", T.time().timeName(), T.mesh()),
-            pvs0_*exp(-Lv0_/gas_.R()*(1/T - 1/gas_.T0()))
-        )
-    );
-    return tpSat;
-}
-
 const Foam::volScalarField& Foam::fluidSpecie::updateCondensation
 (
     const volScalarField& T

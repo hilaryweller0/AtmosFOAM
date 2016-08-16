@@ -113,7 +113,10 @@ public:
             volScalarField& dRhodt() { return dRhodt_; }
 
             //- Partial pressure (from perfect gas eqn of state)
-            tmp<volScalarField> partialPressure(const volScalarField& T);
+            inline volScalarField partialPressure(const volScalarField& T)
+            {
+                return rho_*R()*T;
+            }
             
             //- Calculate pressure from Exner pressure
             inline volScalarField pFromExner(const volScalarField& Exner)

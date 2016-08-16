@@ -1,15 +1,15 @@
 {
     // Eqn of state and compressibility
     Exner = atmos.ExnerFromTheta(theta);
-    Psi == atmos.rho()/Exner;
-    rhof = fvc::interpolate(atmos.rho());
+    Psi == air.rho()/Exner;
+    rhof = fvc::interpolate(air.rho());
 
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
 
     for (int corr=0; corr<nCorr; corr++)
     {
         // Explicit part of rate of change of flux
-        gradPcoeff = fvc::interpolate(air.Cp()*theta);
+        gradPcoeff = fvc::interpolate(air.Cp()*theta/atmos.volAir());
         surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
         dVdt = -(H.delta() &
         (
@@ -39,7 +39,7 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              - (1-offCentre)*fvc::div(U.oldTime())
+              - (1-offCentre)*air.dRhodt().oldTime()
               + offCentre*fvc::div(U)
               - fvm::laplacian(offCentre*gradPcoeff2, Exner)
             );
@@ -57,12 +57,12 @@
             {
                 U += ExnerEqn.flux()/offCentre;
                 V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
-                rho = Exner*Psi;
-                rhof = fvc::interpolate(rho);
                 rhoU = H.reconstructd(V);
+//                air.rho() = Exner*Psi;
+//                rhof = fvc::interpolate(air.rho());
                 un = U/rhof;
                 divu = fvc::div(un);
-                Uf = fvc::interpolate(rhoU/rho);
+                Uf = fvc::interpolate(rhoU/air.rho());
                 dVdt += rhof*gd
                      - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
                      - muSponge*V;
@@ -70,3 +70,4 @@
         }
     }
 }
+

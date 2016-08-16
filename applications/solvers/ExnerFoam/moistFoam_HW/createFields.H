@@ -19,7 +19,7 @@ phaseNames[1] = "water";
 atmosphere atmos(phaseNames, mesh, thermoDict);
 
 perfectGasPhase& air = atmos[0].gas();
-//fluidSpecie& water = atmos[1];
+fluidSpecie& water = atmos[1];
 
 Info << "Reading in theta" << endl;
 volScalarField theta
@@ -37,21 +37,16 @@ volScalarField theta
 
 Info << "Calculating, density, Exner, pressure and temperature from atmos and theta" << endl;
 
-volScalarField rho("rho", atmos.sumDensity());
 volScalarField Exner("Exner", atmos.ExnerFromTheta(theta));
+Exner.oldTime();
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
-volScalarField rhoTheta("rhoTheta", theta*rho);
+volScalarField rhoTheta("rhoTheta", air.rho()*theta);
 rhoTheta.oldTime();
 volScalarField dRhoThetadt("dRhoThetadt", 0*rhoTheta/dt);
 dRhoThetadt.oldTime();
 volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
-surfaceScalarField rhof("rhof", fvc::interpolate(rho));
-
-rho.write();
-Exner.write();
-T.write();
-p.write();
+surfaceScalarField rhof("rhof", fvc::interpolate(air.rho()));
 
 Info << "Reading in velocity field" << endl;
 surfaceVectorField Uf
@@ -68,9 +63,13 @@ surfaceVectorField Uf
 );
 
 // Fields needed in the Helmholtz equation
-volScalarField Psi("Psi", rho/Exner);
+volScalarField Psi("Psi", air.rho()/Exner);
 Psi.oldTime();
-surfaceScalarField gradPcoeff("gradPcoeff", fvc::interpolate(air.Cp()*theta));
+surfaceScalarField gradPcoeff
+(
+    "gradPcoeff",
+    fvc::interpolate(air.Cp()*theta/atmos.volAir())
+);
 
 // fixed flux boundary conditions
 wordList VuBCs(mesh.boundaryMesh().size(), "calculated");
@@ -94,7 +93,7 @@ forAll(mesh.boundaryMesh(), patchi)
 volVectorField rhoU
 (
     IOobject("rhoU", runTime.timeName(), mesh),
-    rho*H.reconstruct(Uf & mesh.Sf()),
+    air.rho()*H.reconstruct(Uf & mesh.Sf()),
     uBCs
 );
 

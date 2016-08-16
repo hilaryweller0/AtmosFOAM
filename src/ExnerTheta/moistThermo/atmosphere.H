@@ -51,11 +51,6 @@ class atmosphere
 :
     public PtrList<fluidSpecie>
 {
-    // Private Data
-
-        //- The total density
-        volScalarField rho_;
-
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -85,22 +80,20 @@ public:
     // Member Functions
 
         // Access
-        volScalarField& rho() { return rho_; }
-        
         //- Volume fraction occupied by gases
         tmp<volScalarField> volGas();
+        //- Volume fraction occupied by dry air
+        tmp<volScalarField> volAir();
         //- Total density
-        volScalarField& sumDensity();
+        tmp<volScalarField> sumDensity();
         //- Density weighted total gas constant
-        tmp<volScalarField> rhoRt();
+        tmp<volScalarField> rhoR();
         //- Density weighted total heat capacity (constant pressure)
         tmp<volScalarField> rhoCp();
         //- Density weighted total heat capacity (constant volume)
         tmp<volScalarField> rhoCv();
         //- Sum of partial pressures
         tmp<volScalarField> sumPressure(const volScalarField& T);
-        //- Density weighted density potential temperature/theta
-        tmp<volScalarField> rhoThetaRho(const volScalarField& T);
         // Pressure from equation of state
         tmp<volScalarField> pFromT(const volScalarField& T);
         // Exner from equation of state
@@ -111,17 +104,29 @@ public:
             const volScalarField& p,
             const volScalarField& T
         );
-        // Exner from equation of state
-        //tmp<volScalarField> ExnerFromThetaRho(?);
-        // Source term in the theta equation (divided by theta)
+        // Source term in the theta equation (divided by rhoa theta)
         tmp<volScalarField> thetaSource
         (
             const volScalarField& T,
             const volScalarField& divu
         );
+        
+        tmp<volScalarField> thetae(const volScalarField& T);
+        
+        //- Calculate temperautre, T, from uniform equivalent potential
+        //- temperature and uniform total water mixing ratio, rt
+        void TfromThetae
+        (
+            volScalarField& T,
+            const dimensionedScalar& thetae0,
+            const scalar rt
+        );
 
         // Output
         void write();
+
+        // Input (re-read densities and liquid fractions
+        void readUpdate();
 };
 
 

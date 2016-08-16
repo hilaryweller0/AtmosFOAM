@@ -1,5 +1,12 @@
-// Advect all phases
-for(label ip = 0; ip < atmos.size(); ip++)
+// Advect the air
+air.dRhodt() = -fvc::div(U);
+air.rho() = air.rho().oldTime() + dt*
+(
+    (1-offCentre)*air.dRhodt().oldTime() + offCentre*air.dRhodt()
+);
+
+// Advect other, multi-phase phases
+for(label ip = 1; ip < atmos.size(); ip++)
 {
     // The gaseous phase
     atmos[ip].gas().dRhodt() = -fvc::div(un, atmos[ip].gas().rho());
@@ -37,5 +44,3 @@ for(label ip = 0; ip < atmos.size(); ip++)
     }
 }
 
-// Update the total density
-atmos.sumDensity();
