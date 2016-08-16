@@ -23,6 +23,7 @@ vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
     const scalar lat = polarp.lat();
     const scalar lon = polarp.lon();
 
+    // section 2.3 doi:10.5194/gmd-5-887-2012
     const dimensionedScalar lonPrime = lon - 2 * M_PI * t / T;
 
     const dimensionedScalar psi = 10 * radius / T * 

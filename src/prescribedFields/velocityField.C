@@ -42,7 +42,7 @@ void velocityField::applyTo(surfaceScalarField& phi) const
 
 void velocityField::applyToInternalField(surfaceScalarField& phi) const
 {
-    phi.ref() = 0;
+    phi.ref() = dimensionedScalar("phi", phi.dimensions(), scalar(0));
     const fvMesh& mesh = phi.mesh();
     forAll(phi, faceI)
     {
