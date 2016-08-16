@@ -16,13 +16,32 @@ int main(int argc, char *argv[])
        "fixedValue"
     );
 
-    surfaceVectorField Uf
+volVectorField U
+(
+    IOobject
     (
-        IOobject("Uf", runTime.timeName(), mesh),
+        "U",
+        runTime.timeName(),
         mesh,
-        dimensionedVector("Uf", cmptMultiply(dimVelocity, dimArea), vector(0,0,0)),
-       "fixedValue"
-    );
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    fvc::reconstruct(phi)
+);
+
+// Read Uf if present, otherwise create and write (not used)
+surfaceVectorField Uf
+(
+    IOobject
+    (
+        "Uf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    linearInterpolate(fvc::reconstruct(phi))
+);
 
     IOdictionary dict
     (
@@ -44,7 +63,12 @@ int main(int argc, char *argv[])
 
         v->applyTo(phi);
         phi.write();
-        Uf = phi * mesh.Sf() / mag(mesh.Sf());
+
+        U = fvc::reconstruct(phi);
+        Uf = linearInterpolate(U);
+        Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+
+        U.write();
         Uf.write();
 
         runTime.loop();
