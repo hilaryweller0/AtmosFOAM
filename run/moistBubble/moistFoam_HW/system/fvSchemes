@@ -1,0 +1,70 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default Euler;
+}
+offCentre 0.5;
+SIgravityWaves false;
+
+gradSchemes
+{
+    default         none;
+    //linearUpwind    Gauss linear;
+}
+
+divSchemes
+{
+    default none;
+    div(U,(waterVapourRho|rho))   Gauss cubicUpwindCPCFit 3;
+    div(U,(waterLiquidFrac|rho))   Gauss cubicUpwindCPCFit 3;
+    div(U,theta)   Gauss cubicUpwindCPCFit 3;
+    div(U,u)   Gauss cubicUpwindCPCFit 3; //linearUpwind linearUpwind;
+}
+
+laplacianSchemes
+{
+    default         Gauss midPoint uncorrected;
+}
+
+interpolationSchemes
+{
+    default        midPoint;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(Exner)   uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}
+
+
+// ************************************************************************* //

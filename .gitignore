@@ -10,11 +10,12 @@
 
 # Large files #
 ###############
-*pdf
-*ps
-*gif
-*dat
-*png
+*.pdf
+*.ps
+*.eps
+*.gif
+*.dat
+*.png
 
 # Build directories
 ###################
@@ -70,8 +71,8 @@ linux*
 lnInclude
 
 # Time and mesh directories #
-[0-9]*
-*[0-9]
+[0-9]
+[0-9]*[0-9]
 polyMesh
 
 # Modified source code #
