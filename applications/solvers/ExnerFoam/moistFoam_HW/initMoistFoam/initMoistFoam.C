@@ -71,7 +71,12 @@ int main(int argc, char *argv[])
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
             Info << "Outer " << iter << " inner " << BCiter << endl;
-            gradPcoeff = fvc::interpolate(air.Cp()*theta/atmos.volAir());
+            gradPcoeff = fvc::interpolate
+            (
+                air.Cp()*theta*atmos.rhoR()
+               /(atmos.sumDensity()*air.R()*atmos.volGas())
+            );
+            
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(un)
@@ -88,7 +93,7 @@ int main(int argc, char *argv[])
                 // Temperature from thetae0
                 atmos.TfromThetae(T, thetae0, rt0);
 
-                air.rho() = atmos.rhoFromP(p,T);
+                rho = atmos.rhoFromP(p,T);
 
                 // Set water vapour to be saturated (with under-relaxation)
                 water.gas().rho() == (1-underRelax)*water.gas().rho()
@@ -101,6 +106,9 @@ int main(int argc, char *argv[])
                 // Update liquid water
                 water.liquid().v() = (rt0*air.rho() - water.gas().rho())
                             /water.liquid().rho();
+                            
+                // Update dry air density
+                air.rho() += rho - atmos.sumDensity();
             }
             
             // Theta for hydrostatic balance
@@ -186,14 +194,15 @@ int main(int argc, char *argv[])
             }
         }
     }
-    volScalarField thetaRho = theta/atmos.volAir();
+    volScalarField thetaRho = theta*atmos.rhoR()
+                            /(atmos.sumDensity()*air.R()*atmos.volGas());
     thetaRho*= thetaScale;
     // Iterate so that Exner, and water variables are in balance
     for(label it = 0; it < 50; it++)
     {
-        theta = thetaRho*atmos.volAir();
+        theta = thetaRho/atmos.rhoR()*atmos.sumDensity()*air.R()*atmos.volGas();
         T == theta*Exner;
-        air.rho() = atmos.rhoFromP(p,T);
+        rho = atmos.rhoFromP(p,T);
 
         // Set water vapour to be saturated
         water.gas().rho() == water.pSat(T)/(T*water.gas().R());
@@ -201,6 +210,8 @@ int main(int argc, char *argv[])
         // Update liquid water
         water.liquid().v() = (rt0*air.rho() - water.gas().rho())
                     /water.liquid().rho();
+        
+        air.rho() += rho - atmos.sumDensity();
     }
     
     theta.write();

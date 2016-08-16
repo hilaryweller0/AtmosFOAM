@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
+    const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -67,8 +68,12 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
+            #include "rhoEqn.H"
             #include "phaseEqns.H"
-            #include "rhoThetaEqn.H"
+            for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
+            {
+                #include "rhoThetaEqn.H"
+            }
             #include "exnerEqn.H"
             p = air.pFromExner(Exner);
         }

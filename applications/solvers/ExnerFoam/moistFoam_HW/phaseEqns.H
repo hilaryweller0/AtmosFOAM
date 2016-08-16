@@ -1,15 +1,8 @@
-// Advect the air
-air.dRhodt() = -fvc::div(U);
-air.rho() = air.rho().oldTime() + dt*
-(
-    (1-offCentre)*air.dRhodt().oldTime() + offCentre*air.dRhodt()
-);
-
-// Advect other, multi-phase phases
+// Advect multi-phase phases
 for(label ip = 1; ip < atmos.size(); ip++)
 {
     // The gaseous phase
-    atmos[ip].gas().dRhodt() = -fvc::div(un, atmos[ip].gas().rho());
+    atmos[ip].gas().dRhodt() = -fvc::div(U, atmos[ip].gas().rho()/rho);
 
     atmos[ip].gas().rho() = atmos[ip].gas().rho().oldTime() + dt*
     (
@@ -18,7 +11,7 @@ for(label ip = 1; ip < atmos.size(); ip++)
     );
 
     // The liquid phase
-    atmos[ip].liquid().dvdt() = -fvc::div(un, atmos[ip].liquid().v());
+    atmos[ip].liquid().dvdt() = -fvc::div(U, atmos[ip].liquid().v()/rho);
 
     atmos[ip].liquid().v() = atmos[ip].liquid().v().oldTime() + dt*
     (
@@ -27,7 +20,10 @@ for(label ip = 1; ip < atmos.size(); ip++)
     );
 }
 
-// Calculate the condensation for each species
+// Update the air density
+air.rho() += rho - atmos.sumDensity();
+
+// Calculate and apply the condensation for each species
 for(label ip = 0; ip < atmos.size(); ip++)
 {
     // Only apply condensation if the vapour pressure is close to ambient
@@ -43,4 +39,14 @@ for(label ip = 0; ip < atmos.size(); ip++)
                                     /atmos[ip].liquid().rho();
     }
 }
+
+//Info << "After advection air.rho goes from "
+//     << min(air.rho().internalField()).value() << " to "
+//     << max(air.rho().internalField()).value() << nl
+//     << "Water vapour density goes from "
+//     << min(water.gas().rho().internalField()).value() << " to "
+//     << max(water.gas().rho().internalField()).value() << nl
+//     << "Water liquid fraction goes from "
+//     << min(water.liquid().v().internalField()).value() << " to "
+//     << max(water.liquid().v().internalField()).value() << endl;
 

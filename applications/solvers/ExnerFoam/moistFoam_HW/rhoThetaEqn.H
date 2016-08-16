@@ -1,22 +1,23 @@
 // flux form rho theta equation
 
-// Advect thetaRho
-dRhoThetadt = -fvc::div(un, rhoTheta);
-rhoTheta = rhoTheta.oldTime() + dt*
+// Advect theta
+dRhoThetadt = -fvc::div(U, theta);
+theta = 
 (
-    (1-offCentre)*dRhoThetadt.oldTime() + offCentre*dRhoThetadt
-);
+    rho.oldTime()*theta.oldTime() + dt*
+    (
+        (1-offCentre)*dRhoThetadt.oldTime() + offCentre*dRhoThetadt
+    )
+)/rho;
 
 // Calculate and apply source term
-theta = rhoTheta/air.rho();
 T = theta*Exner;
-volScalarField heatSource("heatSource", rhoTheta*atmos.thetaSource(T, divu));
+volScalarField heatSource("heatSource", theta*atmos.thetaSource(T, divu));
 
-dRhoThetadt += heatSource;
-rhoTheta += dt*offCentre*heatSource;
+dRhoThetadt += rho*heatSource;
+theta += dt*offCentre*heatSource;
 
 // Update temperature
-theta = rhoTheta/air.rho();
 T = theta*Exner;
 
 //heatSource.write();

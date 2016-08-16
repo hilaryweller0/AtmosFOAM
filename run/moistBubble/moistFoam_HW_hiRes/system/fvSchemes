@@ -32,21 +32,21 @@ SIgravityWaves false;
 gradSchemes
 {
     default         none;
-    //linearUpwind    Gauss linear;
+    linearUpwind    Gauss linear;
 }
 
 divSchemes
 {
     default none;
-    div(U,(waterVapourRho|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,(waterLiquidFrac|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,theta)   Gauss cubicUpwindCPCFit 3;
-    div(U,u)   Gauss cubicUpwindCPCFit 3; //linearUpwind linearUpwind;
+    div(un,waterVapourRho)   Gauss linearUpwind linearUpwind;
+    div(un,waterLiquidFrac)   Gauss linearUpwind linearUpwind;
+    div(un,rhoTheta)   Gauss linearUpwind linearUpwind;
+    div(un,rhoU)   Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes
 {
-    default         Gauss midPoint uncorrected;
+    default         Gauss linear uncorrected;
 }
 
 interpolationSchemes
@@ -58,6 +58,7 @@ snGradSchemes
 {
     default         none;
     snGrad(Exner)   uncorrected;
+    snGrad(kappam)   uncorrected;
 }
 
 fluxRequired

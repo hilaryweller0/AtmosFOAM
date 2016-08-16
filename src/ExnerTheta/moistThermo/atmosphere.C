@@ -284,8 +284,8 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::ExnerFromTheta
             IOobject
             (
                 "Exner",
-                air.rho().time().timeName(),
-                air.rho().mesh()
+                theta.time().timeName(),
+                theta.mesh()
             ),
             pow(theta*rhoR()/(p0*volGas()), kappa/(1-kappa)),
             wordList(theta.boundaryField().size(), "hydrostaticExner")
@@ -311,7 +311,7 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromP
                 p.time().timeName(),
                 p.mesh()
             ),
-            p*volGas()/(rhoR()/air.rho()*T)
+            p*volGas()/(rhoR()/sumDensity()*T)
         )
     );
     return trho;
@@ -348,7 +348,7 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
     const dimensionedScalar& dt = S.mesh().time().deltaT();
     
     // Scale the divergence term
-    S *= rhoR_/rhoCv_ - air.R()/air.Cp()*rhoCp_/rhoCv_;
+    S *= rhoR_/rhoCv_ - air.kappa()*rhoCp_/rhoCv_;
     
     // Add the terms relating to condensation for each phase
     for(label ip = 0; ip < size(); ip++)

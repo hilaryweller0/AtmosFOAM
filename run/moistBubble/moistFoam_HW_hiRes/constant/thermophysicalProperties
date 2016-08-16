@@ -17,53 +17,43 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          fvSchemes;
+    object          thermophysicalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
+air
 {
-    default Euler;
-}
-offCentre 0.5;
-SIgravityWaves false;
-
-gradSchemes
-{
-    default         none;
-    //linearUpwind    Gauss linear;
-}
-
-divSchemes
-{
-    default none;
-    div(U,(waterVapourRho|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,(waterLiquidFrac|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,theta)   Gauss cubicUpwindCPCFit 3;
-    div(U,u)   Gauss cubicUpwindCPCFit 3; //linearUpwind linearUpwind;
+    gas air 1 28.9 1004 0 1.8e-05 0.7;
+    gasDict
+    {
+        T0 T0 [0 0  0 1 0 0 0] 273.15;
+        p0 p0 [1 -1 -2 0 0 0 0] 100000;
+    }
+    liquidDict
+    {
+        Cp Cp [0 2 -2 -1 0] 0;
+        rho rho [1 -3 0 0 0] 1;
+    }
+    Lv0 Lv0 [0 2 -2 0 0] 0;
+    pvs0 pvs0 [1 -1 -2 0 0] 3e8;
 }
 
-laplacianSchemes
+water
 {
-    default         Gauss midPoint uncorrected;
-}
-
-interpolationSchemes
-{
-    default        midPoint;
-}
-
-snGradSchemes
-{
-    default         none;
-    snGrad(Exner)   uncorrected;
-}
-
-fluxRequired
-{
-    default         no;
-    Exner;
+    gas waterVapour 1 18 1885 0 1.2e-5 0.162946065;
+    gasDict
+    {
+        T0 T0 [0 0  0 1 0 0 0] 273.15;
+        p0 p0 [1 -1 -2 0 0 0 0] 100000;
+    }
+    liquidDict
+    {
+        Cp Cp [0 2 -2 -1 0] 4186;
+        rho rho [1 -3 0 0 0] 1000;
+    }
+    Lv0 Lv0 [0 2 -2 0 0] 2.5e6;
+    pvs0 pvs0 [1 -1 -2 0 0] 611.3;
 }
 
 

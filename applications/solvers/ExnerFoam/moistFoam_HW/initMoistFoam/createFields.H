@@ -47,7 +47,11 @@ surfaceScalarField un
 surfaceScalarField gradPcoeff
 (
     "gradPcoeff",
-    fvc::interpolate(air.Cp()*theta/atmos.volAir())
+    fvc::interpolate
+    (
+        air.Cp()*theta*atmos.rhoR()
+       /(atmos.sumDensity()*air.R()*atmos.volGas())
+    )
 );
 
 label groundBC = -1;
@@ -84,6 +88,7 @@ Exner.boundaryFieldRef()[topBC] == topBCval;
 
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
+volScalarField rho("rho", atmos.sumDensity());
 
 // Scalaing to create the bubble
 volScalarField thetaScale("thetaScale", theta/theta);

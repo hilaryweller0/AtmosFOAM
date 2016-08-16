@@ -34,6 +34,7 @@ volScalarField theta
     ),
     mesh
 );
+theta.oldTime();
 
 Info << "Calculating, density, Exner, pressure and temperature from atmos and theta" << endl;
 
@@ -41,12 +42,15 @@ volScalarField Exner("Exner", atmos.ExnerFromTheta(theta));
 Exner.oldTime();
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
-volScalarField rhoTheta("rhoTheta", air.rho()*theta);
-rhoTheta.oldTime();
-volScalarField dRhoThetadt("dRhoThetadt", 0*rhoTheta/dt);
+volScalarField rho("rho", atmos.sumDensity());
+rho.oldTime();
+volScalarField dRhodt("dRhodt", 0*rho/dt);
+dRhodt.oldTime();
+
+volScalarField dRhoThetadt("dRhoThetadt", 0*rho*theta/dt);
 dRhoThetadt.oldTime();
 volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
-surfaceScalarField rhof("rhof", fvc::interpolate(air.rho()));
+surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
 Info << "Reading in velocity field" << endl;
 surfaceVectorField Uf
@@ -63,12 +67,16 @@ surfaceVectorField Uf
 );
 
 // Fields needed in the Helmholtz equation
-volScalarField Psi("Psi", air.rho()/Exner);
+volScalarField Psi("Psi", rho/Exner);
 Psi.oldTime();
 surfaceScalarField gradPcoeff
 (
     "gradPcoeff",
-    fvc::interpolate(air.Cp()*theta/atmos.volAir())
+    fvc::interpolate
+    (
+        air.Cp()*theta*atmos.rhoR()
+       /(atmos.sumDensity()*air.R()*atmos.volGas())
+    )
 );
 
 // fixed flux boundary conditions
@@ -90,10 +98,10 @@ forAll(mesh.boundaryMesh(), patchi)
     }
 }
 
-volVectorField rhoU
+volVectorField u
 (
-    IOobject("rhoU", runTime.timeName(), mesh),
-    air.rho()*H.reconstruct(Uf & mesh.Sf()),
+    IOobject("u", runTime.timeName(), mesh),
+    H.reconstruct(Uf & mesh.Sf()),
     uBCs
 );
 
@@ -138,7 +146,7 @@ surfaceScalarField Vu
 surfaceScalarField dVdt
 (
     IOobject("dVdt", runTime.timeName(), mesh),
-    -(H.delta() & (fvc::interpolate(fvc::div(un, rhoU))+2*rhof*(Omega^(Uf-Ug))))
+    -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
     +rhof*(gd - H.magd()*gradPcoeff*fvc::snGrad(Exner)),
      VuBCs
 );

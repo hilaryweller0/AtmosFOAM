@@ -1,43 +1,43 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
 {
     version     2.0;
     format      ascii;
-    class       dictionary;
-    object      fvSolution;
+    class       volScalarField;
+    location    "constant";
+    object      waterVapourRho;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-solvers
-{
-    Exner
-    {
-        solver PCG;
-        preconditioner DIC;
-        tolerance        1e-10;
-        relTol           0.001;
-    }
+dimensions      [1 -3 0 0 0 0 0];
 
-    ExnerFinal
+internalField   uniform 0;
+
+boundaryField
+{
+    ground
     {
-        $Exner;
-        tolerance        1e-10;
-        relTol           0;
+        type            zeroGradient;
+    }
+    top
+    {
+        type            zeroGradient;
+    }
+    left
+    {
+        type            zeroGradient;
+    }
+    right
+    {
+        type            zeroGradient;
     }
 }
 
-iterations
-{
-    nOuterCorrectors 2;
-    nCorrectors      2;
-    nNonOrthogonalCorrectors 0;
-    nThetaCorr       2;
-}
 
 // ************************************************************************* //
