@@ -19,7 +19,7 @@ phaseNames[1] = "water";
 atmosphere atmos(phaseNames, mesh, thermoDict);
 
 perfectGasPhase& air = atmos[0].gas();
-fluidSpecie& water = atmos[1];
+//fluidSpecie& water = atmos[1];
 
 Info << "Reading in theta" << endl;
 volScalarField theta

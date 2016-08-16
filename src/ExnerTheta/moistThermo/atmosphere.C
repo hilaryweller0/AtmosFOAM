@@ -317,6 +317,30 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromP
     return trho;
 }
 
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromExner
+(
+    const volScalarField& Exner,
+    const volScalarField& theta
+)
+{
+    perfectGasPhase& air = operator[](0).gas();
+    tmp<volScalarField> trho
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rho",
+                Exner.time().timeName(),
+                Exner.mesh()
+            ),
+            pow(Exner, (1-air.kappa())/air.kappa())*air.p0()*volGas()
+           /(theta*rhoR()/sumDensity())
+        )
+    );
+    return trho;
+}
+
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
 (
     const volScalarField& T,

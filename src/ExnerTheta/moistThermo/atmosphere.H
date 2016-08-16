@@ -104,6 +104,12 @@ public:
             const volScalarField& p,
             const volScalarField& T
         );
+        // rho from eqn of state
+        tmp<volScalarField> rhoFromExner
+        (
+            const volScalarField& Exner,
+            const volScalarField& theta
+        );
         // Source term in the theta equation (divided by rhoa theta)
         tmp<volScalarField> thetaSource
         (
