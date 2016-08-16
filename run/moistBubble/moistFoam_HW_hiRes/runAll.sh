@@ -18,16 +18,16 @@ initMoistFoam_HW
 moistFoam_HW >& log &
 tail -f log
 
-time=100
-for var in airVapourRho waterVapourRho waterLiquidFrac theta Exner T
+time=0
+for var in airVapourRho waterVapourRho waterLiquidFrac theta Exner
 do
     gmtFoam -time $time $var
     gv $time/$var.pdf &
 done
 
 # de-bugging
-time=2
-for var in pSat ppGas Exner T theta airVapourRho waterLiquidFrac waterVapourRho; do
+time=1
+for var in theta airVapourRho waterLiquidFrac waterVapourRho; do
     sumFields $time ${var}Diff $time $var 0 ${var} -scale1 -1
     gmtFoam -time $time ${var}Diff
     gv $time/${var}Diff.pdf &

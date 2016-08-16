@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
+        #include "compressibleCourantNo.H"
+
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
@@ -77,6 +79,8 @@ int main(int argc, char *argv[])
             #include "exnerEqn.H"
             p = air.pFromExner(Exner);
         }
+
+        #include "compressibleContinuityErrs.H"
 
        runTime.write();
 

@@ -34,9 +34,10 @@ solvers
 
 iterations
 {
-    nOuterCorrectors 4;
-    nCorrectors      1;
+    nOuterCorrectors 2;
+    nCorrectors      2;
     nNonOrthogonalCorrectors 0;
+    nThetaCorr       2;
 }
 
 // ************************************************************************* //

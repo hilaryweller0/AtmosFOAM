@@ -32,7 +32,7 @@ SIgravityWaves false;
 gradSchemes
 {
     default         none;
-    //linearUpwind    Gauss linear;
+    grad(theta)     Gauss linear;
 }
 
 divSchemes
