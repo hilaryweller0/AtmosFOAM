@@ -1,6 +1,5 @@
 #include "fvCFD.H"
-#include "polarPoint.H"
-#include "sphericalVector.H"
+#include "velocityField.H"
 
 int main(int argc, char *argv[])
 {
@@ -8,16 +7,43 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
-    Info << "Creating wind field Uf" << endl;
-    surfaceVectorField Uf
+    Info << "Creating flux field phi" << endl;
+    surfaceScalarField phi
     (
-        IOobject("Uf", runTime.timeName(), mesh),
+        IOobject("phi", runTime.timeName(), mesh),
         mesh,
-        dimensionedVector("Uf", dimVelocity, vector(0,0,0)),
+        dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0)),
        "fixedValue"
     );
 
-    IOdictionary velocityFieldDict
+volVectorField U
+(
+    IOobject
+    (
+        "U",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    fvc::reconstruct(phi)
+);
+
+// Read Uf if present, otherwise create and write (not used)
+surfaceVectorField Uf
+(
+    IOobject
+    (
+        "Uf",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    linearInterpolate(fvc::reconstruct(phi))
+);
+
+    IOdictionary dict
     (
         IOobject
         (
@@ -29,30 +55,20 @@ int main(int argc, char *argv[])
         )
     );
 
-    // section 2.3 doi:10.5194/gmd-5-887-2012
-    const dimensionedScalar radius("radius", dimLength, velocityFieldDict.lookupOrDefault<scalar>("radius", scalar(6.3712e6)));
-    dimensionedScalar timeScale = runTime.endTime();
+    autoPtr<velocityField> v(velocityField::New(dict));
 
     while (runTime.run())
     {
-        Info << "writing Uf for time " << runTime.timeName() << endl;
-        forAll(Uf, faceI)
-        {
-            const polarPoint& polarp = convertToPolar(mesh.Cf()[faceI]);
-            const scalar lat = polarp.lat();
-            const scalar lon = polarp.lon();
+        Info << "writing phi for time " << runTime.timeName() << endl;
 
-            dimensionedScalar t = runTime;
-            dimensionedScalar lonPrime = lon - 2 * M_PI * t / timeScale;
+        v->applyTo(phi);
+        phi.write();
 
-            dimensionedScalar u = 10*radius/timeScale * sqr(Foam::sin(lonPrime)) * Foam::sin(2*lat) * Foam::cos(M_PI*t/timeScale) + 2*M_PI*radius/timeScale * Foam::cos(lat);
-            dimensionedScalar v = 10*radius/timeScale * Foam::sin(2*lonPrime) * Foam::cos(lat) * Foam::cos(M_PI*t/timeScale);
+        U = fvc::reconstruct(phi);
+        Uf = linearInterpolate(U);
+        Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 
-            sphericalVector localWind(u.value(), v.value(), 0);
-            sphericalVector p(mesh.Cf()[faceI]);
-
-            Uf[faceI] = localWind.toCartesian(p);
-        }
+        U.write();
         Uf.write();
 
         runTime.loop();
