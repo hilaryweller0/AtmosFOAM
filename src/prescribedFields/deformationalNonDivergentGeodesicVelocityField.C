@@ -1,4 +1,4 @@
-#include "deformationalNonDivergentGeodesic.H"
+#include "deformationalNonDivergentGeodesicVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
 #include "polarPoint.H"
