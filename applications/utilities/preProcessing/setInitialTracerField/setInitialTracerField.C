@@ -1,4 +1,5 @@
 #include "fvCFD.H"
+#include "noAdvection.H"
 #include "tracerField.H"
 
 int main(int argc, char *argv[])
@@ -28,7 +29,8 @@ int main(int argc, char *argv[])
         )
     );
 
-    autoPtr<tracerField> tracer(tracerField::New(tracerDict));
+    const noAdvection velocityField;
+    autoPtr<tracerField> tracer(tracerField::New(tracerDict, velocityField));
 
     Info << "writing T for time " << runTime.timeName() << endl;
 

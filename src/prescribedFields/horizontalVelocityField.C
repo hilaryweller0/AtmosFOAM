@@ -36,3 +36,25 @@ vector horizontalVelocityField::streamfunctionAt
 
     return unitNormal * psi.value();
 }
+
+point horizontalVelocityField::initialPositionOf
+(
+    const point& p,
+    const Time& t
+) const
+{
+    const dimensionedScalar z("z", dimLength, p.z());
+
+    if (z.value() <= z1.value())
+    {
+        return p;
+    }
+    else if (z.value() <= z2.value())
+    {
+        return point(p.x() - (u0*Foam::sin(0.5*M_PI*(z-z1)/(z2-z1))*t).value(), p.y(), p.z());
+    }
+    else
+    {
+        return point(p.x() - u0.value()*t.value(), p.y(), p.z());
+    }
+}

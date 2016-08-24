@@ -1,5 +1,7 @@
 #include "fvCFD.H"
+#include "advectable.H"
 #include "tracerField.H"
+#include "velocityField.H"
 
 int main(int argc, char *argv[])
 {
@@ -28,7 +30,27 @@ int main(int argc, char *argv[])
         )
     );
 
-    autoPtr<tracerField> tracer(tracerField::New(tracerDict));
+    IOdictionary velocityDict
+    (
+        IOobject
+        (
+            "velocityFieldDict",
+            mesh.time().constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+
+    autoPtr<velocityField> velocityField(velocityField::New(velocityDict));
+    autoPtr<tracerField> tracer
+    (
+        tracerField::New
+        (
+            tracerDict,
+            dynamic_cast<advectable&>(velocityField())
+        )
+    );
 
     do
     {

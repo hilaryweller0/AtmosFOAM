@@ -2,7 +2,11 @@
 
 defineRunTimeSelectionTable(tracerField, dict);
 
-autoPtr<tracerField> tracerField::New(const dictionary& dict)
+autoPtr<tracerField> tracerField::New
+(
+    const dictionary& dict,
+    const advectable& velocityField
+)
 {
     const word tracerFieldType(dict.lookup("type"));
 
@@ -23,9 +27,14 @@ autoPtr<tracerField> tracerField::New(const dictionary& dict)
 
     return autoPtr<tracerField>
     (
-       cstrIter()(dict)
+       cstrIter()(dict, velocityField)
     );
 }
+
+tracerField::tracerField(const advectable& velocityField)
+:
+velocityField(velocityField)
+{}
 
 void tracerField::applyTo(volScalarField& T) const
 {
@@ -46,6 +55,6 @@ void tracerField::applyToInternalField(volScalarField& T) const
     forAll(T, cellI)
     {
         const point& p = mesh.C()[cellI];
-        T[cellI] = tracerAt(p, T.time());
+        T[cellI] = tracerAt(velocityField.initialPositionOf(p, T.time()), T.time());
     }
 }
