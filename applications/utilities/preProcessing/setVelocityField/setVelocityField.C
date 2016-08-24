@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
 
     autoPtr<velocityField> v(velocityField::New(dict));
 
-    while (runTime.run())
+    do
     {
         Info << "writing phi for time " << runTime.timeName() << endl;
 
@@ -73,6 +73,7 @@ int main(int argc, char *argv[])
 
         runTime.loop();
     }
+    while (runTime.loop());
 
     return EXIT_SUCCESS;
 }
