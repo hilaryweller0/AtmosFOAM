@@ -17,5 +17,22 @@ vector horizontalVelocityField::streamfunctionAt
         const Time& t
 ) const
 {
-    return vector(0,0,0);
+    const vector unitNormal(0, -1, 0);
+    const dimensionedScalar z("z", dimLength, p.z());
+
+    dimensionedScalar psi("psi", cmptMultiply(dimVelocity, dimLength), scalar(0));
+    if (z.value() <= z1.value())
+    {
+        // psi is zero
+    }
+    else if (z.value() <= z2.value())
+    {
+        psi = -0.5*u0*(z - z1 - (z2-z1)/M_PI*Foam::sin(M_PI*(z-z1)/(z2-z1)));
+    }
+    else 
+    {
+        psi = -0.5*u0*(2*z - z2 - z1);
+    }
+
+    return unitNormal * psi.value();
 }
