@@ -1,6 +1,5 @@
 #include "fvCFD.H"
 #include "tracerField.H"
-#include "velocityField.H"
 
 int main(int argc, char *argv[])
 {
@@ -8,12 +7,12 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
-    Info << "Creating tracer field T" << endl;
+    Info << "Creating tracer field T_analytic" << endl;
     volScalarField T
     (
-        IOobject("T", runTime.timeName(), mesh),
+        IOobject("T_analytic", runTime.timeName(), mesh),
         mesh,
-        dimensionedScalar("T", dimless, scalar(0)),
+        dimensionedScalar("T_analytic", dimless, scalar(0)),
        "fixedValue"
     );
 
@@ -29,29 +28,14 @@ int main(int argc, char *argv[])
         )
     );
 
-    IOdictionary velocityDict
-    (
-        IOobject
-        (
-            "velocityFieldDict",
-            mesh.time().constant(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-        )
-    );
-
     autoPtr<tracerField> tracer(tracerField::New(tracerDict));
-//    autoPtr<velocityField> velocity(velocityField::New(velocityDict));
 
     do
     {
-        Info << "writing T for time " << runTime.timeName() << endl;
-
+        Info << "writing T_analytic for time " << runTime.timeName() << endl;
         tracer->applyTo(T);
         T.write();
-    }
-    while (runTime.loop());
+    } while (runTime.loop());
 
     return EXIT_SUCCESS;
 }
