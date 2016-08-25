@@ -11,8 +11,8 @@ class schaerCosMountain final : public mountain
     dimensionedScalar heightAt(const point& p) const;
 
     private:
+    const dimensionedScalar h0;
     const scalar a;
-    const scalar h0;
     const scalar lambda;
 };
 
