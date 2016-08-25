@@ -15,4 +15,4 @@ wmake $makeType ExnerTheta
 wmake $makeType finiteVolume
 wmake $makeType ghostMesh
 wmake $makeType orography
-
+wmake $makeType prescribedFields
