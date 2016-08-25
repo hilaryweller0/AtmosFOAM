@@ -70,8 +70,6 @@ int main(int argc, char *argv[])
 
         U.write();
         Uf.write();
-
-        runTime.loop();
     }
     while (runTime.loop());
 
