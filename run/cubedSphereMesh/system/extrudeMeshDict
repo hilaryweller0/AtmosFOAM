@@ -1,0 +1,60 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      extrudeMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// What to extrude:
+//      patch   : from patch of another case ('sourceCase')
+//      mesh    : as above but with original case included
+//      surface : from externally read surface
+
+constructFrom patch;
+
+// If construct from patch/mesh:
+sourceCase "cubeMesh";
+sourcePatches (otherSide);
+
+exposedPatchName "originalPatch";
+
+// Flip surface normals before usage. Valid only for extrude from surface or
+// patch.
+flipNormals false;
+
+//- Extrudes into sphere around (0 0 0)
+extrudeModel        linearRadial;
+//extrudeModel        radial;
+
+nLayers             1;
+expansionRatio      1.0;
+
+linearRadialCoeffs
+{
+    R        6372320;
+    Rsurface 6370220;
+}
+//radialCoeffs
+//{
+//    // Radii specified through interpolation table
+//    R               table ((0 6370220)(1 6372320));
+//}
+
+// Do front and back need to be merged? Usually only makes sense for 360
+// degree wedges.
+mergeFaces false;
+
+// Merge small edges. Fraction of bounding box.
+mergeTol 0;
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
