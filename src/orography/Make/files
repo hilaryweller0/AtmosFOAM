@@ -1,11 +1,4 @@
-BTF.C
-VelocityProfile.C
-BtfVelocityProfile.C
-earthMountain.C
-Mountain.C
-SchaerCosMountain.C
-SchaerExpMountain.C
-WitchOfAgnesi2DMountain.C
-WitchOfAgnesi3DMountain.C
+mountain.C
+schaerCosMountain.C
 
-LIB = $(FOAM_USER_LIBBIN)/libOrography
+LIB = $(FOAM_USER_LIBBIN)/liborography
