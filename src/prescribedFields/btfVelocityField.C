@@ -25,7 +25,7 @@ vector btfVelocityField::streamfunctionAt
     else
     {
         dimensionedScalar h = m->heightAt(p);
-        return unitNormal * (-u0 * (H * (p.z() - h) / (H - h))).value();
+        return unitNormal * (-u0 * (H * (p.z() - h.value()) / (H - h))).value();
     }
 }
 

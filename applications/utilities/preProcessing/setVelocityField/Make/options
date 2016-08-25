@@ -10,4 +10,5 @@ EXE_LIBS = \
     -lmeshTools \
     -lfiniteVolume \
     -lprescribedFields \
-    -lgeometry
+    -lgeometry \
+    -lorography

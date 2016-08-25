@@ -10,5 +10,5 @@ EXE_LIBS = \
     -lfiniteVolume \
     -lmeshTools \
     -lgeometry \
-    -lOrography
+    -lorography
 
