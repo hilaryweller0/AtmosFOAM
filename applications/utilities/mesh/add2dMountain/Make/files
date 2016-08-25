@@ -1,3 +1,0 @@
-add2dMountain.C
-
-EXE = $(FOAM_USER_APPBIN)/add2dMountain
