@@ -1,4 +1,5 @@
 mountain.C
 schaerCosMountain.C
+terrainFollowingTransform.C
 
 LIB = $(FOAM_USER_LIBBIN)/liborography
