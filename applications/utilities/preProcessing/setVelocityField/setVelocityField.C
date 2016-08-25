@@ -1,46 +1,47 @@
-/*---------------------------------------------------------------------------*\
-  =========                 |
-  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
-     \\/     M anipulation  |
--------------------------------------------------------------------------------
-License
-    This file is part of OpenFOAM.
-
-    OpenFOAM is free software: you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
-
-Application
-    setVelocityField
-
-Description
-    Sets the horizontal velocity field for the 
-    Schar et al Mon. Wea. Rev., 130(10):2459-2480, 2002
-    horizontal advection over orography test case
-
-\*---------------------------------------------------------------------------*/
-
 #include "fvCFD.H"
-#include "VelocityField.H"
+#include "velocityField.H"
 
 int main(int argc, char *argv[])
 {
-#   include "setRootCase.H"
-#   include "createTime.H"
-#   include "createMesh.H"
-#   include "createFields.H"
-    Info << "Reading velocityFieldDict" << endl;
+    #include "setRootCase.H"
+    #include "createTime.H"
+    #include "createMesh.H"
+
+    Info << "Creating flux field phi" << endl;
+    surfaceScalarField phi
+    (
+        IOobject("phi", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0)),
+       "fixedValue"
+    );
+
+    volVectorField U
+    (
+        IOobject
+        (
+            "U",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        fvc::reconstruct(phi)
+    );
+
+    // Read Uf if present, otherwise create and write (not used)
+    surfaceVectorField Uf
+    (
+        IOobject
+        (
+            "Uf",
+            runTime.timeName(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::AUTO_WRITE
+        ),
+        linearInterpolate(fvc::reconstruct(phi))
+    );
 
     IOdictionary dict
     (
@@ -49,32 +50,32 @@ int main(int argc, char *argv[])
             "velocityFieldDict",
             mesh.time().constant(),
             mesh,
-            IOobject::MUST_READ,
+            IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE
         )
     );
 
-    autoPtr<VelocityProfile> velocityProfile(VelocityProfile::New(dict));
-    const VelocityField velocityField(velocityProfile);
+    autoPtr<velocityField> v(velocityField::New(dict));
 
-    Info << "Creating velocity field Uf" << endl;
-    velocityField.applyTo(Uf);
-    Uf.write();
+    do
+    {
+        Info << "writing phi for time " << runTime.timeName() << endl;
 
-    Info << "Creating flux field, phi" << endl;
-    velocityField.applyTo(phi);
-    phi.write();
+        v->applyTo(phi);
+        phi.write();
 
-    Info << "Calculating the divergence field to check that it is zero" << endl;
-    volScalarField divu("divu", fvc::div(phi));
-    divu.write();
+        U = fvc::reconstruct(phi);
+        Uf = linearInterpolate(U);
+        Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 
-    Info << "Correcting Uf based on the flux" << endl;
-    Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
-    Uf.write();
+        U.write();
+        Uf.write();
 
-    Info << "Creating velocity field U" << endl;
-    velocityField.applyTo(U);
-    U.write();
+        runTime.loop();
+    }
+    while (runTime.loop());
+
+    return EXIT_SUCCESS;
 }
+
 

@@ -1,6 +1,5 @@
 #include "fvCFD.H"
-#include "Mountain.H"
-#include "BTF.H"
+#include "terrainFollowingTransform.H"
 
 int main(int argc, char *argv[])
 {
@@ -26,11 +25,11 @@ int main(int argc, char *argv[])
         mesh.points()
     );
 
-    autoPtr<Mountain> mountain(Mountain::New(dict));
-    BTF btf(mountain, dict);
+    autoPtr<terrainFollowingTransform> transform(terrainFollowingTransform::New(dict));
+
     forAll(newPoints, pointIdx)
     {
-        newPoints[pointIdx] = btf.computationalToPhysical(newPoints[pointIdx]);
+        newPoints[pointIdx] = transform->computationalToPhysical(newPoints[pointIdx]);
     }
 
     newPoints.write();

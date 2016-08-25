@@ -5,6 +5,8 @@
 *.dll
 *.exe
 *.o
+*.s
+*.ii
 *.so
 *.pyc
 
