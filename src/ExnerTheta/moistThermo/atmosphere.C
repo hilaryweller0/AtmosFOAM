@@ -385,7 +385,7 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
             S += phase.condensation()/dt/rhoCv_*
              (
                  air.Cv()*phase.latentHeat(T)/(air.Cp()*T)
-               - phase.gas().R()*(1 - air.R()/air.Cp()*rhoCp_/rhoR_)
+               - phase.gas().R()*(1 - air.kappa()*rhoCp_/rhoR_)
              );
          }
     }
