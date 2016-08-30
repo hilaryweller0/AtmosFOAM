@@ -61,7 +61,12 @@ int main(int argc, char *argv[])
     );
 
     bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
-    autoPtr<velocityField> v(velocityField::New(dict.subDict("velocity")));
+    const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
+    autoPtr<velocityField> v;
+    if (velocityDict.size() > 0)
+    {
+        v = velocityField::New(dict.subOrEmptyDict("velocity"));
+    }
     
     // go backwards in time by one time step to initialise leap-frog
     T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
