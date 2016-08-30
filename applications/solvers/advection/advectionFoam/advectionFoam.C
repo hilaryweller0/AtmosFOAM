@@ -32,6 +32,7 @@ Description
 
 #include "fvCFD.H"
 #include "OFstream.H"
+#include "velocityField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -47,7 +48,20 @@ int main(int argc, char *argv[])
 
     Info<< "\nCalculating advection\n" << endl;
 
-    bool timeVaryingWind = args.options().found("timeVaryingWind");
+    IOdictionary dict
+    (
+        IOobject
+        (
+            "advectionDict",
+            mesh.time().constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+
+    bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
+    autoPtr<velocityField> v(velocityField::New(dict.subDict("velocity")));
     
     // go backwards in time by one time step to initialise leap-frog
     T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
@@ -81,46 +95,11 @@ int main(int argc, char *argv[])
 
         if (timeVaryingWind)
         {
-            U = volVectorField
-            (
-                IOobject
-                (
-                    "U",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                mesh,
-                dimensionedVector("U", dimVelocity, vector::zero),
-                "zeroGradient"
-            );
+            v->applyTo(phi);
 
-            Uf = surfaceVectorField
-            (
-                IOobject
-                (
-                    "Uf",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                linearInterpolate(U)
-            );
-
-            phi = surfaceScalarField
-            (
-                IOobject
-                (
-                    "phi",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                Uf & mesh.Sf()
-            );
+            U = fvc::reconstruct(phi);
+            Uf = linearInterpolate(U);
+            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
     }
 
