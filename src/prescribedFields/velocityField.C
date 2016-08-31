@@ -58,7 +58,7 @@ void velocityField::applyToBoundary(surfaceScalarField& phi, const label patchI)
     forAll(bf, faceI)
     {
         const face& f = mesh.boundaryMesh()[patchI][faceI];
-        phi[faceI] = faceFlux(f, mesh, phi.time());
+        bf[faceI] = faceFlux(f, mesh, phi.time());
     }
 }
 
