@@ -8,7 +8,7 @@ btfVelocityField::btfVelocityField(const dictionary& dict)
 :
 u0("speed", dimVelocity, dict.lookupOrDefault<scalar>("speed", scalar(10))),
 H("domainHeight", dimLength, readScalar(dict.lookup("domainHeight"))),
-m(mountain::New(dict.subDict("mountain")))
+m(autoPtr<crossableMountain>(dynamic_cast<crossableMountain*>(mountain::New(dict.subDict("mountain")).ptr())))
 {};
 
 vector btfVelocityField::streamfunctionAt
@@ -35,5 +35,7 @@ point btfVelocityField::initialPositionOf
     const Time& t
 ) const
 {
+    // https://github.com/AtmosFOAM/AtmosFOAM/blob/b121ace78a490b599259588ef8376a2fe734906b/src/orography/BtfVelocityProfile.C
+    // https://github.com/AtmosFOAM/AtmosFOAM/blob/b121ace78a490b599259588ef8376a2fe734906b/src/orography/SchaerCosMountain.C
     return p;
 }

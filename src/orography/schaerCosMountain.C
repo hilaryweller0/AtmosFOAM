@@ -20,3 +20,12 @@ dimensionedScalar schaerCosMountain::heightAt(const point& p) const
     }
     return h;
 }
+
+dimensionedScalar schaerCosMountain::timeToCross
+(
+    const dimensionedScalar u0,
+    const dimensionedScalar H
+) const
+{
+    return dimensionedScalar("timeToCross", dimTime, scalar(0));
+}

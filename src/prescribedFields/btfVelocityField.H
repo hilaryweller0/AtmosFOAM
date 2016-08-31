@@ -2,7 +2,7 @@
 #define BTF_VELOCITY_FIELD_H
 
 #include "advectable.H"
-#include "mountain.H"
+#include "crossableMountain.H"
 #include "velocityField.H"
 
 class btfVelocityField final : public velocityField, public advectable
@@ -16,7 +16,7 @@ class btfVelocityField final : public velocityField, public advectable
     point initialPositionOf(const point& p, const Time& t) const;
     const dimensionedScalar u0;
     const dimensionedScalar H;
-    const autoPtr<mountain> m;
+    const autoPtr<crossableMountain> m;
 };
 
 #endif
