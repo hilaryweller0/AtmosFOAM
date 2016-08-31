@@ -1,5 +1,6 @@
 btfVelocityField.C
 deformationalNonDivergentGeodesicVelocityField.C
+gaussianTracerField.C
 geodesicGaussiansTracerField.C
 horizontalVelocityField.C
 noAdvection.C
