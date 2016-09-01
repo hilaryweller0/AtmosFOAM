@@ -3,6 +3,7 @@ deformationalNonDivergentGeodesicVelocityField.C
 gaussianTracerField.C
 geodesicCosBellsTracerField.C
 geodesicGaussiansTracerField.C
+geodesicSolidBodyVelocityField.C
 horizontalVelocityField.C
 noAdvection.C
 schaerRadialTracerField.C
