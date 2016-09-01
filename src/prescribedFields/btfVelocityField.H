@@ -3,9 +3,9 @@
 
 #include "advectable.H"
 #include "crossableMountain.H"
-#include "velocityField.H"
+#include "nonDivergentVelocityField.H"
 
-class btfVelocityField final : public velocityField, public advectable
+class btfVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
     TypeName("btf");

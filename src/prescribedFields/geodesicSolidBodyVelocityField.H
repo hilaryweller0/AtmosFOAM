@@ -1,9 +1,9 @@
 #ifndef GEODESIC_SOLID_BODY_VELOCITY_FIELD_H
 #define GEODESIC_SOLID_BODY_VELOCITY_FIELD_H
 
-#include "velocityField.H"
+#include "nonDivergentVelocityField.H"
 
-class geodesicSolidBodyVelocityField final : public velocityField
+class geodesicSolidBodyVelocityField final : public nonDivergentVelocityField
 {
     public:
     TypeName("geodesicSolidBody");

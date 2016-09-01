@@ -1,9 +1,9 @@
 #ifndef DEFORMATIONAL_NON_DIVERGENT_GEODESIC_VELOCITY_FIELD_H
 #define DEFORMATIONAL_NON_DIVERGENT_GEODESIC_VELOCITY_FIELD_H
 
-#include "velocityField.H"
+#include "nonDivergentVelocityField.H"
 
-class deformationalNonDivergentGeodesicVelocityField final : public velocityField
+class deformationalNonDivergentGeodesicVelocityField final : public nonDivergentVelocityField
 {
     public:
     TypeName("deformationalNonDivergentGeodesic");

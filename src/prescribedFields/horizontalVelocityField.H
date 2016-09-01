@@ -2,9 +2,9 @@
 #define HORIZONTAL_VELOCITY_FIELD_H
 
 #include "advectable.H"
-#include "velocityField.H"
+#include "nonDivergentVelocityField.H"
 
-class horizontalVelocityField final : public velocityField, public advectable
+class horizontalVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
     TypeName("horizontal");

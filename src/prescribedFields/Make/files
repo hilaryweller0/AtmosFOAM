@@ -6,6 +6,7 @@ geodesicGaussiansTracerField.C
 geodesicSolidBodyVelocityField.C
 horizontalVelocityField.C
 noAdvection.C
+nonDivergentVelocityField.C
 schaerRadialTracerField.C
 tracerField.C
 velocityField.C

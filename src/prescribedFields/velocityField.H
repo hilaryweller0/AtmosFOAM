@@ -23,15 +23,14 @@ class velocityField
     static autoPtr<velocityField> New(const dictionary& dict);
     void applyTo(surfaceScalarField& phi) const;
     virtual ~velocityField() {};
-    
+
     private:
-    void applyToInternalField(surfaceScalarField& phi) const;
-    void applyToBoundary(surfaceScalarField& phi, const label patchI) const;
-    scalar faceFlux(const face& f, const fvMesh& mesh, const Time& t) const;
-    virtual vector streamfunctionAt(const point& p, const Time& t) const = 0;
+    virtual void applyToInternalField(surfaceScalarField& phi) const = 0;
+    virtual void applyToBoundary(surfaceScalarField& phi, const label patchI) const = 0;
 };
 
 }
 
 #endif
+
 
