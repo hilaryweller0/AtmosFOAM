@@ -45,8 +45,7 @@ point btfVelocityField::initialPositionOf
     }
     else if (t.value() >= (t1 + t2).value())
     {
-        dimensionedScalar t3 = t - t2 - t1;
-        return point((x - (t1 + t3) * u0 - (m->end() - m->start())).value(), p.y(), p.z());
+        return point((x - (m->end() - m->start()) - u0 * (t - t2)).value(), p.y(), p.z());
     }
     else
     {

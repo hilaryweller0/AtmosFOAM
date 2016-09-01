@@ -23,7 +23,7 @@ dimensionedScalar schaerCosMountain::heightAt(const point& p) const
 
 dimensionedScalar schaerCosMountain::start() const
 {
-    return -dimensionedScalar("start", dimLength, a);
+    return dimensionedScalar("start", dimLength, -a);
 }
 
 dimensionedScalar schaerCosMountain::end() const
