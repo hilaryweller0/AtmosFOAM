@@ -12,6 +12,8 @@ class schaerCosMountain final : public crossableMountain
     TypeName("schaerCos");
     schaerCosMountain(const dictionary& dict);
     dimensionedScalar heightAt(const point& p) const;
+    dimensionedScalar start() const;
+    dimensionedScalar end() const;
     dimensionedScalar timeToCross(const dimensionedScalar u0, const dimensionedScalar H) const;
 
     private:

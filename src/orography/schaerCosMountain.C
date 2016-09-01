@@ -21,11 +21,29 @@ dimensionedScalar schaerCosMountain::heightAt(const point& p) const
     return h;
 }
 
+dimensionedScalar schaerCosMountain::start() const
+{
+    return -dimensionedScalar("start", dimLength, a);
+}
+
+dimensionedScalar schaerCosMountain::end() const
+{
+    return dimensionedScalar("end", dimLength, a);
+}
+
 dimensionedScalar schaerCosMountain::timeToCross
 (
     const dimensionedScalar u0,
     const dimensionedScalar H
 ) const
 {
-    return dimensionedScalar("timeToCross", dimTime, scalar(0));
+	const dimensionedScalar x("x", dimLength, scalar(2.0 * a));
+    const scalar alpha = M_PI/lambda;
+    const scalar beta = M_PI/(2.0 * a);
+
+    const dimensionedScalar a("a", dimLength, 0.25*(Foam::sin(2.0 * (alpha + beta) * x.value()) / (alpha + beta) +
+         Foam::sin(2.0 * (alpha - beta) * x.value()) / (alpha - beta)));
+    const dimensionedScalar b("b", dimLength, 0.5 * (Foam::sin(2.0*alpha*x.value())/alpha + Foam::sin(2.0*beta*x.value())/beta));
+
+    return x / u0 - h0/(4.0 * u0 * H) * (x + a + b);
 }

@@ -10,6 +10,8 @@ namespace Foam
 class crossableMountain : public mountain
 {
     public:
+    virtual dimensionedScalar start() const = 0;
+    virtual dimensionedScalar end() const = 0;
     virtual dimensionedScalar timeToCross
     (
         const dimensionedScalar u0,

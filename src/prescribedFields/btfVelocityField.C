@@ -35,7 +35,21 @@ point btfVelocityField::initialPositionOf
     const Time& t
 ) const
 {
-    // https://github.com/AtmosFOAM/AtmosFOAM/blob/b121ace78a490b599259588ef8376a2fe734906b/src/orography/BtfVelocityProfile.C
-    // https://github.com/AtmosFOAM/AtmosFOAM/blob/b121ace78a490b599259588ef8376a2fe734906b/src/orography/SchaerCosMountain.C
-    return p;
+    dimensionedScalar x("x", dimLength, p.x());
+    dimensionedScalar t1 = (m->start() - x) / u0;
+    dimensionedScalar t2 = m->timeToCross(u0, H);
+
+    if (t.value() <= t1.value())
+    {
+        return point((x - t * u0).value(), p.y(), p.z());
+    }
+    else if (t.value() >= (t1 + t2).value())
+    {
+        dimensionedScalar t3 = t - t2 - t1;
+        return point((x - (t1 + t3) * u0 - (m->end() - m->start())).value(), p.y(), p.z());
+    }
+    else
+    {
+        return p;
+    }
 }
