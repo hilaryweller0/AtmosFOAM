@@ -9,7 +9,8 @@ addToRunTimeSelectionTable(velocityField, geodesicSolidBodyVelocityField, dict);
 geodesicSolidBodyVelocityField::geodesicSolidBodyVelocityField(const dictionary& dict)
 :
 radius("radius", dimLength, dict.lookupOrDefault<scalar>("radius", scalar(6.3712e6))),
-alpha(dict.lookupOrDefault<scalar>("tilt", scalar(0)))
+alpha(dict.lookupOrDefault<scalar>("tilt", scalar(0))),
+endTime("endTime", dimTime, dict.lookupOrDefault<scalar>("endTime", scalar(-1)))
 {};
 
 vector geodesicSolidBodyVelocityField::streamfunctionAt
@@ -18,8 +19,9 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
         const Time& t
 ) const
 {
+    const dimensionedScalar T = (endTime.value() == -1 ) ? t.endTime() : endTime;
     const scalar alpha = 0;
-    const scalar u0 = 2 * M_PI * radius.value() / t.endTime().value();
+    const scalar u0 = 2 * M_PI * radius.value() / T.value();
     const polarPoint& polarp = convertToPolar(p);
     const scalar lat = polarp.lat();
     const scalar lon = polarp.lon();
