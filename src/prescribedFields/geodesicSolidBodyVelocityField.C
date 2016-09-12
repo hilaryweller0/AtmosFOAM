@@ -20,7 +20,6 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
 ) const
 {
     const dimensionedScalar T = (endTime.value() == -1 ) ? t.endTime() : endTime;
-    const scalar alpha = 0;
     const scalar u0 = 2 * M_PI * radius.value() / T.value();
     const polarPoint& polarp = convertToPolar(p);
     const scalar lat = polarp.lat();
