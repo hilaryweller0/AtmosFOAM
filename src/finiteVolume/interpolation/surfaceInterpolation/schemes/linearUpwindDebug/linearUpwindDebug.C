@@ -55,7 +55,7 @@ Foam::linearUpwindDebug<Type>::correction
         )
     );
 
-    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr();
+    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr.ref();
 
     const surfaceScalarField& faceFlux = this->faceFlux_;
 
@@ -103,8 +103,7 @@ Foam::linearUpwindDebug<Type>::correction
     }
 
 
-    typename GeometricField<Type, fvsPatchField, surfaceMesh>::
-        GeometricBoundaryField& bSfCorr = sfCorr.boundaryField();
+    typename GeometricField<Type, fvsPatchField, surfaceMesh>::Boundary& bSfCorr = sfCorr.boundaryFieldRef();
 
     forAll(bSfCorr, patchi)
     {
