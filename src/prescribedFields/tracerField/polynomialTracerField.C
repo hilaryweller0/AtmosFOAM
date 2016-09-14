@@ -19,15 +19,15 @@ scalar polynomialTracerField::tracerAt
         const Time& t
 ) const
 {
-    const scalar a_1 = 150;
-    const scalar a_2 = 1e-4;
-    const scalar a_3 = 1e-4;
-    const scalar a_4 = 1e-4;
-    const scalar a_5 = -1e-4;
-    const scalar a_6 = 1e-4;
-    const scalar a_7 = -1e-10;
-    const scalar a_8 = 1e-8;
-    const scalar a_9 = -1e-7;
+    const scalar a_1 = 100;
+    const scalar a_2 = 1e-5;
+    const scalar a_3 = 1e-5;
+    const scalar a_4 = -1e-8;
+    const scalar a_5 = -1e-6;
+    const scalar a_6 = 1e-7;
+    const scalar a_7 = 1e-12;
+    const scalar a_8 = 1e-11;
+    const scalar a_9 = -1e-11;
 
     scalar x = p.x();
     scalar y = p.z();
