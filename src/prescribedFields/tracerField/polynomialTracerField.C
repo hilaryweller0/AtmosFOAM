@@ -26,8 +26,8 @@ scalar polynomialTracerField::tracerAt
     const scalar a_5 = -1e-4;
     const scalar a_6 = 1e-4;
     const scalar a_7 = -1e-10;
-    const scalar a_8 = 0;
-    const scalar a_9 = 0;
+    const scalar a_8 = 1e-8;
+    const scalar a_9 = -1e-7;
 
     scalar x = p.x();
     scalar y = p.z();
