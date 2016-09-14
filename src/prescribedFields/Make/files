@@ -1,8 +1,9 @@
+noAdvection.C
 tracerField/gaussianTracerField.C
 tracerField/geodesicCosBellsTracerField.C
 tracerField/geodesicGaussiansTracerField.C
-noAdvection.C
 tracerField/schaerRadialTracerField.C
+tracerField/polynomialTracerField.C
 tracerField/tracerField.C
 velocityField/btfVelocityField.C
 velocityField/deformationalNonDivergentGeodesicVelocityField.C
