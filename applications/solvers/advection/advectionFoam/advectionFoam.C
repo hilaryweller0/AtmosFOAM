@@ -39,6 +39,7 @@ Description
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
+    Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     #include "setRootCase.H"
     #include "createTime.H"
@@ -80,6 +81,14 @@ int main(int argc, char *argv[])
         if (args.options().found("leapfrog"))
         {
             T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
+        }
+        else if (args.options().found("rk4"))
+        {
+            k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
+            k2 = -fvc::div(phi, T.oldTime() + dt/2 * k1, "div(phi,T)");
+            k3 = -fvc::div(phi, T.oldTime() + dt/2 * k2, "div(phi,T)");
+            k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
+            T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
         }
         else
         {
