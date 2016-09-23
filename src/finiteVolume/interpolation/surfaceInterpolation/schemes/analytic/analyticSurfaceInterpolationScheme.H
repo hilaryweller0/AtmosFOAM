@@ -78,11 +78,32 @@ public:
 		faceFlux_(faceFlux)
 	{}
 
+    virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
+    interpolate(const GeometricField<Type, fvPatchField, volMesh>& vf) const
+    {
+        tmp<GeometricField<Type, fvsPatchField, surfaceMesh> > tsf
+        (
+            new GeometricField<Type, fvsPatchField, surfaceMesh>
+            (
+                IOobject("interpolate(" + vf.name() + ")", surfaceInterpolationScheme<Type>::mesh().time().timeName(), surfaceInterpolationScheme<Type>::mesh()),
+                surfaceInterpolationScheme<Type>::mesh(),
+                vf.dimensions()
+            )
+        );
+
+        GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsf.ref();
+
+        sf = pTraits<Type>::zero;
+
+        return tsf;
+    }
+
     virtual tmp<surfaceScalarField> weights
     (
-        const GeometricField<Type, fvPatchField, volMesh>&
+        const GeometricField<Type, fvPatchField, volMesh>& vf
     ) const
     {
+
         return pos(this->faceFlux_);
     }
 };
