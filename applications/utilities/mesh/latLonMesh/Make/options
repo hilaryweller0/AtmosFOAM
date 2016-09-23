@@ -1,0 +1,13 @@
+EXE_INC = \
+    -ggdb3 -O0 -DFULLDEBUG \
+    -I$(FOAM_UTILITIES)/mesh/generation/extrudeMesh/extrudedMesh \
+    -I$(FOAM_UTILITIES)/mesh/generation/extrudeMesh/extrudeModel/lnInclude \
+    -I$(FOAM_UTILITIES)/mesh/generation/extrudeMesh/extrudeModel/linearNormal \
+    -I$(FOAM_SRC)/meshTools/lnInclude \
+    -I../sphPolarMesh \
+    -IpolarPatch
+
+EXE_LIBS = \
+    -lmeshTools \
+    -lextrudeModel
+
