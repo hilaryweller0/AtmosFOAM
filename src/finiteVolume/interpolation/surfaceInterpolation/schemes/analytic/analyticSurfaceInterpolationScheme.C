@@ -3,5 +3,5 @@
 
 namespace Foam
 {
-    makeSurfaceInterpolationScheme(analyticSurfaceInterpolationScheme)
+    makeSurfaceInterpolationTypeScheme(analyticSurfaceInterpolationScheme, scalar)
 }
