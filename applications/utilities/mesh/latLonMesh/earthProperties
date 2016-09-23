@@ -1,0 +1,49 @@
+// The FOAM Project // File: earthProperties
+/*
+-------------------------------------------------------------------------------
+ =========         | dictionary
+ \\      /         |
+  \\    /          | Name:   earthProperties
+   \\  /           | Family: FoamX configuration file
+    \\/            |
+    F ield         | FOAM version: 2.2
+    O peration     | Product of Nabla Ltd.
+    A and          |
+    M anipulation  | Email: Enquiries@Nabla.co.uk
+-------------------------------------------------------------------------------
+*/
+// FoamX Case Dictionary.
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "/home/dm2/hilary/foam/hilary2.3/run/cosineBell";
+    case            "WilliamsonAlpha0";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          earthProperties;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Geometry
+//earthRadius  earthRadius [0 1 0 0 0]   6.371220e6;
+earthRadius  earthRadius [0 1 0 0 0]   6.370220e6;
+atmosHeight  atmosHeight [0 1 0 0 0]   2e3;
+nLayers 1;
+linearRadialCoeffs{R 6.372220e6;};
+
+// Background flow
+h1          h1   [0 1 0 0 0]      2998.115;
+rotationPeriod  rotationPeriod  [0 0 1 0 0]   12;
+alpha 45;
+
+// Earth properties
+Omega        Omega       [0 0 -1 0 0]  (0 0 7.292e-5);
+g            g           [0 1 -2 0 0]  9.80616;
+
+// ************************************************************************* //
