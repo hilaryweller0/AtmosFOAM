@@ -1,0 +1,3 @@
+meshes/primitiveMesh/primitiveMeshCellCentresAndVols.C
+
+LIB = $(FOAM_LIBBIN)/libOpenFOAMAtmos
