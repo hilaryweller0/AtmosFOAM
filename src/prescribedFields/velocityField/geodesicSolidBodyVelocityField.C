@@ -30,3 +30,22 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
     return p/mag(p) * radius.value() * psi;
 }
 
+point geodesicSolidBodyVelocityField::initialPositionOf
+(
+    const point& p,
+    const Time& t
+) const
+{
+    // assume alpha = 0
+    
+    const dimensionedScalar T = (endTime.value() == -1 ) ? t.endTime() : endTime;
+    const scalar u0 = 2 * M_PI * radius.value() / T.value();
+    const polarPoint& polarp = convertToPolar(p);
+    const scalar lat = polarp.lat();
+    scalar lon = polarp.lon();
+
+    lon -= u0/radius.value() * t.value(); 
+
+    const polarPoint departureP(lon, lat, radius.value());
+    return departureP.cartesian();
+}
