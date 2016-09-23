@@ -1,4 +1,17 @@
-deformationalNonDivergentGeodesic.C
-velocityField.C
+noAdvection.C
+tracerField/gaussianTracerField.C
+tracerField/geodesicCosBellsTracerField.C
+tracerField/geodesicGaussiansTracerField.C
+tracerField/schaerRadialTracerField.C
+tracerField/polynomialTracerField.C
+tracerField/tracerField.C
+velocityField/btfVelocityField.C
+velocityField/deformationalNonDivergentGeodesicVelocityField.C
+velocityField/divergentVelocityField.C
+velocityField/geodesicDeformationalDivergentVelocityField.C
+velocityField/geodesicSolidBodyVelocityField.C
+velocityField/horizontalVelocityField.C
+velocityField/nonDivergentVelocityField.C
+velocityField/velocityField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libprescribedFields

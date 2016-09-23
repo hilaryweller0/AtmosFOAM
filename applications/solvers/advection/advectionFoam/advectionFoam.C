@@ -32,12 +32,14 @@ Description
 
 #include "fvCFD.H"
 #include "OFstream.H"
+#include "velocityField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
+    Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     #include "setRootCase.H"
     #include "createTime.H"
@@ -47,7 +49,25 @@ int main(int argc, char *argv[])
 
     Info<< "\nCalculating advection\n" << endl;
 
-    bool timeVaryingWind = args.options().found("timeVaryingWind");
+    IOdictionary dict
+    (
+        IOobject
+        (
+            "advectionDict",
+            mesh.time().constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+
+    bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
+    const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
+    autoPtr<velocityField> v;
+    if (velocityDict.size() > 0)
+    {
+        v = velocityField::New(dict.subOrEmptyDict("velocity"));
+    }
     
     // go backwards in time by one time step to initialise leap-frog
     T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
@@ -61,6 +81,14 @@ int main(int argc, char *argv[])
         if (args.options().found("leapfrog"))
         {
             T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
+        }
+        else if (args.options().found("rk4"))
+        {
+            k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
+            k2 = -fvc::div(phi, T.oldTime() + dt/2 * k1, "div(phi,T)");
+            k3 = -fvc::div(phi, T.oldTime() + dt/2 * k2, "div(phi,T)");
+            k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
+            T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
         }
         else
         {
@@ -81,46 +109,11 @@ int main(int argc, char *argv[])
 
         if (timeVaryingWind)
         {
-            U = volVectorField
-            (
-                IOobject
-                (
-                    "U",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                mesh,
-                dimensionedVector("U", dimVelocity, vector::zero),
-                "zeroGradient"
-            );
+            v->applyTo(phi);
 
-            Uf = surfaceVectorField
-            (
-                IOobject
-                (
-                    "Uf",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                linearInterpolate(U)
-            );
-
-            phi = surfaceScalarField
-            (
-                IOobject
-                (
-                    "phi",
-                    runTime.timeName(),
-                    mesh,
-                    IOobject::READ_IF_PRESENT,
-                    IOobject::NO_WRITE
-                ),
-                Uf & mesh.Sf()
-            );
+            U = fvc::reconstruct(phi);
+            Uf = linearInterpolate(U);
+            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
     }
 

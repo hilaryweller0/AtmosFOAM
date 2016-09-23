@@ -6,7 +6,9 @@ EXE_INC = \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lOrography \
+    -lorography \
+    -lprescribedFields \
     -lmeshTools \
     -lfiniteVolume \
+    -lgeometry \
     -lgdal

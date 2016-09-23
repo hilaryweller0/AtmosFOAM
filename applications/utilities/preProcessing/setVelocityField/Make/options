@@ -1,14 +1,14 @@
 EXE_INC = \
-    -ggdb3 -O0 -DFULLDEBUG \
-    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -ggdb3 -O0 \
+    -I$(ATMOSFOAM_TOOLS_SRC)/geometry/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
-    -I$(ATMOSFOAM_SRC)/orography/lnInclude \
-    -I/usr/include/gdal
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(ATMOSFOAM_SRC)/prescribedFields/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lOrography \
     -lmeshTools \
     -lfiniteVolume \
-    -lgdal
-
+    -lprescribedFields \
+    -lgeometry \
+    -lorography

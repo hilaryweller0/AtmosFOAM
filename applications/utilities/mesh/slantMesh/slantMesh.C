@@ -1,5 +1,5 @@
 #include "fvCFD.H"
-#include "Mountain.H"
+#include "mountain.H"
 
 int main(int argc, char *argv[])
 {
@@ -21,18 +21,17 @@ int main(int argc, char *argv[])
 
     const scalar tol(readScalar(dict.lookup("tolerance")));
     
-    // New point locations layered over the mountain
     IOField<point> newPoints
     (
         IOobject("points", mesh.time().constant(), "polyMesh", mesh),
         mesh.points()
     );
 
-    autoPtr<Mountain> mountain(Mountain::New(dict));
+    autoPtr<mountain> m(mountain::New(dict));
 
 	forAll(newPoints, pointIdx)
 	{
-        scalar h = mountain->heightAt(newPoints[pointIdx]);
+        scalar h = m->heightAt(newPoints[pointIdx]).value();
         if (newPoints[pointIdx].z() < h + tol)
         {
             newPoints[pointIdx].z() = h;
