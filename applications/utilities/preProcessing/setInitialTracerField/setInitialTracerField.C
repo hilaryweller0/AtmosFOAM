@@ -17,6 +17,15 @@ int main(int argc, char *argv[])
        "fixedValue"
     );
 
+    Info << "Creating tracer field Tf" << endl;
+    surfaceScalarField Tf
+    (
+        IOobject("Tf", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("Tf", dimless, scalar(0)),
+       "fixedValue"
+    );
+
     IOdictionary tracerDict
     (
         IOobject
@@ -33,9 +42,12 @@ int main(int argc, char *argv[])
     autoPtr<tracerField> tracer(tracerField::New(tracerDict, velocityField));
 
     Info << "writing T for time " << runTime.timeName() << endl;
-
     tracer->applyTo(T);
     T.write();
+
+    Info << "writing Tf for time " << runTime.timeName() << endl;
+    tracer->applyTo(Tf);
+    Tf.write();
 
     return EXIT_SUCCESS;
 }

@@ -49,6 +49,16 @@ void tracerField::applyTo(volScalarField& T) const
     }
 }
 
+void tracerField::applyTo(surfaceScalarField& Tf) const
+{
+    const fvMesh& mesh = Tf.mesh();
+    forAll(Tf, faceI)
+    {
+        const point& p = mesh.Cf()[faceI];
+        Tf[faceI] = tracerAt(velocityField.initialPositionOf(p, Tf.time()), Tf.time());
+    }
+}
+
 void tracerField::applyToInternalField(volScalarField& T) const
 {
     const fvMesh& mesh = T.mesh();

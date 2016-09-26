@@ -51,7 +51,7 @@ point horizontalVelocityField::initialPositionOf
     }
     else if (z.value() <= z2.value())
     {
-        return point(p.x() - (u0*Foam::sin(0.5*M_PI*(z-z1)/(z2-z1))*t).value(), p.y(), p.z());
+        return point(p.x() - (u0*sqr(Foam::sin(0.5*M_PI*(z-z1)/(z2-z1)))*t).value(), p.y(), p.z());
     }
     else
     {

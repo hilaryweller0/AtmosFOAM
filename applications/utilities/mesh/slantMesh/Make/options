@@ -10,4 +10,5 @@ EXE_LIBS = \
     -lprescribedFields \
     -lmeshTools \
     -lfiniteVolume \
+    -lgeometry \
     -lgdal

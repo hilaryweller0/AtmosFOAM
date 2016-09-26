@@ -84,7 +84,7 @@ Foam::linearUpwindDebug<Type>::correction
 
     forAll(faceFlux, facei)
     {
-        label celli = (faceFlux[facei] > 0) ? owner[facei] : neighbour[facei];
+        label celli = (faceFlux[facei] >= 0) ? owner[facei] : neighbour[facei];
         sfCorr[facei] = (Cf[facei] - C[celli]) & gradVf[celli];
     }
 
@@ -92,14 +92,12 @@ Foam::linearUpwindDebug<Type>::correction
     {
         label celli = owner[facei];
         Type corr = (Cf[facei] - C[celli]) & gradVf[celli];
-        Info << "*** owner " << corr << " for facei " << facei << endl;
     }
 
     forAll(faceFlux, facei)
     {
         label celli = neighbour[facei];
         Type corr = (Cf[facei] - C[celli]) & gradVf[celli];
-        Info << "*** nei " << corr << " for facei " << facei << endl;
     }
 
 

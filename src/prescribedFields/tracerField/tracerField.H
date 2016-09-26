@@ -24,6 +24,7 @@ class tracerField
 
     static autoPtr<tracerField> New(const dictionary& dict, const advectable& velocityField);
     void applyTo(volScalarField& T) const;
+    void applyTo(surfaceScalarField& Tf) const;
     virtual ~tracerField() {};
 
     protected:

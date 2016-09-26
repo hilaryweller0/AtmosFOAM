@@ -102,7 +102,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
     // Internal faces
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
     {
-        if (phi[faceI] > 0)
+        if (phi[faceI] >= 0)
         {
             // Flux out of owner. Use upwind (= owner side) stencil.
             const List<Type>& stField = ownFld[faceI];
@@ -140,7 +140,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
 
             forAll(pSfCorr, i)
             {
-                if (phi.boundaryField()[patchi][i] > 0)
+                if (phi.boundaryField()[patchi][i] >= 0)
                 {
                     // Flux out of owner. Use upwind (= owner side) stencil.
                     const List<Type>& stField = ownFld[faceI];
