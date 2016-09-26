@@ -18,7 +18,6 @@ interpolation/surfaceInterpolation/schemes/FitData/fitResult.C
 interpolation/surfaceInterpolation/schemes/FitData/fitWeights.C
 interpolation/surfaceInterpolation/schemes/FitData/Basis.C
 interpolation/surfaceInterpolation/schemes/UpwindFitScheme/stencilWeights.C
-interpolation/surfaceInterpolation/schemes/analytic/analyticSurfaceInterpolationScheme.C
 
 extendedStencil = fvMesh/extendedStencil
 $(extendedStencil)/cellToCell/globalIndexStencils/cellToCellStencil.C
