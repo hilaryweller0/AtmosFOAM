@@ -1,0 +1,5 @@
+primitiveMesh/primitiveMeshCellCentresAndVols.C
+primitiveMesh/primitiveMeshFaceCentresAndAreas.C
+primitiveMesh/primitiveMeshFindCell.C
+
+LIB = $(FOAM_LIBBIN)/libsphericalGeometry
