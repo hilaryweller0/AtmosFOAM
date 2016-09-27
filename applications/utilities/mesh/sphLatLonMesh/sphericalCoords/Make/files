@@ -1,0 +1,7 @@
+/*testSpherical.C*/
+polarPoint.C
+polarVector.C
+lCartPolarVector.C
+
+/* EXE = testSpherical */
+LIB = $(FOAM_USER_LIBBIN)/libsphericalCoords

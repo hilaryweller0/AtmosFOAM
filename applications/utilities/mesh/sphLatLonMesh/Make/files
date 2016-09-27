@@ -1,0 +1,6 @@
+sphPolarMesh.C
+polarPatch/polarPatch.C
+polarPatch/polarPatchData.C
+$(FOAM_UTILITIES)/mesh/generation/extrude/extrudeMesh/extrudedMesh/extrudedMesh.C
+
+EXE = $(FOAM_USER_APPBIN)/sphPolarMesh
