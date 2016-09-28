@@ -15,5 +15,6 @@ wmake $makeType ExnerTheta
 wmake $makeType orography
 wmake $makeType prescribedFields
 wmake $makeType interpolation
+wmake $makeType sphericalGeometry
 wmake $makeType finiteVolume
 wmake $makeType ghostMesh
