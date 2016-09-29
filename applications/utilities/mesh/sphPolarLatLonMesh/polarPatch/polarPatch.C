@@ -285,15 +285,6 @@ Foam::pointField Foam::polarPatch::calcVerts
         iv++;
     }
 
-//    Info << "Vertices " << nvert << "\n(\n";
-//    for(label iv = 0; iv < verts.size(); iv++)
-//    {
-//        polarPoint v = convertToPolar(verts[iv]);
-//        Info << iv << " (" << v.lon()*180/constant::mathematical::pi
-//             << ' ' << v.lat()*180/constant::mathematical::pi << ")\n";
-//    }
-//    Info << ")\n" << flush;
-
     return verts;
 }
 

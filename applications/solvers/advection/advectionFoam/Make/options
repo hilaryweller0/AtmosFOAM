@@ -5,6 +5,7 @@ EXE_INC = \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
+    -lsphericalGeometry \
     -lmeshTools \
     -lfiniteVolumeAtmos \
     -lfiniteVolume \
