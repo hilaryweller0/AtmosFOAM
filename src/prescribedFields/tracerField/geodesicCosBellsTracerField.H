@@ -3,6 +3,7 @@
 
 #include "advectable.H"
 #include "tracerField.H"
+#include "polarPoint.H"
 
 class geodesicCosBellsTracerField final : public tracerField
 {
@@ -12,10 +13,17 @@ class geodesicCosBellsTracerField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
+    dimensionedScalar r1(const polarPoint& p) const;
+    dimensionedScalar r2(const polarPoint& p) const;
+    dimensionedScalar ri(const polarPoint& p, const scalar centreLon, const scalar centreLat) const;
+    scalar h1(const polarPoint& p) const;
+    scalar h2(const polarPoint& p) const;
+    scalar hi(const polarPoint& p, const dimensionedScalar ri) const;
+
     const dimensionedScalar R;
-    const dimensionedScalar hmax;
-    const dimensionedScalar b;
-    const dimensionedScalar c;
+    const scalar hmax;
+    const scalar b;
+    const scalar c;
 };
 
 #endif
