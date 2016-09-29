@@ -20,20 +20,3 @@ theta += dt*offCentre*heatSource;
 // Update temperature
 T = theta*Exner;
 
-//heatSource.write();
-//divu.write();
-//Exner.write();
-//theta.write();
-//atmos.write();
-
-//water.updateCondensation(T);
-//water.condensation().write();
-//T.write();
-//p.write();
-//volScalarField ppGas("ppGas", water.gas().partialPressure(T));
-//ppGas.write();
-//volScalarField pSat("pSat", water.pSat(T));
-//pSat.write();
-
-//FatalErrorIn("") << exit(FatalError);
-
