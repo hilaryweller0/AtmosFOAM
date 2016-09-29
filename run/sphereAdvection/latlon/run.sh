@@ -1,0 +1,5 @@
+sphPolarLatLonMesh
+setInitialTracerField
+setVelocityField
+advectionFoam -forwardEuler
+
