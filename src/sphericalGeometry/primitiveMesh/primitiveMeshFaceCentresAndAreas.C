@@ -236,24 +236,24 @@ void primitiveMesh::makeFaceCentresAndAreas
         }
     }
 
-    // Test that face area vectors of each cell sum to zero
-    forAll(cells(), cellI)
-    {
-        const cell& c = cells()[cellI];
-        vector sumS = vector::zero;
-        scalar maxFaceAreaS = 0;
-        forAll(c, facei)
-        {
-            if (cellI == faceOwner()[c[facei]]) sumS += fAreas[c[facei]];
-            else sumS -= fAreas[c[facei]];
-            
-            scalar faceAreaS = magSqr(fAreas[c[facei]]);
-            if (faceAreaS > maxFaceAreaS)
-            {
-                maxFaceAreaS = faceAreaS;
-            }
-        }
-    }
+//    // Test that face area vectors of each cell sum to zero
+//    forAll(cells(), cellI)
+//    {
+//        const cell& c = cells()[cellI];
+//        vector sumS = vector::zero;
+//        scalar maxFaceAreaS = 0;
+//        forAll(c, facei)
+//        {
+//            if (cellI == faceOwner()[c[facei]]) sumS += fAreas[c[facei]];
+//            else sumS -= fAreas[c[facei]];
+//            
+//            scalar faceAreaS = magSqr(fAreas[c[facei]]);
+//            if (faceAreaS > maxFaceAreaS)
+//            {
+//                maxFaceAreaS = faceAreaS;
+//            }
+//        }
+//    }
 }
 
 
