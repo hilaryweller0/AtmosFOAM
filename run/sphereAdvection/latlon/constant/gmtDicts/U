@@ -1,0 +1,35 @@
+FoamFile
+{
+    version         2.2;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;    
+}
+
+// How to plot
+// Compulsory inputs
+projection "G30/0/18c";
+projection2D latLon;
+
+// A list of the fields to plot with plotting details
+FieldsToPlot
+(
+    [none mesh "grey"]
+    [U vectors 1 1 "black"]
+);
+
+// other options:
+annotate "minMax 0 -0.01";
+// non-global region (see man psxy for details on -R option)
+//region "0/1/0/1";
+
+// boundary ticks, annotation and grid
+//     (see man psbasemap for detail on -B option)
+//boundaryMarks "a0.1/a0.1";
+

@@ -32,9 +32,6 @@ Description
     For spherical geometry - only copes with either purely radial or purely
     spherical faces - not a mixture. A spherical face is a face on the sphere
     whereas a radial face points around the sphere
-    
-    This version assumes the shallow atmosphere assumption so all spheres
-    have the same radius
 
 \*---------------------------------------------------------------------------*/
 
@@ -239,7 +236,6 @@ void primitiveMesh::makeFaceCentresAndAreas
         }
     }
 
-    
     // Test that face area vectors of each cell sum to zero
     forAll(cells(), cellI)
     {
