@@ -96,7 +96,7 @@ void Foam::CFCFaceToFaceStencil::calcCellStencil
                     if (fI != faceI && validFace[fI])
                     {
                         neiGlobal[bFaceI][n++] =
-                            globalIndexAndTransform::encode
+                            globalTransforms().encode
                             (
                                 Pstream::myProcNo(),
                                 fI,
@@ -221,7 +221,7 @@ void Foam::CFCFaceToFaceStencil::calcCellStencil
                         // neighbour info.
                         const labelPair& info = nbrInfo[j];
                         label transform =
-                            globalIndexAndTransform::transformIndex
+                            globalTransforms().transformIndex
                             (
                                 info
                             );
@@ -233,9 +233,9 @@ void Foam::CFCFaceToFaceStencil::calcCellStencil
                         )
                         {
                             label procI =
-                                globalIndexAndTransform::processor(info);
+                                globalTransforms().processor(info);
                             label index =
-                                globalIndexAndTransform::index(info);
+                                globalTransforms().index(info);
                             untrafoFaces.append
                             (
                                 globalNumbering().toGlobal(procI, index)
