@@ -29,5 +29,5 @@ vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
     const dimensionedScalar psi = 10 * radius / T * 
             sqr(Foam::sin(lonPrime)) * sqr(Foam::cos(lat)) * Foam::cos(M_PI*t/T) - 
             2*M_PI*radius/T * Foam::sin(lat);
-    return p/mag(p) * psi.value() * radius.value();
+    return p/mag(p) * psi.value();
 }
