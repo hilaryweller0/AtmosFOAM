@@ -9,7 +9,6 @@ void nonDivergentVelocityField::applyToInternalField(surfaceScalarField& phi) co
     {
         const face& f = mesh.faces()[faceI];
         phi[faceI] = faceFlux(f, mesh, phi.time());
-        Info << "V/dt " << mesh.V()[mesh.faceOwner()[faceI]]/mesh.time().deltaTValue();
     }
 }
 
@@ -38,28 +37,14 @@ scalar nonDivergentVelocityField::faceFlux(const face& f, const fvMesh& mesh, co
         p0 = p1;
         p1 = mesh.points()[f[ip]];
         point pmid = 0.5*(p0 + p1);
-        //if (abs(pmid/mag(pmid) & (p0 - p1)) > 1e-8)
-        //{
         
         if (minR < 0 || mag(p0) < minR) minR = mag(p0);
         if (mag(p0) > maxR) maxR = mag(p0);
 
         flux += streamfunctionAt(pmid, t) & ((p0 - p1)/mag(p0-p1));
-
-        polarPoint p0p = convertToPolar(p0);
-        polarPoint p1p = convertToPolar(p1);
-        polarPoint pmidp = convertToPolar(pmid);
-        Info << " mag(edge) " << mag(p0 - p1) << " flux " << (streamfunctionAt(pmid, t) & (p0 - p1));
-        Info << " (lat,lon,r) (" << p0p.lat() << "," << p0p.lon() << "," << p0p.r() << ")--";
-        Info << "(" << p1p.lat() << "," << p1p.lon() << "," << p1p.r() << ") mid ";
-        Info << "(" << pmidp.lat() << "," << pmidp.lon() << "," << pmidp.r() << ")" << endl;
-        
-        //}
     }
 
     flux *= (sqr(maxR) - sqr(minR))/2;
-
-    Info << "flux for " << f << " " << flux << " " << endl;
 
     return flux;
 }
