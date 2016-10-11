@@ -90,18 +90,7 @@ int main(int argc, char *argv[])
 
     while (runTime.loop())
     {
-        //#include "CourantNo.H"
-		tmp<volScalarField::Internal> tCo
-        (
-			0.5*mesh.time().deltaT()
-		    *fvc::surfaceSum(mag(phi))()()
-		    /mesh.V()
-        );
-		Co.ref() = tCo();
-        Co.correctBoundaryConditions();
-        Info << "min Courant " << gMin(Co) << " ";
-        Info << "max Courant " << gMax(Co) << endl;
-
+        #include "CourantNo.H"
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("forwardEuler"))
