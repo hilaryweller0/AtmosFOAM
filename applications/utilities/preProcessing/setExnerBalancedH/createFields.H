@@ -14,23 +14,31 @@ volScalarField Exner
     Exner_init
 );
 
-Info<< "Reading thetaf\n" << endl;
+Info<< "Reading theta\n" << endl;
+const volScalarField theta
+(
+    IOobject("theta", runTime.timeName(), mesh, IOobject::MUST_READ),
+    mesh
+);
+
+Info<< "Reading/creating thetaf\n" << endl;
 surfaceScalarField thetaf
 (
-    IOobject("thetaf", runTime.timeName(), mesh, IOobject::MUST_READ),
-    mesh
+    IOobject("thetaf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    fvc::interpolate(theta)
 );
 
 if (!args.options().found("noInterpolate"))
 {
-    Info<< "Reading theta\n" << endl;
-    const volScalarField theta
+    thetaf = fvc::interpolate(theta);
+}
+else
+{
+    thetaf = surfaceScalarField
     (
-        IOobject("theta", runTime.timeName(), mesh, IOobject::MUST_READ),
+        IOobject("thetaf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         mesh
     );
-
-    thetaf = fvc::interpolate(theta);
 }
 
 // The flux, including only the gravity term

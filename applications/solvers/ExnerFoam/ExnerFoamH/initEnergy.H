@@ -9,7 +9,7 @@ dimensionedScalar Vtot = sum(mesh.V());
 volScalarField KE
 (
     IOobject("KE", runTime.timeName(), mesh),
-    0.25*fvc::surfaceSum(U*V/rhof)/dimensionedScalar("V", dimVol, scalar(1))
+    0.25*fvc::surfaceSum(U*V/rhof)
 );
 KE.ref() /= mesh.V();
 volScalarField internalEnergy
@@ -24,9 +24,16 @@ volScalarField potentialEnergy
 );
 
 const dimensionedScalar KEInitTot = fvc::domainIntegrate(KE)/Vtot;
-const dimensionedScalar internalInitTot = fvc::domainIntegrate(internalEnergy)/Vtot;
-const dimensionedScalar potentialInitTot = fvc::domainIntegrate(potentialEnergy)/Vtot;
+const dimensionedScalar internalInitTot
+     = fvc::domainIntegrate(internalEnergy)/Vtot;
+const dimensionedScalar potentialInitTot
+     = fvc::domainIntegrate(potentialEnergy)/Vtot;
 
-const dimensionedScalar energyInitTot = KEInitTot + internalInitTot + potentialInitTot;
+Info << "Vtot = " << Vtot << "\nKEInitTot = " << KEInitTot
+     << "\ninternalInitTot = " << internalInitTot << "\npotentialInitTot = "
+     << potentialInitTot << endl;
+
+const dimensionedScalar energyInitTot = KEInitTot + internalInitTot
+                                      + potentialInitTot;
 scalar normalisedHeatDiff = 0;
 scalar entropyError = 0;
