@@ -73,9 +73,34 @@ int main(int argc, char *argv[])
     // go backwards in time by one time step to initialise leap-frog
     T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
 
+    volScalarField Co
+    (
+        IOobject
+        (
+            "Co",
+            runTime.timeName(),
+            mesh,
+            IOobject::NO_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensionedScalar("0", dimless, 0.0),
+        zeroGradientFvPatchScalarField::typeName
+    );
+
     while (runTime.loop())
     {
-        #include "CourantNo.H"
+        //#include "CourantNo.H"
+		tmp<volScalarField::Internal> tCo
+        (
+			0.5*mesh.time().deltaT()
+		    *fvc::surfaceSum(mag(phi))()()
+		    /mesh.V()
+        );
+		Co.ref() = tCo();
+        Co.correctBoundaryConditions();
+        Info << "min Courant " << gMin(Co) << " ";
+        Info << "max Courant " << gMax(Co) << endl;
 
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
