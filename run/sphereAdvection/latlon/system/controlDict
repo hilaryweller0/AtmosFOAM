@@ -17,7 +17,7 @@ writeControl    runTime;
 writeInterval   1;
 purgeWrite      0;
 writeFormat     ascii;
-writePrecision  6;
+writePrecision  18;
 writeCompression uncompressed;
 timeFormat      general;
 timePrecision   6;

@@ -70,6 +70,13 @@ int main(int argc, char *argv[])
 
         U.write();
         Uf.write();
+        
+        // Write out the velocity magnitude on faces
+        surfaceScalarField magU("magU", mag(Uf));
+        magU.write();
+        // Write out the face areas
+        surfaceScalarField magSf("magSf", mesh.magSf());
+        magSf.write();
     }
     while (runTime.loop());
 

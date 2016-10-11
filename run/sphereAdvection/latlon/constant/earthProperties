@@ -32,12 +32,14 @@ FoamFile
 
 // Geometry
 //earthRadius  earthRadius [0 1 0 0 0]   6.371220e6;
-earthRadius  earthRadius [0 1 0 0 0]   6.370220e6;
-atmosHeight  atmosHeight [0 1 0 0 0]   2e3;
+earthRadius  earthRadius [0 1 0 0 0]   0.9; //6.370220e6;
+//atmosHeight  atmosHeight [0 1 0 0 0]   0.2; //2e3;
 nLayers 1;
-linearRadialCoeffs{R 6.372220e6;};
-linearNormalCoeffs{thickness 1000;};
-nLat 8;
-nLon 16;
+linearRadialCoeffs{R 1.1;} //6.372220e6;};
+//linearNormalCoeffs{thickness 1000;};
+nLat 10;
+nLon 18;
+polarCell false;
+maxLonRatio 0;
 
 // ************************************************************************* //

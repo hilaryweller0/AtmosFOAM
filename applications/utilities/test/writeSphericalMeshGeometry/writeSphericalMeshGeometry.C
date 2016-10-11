@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
+    Info << "Total mesh volume = " << sum(mesh.V()) << endl;
+
     const fileName outFile = args.rootPath() / args.caseName() / runTime.constant();
 
     const fileName pointFile = outFile / "point.diagnostics";

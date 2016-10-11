@@ -53,7 +53,6 @@ void primitiveMesh::calcCellCentresAndVols() const
     {
         Pout<< "primitiveMesh::calcCellCentresAndVols() : "
             << "Calculating cell centres and cell volumes"
-            << " for shallowAtmosphere"
             << endl;
     }
 
@@ -102,7 +101,7 @@ void primitiveMesh::makeCellCentresAndVols
     const labelList& own = faceOwner();
     const labelList& nei = faceNeighbour();
 
-    // next calculate exact cell volume and centre for shallowAtmosphere
+    // next calculate exact cell volume and centre
 
     scalarField r1(nCells(), -1);
     scalarField r2(nCells(), -1);
