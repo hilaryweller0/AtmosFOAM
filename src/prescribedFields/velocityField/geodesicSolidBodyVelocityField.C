@@ -27,7 +27,7 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
 
     const scalar psi = - u0 * (Foam::sin(lat) * Foam::cos(alpha) - Foam::cos(lon) * Foam::cos(lat) * Foam::sin(alpha));
 
-    return p/mag(p) * psi;
+    return p/mag(p) * psi * radius.value();
 }
 
 point geodesicSolidBodyVelocityField::initialPositionOf
