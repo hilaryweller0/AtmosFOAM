@@ -2,9 +2,9 @@
 #define GEODESIC_SOLID_BODY_VELOCITY_FIELD_H
 
 #include "advectable.H"
-#include "nonDivergentVelocityField.H"
+#include "nonDivergentSphericalVelocityField.H"
 
-class geodesicSolidBodyVelocityField final : public nonDivergentVelocityField, public advectable
+class geodesicSolidBodyVelocityField final : public nonDivergentSphericalVelocityField, public advectable
 {
     public:
     TypeName("geodesicSolidBody");

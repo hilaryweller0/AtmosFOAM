@@ -12,6 +12,7 @@ velocityField/geodesicDeformationalDivergentVelocityField.C
 velocityField/geodesicSolidBodyVelocityField.C
 velocityField/horizontalVelocityField.C
 velocityField/nonDivergentVelocityField.C
+velocityField/nonDivergentSphericalVelocityField.C
 velocityField/velocityField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libprescribedFields
