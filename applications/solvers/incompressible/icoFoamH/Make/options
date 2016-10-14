@@ -1,0 +1,12 @@
+EXE_INC = \
+    -ggdb3 -O0 \
+    -I$(ATMOSFOAM_TOOLS_SRC)/HodgeOps/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lHodgeOps \
+    -lmeshTools \
+    -lfiniteVolumeAtmos \
+    -lfiniteVolume
