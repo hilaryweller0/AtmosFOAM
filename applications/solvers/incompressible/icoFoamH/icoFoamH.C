@@ -27,7 +27,8 @@ Application
 
 Description
     C-grid solver for incompressible Euler equations using Hodge operator
-    for curl-free pressure gradients 
+    for curl-free pressure gradients. Note, Coriolis force not yet
+    implemented
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "orthogonalBoundaries.H"
-    #include "readEnvironmentalProperties.H"
+    //#include "readEnvironmentalProperties.H"
     HodgeOps H(mesh);
     #define dt runTime.deltaT()
     #include "createFields.H"
@@ -53,6 +54,8 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    const Switch uPredictor = itsDict.lookup("uPredictor");
+    const Switch setReferenceP = mesh.solutionDict().lookup("setReferenceP");
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -71,7 +74,6 @@ int main(int argc, char *argv[])
         
         // Updates for next time step
         dVdt -= H.magd()*fvc::snGrad(p);
-        divU = fvc::div(U);
 
         runTime.write();
 

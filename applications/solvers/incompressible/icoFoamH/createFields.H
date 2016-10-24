@@ -61,20 +61,17 @@ surfaceScalarField U
     (
        "U",
         runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
+        mesh
     ),
-    Uf & mesh.Sf(),
-    VuBCs
+    Uf & mesh.Sf()
 );
 
 Info << "Calculating V mass circulation field\n" << endl;
 surfaceScalarField V
 (
     IOobject("V", runTime.timeName(), mesh),
-    Uf & H.delta()
-//    phiUBCs
+    Uf & H.delta(),
+    VuBCs
 );
 V.oldTime();
 
@@ -82,27 +79,28 @@ V.oldTime();
 surfaceScalarField dVdt
 (
     IOobject("dVdt", runTime.timeName(), mesh),
-    -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*(Omega^(Uf-Ug))))
+    -(H.delta() & (fvc::interpolate(fvc::div(U,u))/*+2*(Omega^(Uf-Ug))*/))
     - H.magd()*fvc::snGrad(p),
      VuBCs
 );
 dVdt.oldTime();
 
-volScalarField divU("divU", fvc::div(U));
-divU.oldTime();
-
 // fix no flow boundaries
 forAll(dVdt.boundaryField(), patchi)
 {
     const word btype = mesh.boundaryMesh()[patchi].type();
-    const word utype = U.boundaryField()[patchi].type();
+    const word utype = Uf.boundaryField()[patchi].type();
     if
     (
         btype == "wall" || btype == "symmetryPlane" || btype == "empty"
     )
     {
-        V.boundaryFieldRef()[patchi] = 0;
-        dVdt.boundaryFieldRef()[patchi] = 0;
+        V.boundaryFieldRef()[patchi] == 0;
+        dVdt.boundaryFieldRef()[patchi] == 0;
+    }
+    else if(utype == "fixedValue")
+    {
+        u.boundaryFieldRef()[patchi] == Uf.boundaryField()[patchi];
     }
 }
 

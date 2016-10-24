@@ -1,8 +1,8 @@
 /*--------------------------------*- C++ -*----------------------------------*\
 | =========                 |                                                 |
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
-|  \\    /   O peration     | Version:  1.5                                   |
-|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
 FoamFile
@@ -16,29 +16,37 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   uniform (10 0 0);
+internalField   uniform (0 0 0);
 
 boundaryField
 {
-    ground
+    inlet
+    {
+        type            fixedValue;
+        value           uniform (10 0 0);
+    }
+
+    outlet
     {
         type            calculated;
         value           uniform (0 0 0);
     }
-    top
+
+    upperWall
     {
         type            calculated;
-        value           uniform (10 0 0);
+        value           uniform (0 0 0);
     }
-    inlet
+
+    lowerWall
     {
-        type            cyclic;
-        value           uniform (10 0 0);
+        type            calculated;
+        value           uniform (0 0 0);
     }
-    outlet
+
+    frontAndBack
     {
-        type            cyclic;
-        value           uniform (10 0 0);
+        type            empty;
     }
 }
 

@@ -17,53 +17,11 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          fvSchemes;
+    object          environmentalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
-{
-    default Euler;
-}
-offCentre 0.6;
-
-gradSchemes
-{
-    default         none;
-    linearUpwind     Gauss linear;
-}
-
-divSchemes
-{
-    default none;
-    div(U,u)   Gauss linearUpwind linearUpwind;
-}
-
-laplacianSchemes
-{
-    default         Gauss midPoint uncorrected;
-}
-
-interpolationSchemes
-{
-    default         none;
-    interpolate(convection(U,u)) linearUpwind U linearUpwind;
-    interpolate(u)  midPoint;
-    H               midPoint;
-}
-
-snGradSchemes
-{
-    default         none;
-    snGrad(p)   uncorrected;
-}
-
-fluxRequired
-{
-    default         no;
-    p;
-}
-
+Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
 
 // ************************************************************************* //

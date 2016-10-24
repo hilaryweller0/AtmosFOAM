@@ -1,13 +1,13 @@
 #!/bin/bash -e
 #
-# Create and run an OpenFOAM case for incompressible flow over orography
+# Create and run an incompressible flow over backward facing step using
+# icoFoamH
 
 # clear out old stuff
 rm -rf [0-9]* constant/polyMesh core log
 
 # create mesh and plot
 blockMesh
-add2dMountain
 gmtFoam mesh
 gv constant/mesh.pdf &
 
@@ -20,9 +20,11 @@ icoFoamH >& log &
 tail -f log
 
 # plot the results
-time=100
-gmtFoam U -time $time
-gv $time/U.pdf &
+time=0.001
 gmtFoam pU -time $time
 gv $time/pU.pdf &
+
+
+gmtFoam pU
+eps2gif pU.gif 0.??/pU.pdf &
 
