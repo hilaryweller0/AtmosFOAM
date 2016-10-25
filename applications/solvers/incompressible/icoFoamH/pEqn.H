@@ -1,3 +1,5 @@
+// Initial prediction of cell centre velocity without a projection step
+// for the initialcalculation of the non-linear advection term
 if (uPredictor)
 {
     Info << "U predictor" << endl;

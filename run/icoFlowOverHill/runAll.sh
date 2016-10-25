@@ -7,7 +7,7 @@ rm -rf [0-9]* constant/polyMesh core log
 
 # create mesh and plot
 blockMesh
-add2dMountain
+terrainFollowingMesh
 gmtFoam mesh
 gv constant/mesh.pdf &
 
