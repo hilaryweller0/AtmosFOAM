@@ -53,7 +53,9 @@ if (uPredictor)
 
             if (nonOrth == nNonOrthCorr)
             {
-                U += pEqn.flux()/offCentre;
+                U += pEqn.flux();
+                // equivalent to
+                // U -= dt*offCentre*fvc::snGrad(p)*pMesh.magSf();
                 V -= dt*offCentre*fvc::snGrad(p)*H.magd();
                 u = H.reconstructd(V);
                 Uf = fvc::interpolate(u);
