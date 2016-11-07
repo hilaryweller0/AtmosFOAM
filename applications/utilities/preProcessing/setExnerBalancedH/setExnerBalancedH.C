@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                        /maxGroundExner;
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
-        Exner.boundaryFieldRef()[topBC] = topBCval;
+        Exner.boundaryFieldRef()[topBC] == topBCval;
 	}
 
 	// Change the top boundary type to be fixedFluxBuoyantExner
