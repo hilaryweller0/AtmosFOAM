@@ -183,8 +183,8 @@ forAll(Vu.boundaryField(), patchi)
         btype == "wall" || btype == "symmetryPlane" || btype == "empty"
     )
     {
-        Vu.boundaryFieldRef()[patchi] = 0;
-        dVdt.boundaryFieldRef()[patchi] = 0;
+        Vu.boundaryFieldRef()[patchi] == 0;
+        dVdt.boundaryFieldRef()[patchi] == 0;
     }
 }
 
