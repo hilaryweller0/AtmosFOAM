@@ -1,6 +1,7 @@
 btfTransform.C
 mountain.C
 schaerCosMountain.C
+schaerExpMountain.C
 terrainFollowingTransform.C
 
 LIB = $(FOAM_USER_LIBBIN)/liborography
