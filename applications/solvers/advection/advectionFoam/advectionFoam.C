@@ -64,8 +64,8 @@ int main(int argc, char *argv[])
         )
     );
 
+    bool explicitTimestepping = args.options().found("explicitTimestepping");
     bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
-    bool explicitTimestepping = dict.lookupOrDefault<bool>("explicitTimestepping", false);
     const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
     autoPtr<velocityField> v;
     if (velocityDict.size() > 0)
@@ -79,10 +79,10 @@ int main(int argc, char *argv[])
     while (runTime.loop())
     {
         #include "CourantNo.H"
-	if (explicitTimestepping && CoNum > 1.0)
-	{
+        if (explicitTimestepping && CoNum > 1.0)
+        {
             FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
-	}
+        }
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("forwardEuler"))
