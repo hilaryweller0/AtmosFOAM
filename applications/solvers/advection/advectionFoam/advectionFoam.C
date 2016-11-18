@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("forwardEuler", "");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
+    Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -64,6 +65,7 @@ int main(int argc, char *argv[])
     );
 
     bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
+    bool explicitTimestepping = dict.lookupOrDefault<bool>("explicitTimestepping", false);
     const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
     autoPtr<velocityField> v;
     if (velocityDict.size() > 0)
@@ -77,6 +79,10 @@ int main(int argc, char *argv[])
     while (runTime.loop())
     {
         #include "CourantNo.H"
+	if (explicitTimestepping && CoNum > 1.0)
+	{
+            FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
+	}
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("forwardEuler"))
