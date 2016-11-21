@@ -39,10 +39,12 @@ Description
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
+    Foam::argList::addBoolOption("rk2", "two-stage second-order Runge-Kutta");
     Foam::argList::addBoolOption("rk3", "Third-order Runge-Kutta scheme used by Skamarock & Gassmann 2011");
     Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("forwardEuler", "");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
+    Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -63,6 +65,7 @@ int main(int argc, char *argv[])
         )
     );
 
+    bool explicitTimestepping = args.options().found("explicitTimestepping");
     bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
     const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
     autoPtr<velocityField> v;
@@ -77,6 +80,10 @@ int main(int argc, char *argv[])
     while (runTime.loop())
     {
         #include "CourantNo.H"
+        if (explicitTimestepping && CoNum > 1.0)
+        {
+            FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
+        }
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("forwardEuler"))
@@ -92,6 +99,11 @@ int main(int argc, char *argv[])
             T = T.oldTime() - dt/3*fvc::div(phi, T);
             T = T.oldTime() - dt/2*fvc::div(phi, T);
             T = T.oldTime() - dt*fvc::div(phi, T);
+        }
+        else if (args.options().found("rk2"))
+        {
+            T = T.oldTime() - 0.5*dt*fvc::div(phi,T.oldTime());
+            T = T.oldTime() - dt*fvc::div(phi,T);
         }
         else if (args.options().found("rk4"))
         {
