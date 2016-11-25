@@ -85,10 +85,11 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
             do
             {
                 scalarList coeffs(stencil.size(), scalar(0));
-                populateCoefficients(coeffs, stencil, candidate, targetLength, w);
+                scalarRectangularMatrix Binv = populateCoefficients(coeffs, stencil, candidate, targetLength, w);
                 
                 if (stable(coeffs))
                 {
+                    applyHighOrderCorrection(coeffs, stencil, w, Binv, candidate);
                     coefficients.copyFrom(coeffs);
                     weights.copyFrom(w);
                     return candidate;
@@ -146,7 +147,7 @@ bool PolynomialFit<Polynomial>::stable(const scalarList& coefficients)
 }
 
 template<class Polynomial>
-void PolynomialFit<Polynomial>::populateCoefficients
+scalarRectangularMatrix PolynomialFit<Polynomial>::populateCoefficients
 (
         scalarList& coefficients,
         const localStencil& stencil,
@@ -163,6 +164,29 @@ void PolynomialFit<Polynomial>::populateCoefficients
     forAll(coefficients, i)
     {
         coefficients[i] = weights[i]*Binv(0,i);
+    }
+
+    return Binv;
+}
+
+template<class Polynomial>
+void PolynomialFit<Polynomial>::applyHighOrderCorrection
+(
+        scalarList& coefficients,
+        const localStencil& stencil,
+        const scalarList& weights,
+        const scalarRectangularMatrix& Binv,
+        const uint32_t terms
+)
+{
+    Info << "\ncorr ";
+    forAll(coefficients, i)
+    {
+        const scalar second_derivative_upwind = weights[i]*Polynomial::secondXderivative(stencil[0], terms, i, Binv);
+        const scalar second_derivative_downwind = weights[i]*Polynomial::secondXderivative(stencil[1], terms, i, Binv);
+        scalar corr = (0.195832824707058 * second_derivative_upwind - 0.070833301544202 * second_derivative_downwind);
+        Info << corr << " ";
+        //coefficients[i] += corr;
     }
 }
 

@@ -57,15 +57,6 @@ namespace Foam
         {
             if (dim == 2)
             {
-                const label constant = 1 << 0;
-                const label x = 1 << 1;
-                const label y = 1 << 2;
-                const label xx = 1 << 3;
-                const label xy = 1 << 4;
-                const label yy = 1 << 5;
-                const label xxx = 1 << 6;
-                const label xxy = 1 << 7;
-                const label xyy = 1 << 8;
                 candidates.append(constant | x);
                 candidates.append(constant | y);
                 candidates.append(constant | x | y);
@@ -91,6 +82,21 @@ namespace Foam
                 candidates.append(constant | x | y  | xy  | xx  | yy  | xyy | xxx);
                 candidates.append(constant | x | y  | xy  | xx  | yy  | xxy | xyy | xxx);
             }
+        }
+
+        static scalar secondXderivative
+        (
+            const point& p,
+            const uint32_t terms,
+            const label stencilIndex,
+            const scalarRectangularMatrix& Binv
+        )
+        {
+            scalar dx_sqr = 0.0;
+            if (terms & xx) dx_sqr += 2*Binv(rowOf(xx, terms), stencilIndex);
+            if (terms & xxx) dx_sqr += 6*p.x()*Binv(rowOf(xxx, terms), stencilIndex);
+            if (terms & xxy) dx_sqr += 2*p.y()*Binv(rowOf(xxy, terms), stencilIndex);
+            return dx_sqr;
         }
 
         static void addCoeffs
@@ -130,6 +136,29 @@ namespace Foam
                 coeffs[curIdx++] = weight*d.x()*sqr(d.z());
             }
         }
+
+        private:
+        static label rowOf(const label term, const uint32_t terms)
+        {
+            label index = 0;
+            for (label i=0; i<16; i++)
+            {
+                if ((1 << i) == term && (term & terms)) return index;
+                if ((1 << i) && terms) index++;
+            }
+
+            return -1;
+        }
+
+        static const label constant = 1 << 0;
+        static const label x = 1 << 1;
+        static const label y = 1 << 2;
+        static const label xx = 1 << 3;
+        static const label xy = 1 << 4;
+        static const label yy = 1 << 5;
+        static const label xxx = 1 << 6;
+        static const label xxy = 1 << 7;
+        static const label xyy = 1 << 8;
     };
 }
 

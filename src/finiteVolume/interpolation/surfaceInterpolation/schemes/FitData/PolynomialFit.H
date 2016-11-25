@@ -46,13 +46,22 @@ namespace Foam
 
         bool stable(const scalarList& coefficients);
 
-        void populateCoefficients
+        scalarRectangularMatrix populateCoefficients
         (
                 scalarList& coefficients,
                 const localStencil& stencil,
                 uint32_t polynomial,
                 label termCount,
                 const scalarList& weights
+        );
+
+        void applyHighOrderCorrection
+        (
+                scalarList& coefficients,
+                const localStencil& stencil,
+                const scalarList& weights,
+                const scalarRectangularMatrix& Binv,
+                const uint32_t terms
         );
 
         void populateMatrix
