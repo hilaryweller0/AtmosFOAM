@@ -11,4 +11,5 @@ maxVelocity		10;
 zeroVelocityHeight	7000; // 4000;
 maxVelocityHeight	8000; //5000;
 
+type horizontal;
 velocityProfileType HorizontalVelocityProfile;

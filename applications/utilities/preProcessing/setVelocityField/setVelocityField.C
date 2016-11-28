@@ -3,8 +3,11 @@
 
 int main(int argc, char *argv[])
 {
+    timeSelector::addOptions();
+#   include "addTimeOptions.H"
     #include "setRootCase.H"
     #include "createTime.H"
+    instantList timeDirs = timeSelector::select0(runTime, args);
     #include "createMesh.H"
 
     Info << "Creating flux field phi" << endl;
@@ -57,7 +60,7 @@ int main(int argc, char *argv[])
 
     autoPtr<velocityField> v(velocityField::New(dict));
 
-    do
+    forAll(timeDirs, timeI)
     {
         Info << "writing phi for time " << runTime.timeName() << endl;
 
@@ -78,7 +81,6 @@ int main(int argc, char *argv[])
         surfaceScalarField magSf("magSf", mesh.magSf());
         magSf.write();
     }
-    while (runTime.loop());
 
     return EXIT_SUCCESS;
 }
