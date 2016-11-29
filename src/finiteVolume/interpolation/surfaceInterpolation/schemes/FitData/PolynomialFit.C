@@ -89,7 +89,7 @@ uint32_t Foam::PolynomialFit<Polynomial>::findStable
                 
                 if (stable(coeffs))
                 {
-                    applyHighOrderCorrection(coeffs, stencil, w, Binv, candidate);
+//                    applyHighOrderCorrection(coeffs, stencil, w, Binv, candidate);
                     coefficients.copyFrom(coeffs);
                     weights.copyFrom(w);
                     return candidate;
@@ -166,6 +166,8 @@ scalarRectangularMatrix PolynomialFit<Polynomial>::populateCoefficients
         coefficients[i] = weights[i]*Binv(0,i);
     }
 
+//    applyHighOrderCorrection(coefficients, stencil, weights, Binv, polynomial);
+
     return Binv;
 }
 
@@ -184,9 +186,9 @@ void PolynomialFit<Polynomial>::applyHighOrderCorrection
     {
         const scalar second_derivative_upwind = weights[i]*Polynomial::secondXderivative(stencil[0], terms, i, Binv);
         const scalar second_derivative_downwind = weights[i]*Polynomial::secondXderivative(stencil[1], terms, i, Binv);
-        scalar corr = (0.195832824707058 * second_derivative_upwind - 0.070833301544202 * second_derivative_downwind);
+        scalar corr = 1/48.0 * (-3.0 * second_derivative_upwind + second_derivative_downwind);
         Info << corr << " ";
-        //coefficients[i] += corr;
+        coefficients[i] += corr;
     }
 }
 
