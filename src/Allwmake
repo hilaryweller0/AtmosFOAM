@@ -11,6 +11,7 @@ makeType=${1:-libso}
     exit 1
 }
 
+wmake $makeType meshTools
 wmake $makeType ExnerTheta
 wmake $makeType orography
 wmake $makeType prescribedFields
