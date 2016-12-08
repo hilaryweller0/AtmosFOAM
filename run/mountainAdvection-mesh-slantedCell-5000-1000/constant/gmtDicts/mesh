@@ -16,6 +16,7 @@ FoamFile
 // Compulsory inputs
 projection "X18c/3c";
 projection2D XZ;
+patch frontAndBack;
 
 FieldsToPlot
 (

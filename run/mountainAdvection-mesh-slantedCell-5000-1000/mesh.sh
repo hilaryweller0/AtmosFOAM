@@ -14,6 +14,7 @@ if [ -e constant/polyMesh/sets/zeroAreaFaces ] ; then collapseEdges -constant -o
 # Remove faces between adjacent slanted cells
 topoSet
 removeFaces prismFaces -overwrite
+combinePatchFaces -overwrite 90
 
 # Plot the mesh
 gmtFoam mesh
