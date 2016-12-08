@@ -18,12 +18,21 @@ actions
 (
     // Faces in between two triangular prisms
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
     {
         name    prismFaces;
         type    faceSet;
         action  new;
         source triPrismFaces;
+        sourceInfo {}
+    }
+
+    // Faces whose removal would lead to lower aspect ratio cells
+    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    {
+        name    prismFaces;
+        type    faceSet;
+        action  subset;
+        source highAspectRatioFaces;
         sourceInfo {}
     }
 );
