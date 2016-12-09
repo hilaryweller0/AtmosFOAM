@@ -29,6 +29,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
+#include "polarPoint.H"
 
 int main(int argc, char *argv[])
 {
@@ -53,28 +54,32 @@ int main(int argc, char *argv[])
 
     const fileName cellFile = outFile / "cell.diagnostics";
     OFstream cos(cellFile);
-    cos << "# cellI x y z mag(C) volume" << endl;
+    cos << "# cellI x y z volume lon lat r" << endl;
     for(label cellI = 0; cellI < mesh.nCells(); cellI++)
     {
+        const polarPoint polarC = convertToPolar(mesh.C()[cellI]);
+
         cos << cellI << " " << mesh.C()[cellI][0] << " " << mesh.C()[cellI][1] << " "
-            << mesh.C()[cellI][2] << " " << mag(mesh.C()[cellI]) << " "
-            << mesh.V()[cellI] << endl;
+            << mesh.C()[cellI][2] << " " << mesh.V()[cellI] << " " 
+            << polarC.lon() << " " << polarC.lat() << " " << polarC.r() << endl;
     }
 
     const fileName faceFile = outFile / "face.diagnostics";
     OFstream fos(faceFile);
-    fos << "# faceI x y z mag(Cf) area radialComponent kComponent" << endl;
+    fos << "# faceI x y z area radialComponent kComponent lon lat r" << endl;
     
     for(label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
     {
         scalar radialComponent = (mesh.Cf()[faceI]/mag(mesh.Cf()[faceI])) & (mesh.Sf()[faceI]/mesh.magSf()[faceI]);
         scalar kComponent = mesh.Sf()[faceI] & vector(0,0,1);
+
+        const polarPoint polarF = convertToPolar(mesh.Cf()[faceI]);
         
         fos << faceI << " " << mesh.Cf()[faceI][0] << " " 
-           << mesh.Cf()[faceI][1] << " "
-           << mesh.Cf()[faceI][2] << " " << mag(mesh.Cf()[faceI]) << " "
+           << mesh.Cf()[faceI][1] << " " << mesh.Cf()[faceI][2] << " " 
            << mesh.magSf()[faceI] << " " << radialComponent << " "
-           << kComponent << endl;
+           << kComponent << " "
+           << polarF.lon() << " " << polarF.lat() << " " << polarF.r() << endl;
     }
 
     return EXIT_SUCCESS;
