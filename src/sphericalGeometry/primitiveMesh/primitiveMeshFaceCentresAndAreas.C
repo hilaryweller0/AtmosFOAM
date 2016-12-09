@@ -165,15 +165,13 @@ void primitiveMesh::makeFaceCentresAndAreas
             // the area and centre
             if (!faceOnSphere)
             {
-                const vector rhat = 0.5*(rhat0 + rhat1);
+                const vector rhat = (0.5*(rhat0 + rhat1))/mag(0.5*(rhat0 + rhat1));
                 fCtrs[facei] = 0.5*(r1 + r2)*rhat;
                 const vector idir = rhat ^ (rhat1 - rhat0);
-                //const scalar A = arcLength(rhat0, rhat1)*Rsphere*(r2 - r1);
                 const scalar A = 0.5*arcLength(rhat0, rhat1)*mag(r2S - r1S);
                 fAreas[facei] = A*idir/mag(idir);
                 const vector dir = (p[f[1]] - p[f[0]])^(p[f[2]] - p[f[0]]);
                 if ((dir & idir) < 0) fAreas[facei] = -fAreas[facei];
-                
             }
         }
 
