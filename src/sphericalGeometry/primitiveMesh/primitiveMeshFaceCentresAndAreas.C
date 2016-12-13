@@ -191,6 +191,8 @@ void primitiveMesh::makeFaceCentresAndAreas
             vector sumAc = vector::zero;
             scalar sumR = 0;
             scalar omega = 0;
+            // The area vector is calculated as for Cartesian geometry
+            // just to get the direction
             vector sumAn = vector::zero;
 
             for (label pi = 0; pi < nPoints; pi++)
@@ -199,6 +201,7 @@ void primitiveMesh::makeFaceCentresAndAreas
 
                 vector c = p[f[pi]] + nextPoint + fCentre;
                 scalar r = mag(p[f[pi]]) + mag(nextPoint);
+                // The area vector as if for Cartesian geometry
                 vector n = (nextPoint - p[f[pi]])^(fCentre - p[f[pi]]);
                 scalar a = sphTriSolidAngle(p[f[pi]], nextPoint, fCentre);
                 omega += a;
@@ -228,7 +231,6 @@ void primitiveMesh::makeFaceCentresAndAreas
             sumR /= (2*omega);
             vector rhat = sumAc/mag(sumAc);
             fCtrs[facei] = rhat*sumR;
-            //fAreas[facei] = RsphereS*rhat*omega;
             fAreas[facei] = sqr(sumR)*rhat*omega*sign(sumAn & rhat);
             
         }
