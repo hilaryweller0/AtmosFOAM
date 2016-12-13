@@ -87,7 +87,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    Info << "===OWNER===" << endl;
+    Info << "Calculating owner stencils" << endl;
     stencilWeights ownerWeights(mesh, "owner");
     fit(owncoeffs_, stencilPoints, ownerWeights, true);
     ownerWeights.write();
@@ -100,7 +100,7 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
         stencilPoints
     );
 
-    Info << "===NEIGHBOUR===" << endl;
+    Info << "Calculating neighbour stencils" << endl;
     stencilWeights neiWeights(mesh, "nei");
     fit(neicoeffs_, stencilPoints, neiWeights, false);
     neiWeights.write();
