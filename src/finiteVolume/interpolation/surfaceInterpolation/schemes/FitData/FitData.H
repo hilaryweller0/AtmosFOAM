@@ -68,17 +68,16 @@ class FitData
         //- Is scheme correction on linear (true) or on upwind (false)
         const bool linearCorrection_;
 
-        //- Factor the fit is allowed to deviate from the base scheme
-        //  (linear or pure upwind)
-        //  This limits the amount of high-order correction and increases
-        //  stability on bad meshes
-        const scalar linearLimitFactor_;
-
         //- Weights for central stencil
         const scalar centralWeight_;
 
         //- Dimensionality of the geometry
         const label dim_;
+
+        //- Determines the orientation of the local stencil coordinates
+        //- For spherical geometry, a plane tangent to the face centre is used
+        //- Otherwise, the jdir is chosen to be maximimally orthogonal to idir
+        const bool sphericalGeometry_;
 
 
 protected:
@@ -102,8 +101,8 @@ public:
             const fvMesh& mesh,
             const ExtendedStencil& stencil,
             const bool linearCorrection,
-            const scalar linearLimitFactor,
-            const scalar centralWeight
+            const scalar centralWeight,
+            const bool sphericalGeometry = false
         );
 
 
@@ -118,12 +117,6 @@ public:
         const ExtendedStencil& stencil() const
         {
             return stencil_;
-        }
-
-        //- Factor the fit is allowed to deviate from the base scheme
-        scalar linearLimitFactor() const
-        {
-            return linearLimitFactor_;
         }
 
         //- Return weight for central stencil

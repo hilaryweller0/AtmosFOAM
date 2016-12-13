@@ -55,13 +55,10 @@ class UpwindCorrFitScheme
         //- Reference to the surface flux used to choose upwind direction
         const surfaceScalarField& faceFlux_;
 
-        //- Factor the fit is allowed to deviate from linear.
-        //  This limits the amount of high-order correction and increases
-        //  stability on bad meshes
-        const scalar linearLimitFactor_;
-
         //- Weights for central stencil
         const scalar centralWeight_;
+
+        const bool sphericalGeometry_;
 
 
     // Private Member Functions
@@ -92,8 +89,8 @@ public:
                 mesh.lookupObject<surfaceScalarField>(word(is))
             ),
             faceFlux_(upwind<Type>::faceFlux_),
-            linearLimitFactor_(readScalar(is)),
-            centralWeight_(1000)
+            centralWeight_(1000),
+            sphericalGeometry_(readBool(is))
         {}
 
 
@@ -107,8 +104,8 @@ public:
         :
             upwind<Type>(mesh, faceFlux),
             faceFlux_(faceFlux),
-            linearLimitFactor_(readScalar(is)),
-            centralWeight_(1000)
+            centralWeight_(1000),
+            sphericalGeometry_(readBool(is))
         {}
 
 
@@ -143,8 +140,8 @@ public:
                 mesh,
                 stencil,
                 false,           // not calculated as offset to linear
-                linearLimitFactor_,
-                centralWeight_
+                centralWeight_,
+                sphericalGeometry_
             );
 
             const List<scalarList>& fo = ufd.owncoeffs();

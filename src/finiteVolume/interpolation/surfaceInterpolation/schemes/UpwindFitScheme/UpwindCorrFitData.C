@@ -38,8 +38,8 @@ Foam::UpwindCorrFitData<Polynomial>::UpwindCorrFitData
     const fvMesh& mesh,
     const extendedUpwindCellToFaceStencilNew& stencil,
     const bool linearCorrection,
-    const scalar linearLimitFactor,
-    const scalar centralWeight
+    const scalar centralWeight,
+    const bool sphericalGeometry
 )
 :
     FitData
@@ -49,7 +49,7 @@ Foam::UpwindCorrFitData<Polynomial>::UpwindCorrFitData
         Polynomial
     >
     (
-        mesh, stencil, linearCorrection, linearLimitFactor, centralWeight
+        mesh, stencil, linearCorrection, centralWeight, sphericalGeometry
     ),
     owncoeffs_(mesh.nFaces()),
     neicoeffs_(mesh.nFaces())
