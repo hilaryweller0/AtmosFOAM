@@ -88,7 +88,8 @@ protected:
             vector& idir,        // value changed in return
             vector& jdir,        // value changed in return
             vector& kdir,        // value changed in return
-            const label faci
+            const label faci,
+            const List<point>& C
         );
 
 public:

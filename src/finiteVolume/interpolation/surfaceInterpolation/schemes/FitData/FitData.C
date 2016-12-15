@@ -65,7 +65,8 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     vector& idir,        // value changed in return
     vector& jdir,        // value changed in return
     vector& kdir,        // value changed in return
-    const label facei
+    const label facei,
+    const List<point>& C
 )
 {
     const fvMesh& mesh = this->mesh();
@@ -82,15 +83,13 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     }
     else
     {
-        // For the jdir find the cell within all cellCells of the owner that gives
+        // For the jdir find the cell within the stencil that gives
         // the direction most different to idir by finding the largest idir ^ jdir
         jdir = idir;
         vector jdirTmp;
-        const label own = mesh.faceOwner()[facei];
-        forAll(mesh.cellCells()[own], i)
+        forAll(C, celli)
         {
-            const label celli = mesh.cellCells()[own][i];
-            jdirTmp = mesh.cellCentres()[celli] - fC;
+            jdirTmp = C[celli] - fC;
             if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
             {
                 jdir = jdirTmp;
@@ -103,6 +102,8 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
         // kdir is normal to idir and jdir
         kdir = idir ^ jdir;
     }
+
+    Info << fC << " " << C.size() << " " << idir << " " << jdir << endl;
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
@@ -117,7 +118,7 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     vector idir(1,0,0);
     vector jdir(0,1,0);
     vector kdir(0,0,1);
-    findFaceDirs(idir, jdir, kdir, facei);
+    findFaceDirs(idir, jdir, kdir, facei, C);
     
     point p0 = this->mesh().faceCentres()[facei];
 
