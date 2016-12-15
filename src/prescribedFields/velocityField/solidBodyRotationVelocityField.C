@@ -22,22 +22,21 @@ vector solidBodyRotationVelocityField::streamfunctionAt
     const dimensionedScalar x("x", dimLength, p.x());
     const dimensionedScalar x1("x1", dimLength, scalar(-1000));
     const dimensionedScalar x2("x2", dimLength, scalar(1000));
+    const dimensionedScalar w("angular_velocity", dimTime, scalar(100));
 
     dimensionedScalar psi("psi", cmptMultiply(dimVelocity, dimLength), scalar(0));
-    if (z.value() <= z1.value())
-    {
+    //if (z.value() <= z1.value())
+    //{
         // psi is zero
-    }
-    else if (z.value() <= z2.value())
-    {
-        psi = -0.5*u0*(z - z1 - (z2-z1)/M_PI*Foam::sin(M_PI*(z-z1)/(z2-z1)));
-        psi = 0.5*u0*(x2-x1)/M_PI*Foam::cos(M_PI*(z-0.5*z1-0.5*z2)/(z2-z1))*Foam::cos(M_PI*(2*x-x1-x2)/(x2-x1))
-            + 0.5*u0*(z2-z1)/M_PI*Foam::cos(M_PI*(2*z-z1-z2)/(z2-z1))*Foam::cos(M_PI*(x-0.5*x1-0.5*x2)/(x2-x1));
-    }
-    else 
-    {
+    //}
+    //else if (z.value() <= z2.value())
+    //{
+        psi = 0.5*( z*z + x*x )/w;
+    //}
+    //else 
+    //{
         // psi is zero
-    }
+    //}
 
     return unitNormal * psi.value();
 }
