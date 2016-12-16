@@ -33,7 +33,7 @@ Description
 
 namespace Foam
 {
-    makelimitedSurfaceInterpolationScheme(upwindDebug)
+    makelimitedSurfaceInterpolationSchemeDebug(upwindDebug)
 }
 
 // ************************************************************************* //

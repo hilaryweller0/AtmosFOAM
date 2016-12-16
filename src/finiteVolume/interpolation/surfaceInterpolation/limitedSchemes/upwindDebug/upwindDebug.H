@@ -35,7 +35,7 @@ SourceFiles
 #ifndef upwindDebug_H
 #define upwindDebug_H
 
-#include "limitedSurfaceInterpolationScheme.H"
+#include "limitedSurfaceInterpolationSchemeDebug.H"
 #include "volFields.H"
 #include "surfaceFields.H"
 
@@ -51,7 +51,7 @@ namespace Foam
 template<class Type>
 class upwindDebug
 :
-    public limitedSurfaceInterpolationScheme<Type>
+    public limitedSurfaceInterpolationSchemeDebug<Type>
 {
     // Private Member Functions
 
@@ -74,7 +74,7 @@ public:
             const surfaceScalarField& faceFlux
         )
         :
-            limitedSurfaceInterpolationScheme<Type>(mesh, faceFlux)
+            limitedSurfaceInterpolationSchemeDebug<Type>(mesh, faceFlux)
         {}
 
         //- Construct from Istream.
@@ -86,7 +86,7 @@ public:
             Istream& is
         )
         :
-            limitedSurfaceInterpolationScheme<Type>(mesh, is)
+            limitedSurfaceInterpolationSchemeDebug<Type>(mesh, is)
         {}
 
         //- Construct from faceFlux and Istream
@@ -97,7 +97,7 @@ public:
             Istream&
         )
         :
-            limitedSurfaceInterpolationScheme<Type>(mesh, faceFlux)
+            limitedSurfaceInterpolationSchemeDebug<Type>(mesh, faceFlux)
         {}
 
 

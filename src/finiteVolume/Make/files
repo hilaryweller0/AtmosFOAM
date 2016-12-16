@@ -1,8 +1,4 @@
 interpolation/surfaceInterpolation/limitedSchemes/upwindDebug/upwindDebug.C
-//interpolation/surfaceInterpolation/limitedSchemes/limitedSurfaceInterpolationScheme/limitedSurfaceInterpolationSchemeUser.C
-//interpolation/surfaceInterpolation/surfaceInterpolationScheme/surfaceInterpolationSchemeUser.C
-//interpolation/surfaceInterpolation/surfaceInterpolationScheme/surfaceInterpolationSchemes.C
-//interpolation/surfaceInterpolation/limitedSchemes/limitedSurfaceInterpolationScheme/limitedSurfaceInterpolationSchemes.C
 
 /*interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
 interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
