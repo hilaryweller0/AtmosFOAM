@@ -69,37 +69,13 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
     );
     GeometricField<Type, fvsPatchField, surfaceMesh>& sf = tsfCorr.ref();
 
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
-    {
-            const List<Type>& stField = ownFld[faceI];
-            const List<scalar>& stWeight = ownWeights[faceI];
-            
-            Type corr = pTraits<Type>::zero;
-
-            forAll(stField, i)
-            {
-                corr += stField[i]*stWeight[i];
-            }
-    }
-
-    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
-    {
-            const List<Type>& stField = neiFld[faceI];
-            const List<scalar>& stWeight = neiWeights[faceI];
-            
-            Type corr = pTraits<Type>::zero;
-
-            forAll(stField, i)
-            {
-                corr += stField[i]*stWeight[i];
-            }
-    }
-
     // Internal faces
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
     {
+        std::cerr << "flux across internalFace at " << mesh.time().timeName() << "\n";
         if (phi[faceI] >= 0)
         {
+            if (mag(phi[faceI]) > SMALL) std::cerr << "phi >= 0" << "\n";
             // Flux out of owner. Use upwind (= owner side) stencil.
             const List<Type>& stField = ownFld[faceI];
             const List<scalar>& stWeight = ownWeights[faceI];
@@ -108,9 +84,11 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
             {
                 sf[faceI] += stField[i]*stWeight[i];
             }
+            if (mag(phi[faceI]) > SMALL) std::cerr << "corr " << sf[faceI] << "\n";
         }
         else
         {
+            if (mag(phi[faceI]) > SMALL) std::cerr << "phi < 0" << "\n";
             const List<Type>& stField = neiFld[faceI];
             const List<scalar>& stWeight = neiWeights[faceI];
 
@@ -118,6 +96,7 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
             {
                 sf[faceI] += stField[i]*stWeight[i];
             }
+            if (mag(phi[faceI]) > SMALL) std::cerr << "corr " << sf[faceI] << "\n";
         }
     }
 
@@ -132,30 +111,39 @@ Foam::extendedUpwindCellToFaceStencilNew::weightedSum
 
         if (pSfCorr.coupled())
         {
+            std::cerr << "flux across " << pSfCorr.patch().name() << " at " << mesh.time().timeName() << "\n";
             label faceI = pSfCorr.patch().start();
 
             forAll(pSfCorr, i)
             {
                 if (phi.boundaryField()[patchi][i] >= 0)
                 {
+                    std::cerr << "phi >= 0" << "\n";
                     // Flux out of owner. Use upwind (= owner side) stencil.
                     const List<Type>& stField = ownFld[faceI];
                     const List<scalar>& stWeight = ownWeights[faceI];
 
                     forAll(stField, j)
                     {
+                        const scalar st = static_cast<const scalar>(stField[j]);
+                        std::cerr << st << "*" << stWeight[j] << "\n";
                         pSfCorr[i] += stField[j]*stWeight[j];
                     }
+                    std::cerr << "corr " << pSfCorr[i] << "\n";
                 }
                 else
                 {
+                    std::cerr << "phi < 0" << "\n";
                     const List<Type>& stField = neiFld[faceI];
                     const List<scalar>& stWeight = neiWeights[faceI];
 
                     forAll(stField, j)
                     {
+                        const scalar st = static_cast<const scalar>(stField[j]);
+                        std::cerr << st << "*" << stWeight[j] << "\n";
                         pSfCorr[i] += stField[j]*stWeight[j];
                     }
+                    std::cerr << "corr " << pSfCorr[i] << "\n";
                 }
                 faceI++;
             }
