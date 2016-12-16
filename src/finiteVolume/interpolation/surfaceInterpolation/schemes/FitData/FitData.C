@@ -76,6 +76,11 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     
     const point& fC = mesh.faceCentres()[facei];
 
+    // can't create stream here because OF has no append functionality
+    // I'll have to thread it through the layers instead
+    OFstream o(mesh.time().rootPath() / mesh.time().caseName() / "stencil.dat");
+    o << "faceI " << facei << " " << C.size() << " " << idir << " " << C << endl;
+
     if (sphericalGeometry_)
     {
         kdir = fC/mag(fC);
@@ -102,8 +107,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
         // kdir is normal to idir and jdir
         kdir = idir ^ jdir;
     }
-
-    Info << fC << " " << C.size() << " " << idir << " " << jdir << endl;
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
