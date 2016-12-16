@@ -13,8 +13,8 @@ volScalarField T
     mesh
 );
 // Ensure that T.oldTime() and T.oldTime.oldTime() are stored
-T.oldTime();
-T.oldTime().oldTime();
+//T.oldTime();
+//T.oldTime().oldTime();
 
 volVectorField U
 (
@@ -55,56 +55,4 @@ surfaceScalarField phi
         IOobject::NO_WRITE
     ),
     Uf & mesh.Sf()
-);
-
-volScalarField k1
-(
-    IOobject
-    (
-        "k1",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T)
-);
-
-volScalarField k2
-(
-    IOobject
-    (
-        "k2",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T)
-);
-
-volScalarField k3
-(
-    IOobject
-    (
-        "k3",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T)
-);
-
-volScalarField k4
-(
-    IOobject
-    (
-        "k4",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T)
 );
