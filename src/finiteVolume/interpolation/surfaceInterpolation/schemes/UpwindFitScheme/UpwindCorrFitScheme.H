@@ -34,7 +34,7 @@ Description
 #define UpwindCorrFitScheme_H
 
 #include "UpwindCorrFitData.H"
-#include "upwind.H"
+#include "upwindDebug.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -48,7 +48,7 @@ namespace Foam
 template<class Type, class Polynomial, class Stencil>
 class UpwindCorrFitScheme
 :
-    public upwind<Type>
+    public upwindDebug<Type>
 {
     // Private Data
 
@@ -83,12 +83,12 @@ public:
         //  from the mesh objectRegistry
         UpwindCorrFitScheme(const fvMesh& mesh, Istream& is)
         :
-            upwind<Type>
+            upwindDebug<Type>
             (
                 mesh,
                 mesh.lookupObject<surfaceScalarField>(word(is))
             ),
-            faceFlux_(upwind<Type>::faceFlux_),
+            faceFlux_(upwindDebug<Type>::faceFlux_),
             centralWeight_(1000),
             sphericalGeometry_(readBool(is))
         {}
@@ -102,7 +102,7 @@ public:
             Istream& is
         )
         :
-            upwind<Type>(mesh, faceFlux),
+            upwindDebug<Type>(mesh, faceFlux),
             faceFlux_(faceFlux),
             centralWeight_(1000),
             sphericalGeometry_(readBool(is))
@@ -183,17 +183,7 @@ surfaceInterpolationScheme<TYPE>::addMeshFluxConstructorToTable               \
 
 #define makeUpwindCorrFitSurfaceInterpolationScheme(SS, POLYNOMIAL, STENCIL)      \
                                                                               \
-makeUpwindCorrFitSurfaceInterpolationTypeScheme(SS,POLYNOMIAL,STENCIL,scalar)     \
-makeUpwindCorrFitSurfaceInterpolationTypeScheme(SS,POLYNOMIAL,STENCIL,vector)     \
-makeUpwindCorrFitSurfaceInterpolationTypeScheme                                   \
-(                                                                             \
-    SS,                                                                       \
-    POLYNOMIAL,                                                               \
-    STENCIL,                                                                  \
-    sphericalTensor                                                           \
-)                                                                             \
-makeUpwindCorrFitSurfaceInterpolationTypeScheme(SS,POLYNOMIAL,STENCIL,symmTensor) \
-makeUpwindCorrFitSurfaceInterpolationTypeScheme(SS,POLYNOMIAL,STENCIL,tensor)
+makeUpwindCorrFitSurfaceInterpolationTypeScheme(SS,POLYNOMIAL,STENCIL,scalar)     
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
