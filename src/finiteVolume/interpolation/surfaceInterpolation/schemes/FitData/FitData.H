@@ -79,6 +79,8 @@ class FitData
         //- Otherwise, the jdir is chosen to be maximimally orthogonal to idir
         const bool sphericalGeometry_;
 
+        OFstream o;
+
 
 protected:
 
@@ -162,6 +164,7 @@ public:
         //- Recalculate weights (but not stencil) when the mesh moves
         bool movePoints();
 };
+
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

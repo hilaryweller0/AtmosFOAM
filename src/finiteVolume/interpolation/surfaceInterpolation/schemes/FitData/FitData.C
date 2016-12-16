@@ -53,8 +53,10 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
         isA<emptyPolyPatch>(mesh.boundaryMesh().last()) ? 2 :
         mesh.nGeometricD()
     ),
-    sphericalGeometry_(sphericalGeometry)
-{}
+    sphericalGeometry_(sphericalGeometry),
+    o(mesh.time().rootPath() / mesh.time().caseName() / "stencil.dat")
+{
+}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
@@ -78,8 +80,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
 
     // can't create stream here because OF has no append functionality
     // I'll have to thread it through the layers instead
-    OFstream o(mesh.time().rootPath() / mesh.time().caseName() / "stencil.dat");
-    o << "faceI " << facei << " " << C.size() << " " << idir << " " << C << endl;
+    o << fC << " " << C.size() << " " << idir << " " << endl;
 
     if (sphericalGeometry_)
     {
