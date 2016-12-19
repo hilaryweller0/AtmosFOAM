@@ -111,8 +111,14 @@ void primitiveMesh::makeCellCentresAndVols
         {
             cellVols[own[faceI]] += fCtrs[faceI] & fAreas[faceI];
             cellCtrs[own[faceI]] += fCtrs[faceI];
-            if (r1[own[faceI]] < 0) r1 = mag(fCtrs[faceI]);
-            else r2[own[faceI]] = mag(fCtrs[faceI]);
+            if (r1[own[faceI]] < 0)
+            {
+                r1 = mag(fCtrs[faceI]);
+            }
+            else
+            {
+                r2[own[faceI]] = mag(fCtrs[faceI]);
+            }
             
             if (faceI < nInternalFaces())
             {
@@ -123,7 +129,7 @@ void primitiveMesh::makeCellCentresAndVols
         }
     }
     cellVols *= 1./3.;
-    cellCtrs *= sqrt((sqr(r1) + r1*r2 + sqr(r2))/3.)/mag(cellCtrs);
+    cellCtrs *= 0.5*(r1+r2)/mag(cellCtrs);
 }
 
 
