@@ -39,7 +39,7 @@ Description
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
-    Foam::argList::addBoolOption("rk2", "two-stage second-order Runge-Kutta");
+    Foam::argList::addBoolOption("heun2", "two-stage second-order Heun");
     Foam::argList::addBoolOption("rk3", "Third-order Runge-Kutta scheme used by Skamarock & Gassmann 2011");
     Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("forwardEuler", "");
@@ -100,11 +100,6 @@ int main(int argc, char *argv[])
             T = T.oldTime() - dt/2*fvc::div(phi, T);
             T = T.oldTime() - dt*fvc::div(phi, T);
         }
-        else if (args.options().found("rk2"))
-        {
-            T = T.oldTime() - 0.5*dt*fvc::div(phi,T.oldTime());
-            T = T.oldTime() - dt*fvc::div(phi,T);
-        }
         else if (args.options().found("rk4"))
         {
             k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
@@ -115,7 +110,9 @@ int main(int argc, char *argv[])
         }
         else
         {
-            for (int corr=0; corr < 3; corr++)
+            int corrSteps = args.options().found("heun2") ? 2 : 3;
+
+            for (int corr=0; corr < corrSteps; corr++)
             {
                 T = T.oldTime() - 0.5*dt*
                 (
