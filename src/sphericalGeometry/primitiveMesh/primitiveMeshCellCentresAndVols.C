@@ -75,7 +75,6 @@ void primitiveMesh::calcCellCentresAndVols() const
 
     // Make centres and volumes
     makeCellCentresAndVols(faceCentres(), faceAreas(), cellCtrs, cellVols);
-    //Info << "cellVols = " << cellVols << endl;
 
     if (debug)
     {
@@ -108,11 +107,7 @@ void primitiveMesh::makeCellCentresAndVols
     
     forAll (faces(), faceI)
     {
-        scalar cos2CfAf = sqr(fAreas[faceI] & fCtrs[faceI])
-                         /(magSqr(fAreas[faceI])*magSqr(fCtrs[faceI]));
-        
-        // determine if the face is on a sphere and hence contributes
-        if(mag(cos2CfAf) >= SMALL)
+        if (!isRadialFace(fCtrs[faceI], fAreas[faceI]))
         {
             cellVols[own[faceI]] += fCtrs[faceI] & fAreas[faceI];
             cellCtrs[own[faceI]] += fCtrs[faceI];
@@ -124,18 +119,23 @@ void primitiveMesh::makeCellCentresAndVols
                 cellVols[nei[faceI]] += fCtrs[faceI] & fAreas[faceI];
                 cellCtrs[nei[faceI]] += fCtrs[faceI];
                 r2[nei[faceI]] = mag(fCtrs[faceI]);
-                
-                //Info << "Face " << faceI << " cos2CfAf = " << cos2CfAf << endl;
             }
         }
     }
     cellVols *= 1./3.;
     cellCtrs *= sqrt((sqr(r1) + r1*r2 + sqr(r2))/3.)/mag(cellCtrs);
-
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+bool primitiveMesh::isRadialFace
+(
+    const vector Cf,
+    const vector Sf
+) const
+{
+    return (sqr(Sf & Cf)/(magSqr(Sf)*magSqr(Cf))) < SMALL;
+}
 
 const vectorField& primitiveMesh::cellCentres() const
 {
