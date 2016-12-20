@@ -77,9 +77,12 @@ int main(int argc, char *argv[])
     // go backwards in time by one time step to initialise leap-frog
     T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
 
+    scalar maxCoNum = 0;
+
     while (runTime.loop())
     {
         #include "CourantNo.H"
+        if (CoNum > maxCoNum) maxCoNum = CoNum;
         if (explicitTimestepping && CoNum > 1.0)
         {
             FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
@@ -137,7 +140,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    Info<< "End\n" << endl;
+    Info << "Maximum Courant Number at any timestep: " << maxCoNum << endl;
+    Info << "End\n" << endl;
 
     return 0;
 }
