@@ -1,5 +1,3 @@
-interpolation/surfaceInterpolation/limitedSchemes/upwindDebug/upwindDebug.C
-
 /*interpolation/surfaceInterpolation/schemes/LUSTb/LUSTb.C
 interpolation/surfaceInterpolation/schemes/CLUST/CLUST.C
 interpolation/surfaceInterpolation/schemes/biQuadraticUpwindFit/biQuadraticUpwindFit.C

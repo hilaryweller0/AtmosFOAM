@@ -34,7 +34,7 @@ Description
 #define UpwindCorrFitScheme_H
 
 #include "UpwindCorrFitData.H"
-#include "upwindDebug.H"
+#include "upwind.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -48,7 +48,7 @@ namespace Foam
 template<class Type, class Polynomial, class Stencil>
 class UpwindCorrFitScheme
 :
-    public upwindDebug<Type>
+    public upwind<Type>
 {
     // Private Data
 
@@ -83,12 +83,12 @@ public:
         //  from the mesh objectRegistry
         UpwindCorrFitScheme(const fvMesh& mesh, Istream& is)
         :
-            upwindDebug<Type>
+            upwind<Type>
             (
                 mesh,
                 mesh.lookupObject<surfaceScalarField>(word(is))
             ),
-            faceFlux_(upwindDebug<Type>::faceFlux_),
+            faceFlux_(upwind<Type>::faceFlux_),
             centralWeight_(1000),
             sphericalGeometry_(readBool(is))
         {}
@@ -102,7 +102,7 @@ public:
             Istream& is
         )
         :
-            upwindDebug<Type>(mesh, faceFlux),
+            upwind<Type>(mesh, faceFlux),
             faceFlux_(faceFlux),
             centralWeight_(1000),
             sphericalGeometry_(readBool(is))
