@@ -115,6 +115,7 @@ void Foam::UpwindCorrFitData<Polynomial>::fit(
 )
 {
     const fvMesh& mesh = this->mesh();
+    Info << "calling mesh.surfaceInterpolation::weights()" << endl;
     const surfaceScalarField& w = mesh.surfaceInterpolation::weights();
 
     for (label facei = 0; facei < mesh.nInternalFaces(); facei++)
