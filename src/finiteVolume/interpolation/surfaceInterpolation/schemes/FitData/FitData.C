@@ -102,8 +102,6 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
         // kdir is normal to idir and jdir
         kdir = idir ^ jdir;
     }
-
-    Info << fC << " " << C.size() << " " << idir << " " << jdir << endl;
 }
 
 template<class FitDataType, class ExtendedStencil, class Polynomial>
