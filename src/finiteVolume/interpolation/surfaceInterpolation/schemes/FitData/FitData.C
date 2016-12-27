@@ -50,6 +50,7 @@ Foam::FitData<Form, ExtendedStencil, Polynomial>::FitData
     dim_
     (
         mesh.nGeometricD() == 1 ? 1 :
+        mesh.nGeometricD() == 0 ? 2 :
         isA<emptyPolyPatch>(mesh.boundaryMesh().last()) ? 2 :
         mesh.nGeometricD()
     ),
