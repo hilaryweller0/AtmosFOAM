@@ -1,0 +1,14 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      mountainDict;
+}
+
+type            	schaerCos;
+domainHeight		25e3;
+halfWidth		25e3;
+peakHeight		5e3;
+wavelength		8e3;
+tolerance		0;

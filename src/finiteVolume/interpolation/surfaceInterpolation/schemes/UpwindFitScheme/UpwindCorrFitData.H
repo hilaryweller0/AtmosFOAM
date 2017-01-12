@@ -95,8 +95,8 @@ public:
             const fvMesh& mesh,
             const extendedUpwindCellToFaceStencilNew& stencil,
             const bool linearCorrection,
-            const scalar linearLimitFactor,
-            const scalar centralWeight
+            const scalar centralWeight,
+            const bool sphericalGeometry = false
         );
 
 

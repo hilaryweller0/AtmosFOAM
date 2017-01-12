@@ -165,15 +165,13 @@ void primitiveMesh::makeFaceCentresAndAreas
             // the area and centre
             if (!faceOnSphere)
             {
-                const vector rhat = 0.5*(rhat0 + rhat1);
+                const vector rhat = (0.5*(rhat0 + rhat1))/mag(0.5*(rhat0 + rhat1));
                 fCtrs[facei] = 0.5*(r1 + r2)*rhat;
                 const vector idir = rhat ^ (rhat1 - rhat0);
-                //const scalar A = arcLength(rhat0, rhat1)*Rsphere*(r2 - r1);
                 const scalar A = 0.5*arcLength(rhat0, rhat1)*mag(r2S - r1S);
                 fAreas[facei] = A*idir/mag(idir);
                 const vector dir = (p[f[1]] - p[f[0]])^(p[f[2]] - p[f[0]]);
                 if ((dir & idir) < 0) fAreas[facei] = -fAreas[facei];
-                
             }
         }
 
@@ -193,6 +191,8 @@ void primitiveMesh::makeFaceCentresAndAreas
             vector sumAc = vector::zero;
             scalar sumR = 0;
             scalar omega = 0;
+            // The area vector is calculated as for Cartesian geometry
+            // just to get the direction
             vector sumAn = vector::zero;
 
             for (label pi = 0; pi < nPoints; pi++)
@@ -201,6 +201,7 @@ void primitiveMesh::makeFaceCentresAndAreas
 
                 vector c = p[f[pi]] + nextPoint + fCentre;
                 scalar r = mag(p[f[pi]]) + mag(nextPoint);
+                // The area vector as if for Cartesian geometry
                 vector n = (nextPoint - p[f[pi]])^(fCentre - p[f[pi]]);
                 scalar a = sphTriSolidAngle(p[f[pi]], nextPoint, fCentre);
                 omega += a;
@@ -230,30 +231,10 @@ void primitiveMesh::makeFaceCentresAndAreas
             sumR /= (2*omega);
             vector rhat = sumAc/mag(sumAc);
             fCtrs[facei] = rhat*sumR;
-            //fAreas[facei] = RsphereS*rhat*omega;
             fAreas[facei] = sqr(sumR)*rhat*omega*sign(sumAn & rhat);
             
         }
     }
-
-//    // Test that face area vectors of each cell sum to zero
-//    forAll(cells(), cellI)
-//    {
-//        const cell& c = cells()[cellI];
-//        vector sumS = vector::zero;
-//        scalar maxFaceAreaS = 0;
-//        forAll(c, facei)
-//        {
-//            if (cellI == faceOwner()[c[facei]]) sumS += fAreas[c[facei]];
-//            else sumS -= fAreas[c[facei]];
-//            
-//            scalar faceAreaS = magSqr(fAreas[c[facei]]);
-//            if (faceAreaS > maxFaceAreaS)
-//            {
-//                maxFaceAreaS = faceAreaS;
-//            }
-//        }
-//    }
 }
 
 

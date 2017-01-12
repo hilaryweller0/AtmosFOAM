@@ -1,0 +1,5 @@
+faceSources = sets/faceSources
+$(faceSources)/triPrismFaces/triPrismFaces.C
+$(faceSources)/highAspectRatioFaces/highAspectRatioFaces.C
+
+LIB = $(FOAM_USER_LIBBIN)/libmeshToolsAtmos

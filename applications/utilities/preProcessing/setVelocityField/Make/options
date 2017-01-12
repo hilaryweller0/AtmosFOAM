@@ -11,4 +11,5 @@ EXE_LIBS = \
     -lfiniteVolume \
     -lprescribedFields \
     -lgeometry \
-    -lorography
+    -lorography \
+    -lgdal

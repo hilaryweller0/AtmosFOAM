@@ -179,7 +179,7 @@ void Foam::cellToCellStencil::validBoundaryFaces(boolList& isValidBFace) const
     {
         const polyPatch& pp = patches[patchI];
 
-        if (pp.coupled() || isA<emptyPolyPatch>(pp))
+        if (pp.coupled() || isA<emptyPolyPatch>(pp) || pp.name() != "inlet")
         {
             label bFaceI = pp.start()-mesh().nInternalFaces();
             forAll(pp, i)

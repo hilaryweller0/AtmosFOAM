@@ -892,6 +892,13 @@ public:
 
             //- Clear all geometry and addressing unnecessary for CFD
             void clearOut();
+
+    private:
+            bool isRadialFace
+            (
+                const vector Cf,
+                const vector Sf
+            ) const;
 };
 
 

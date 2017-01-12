@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
     HodgeOps H(mesh);
-    surfaceScalarField gd("gd", g & H.delta());
+    const surfaceScalarField gd("gd", g & H.delta());
     #include "createFields.H"
       
     const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");
@@ -75,10 +75,10 @@ int main(int argc, char *argv[])
               - fvm::laplacian(gradPcoeff, Exner)
             );
             innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
-    	}
-    	scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
+        }
+        scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
-    	
+        
         // modify the top boundary condition
         Info << "Exner ground value = " << maxGroundExner
              << "  ground value minus one = "
@@ -91,19 +91,19 @@ int main(int argc, char *argv[])
         topBCval = min(max(topBCval, scalar(0)), scalar(1));
         Info << topBCval << endl;
         Exner.boundaryFieldRef()[topBC] == topBCval;
-	}
+    }
 
-	// Change the top boundary type to be fixedFluxBuoyantExner
-	wordList ExnerBCs = Exner.boundaryField().types();
-	ExnerBCs[topBC] = "fixedFluxBuoyantExner";
-	volScalarField ExnerNew
-	(
-	    IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
-	    Exner,
-	    ExnerBCs
-	);
-	ExnerNew.correctBoundaryConditions();
-	ExnerNew.write();
+    // Change the top boundary type to be fixedFluxBuoyantExner
+    wordList ExnerBCs = Exner.boundaryField().types();
+    ExnerBCs[topBC] = "fixedFluxBuoyantExner";
+    volScalarField ExnerNew
+    (
+        IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
+        Exner,
+        ExnerBCs
+    );
+    ExnerNew.correctBoundaryConditions();
+    ExnerNew.write();
 
     Info<< "End\n" << endl;
 

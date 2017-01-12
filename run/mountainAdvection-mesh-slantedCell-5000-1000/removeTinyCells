@@ -1,0 +1,3 @@
+cellSet bigCells new cellToCell tinyCells
+cellSet bigCells invert
+quit
