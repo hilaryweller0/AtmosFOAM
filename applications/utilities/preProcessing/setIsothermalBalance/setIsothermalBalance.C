@@ -23,10 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    setExnerBalancedH
+    setIsothermalBalance
 
 Description
-    Find discretely balanced Exner profile given theta
+    Find discretely balanced theta and Exner profiles given a uniform
+    temperature profile
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,7 +39,6 @@ Description
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption("noInterpolate", "read thetaf directly instead of interpolating from theta");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -69,13 +69,24 @@ int main(int argc, char *argv[])
         innerConverged = false;
         for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
         {
+            theta == T0/Exner;
+            thetaf = fvc::interpolate(theta);
+            U = H.ddirToFlux(gd)
+              - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
+
             fvScalarMatrix ExnerEqn
             (
                 fvc::div(U)
-              - fvm::laplacian(gradPcoeff, Exner)
+              - fvm::laplacian
+                (
+                    H.Hdiag()*Cp*thetaf*H.magd()/mesh.magSf(), Exner
+                )
             );
-            innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
+            innerConverged = 
+                ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
         }
+        outerConverged = (mag(1-Exner.boundaryField()[groundBC][0])< BCtol);
+
         scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);
         
@@ -94,6 +105,7 @@ int main(int argc, char *argv[])
     }
 
     // Change the top boundary type to be fixedFluxBuoyantExner
+    Info << "Correcting top boundary conditions for Exner" << endl;
     wordList ExnerBCs = Exner.boundaryField().types();
     ExnerBCs[topBC] = "fixedFluxBuoyantExner";
     volScalarField ExnerNew
@@ -104,6 +116,14 @@ int main(int argc, char *argv[])
     );
     ExnerNew.correctBoundaryConditions();
     ExnerNew.write();
+
+    Info << "Calculating and writing out the Brutvaissala frequency" << endl;
+    volScalarField BruntFreq
+    (
+        IOobject("BruntFreq", runTime.timeName(), mesh),
+        Foam::sqrt(-(g & fvc::grad(theta))/theta)
+    );
+    BruntFreq.write();
 
     Info<< "End\n" << endl;
 

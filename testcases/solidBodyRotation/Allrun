@@ -1,0 +1,14 @@
+#!/bin/sh -e
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+runApplication blockMesh
+mkdir 0
+runApplication setVelocityField -time 0
+runApplication setInitialTracerField
+runApplication advectionSourceFoam
+runApplication gmtFoam -time 800 T
+evince 800/T.pdf &
+# ----------------------------------------------------------------- end-of-file
