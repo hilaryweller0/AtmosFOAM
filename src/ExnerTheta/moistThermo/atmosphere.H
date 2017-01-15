@@ -25,7 +25,7 @@ Class
     Foam::atmosphere
 
 Description
-    A list of fluids with phase changes between them and fucntions involved in
+    A list of fluids with phase changes between them and functions involved in
     combinging the fluids and the equation of state for the mixture
 
 SourceFiles
@@ -131,7 +131,7 @@ public:
         // Output
         void write();
 
-        // Input (re-read densities and liquid fractions
+        // Input (re-read densities and liquid fractions)
         void readUpdate();
 };
 
