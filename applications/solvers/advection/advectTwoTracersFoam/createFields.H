@@ -1,10 +1,10 @@
 Info<< "Reading field T\n" << endl;
 
-volScalarField T
+volScalarField T1
 (
     IOobject
     (
-        "T",
+        "T1",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -13,8 +13,25 @@ volScalarField T
     mesh
 );
 // Ensure that T.oldTime() and T.oldTime.oldTime() are stored
-T.oldTime();
-T.oldTime().oldTime();
+T1.oldTime();
+T1.oldTime().oldTime();
+
+volScalarField T2
+(
+    IOobject
+    (
+        "T2",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+// Ensure that T.oldTime() and T.oldTime.oldTime() are stored
+T2.oldTime();
+T2.oldTime().oldTime();
+
 
 volVectorField U
 (
@@ -67,7 +84,7 @@ volScalarField k1
         IOobject::NO_READ,
         IOobject::NO_WRITE
     ),
-    -fvc::div(phi,T)
+    -fvc::div(phi,T1)
 );
 
 volScalarField k2
@@ -80,7 +97,7 @@ volScalarField k2
         IOobject::NO_READ,
         IOobject::NO_WRITE
     ),
-    -fvc::div(phi,T)
+    -fvc::div(phi,T1)
 );
 
 volScalarField k3
@@ -93,7 +110,7 @@ volScalarField k3
         IOobject::NO_READ,
         IOobject::NO_WRITE
     ),
-    -fvc::div(phi,T)
+    -fvc::div(phi,T1)
 );
 
 volScalarField k4
@@ -106,5 +123,5 @@ volScalarField k4
         IOobject::NO_READ,
         IOobject::NO_WRITE
     ),
-    -fvc::div(phi,T)
+    -fvc::div(phi,T1)
 );

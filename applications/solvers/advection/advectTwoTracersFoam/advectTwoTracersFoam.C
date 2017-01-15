@@ -75,7 +75,8 @@ int main(int argc, char *argv[])
     }
     
     // go backwards in time by one time step to initialise leap-frog
-    T.oldTime().oldTime() = T + dt*fvc::div(phi, T);
+    T1.oldTime().oldTime() = T1 + dt*fvc::div(phi, T1);
+    T2.oldTime().oldTime() = T2 + dt*fvc::div(phi, T2);
 
     while (runTime.loop())
     {
@@ -88,51 +89,56 @@ int main(int argc, char *argv[])
 
         if (args.options().found("forwardEuler"))
         {
-            T = T.oldTime() - dt*fvc::div(phi,T);
+//            T = T.oldTime() - dt*fvc::div(phi,T);
         }
         else if (args.options().found("leapfrog"))
         {
-            T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
+//            T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
         }
         else if (args.options().found("rk3"))
         {
-            T = T.oldTime() - dt/3*fvc::div(phi, T);
-            T = T.oldTime() - dt/2*fvc::div(phi, T);
-            T = T.oldTime() - dt*fvc::div(phi, T);
+//            T = T.oldTime() - dt/3*fvc::div(phi, T);
+//            T = T.oldTime() - dt/2*fvc::div(phi, T);
+//            T = T.oldTime() - dt*fvc::div(phi, T);
         }
         else if (args.options().found("rk2"))
         {
-            T = T.oldTime() - 0.5*dt*fvc::div(phi,T.oldTime());
-            T = T.oldTime() - dt*fvc::div(phi,T);
+//            T = T.oldTime() - 0.5*dt*fvc::div(phi,T.oldTime());
+//            T = T.oldTime() - dt*fvc::div(phi,T);
         }
         else if (args.options().found("rk4"))
         {
-            k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
-            k2 = -fvc::div(phi, T.oldTime() + dt/2 * k1, "div(phi,T)");
-            k3 = -fvc::div(phi, T.oldTime() + dt/2 * k2, "div(phi,T)");
-            k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
-            T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
+//            k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
+//            k2 = -fvc::div(phi, T.oldTime() + dt/2 * k1, "div(phi,T)");
+//            k3 = -fvc::div(phi, T.oldTime() + dt/2 * k2, "div(phi,T)");
+//            k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
+//            T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
         }
         else
         {
-            //Damping Coefficient.
-            const dimensionedScalar oneOverSpCoeff("SpCoeff", dimTime, scalar(1000));
-            const dimensionedScalar SpCoeff = 1/oneOverSpCoeff;
             for (int corr=0; corr < 3; corr++)
             {
-                T = T.oldTime() - 0.5*dt*
+                T1 = T1.oldTime() - 0.5*dt*
                 (
-                    fvc::div(phi, T) + fvc::div(phi, T.oldTime())
-                    + 2*fvc::Sp(SpCoeff,T)
+                    fvc::div(phi, T1) + fvc::div(phi, T1.oldTime())
                 );
+                T2 = T2.oldTime() - 0.5*dt*
+                (
+                    fvc::div(phi, T2) + fvc::div(phi, T2.oldTime())
+                );
+
             }
         }
 
-        T.correctBoundaryConditions();
+        T1.correctBoundaryConditions();
+        T2.correctBoundaryConditions();
         
-        Info << " T goes from " << min(T.internalField()) << " to "
-             << max(T.internalField()) << endl;
+        Info << " T1 goes from " << min(T1.internalField()) << " to "
+             << max(T1.internalField()) << endl;
+        Info << " T2 goes from " << min(T2.internalField()) << " to "
+             << max(T2.internalField()) << endl;
         runTime.write();
+
 
         if (timeVaryingWind)
         {
