@@ -6,5 +6,7 @@ moistThermo/perfectGasPhase.C
 moistThermo/liquidPhase.C
 moistThermo/fluidSpecie.C
 moistThermo/atmosphere.C
+moistThermo/partition.C
+moistThermo/partitionedAtmosphere.C
 
 LIB = $(FOAM_USER_LIBBIN)/libExnerTheta

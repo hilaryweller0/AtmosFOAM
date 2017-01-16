@@ -1,3 +1,18 @@
+Info << "Reading in Exner pressure" << endl;
+volScalarField Exner
+(
+    IOobject
+    (
+        "Exner",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+Exner.oldTime();
+
 Info<< "Reading thermophysical properties\n" << endl;
 
 IOdictionary thermoDict
@@ -12,35 +27,29 @@ IOdictionary thermoDict
     )
 );
 
-Info << "Reading in air and water phases" << endl;
+Info << "Reading in air and water phases in stable and buoyant partitions"
+     << endl;
 wordList phaseNames(2);
 phaseNames[0] = "air";
 phaseNames[1] = "water";
-atmosphere atmos(phaseNames, mesh, thermoDict);
+wordList partNames(2);
+partNames[0] = "stable.";
+partNames[1] = "buoyant.";
+
+partitionedAtmosphere atmosParts(partNames, phaseNames, mesh, thermoDict, Exner);
+
+// Select just the stable part
+partition& atmos = atmosParts[0];
 
 perfectGasPhase& air = atmos[0].gas();
 //fluidSpecie& water = atmos[1];
 
-Info << "Reading in theta" << endl;
-volScalarField theta
-(
-    IOobject
-    (
-        "theta",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-theta.oldTime();
 
-Info << "Calculating, density, Exner, pressure and temperature from atmos and theta" << endl;
+Info << "Calculating, density, pressure and temperature from atmos and Exner"
+     << endl;
 
-volScalarField Exner("Exner", atmos.ExnerFromTheta(theta));
-Exner.oldTime();
-volScalarField T("T", Exner*theta);
+volScalarField& theta = atmos.theta();
+volScalarField& T = atmos.T();
 volScalarField p("p", air.pFromExner(Exner));
 volScalarField rho("rho", atmos.sumDensity());
 rho.oldTime();

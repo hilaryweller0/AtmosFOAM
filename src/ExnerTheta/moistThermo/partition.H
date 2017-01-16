@@ -22,22 +22,23 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::fluidSpecie
+    Foam::partition
 
 Description
-    Contains a perfect gas and liquid phase and constant and functions
-    describing phase changes between them
+    A partition of the atmosphere for solving the conditionally averaged
+    Euler equations conditioned based on the presence of buoyant convection.
+    A partition consists of an atmosphere, a temperature field and a volume
+    fraction for the partition (sigma)
 
 SourceFiles
-    fluidSpecie.C
+    partition.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef fluidSpecie_H
-#define fluidSpecie_H
+#ifndef partition_H
+#define partition_H
 
-#include "perfectGasPhase.H"
-#include "liquidPhase.H"
+#include "atmosphere.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,34 +46,35 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                         Class fluidSpecie Declaration
+                         Class partition Declaration
 \*---------------------------------------------------------------------------*/
 
-class fluidSpecie
+class partition
+:
+    public atmosphere
 {
     // Private data
 
-        //- Name of this species
-        const word name_;
-
-        //- gas and liquid phases
-        perfectGasPhase gas_;
-        liquidPhase liquid_;
+        //- Name of this partition
+        const word partitionName_;
         
-        //- Constants in equations for phase changes
-        const dimensionedScalar Lv0_;
-        const dimensionedScalar pvs0_;
+        //- Volume fraction of this partition
+        volScalarField sigma_;
+        
+        //- Temperature of this partition
+        volScalarField T_;
 
-        //- Condensation of this phase
-        volScalarField condensation_;
+        //- Potential temperature of this partition
+        volScalarField theta_;
+
 
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        fluidSpecie(const fluidSpecie&);
+        partition(const partition&);
 
         //- Disallow default bitwise assignment
-        void operator=(const fluidSpecie&);
+        void operator=(const partition&);
 
 
 public:
@@ -80,48 +82,49 @@ public:
     // Constructors
 
         //- Construct from components, dictionaries and IOobjects
-        fluidSpecie
+        partition
         (
-            const word& name__,
-            const IOobject& gasIO,
-            const IOobject& liquidIO,
+            const word& partitionName__,
+            const wordList& partNames,
             const fvMesh& mesh,
-            const dictionary& dict
+            const dictionary dict
+        );
+
+        //- Construct from components, dictionaries and IOobjects and Exner
+        partition
+        (
+            const word& partitionName__,
+            const wordList& partNames,
+            const fvMesh& mesh,
+            const dictionary dict,
+            const volScalarField& Exner
         );
 
 
     //- Destructor
-    ~fluidSpecie();
+    ~partition();
 
 
     // Member Functions
 
         // Access
+        const word& partitionName() { return partitionName_; }
+        //- Volume fraction of this partition
+        volScalarField& sigma() { return sigma_; }
+        //- Temperature of this partition
+        volScalarField& T() { return T_; }
+        //- Potential temperature of this partition
+        volScalarField& theta() { return theta_; }
 
-            //- gas and liquid phases
-            const word& name() { return name_; }
-            perfectGasPhase& gas() { return gas_; }
-            liquidPhase& liquid() { return liquid_; }
-            
-            // Constants in equations for phase changes
-            const dimensionedScalar& Lv0() { return Lv0_; }
-            const dimensionedScalar& pvs0() { return pvs0_; }
+        //- Update theta and T from Exner
+        void updateThetaT(const volScalarField& Exner);
 
-            //- Latent heat of vaporisation
-            inline volScalarField latentHeat(const volScalarField& T)
-            {
-                return Lv0_ - (liquid_.Cp() - gas_.Cp())*(T - gas_.T0());
-            }
+        // Write
+        void write();
 
-            //- Saturation vapour pressure
-            inline volScalarField pSat(const volScalarField& T)
-            {
-                return pvs0_*exp(-Lv0_/gas_.R()*(1/T - 1/gas_.T0()));
-            }
+        // Input (re-read densities, liquid fractions, temperature and sigma)
+        void readUpdate(const volScalarField& Exner);
 
-            //- Condensation in one time interval
-            const volScalarField& condensation() { return condensation_; }
-            const volScalarField& updateCondensation(const volScalarField& T);
 };
 
 
