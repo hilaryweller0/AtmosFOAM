@@ -22,14 +22,15 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectionFoam
+    advectTwoTracersFoam
 
 Description
-    Solves a transport equation for a passive scalar using explicit leap-frog
-    time-stepping or RK2
+    Solves a transport equation for two tracers T1 and T2.
+    CODE IS WORK IN PROGRESS
 
 \*---------------------------------------------------------------------------*/
 
+#include "gdal_priv.h"
 #include "fvCFD.H"
 #include "OFstream.H"
 #include "velocityField.H"
@@ -116,20 +117,56 @@ int main(int argc, char *argv[])
         }
         else
         {
-            for (int corr=0; corr < 3; corr++)
+            //simType: 0 = No source term, 
+            //         1 = solve equations for T1 & T2,
+            //         2 = solve equations for T1 & T (= T1 + T2).
+            const int simType = 1;
+            const volScalarField w = U.component(vector::Z);
+            const dimensionedScalar lengthScale("lengthScale", dimLength, scalar(1000));
+            const dimensionedScalar velocityScale("velocityScale", dimensionSet(0,1,-1,0,0), scalar(1));
+            if (simType == 0)
             {
-                T1 = T1.oldTime() - 0.5*dt*
-                (
-                    fvc::div(phi, T1) + fvc::div(phi, T1.oldTime())
-                );
-                T2 = T2.oldTime() - 0.5*dt*
-                (
-                    fvc::div(phi, T2) + fvc::div(phi, T2.oldTime())
-                );
-
+                S = 0*S;
+            } else if (w <= 0*w)
+            {
+                S = w*T1.oldTime()/lengthScale;
+                //S = -velocityScale*T1.oldTime()/lengthScale;
+            } else if (w > 0*w)
+            {
+                S = w*T2.oldTime()/lengthScale;
+                //S = velocityScale*T2.oldTime()/lengthScale;
+            } 
+            if (simType != 2)
+            {
+                for (int corr=0; corr < 3; corr++)
+                {
+                    T1 = T1.oldTime() - 0.5*dt*
+                    (
+                        fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
+                    );
+                    T2 = T2.oldTime() - 0.5*dt*
+                    (
+                        fvc::div(phi, T2) + fvc::div(phi, T2.oldTime()) + 2*S
+                    );
+                    T = T1 + T2;
+                }
+            } else if (simType == 2)
+            {
+                for (int corr=0; corr < 3; corr++)
+                {
+                    T1 = T1.oldTime() - 0.5*dt*
+                    (
+                        fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
+                    );
+                    T = T.oldTime() - 0.5*dt*
+                    (
+                        fvc::div(phi, T) + fvc::div(phi, T.oldTime())
+                    );
+                    T2 = T - T1;
+                }
             }
         }
-
+        T.correctBoundaryConditions();
         T1.correctBoundaryConditions();
         T2.correctBoundaryConditions();
         
@@ -137,6 +174,8 @@ int main(int argc, char *argv[])
              << max(T1.internalField()) << endl;
         Info << " T2 goes from " << min(T2.internalField()) << " to "
              << max(T2.internalField()) << endl;
+        Info << " Total T in system: " << sum(T.internalField()) << endl;
+        Info << " q: " << sum(T1.internalField())/sum(T.internalField()) << endl;
         runTime.write();
 
 
