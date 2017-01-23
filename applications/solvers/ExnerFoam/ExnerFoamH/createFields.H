@@ -48,8 +48,8 @@ volScalarField radiation
     (
         IOobject("radiation", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
-        dimensionedScalar("radiation", dimTemperature/dimTime, scalar(0))
-    )*dt
+        dimensionedScalar("radiation", dimTemperature, scalar(0))
+    )+theta
 );
 
 // Old part of theta change (and theta on the face)
