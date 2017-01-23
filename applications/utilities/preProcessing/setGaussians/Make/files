@@ -1,5 +1,0 @@
-setGaussians.C
-gaussian.C
-gaussianIO.C
-
-EXE = $(FOAM_USER_APPBIN)/setGaussians

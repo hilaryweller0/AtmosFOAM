@@ -1,4 +1,6 @@
 # AtmosFOAM
+[![DOI](https://zenodo.org/badge/20760151.svg)](https://zenodo.org/badge/latestdoi/20760151)
+
 A collection of OpenFOAM computational fluid dynamics applications and libraries for performing atmospheric experiments.  Includes mesh generators, scalar transport and Navier-Stokes solvers, and post-processing and visualisation tools.
 
 ## Installation

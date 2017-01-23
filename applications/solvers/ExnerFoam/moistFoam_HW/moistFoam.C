@@ -42,7 +42,6 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "orthogonalBoundaries.H"
     #include "readEnvironmentalProperties.H"
     HodgeOps H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
