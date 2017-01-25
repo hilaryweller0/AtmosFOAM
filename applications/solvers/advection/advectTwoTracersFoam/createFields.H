@@ -32,6 +32,34 @@ volScalarField T2
 T2.oldTime();
 T2.oldTime().oldTime();
 
+volScalarField T
+(
+    IOobject
+    (
+        "T",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    T1
+);
+T.oldTime();
+T.oldTime().oldTime();
+
+volScalarField q
+(
+    IOobject
+    (
+        "q",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    T2
+);
+
 
 volVectorField U
 (
@@ -72,6 +100,19 @@ surfaceScalarField phi
         IOobject::NO_WRITE
     ),
     Uf & mesh.Sf()
+);
+
+volScalarField S
+(
+    IOobject
+    (
+        "S",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    -fvc::div(phi,T1)
 );
 
 volScalarField k1
