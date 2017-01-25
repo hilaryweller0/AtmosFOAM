@@ -1,0 +1,27 @@
+FoamFile {
+        version         1.4;
+        format          ascii;
+
+        root            "";
+        case            "";
+        instance        "constant";
+        local           "";
+
+        class           dictionary;
+        object          gmtDict;
+}
+
+projection "X2i/5.2i";
+projection2D XZ;
+separateLegend false;
+plotBoundaryDots false;
+//plotZeroValuePolys false;
+
+FieldsToPlot (
+        [theta rawValues 0 0 0 "$GMTU/colours/green_linear.cpt"]
+        [thetaf rawValues 0 0 0 "$GMTU/colours/green_linear.cpt"]
+//        [none mesh "gray"]
+);
+
+region "-10e3/10e3/0/52e3";
+boundaryMarks "5e3/10e3WSen";
