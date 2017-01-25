@@ -36,7 +36,7 @@ else
 {
     thetaf = surfaceScalarField
     (
-        IOobject("thetaf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+        IOobject("thetaf", runTime.timeName(), mesh, IOobject::MUST_READ),
         mesh
     );
 }
