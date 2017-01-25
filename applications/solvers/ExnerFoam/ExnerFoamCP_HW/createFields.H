@@ -42,6 +42,17 @@ surfaceScalarField thetaf
 );
 thetaf.oldTime();
 
+Info<< "Reading field radiationf if present\n" << endl;
+surfaceScalarField radiationf
+(
+    surfaceScalarField
+    (
+        IOobject("radiationf", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        mesh,
+        dimensionedScalar("radiation", dimTemperature, scalar(0))
+    )+thetaf
+);
+
 surfaceScalarField bf
 (
     IOobject

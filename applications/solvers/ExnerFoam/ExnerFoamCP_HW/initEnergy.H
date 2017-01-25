@@ -11,7 +11,7 @@ volScalarField KE
     IOobject("KE", runTime.timeName(), mesh),
     0.25*fvc::surfaceSum(U*V/rhof)/dimensionedScalar("V", dimVol, scalar(1))
 );
-KE.ref() /= mesh.V();
+KE.ref() /= mesh.V()/dimensionedScalar("V", dimVol, scalar(1));
 volScalarField internalEnergy
 (
     IOobject("internalEnergy", runTime.timeName(), mesh),

@@ -1,7 +1,7 @@
 {
     KE = 0.25*fvc::surfaceSum(U*V/rhof)
         /dimensionedScalar("V", dimVol, scalar(1));
-    KE.ref() /= mesh.V();
+    KE.ref() /= mesh.V()/dimensionedScalar("V", dimVol, scalar(1));
     internalEnergy = rho*theta*Exner*Cv;
     potentialEnergy = -rho*(g & mesh.C());
 

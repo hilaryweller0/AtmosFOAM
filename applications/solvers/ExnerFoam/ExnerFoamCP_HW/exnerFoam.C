@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
 
+    const dimensionedScalar radiativeTimescale("radiativeTimescale", dimTime, 60*60*24);
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -78,6 +80,9 @@ int main(int argc, char *argv[])
         }
         
         #include "rhoEqn.H"
+        {
+//            thetaf += dt * (radiationf - thetaf)/radiativeTimescale;
+        }
         #include "compressibleContinuityErrs.H"
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
