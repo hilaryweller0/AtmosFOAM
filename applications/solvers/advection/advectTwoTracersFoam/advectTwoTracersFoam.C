@@ -122,20 +122,33 @@ int main(int argc, char *argv[])
             //         2 = solve equations for T1 & T (= T1 + T2).
             const int simType = 1;
             const volScalarField w = U.component(vector::Z);
-            const dimensionedScalar lengthScale("lengthScale", dimLength, scalar(1000));
+            //const dimensionedScalar lengthScale("lengthScale", dimLength, scalar(1000));
+            const double lengthScale = 1000.;
             const dimensionedScalar velocityScale("velocityScale", dimensionSet(0,1,-1,0,0), scalar(1));
             if (simType == 0)
             {
-                S = 0*S;
-            } else if (w <= 0*w)
+                S *= 0;
+            }
+            else
             {
-                S = w*T1.oldTime()/lengthScale;
-                //S = -velocityScale*T1.oldTime()/lengthScale;
-            } else if (w > 0*w)
-            {
-                S = w*T2.oldTime()/lengthScale;
-                //S = velocityScale*T2.oldTime()/lengthScale;
-            } 
+                //for(label cellI = 0; cellI < mesh.nCells(); cellI++)
+                //for(label cellI = 0; cellI < S.size(); cellI++)
+                forAll(S, cellI)
+                {
+                    if (w[cellI] <= 0.)
+                    {
+                        //S[cellI] = w[cellI]*T1.oldTime()[cellI]/lengthScale;
+                        S[cellI] = -T1.oldTime()[cellI]/lengthScale;
+                        //S[cellI] = w[cellI]*T1.oldTime()[cellI];
+                    }
+                    else
+                    {
+                        //S[cellI] = w[cellI]*T2.oldTime()[cellI]/lengthScale;
+                        S[cellI] = T2.oldTime()[cellI]/lengthScale;
+                    }
+                }
+            }
+            
             if (simType != 2)
             {
                 for (int corr=0; corr < 3; corr++)
@@ -170,12 +183,13 @@ int main(int argc, char *argv[])
         T1.correctBoundaryConditions();
         T2.correctBoundaryConditions();
         
-        Info << " T1 goes from " << min(T1.internalField()) << " to "
-             << max(T1.internalField()) << endl;
-        Info << " T2 goes from " << min(T2.internalField()) << " to "
-             << max(T2.internalField()) << endl;
+        //Info << " T1 goes from " << min(T1.internalField()) << " to "
+        //     << max(T1.internalField()) << endl;
+        //Info << " T2 goes from " << min(T2.internalField()) << " to "
+        //     << max(T2.internalField()) << endl;
         Info << " Total T in system: " << sum(T.internalField()) << endl;
-        Info << " q: " << sum(T1.internalField())/sum(T.internalField()) << endl;
+        Info << " T1 %: " << 100*sum(T1.internalField())/sum(T.internalField()) << endl;
+        Info << " T2 %: " << 100*sum(T2.internalField())/sum(T.internalField()) << endl;
         runTime.write();
 
 
