@@ -100,6 +100,8 @@ int main(int argc, char *argv[])
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
     const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
 
+    const dimensionedScalar radiativeTimescale("radiativeTimescale", dimTime, 60*60*24);
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -137,6 +139,7 @@ int main(int argc, char *argv[])
         
         // Updates for next time step
         {
+            theta += dt * (radiation - theta)/radiativeTimescale;
             thetaf = fvc::interpolate(theta);
         }
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
