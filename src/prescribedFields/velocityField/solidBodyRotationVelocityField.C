@@ -23,7 +23,7 @@ vector solidBodyRotationVelocityField::streamfunctionAt
     const dimensionedScalar w("angular_velocity", dimensionSet(0,0,-1,0,0), scalar(M_PI/300));
     dimensionedScalar psi("psi", cmptMultiply(dimVelocity, dimLength), scalar(0));
 
-    psi = 0.5*( z*z + x*x )/w;
+    psi = 0.5*( z*z + x*x )*w;
 
     return unitNormal * psi.value();
 }

@@ -183,13 +183,13 @@ int main(int argc, char *argv[])
         T1.correctBoundaryConditions();
         T2.correctBoundaryConditions();
         
-        //Info << " T1 goes from " << min(T1.internalField()) << " to "
-        //     << max(T1.internalField()) << endl;
-        //Info << " T2 goes from " << min(T2.internalField()) << " to "
-        //     << max(T2.internalField()) << endl;
+        Info << " T1 goes from " << min(T1.internalField()) << " to "
+             << max(T1.internalField()) << endl;
+        Info << " T2 goes from " << min(T2.internalField()) << " to "
+             << max(T2.internalField()) << endl;
         Info << " Total T in system: " << sum(T.internalField()) << endl;
-        Info << " T1 %: " << 100*sum(T1.internalField())/sum(T.internalField()) << endl;
-        Info << " T2 %: " << 100*sum(T2.internalField())/sum(T.internalField()) << endl;
+        Info << " T1 fraction: " << sum(T1.internalField())/sum(T.internalField()) << endl;
+        Info << " T2 fraction: " << sum(T2.internalField())/sum(T.internalField()) << endl;
         runTime.write();
 
 
