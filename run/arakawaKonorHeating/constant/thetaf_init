@@ -17,29 +17,32 @@ FoamFile
 
 dimensions      [0 0 0 1 0 0 0];
 
-internalField   uniform 315;
+// all values are placeholders that are overwritten by setTheta
+// _init files are used to establish the type of boundary conditions
+
+internalField   uniform 250;
 
 boundaryField
 {
     ground
     {
         type            fixedValue;
-	value           uniform 315;
+	value           uniform 250;
     }
     top
     {
         type            fixedValue;
-	value           uniform 315;
+	value           uniform 288;
     }
     left
     {
         type            fixedValue;
-	value           uniform 315;
+	value           uniform 288;
     }
     right
     {
         type            fixedValue;
-	value           uniform 315;
+	value           uniform 288;
     }
 }
 
