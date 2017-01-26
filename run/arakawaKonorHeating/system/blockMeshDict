@@ -1,0 +1,63 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+convertToMeters 1000; // effective units are km
+
+vertices (
+    (-10 0 0)  // 0
+    (10  0 0)  // 1
+    (10  1 0)  // 2
+    (-10 1 0)  // 3
+    (-10 0 52) // 4
+    (10  0 52) // 5
+    (10  1 52) // 6
+    (-10 1 52) // 7
+);
+
+blocks (
+	hex (0 1 2 3 4 5 6 7)
+	    (16 1 40)
+	    simpleGrading (1 1 1)
+);
+
+boundary (
+	left {
+		type patch;
+		faces (
+			(0 3 7 4)
+		);
+	}
+
+	right {
+		type patch;
+		faces (
+			(1 2 6 5)
+		);
+	}
+
+	ground {
+		type wall;
+		faces (
+			(0 1 2 3)
+		);	
+	}
+
+	top {
+		type wall;
+		faces (
+			(4 5 6 7)
+		);
+	}
+
+	frontAndBack {
+		type empty;
+		faces (
+			(0 1 5 4)
+			(3 2 6 7)
+		);
+	}
+);
