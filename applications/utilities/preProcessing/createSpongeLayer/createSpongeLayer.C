@@ -71,7 +71,11 @@ int main(int argc, char *argv[])
     (
         envProperties.lookupOrDefault<scalar>("xSpongeEnd", scalar(0))
     );
-    const scalar xSpongeLength = mag(xSpongeCentre - xSpongeEnd);
+    scalar xSpongeLength = -1;
+    if (mag(xSpongeCentre) > SMALL || mag(xSpongeEnd) > SMALL)
+    {
+        mag(xSpongeCentre - xSpongeEnd);
+    }
     const scalar x2SpongeCentre
     (
         envProperties.lookupOrDefault<scalar>("x2SpongeCentre", scalar(0))
@@ -80,7 +84,11 @@ int main(int argc, char *argv[])
     (
         envProperties.lookupOrDefault<scalar>("x2SpongeEnd", scalar(0))
     );
-    const scalar x2SpongeLength = mag(x2SpongeCentre - x2SpongeEnd);
+    scalar x2SpongeLength = -1;
+    if (mag(x2SpongeCentre) > SMALL || mag(x2SpongeEnd) > SMALL)
+    {
+        x2SpongeLength = mag(x2SpongeCentre - x2SpongeEnd);
+    }
         
     Info<< "Creating muSponge\n" << endl;
     surfaceScalarField muSponge
