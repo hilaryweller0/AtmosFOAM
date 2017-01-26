@@ -18,8 +18,8 @@ plotBoundaryDots false;
 //plotZeroValuePolys false;
 
 FieldsToPlot (
-        [theta_diff rawValues -0.004 0.004 1e-3 "$GMTU/colours/red_white_blue.cpt"]
-        [thetaf_diff rawValues -0.004 0.004 1e-3 "$GMTU/colours/red_white_blue.cpt"]
+        [theta_diff rawValues -9 9 1 "$GMTU/colours/red_white_blue.cpt"]
+        [thetaf_diff rawValues -9 9 1 "$GMTU/colours/red_white_blue.cpt"]
         [none mesh "gray"]
 );
 

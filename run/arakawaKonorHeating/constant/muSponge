@@ -9,21 +9,20 @@ FoamFile
 {
     version     2.0;
     format      ascii;
-    class       volScalarField;
+    class       surfaceScalarField;
     location    "constant";
-    object      radiation;
+    object      muSponge;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [0 0 0 0 0 0 0];
 
 internalField   nonuniform List<scalar> 
-40
+39
 (
 0
 0
 0
-10
 0
 0
 0
@@ -53,13 +52,13 @@ internalField   nonuniform List<scalar>
 0
 0
 0
-0
-0
-0
-0
-0
-0
-0
+0.0238233153036
+0.137689411037
+0.327599821954
+0.562316658444
+0.803231933755
+1.0107180954
+1.1506462624
 )
 ;
 
@@ -67,115 +66,28 @@ boundaryField
 {
     left
     {
-        type            fixedValue;
-        value           nonuniform List<scalar>
-40
-(
-0
-0
-0
-10
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-)
-;
+        type            calculated;
+        value           uniform 0;
     }
     right
     {
-        type            fixedValue;
-        value           nonuniform List<scalar> 
-40
-(
-0
-0
-0
-10
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-0
-)
-;
+        type            calculated;
+        value           uniform 0;
     }
     ground
     {
-        type            fixedValue;
-	value		0;
+        type            calculated;
+        value           uniform 0;
     }
     top
     {
-        type            fixedValue;
-	value		0;
+        type            calculated;
+        value           uniform 0;
     }
     frontAndBack
     {
         type            empty;
+        value           nonuniform 0();
     }
 }
 
