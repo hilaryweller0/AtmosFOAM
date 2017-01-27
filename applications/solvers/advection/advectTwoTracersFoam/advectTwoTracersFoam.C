@@ -137,14 +137,13 @@ int main(int argc, char *argv[])
                 {
                     if (w[cellI] <= 0.)
                     {
-                        //S[cellI] = w[cellI]*T1.oldTime()[cellI]/lengthScale;
-                        S[cellI] = -T1.oldTime()[cellI]/lengthScale;
-                        //S[cellI] = w[cellI]*T1.oldTime()[cellI];
+                        S[cellI] = w[cellI]*T1.oldTime()[cellI]/lengthScale;
+                        //S[cellI] = -T1.oldTime()[cellI]/lengthScale;
                     }
                     else
                     {
-                        //S[cellI] = w[cellI]*T2.oldTime()[cellI]/lengthScale;
-                        S[cellI] = T2.oldTime()[cellI]/lengthScale;
+                        S[cellI] = w[cellI]*T2.oldTime()[cellI]/lengthScale;
+                        //S[cellI] = T2.oldTime()[cellI]/lengthScale;
                     }
                 }
             }

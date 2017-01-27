@@ -19,9 +19,9 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [T filledContours 0 0 0 "$GMTU/colours/red_grey_blue.cpt"]
+    [T1 filledContours -1 1 0.05 "$GMTU/colours/red_grey_blue.cpt"]
 );
 
 //region "-80e3/80e3/0/20000";
-//annotate "minMax -30e3 -300";
+annotate "minMax -30e3 -300";
 separateLegend false;

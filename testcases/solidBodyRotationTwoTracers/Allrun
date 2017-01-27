@@ -9,6 +9,6 @@ mkdir 0
 runApplication setVelocityField -time 0
 runApplication setTwoInitialTracerFields
 runApplication advectTwoTracersFoam
-runApplication gmtFoam -time 800 T
-evince 800/T.pdf &
+runApplication gmtFoam T1
+runApplication gmtFoam T2
 # ----------------------------------------------------------------- end-of-file
