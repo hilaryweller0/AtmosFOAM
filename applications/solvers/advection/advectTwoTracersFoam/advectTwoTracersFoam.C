@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
             //         1 = solve equations for T1 & T2,
             //         2 = solve equations for T1 & T (= T1 + T2).
             const int simType = 1;
+            const int implicit = 1;
             const volScalarField w = U.component(vector::Z);
             //const dimensionedScalar lengthScale("lengthScale", dimLength, scalar(1000));
             const double lengthScale = 1000.;
@@ -150,17 +151,24 @@ int main(int argc, char *argv[])
             
             if (simType != 2)
             {
-                for (int corr=0; corr < 3; corr++)
+                if (implicit == 0)
                 {
-                    T1 = T1.oldTime() - 0.5*dt*
-                    (
-                        fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
-                    );
-                    T2 = T2.oldTime() - 0.5*dt*
-                    (
-                        fvc::div(phi, T2) + fvc::div(phi, T2.oldTime()) + 2*S
-                    );
-                    T = T1 + T2;
+                    for (int corr=0; corr < 3; corr++)
+                    {
+                        T1 = T1.oldTime() - 0.5*dt*
+                        (
+                            fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
+                        );
+                        T2 = T2.oldTime() - 0.5*dt*
+                        (
+                            fvc::div(phi, T2) + fvc::div(phi, T2.oldTime()) + 2*S
+                        );
+                        T = T1 + T2;
+                    }
+                } else 
+                {
+                    solve(fvm::ddt(T1) + fvc::div(phi,T1) - S);
+                    solve(fvm::ddt(T2) + fvc::div(phi,T2) + S);
                 }
             } else if (simType == 2)
             {
