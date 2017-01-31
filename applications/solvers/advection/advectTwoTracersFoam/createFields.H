@@ -12,9 +12,8 @@ volScalarField T1
     ),
     mesh
 );
-// Ensure that T.oldTime() and T.oldTime.oldTime() are stored
+// Ensure that T.oldTime() is stored
 T1.oldTime();
-T1.oldTime().oldTime();
 
 volScalarField T2
 (
@@ -28,9 +27,8 @@ volScalarField T2
     ),
     mesh
 );
-// Ensure that T.oldTime() and T.oldTime.oldTime() are stored
+// Ensure that T.oldTime() is stored
 T2.oldTime();
-T2.oldTime().oldTime();
 
 volScalarField T
 (
@@ -40,12 +38,12 @@ volScalarField T
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::AUTO_WRITE
     ),
-    T1
+    T1+T2,
+    T1.boundaryField()
 );
 T.oldTime();
-T.oldTime().oldTime();
 
 volScalarField q
 (
@@ -59,7 +57,20 @@ volScalarField q
     ),
     T2
 );
+q.oldTime();
 
+surfaceScalarField phi
+(
+    IOobject
+    (
+        "phi",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh
+);
 
 volVectorField U
 (
@@ -71,10 +82,9 @@ volVectorField U
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    mesh,
-    dimensionedVector("U", dimVelocity, vector::zero),
-    "zeroGradient"
+    fvc::reconstruct(phi)
 );
+U.write();
 
 surfaceVectorField Uf
 (
@@ -88,81 +98,5 @@ surfaceVectorField Uf
     ),
     linearInterpolate(U)
 );
+Uf.write();
 
-surfaceScalarField phi
-(
-    IOobject
-    (
-        "phi",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    Uf & mesh.Sf()
-);
-
-volScalarField S
-(
-    IOobject
-    (
-        "S",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T1)
-);
-
-volScalarField k1
-(
-    IOobject
-    (
-        "k1",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T1)
-);
-
-volScalarField k2
-(
-    IOobject
-    (
-        "k2",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T1)
-);
-
-volScalarField k3
-(
-    IOobject
-    (
-        "k3",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T1)
-);
-
-volScalarField k4
-(
-    IOobject
-    (
-        "k4",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    -fvc::div(phi,T1)
-);

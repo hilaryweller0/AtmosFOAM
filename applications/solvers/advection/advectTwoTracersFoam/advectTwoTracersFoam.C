@@ -39,176 +39,101 @@ Description
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
-    Foam::argList::addBoolOption("rk2", "two-stage second-order Runge-Kutta");
-    Foam::argList::addBoolOption("rk3", "Third-order Runge-Kutta scheme used by Skamarock & Gassmann 2011");
-    Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
-    Foam::argList::addBoolOption("forwardEuler", "");
-    Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
-    Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
 
-    Info<< "\nCalculating advection\n" << endl;
-
-    IOdictionary dict
+    const bool implicitAdvection = mesh.solutionDict().lookupOrDefault<bool>
     (
-        IOobject
-        (
-            "advectionDict",
-            mesh.time().constant(),
-            mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
-        )
+        "implicitAdvection", false
+    );
+    const bool implicitSource = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "implicitSource", false
     );
 
-    bool explicitTimestepping = args.options().found("explicitTimestepping");
-    bool timeVaryingWind = dict.lookupOrDefault<bool>("timeVaryingWind", false);
-    const dictionary& velocityDict = dict.subOrEmptyDict("velocity");
-    autoPtr<velocityField> v;
-    if (velocityDict.size() > 0)
-    {
-        v = velocityField::New(dict.subOrEmptyDict("velocity"));
-    }
-    
-    // go backwards in time by one time step to initialise leap-frog
-    T1.oldTime().oldTime() = T1 + dt*fvc::div(phi, T1);
-    T2.oldTime().oldTime() = T2 + dt*fvc::div(phi, T2);
+    #include "calculateSource.H"
+
+    Info<< "\nCalculating advection\n" << endl;
 
     while (runTime.loop())
     {
+        Info<< "\nTime = " << runTime.timeName() << nl << endl;
         #include "CourantNo.H"
-        if (explicitTimestepping && CoNum > 1.0)
+        if (!implicitAdvection && CoNum > 1.0)
         {
-            FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
+            FatalErrorInFunction << "Max Courant number > 1"
+                << exit(FatalError);
         }
-        Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        if (args.options().found("forwardEuler"))
+        for (int corr=0; corr < 3; corr++)
         {
-//            T = T.oldTime() - dt*fvc::div(phi,T);
-        }
-        else if (args.options().found("leapfrog"))
-        {
-//            T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
-        }
-        else if (args.options().found("rk3"))
-        {
-//            T = T.oldTime() - dt/3*fvc::div(phi, T);
-//            T = T.oldTime() - dt/2*fvc::div(phi, T);
-//            T = T.oldTime() - dt*fvc::div(phi, T);
-        }
-        else if (args.options().found("rk2"))
-        {
-//            T = T.oldTime() - 0.5*dt*fvc::div(phi,T.oldTime());
-//            T = T.oldTime() - dt*fvc::div(phi,T);
-        }
-        else if (args.options().found("rk4"))
-        {
-//            k1 = -fvc::div(phi, T.oldTime(), "div(phi,T)");
-//            k2 = -fvc::div(phi, T.oldTime() + dt/2 * k1, "div(phi,T)");
-//            k3 = -fvc::div(phi, T.oldTime() + dt/2 * k2, "div(phi,T)");
-//            k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
-//            T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
-        }
-        else
-        {
-            //simType: 0 = No source term, 
-            //         1 = solve equations for T1 & T2,
-            //         2 = solve equations for T1 & T (= T1 + T2).
-            const int simType = 1;
-            const int implicit = 1;
-            const volScalarField w = U.component(vector::Z);
-            //const dimensionedScalar lengthScale("lengthScale", dimLength, scalar(1000));
-            const double lengthScale = 1000.;
-            const dimensionedScalar velocityScale("velocityScale", dimensionSet(0,1,-1,0,0), scalar(1));
-            if (simType == 0)
+            // Setup the matrix without adding implicit/explicit parts
+            // of advection or source terms
+            fvScalarMatrix T1Eqn
+            (
+                fvm::ddt(T1)
+              + 0.5*fvc::div(phi, T1.oldTime())
+              + 0.5*T1damping*T1.oldTime()
+              - 0.5*T2damping*T2.oldTime() - 0.5*T2damping*T2
+            );
+            fvScalarMatrix T2Eqn
+            (
+                fvm::ddt(T2)
+              + 0.5*fvc::div(phi, T2.oldTime())
+              + 0.5*T2damping*T2.oldTime()
+              - 0.5*T1damping*T1.oldTime() - 0.5*T1damping*T1
+            );
+            fvScalarMatrix TEqn(fvm::ddt(T) + 0.5*fvc::div(phi, T.oldTime()));
+
+            // Add the advection terms either implicit or explicit
+            if (implicitAdvection)
             {
-                S *= 0;
+                T1Eqn += 0.5*fvm::div(phi, T1);
+                T2Eqn += 0.5*fvm::div(phi, T2);
+                TEqn += 0.5*fvm::div(phi, T);
             }
             else
             {
-                //for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-                //for(label cellI = 0; cellI < S.size(); cellI++)
-                forAll(S, cellI)
-                {
-                    if (w[cellI] <= 0.)
-                    {
-                        S[cellI] = w[cellI]*T1.oldTime()[cellI]/lengthScale;
-                        //S[cellI] = -T1.oldTime()[cellI]/lengthScale;
-                    }
-                    else
-                    {
-                        S[cellI] = w[cellI]*T2.oldTime()[cellI]/lengthScale;
-                        //S[cellI] = T2.oldTime()[cellI]/lengthScale;
-                    }
-                }
+                T1Eqn += 0.5*fvc::div(phi, T1);
+                T2Eqn += 0.5*fvc::div(phi, T2);
+                TEqn += 0.5*fvc::div(phi, T);
             }
             
-            if (simType != 2)
+            // Add the damping terms, either implicit or explicit
+            if (implicitSource)
             {
-                if (implicit == 0)
-                {
-                    for (int corr=0; corr < 3; corr++)
-                    {
-                        T1 = T1.oldTime() - 0.5*dt*
-                        (
-                            fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
-                        );
-                        T2 = T2.oldTime() - 0.5*dt*
-                        (
-                            fvc::div(phi, T2) + fvc::div(phi, T2.oldTime()) + 2*S
-                        );
-                        T = T1 + T2;
-                    }
-                } else 
-                {
-                    solve(fvm::ddt(T1) + fvc::div(phi,T1) - S);
-                    solve(fvm::ddt(T2) + fvc::div(phi,T2) + S);
-                }
-            } else if (simType == 2)
-            {
-                for (int corr=0; corr < 3; corr++)
-                {
-                    T1 = T1.oldTime() - 0.5*dt*
-                    (
-                        fvc::div(phi, T1) + fvc::div(phi, T1.oldTime()) - 2*S
-                    );
-                    T = T.oldTime() - 0.5*dt*
-                    (
-                        fvc::div(phi, T) + fvc::div(phi, T.oldTime())
-                    );
-                    T2 = T - T1;
-                }
+                T1Eqn += fvm::Sp(0.5*T1damping, T1);
+                T2Eqn += fvm::Sp(0.5*T2damping, T2);
             }
+            else
+            {
+                T1Eqn += 0.5*T1damping*T1;
+                T2Eqn += 0.5*T2damping*T2;
+            }
+            
+            // Solve the matrices for the equations
+            T1Eqn.solve();
+            T2Eqn.solve();
+            TEqn.solve();
         }
-        T.correctBoundaryConditions();
-        T1.correctBoundaryConditions();
-        T2.correctBoundaryConditions();
-        
-        Info << " T1 goes from " << min(T1.internalField()) << " to "
-             << max(T1.internalField()) << endl;
-        Info << " T2 goes from " << min(T2.internalField()) << " to "
-             << max(T2.internalField()) << endl;
-        Info << " Total T in system: " << sum(T.internalField()) << endl;
-        Info << " T1 fraction: " << sum(T1.internalField())/sum(T.internalField()) << endl;
-        Info << " T2 fraction: " << sum(T2.internalField())/sum(T.internalField()) << endl;
+        Info << " T goes from " << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << endl;
+        Info << " T1 goes from " << min(T1.internalField()).value() << " to "
+             << max(T1.internalField()).value() << endl;
+        Info << " T2 goes from " << min(T2.internalField()).value() << " to "
+             << max(T2.internalField()).value() << endl;
+
         runTime.write();
-
-
-        if (timeVaryingWind)
-        {
-            v->applyTo(phi);
-
-            U = fvc::reconstruct(phi);
-            Uf = linearInterpolate(U);
-            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
-        }
     }
+    
+    Info << " Total T in system: " << sum(T.internalField()) << endl;
+    Info << " T1 fraction: " << sum(T1.internalField())/sum(T.internalField())
+         << endl;
+    Info << " T2 fraction: " << sum(T2.internalField())/sum(T.internalField())
+         << endl;
 
     Info<< "End\n" << endl;
 
