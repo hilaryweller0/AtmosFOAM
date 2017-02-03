@@ -39,10 +39,31 @@ using namespace Foam::constant::mathematical;
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addOption
+    (
+        "region",
+        "meshRegion",
+        "specify a non-default region to plot"
+    );
 
 #   include "setRootCase.H"
 #   include "createTime.H"
-#   include "createMesh.H"
+
+    // Check for plotting non-default region
+    const string meshRegion = args.optionFound("region") ?
+                              args.optionRead<string>("region") :
+                              fvMesh::defaultRegion;
+
+    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
+         << meshRegion << endl;
+
+    fvMesh mesh
+    (
+        Foam::IOobject
+        (
+            meshRegion, runTime.timeName(), runTime, IOobject::MUST_READ
+        )
+    );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,8 +73,8 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "initialConditions",
-            mesh.time().constant(),
+            "initialConditionsDict",
+            mesh.time().system(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
@@ -102,7 +123,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "environmentalProperties",
-            mesh.time().constant(),
+            mesh.time().system(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE
@@ -114,37 +135,37 @@ int main(int argc, char *argv[])
     // beta
     const dimensionedScalar beta(envDict.lookup("beta"));
 
-    // Create initial height and velocity field
-    volScalarField h
-    (
-        IOobject("h", runTime.timeName(), mesh),
-        mesh,
-        h0,
-        "zeroGradient"
-    );
-    
     volScalarField y("y", mesh.C().component(vector::Y));
     volScalarField yy("yy", (y - yc)/w);
     volScalarField u("u", u0*(1 - 3*sqr(yy) + 3*pow(yy,4) - pow(yy,6)));
     u = max(u, u0*0);
 
-    volVectorField U
-    (
-        IOobject("U", runTime.timeName(), mesh),
-        vector(1.,0.,0.)*u,
-        "slip"
-    );
-        
     surfaceScalarField yf("yf", mesh.Cf().component(vector::Y));
     surfaceScalarField yyf("yyf", (yf - yc)/w);
     surfaceScalarField uf("uf", u0*(1 - 3*sqr(yyf) + 3*pow(yyf,4) - pow(yyf,6)));
     uf = max(uf, u0*0);
 
+    // Create initial height and velocity fields
+    volScalarField h
+    (
+        IOobject("h", runTime.timeName(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+    h == h0;
+    
+    volVectorField U
+    (
+        IOobject("u", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+        vector(1.,0.,0.)*u
+    );
+    U == vector(1.,0.,0.)*u;
+        
     surfaceVectorField Uf
     (
-        IOobject("Uf", runTime.timeName(), mesh),
+        IOobject("Uf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         vector(1.,0.,0.)*uf
     );
+    Uf == vector(1.,0.,0.)*uf;
     
     dimensionedScalar hmin = h0 - 32/35.*u0*beta/g*w*yc;
     
@@ -192,13 +213,6 @@ int main(int argc, char *argv[])
     h.write();
     U.write();
     Uf.write();
-    volVectorField hU
-    (
-        IOobject("hU", runTime.timeName(), mesh),
-        h*U,
-        "slip"
-    );
-    hU.write();
 
     Info<< "End\n" << endl;
 
