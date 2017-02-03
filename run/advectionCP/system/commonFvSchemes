@@ -1,0 +1,16 @@
+gradSchemes {
+    default         Gauss linear;
+}
+
+laplacianSchemes {
+    default         Gauss linear corrected;
+}
+
+ddtSchemes {
+    default         backward;
+}
+
+fluxRequired {
+    default         no;
+    T;
+}
