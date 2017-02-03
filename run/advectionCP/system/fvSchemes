@@ -6,7 +6,29 @@ FoamFile {
     object      fvSchemes;
 }
 
-#include "commonFvSchemes"
+interpolationSchemes {
+    default         none;
+    interpolate(grad(Tf))         linear;
+    T_from_b    linearUpwind phi grad(T);
+}
+
+gradSchemes {
+    default        none;
+    grad(T)         Gauss linear;
+}
+
+laplacianSchemes {
+    default         none;
+}
+
+ddtSchemes {
+    default         none;
+}
+
+fluxRequired {
+    default         no;
+    T;
+}
 
 divSchemes {
     default         none;
