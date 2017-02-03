@@ -25,8 +25,7 @@ Application
     advectionFoam
 
 Description
-    Solves a transport equation for a passive scalar using explicit leap-frog
-    time-stepping or RK2
+    Solves a transport equation for a passive scalar using RK2 timestepping
 
 \*---------------------------------------------------------------------------*/
 
@@ -57,12 +56,12 @@ int main(int argc, char *argv[])
             Tf = Tf.oldTime() - 0.5*dt *
             (
                 (Uf & fvc::interpolate(fvc::grad(Tf))) + 
-                (Uf & fvc::interpolate(fvc::grad(Tf.oldTime())))
+                (Uf & fvc::interpolate(fvc::grad(Tf.oldTime()), "interpolate(grad(Tf))"))
             );
 
 	    bf = Tf * gUnitNormal;
 	    b = fvc::reconstruct(bf * mesh.magSf());
-	    T = b & ghat;
+	    T == (b & ghat);
 	    Tf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(T, "T_from_b");
         }
         
