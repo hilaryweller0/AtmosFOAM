@@ -18,6 +18,15 @@ int main(int argc, char *argv[])
        "fixedValue"
     );
 
+    Info << "Creating Tf_analytic" << endl;
+    surfaceScalarField Tf
+    (
+        IOobject("Tf_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        mesh,
+        dimensionedScalar("Tf_analytic", dimless, scalar(0)),
+       "fixedValue"
+    );
+
     IOdictionary tracerDict
     (
         IOobject
@@ -57,6 +66,10 @@ int main(int argc, char *argv[])
         Info << "writing T_analytic for time " << runTime.timeName() << endl;
         tracer->applyTo(T);
         T.write();
+
+        Info << "writing Tf_analytic for time " << runTime.timeName() << endl;
+        tracer->applyTo(Tf);
+        Tf.write();
     } while (runTime.loop());
 
     return EXIT_SUCCESS;
