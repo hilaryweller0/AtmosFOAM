@@ -12,8 +12,9 @@ class gaussianTracerField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
-    const dimensionedScalar dxMid;
-    const point centre;
+    const scalar width_;
+    const point centre_;
+    const scalar maxTracer_;
 };
 
 #endif

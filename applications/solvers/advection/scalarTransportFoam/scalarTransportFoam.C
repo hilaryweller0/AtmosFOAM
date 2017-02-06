@@ -22,10 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    simpleScalarTransportFoam
+    scalarTransportFoam
 
 Description
-    Solves a transport equation for a passive scalar
+    Solves a transport equation for a passive scalar using RK2 time-stepping
 
 \*---------------------------------------------------------------------------*/
 
@@ -38,7 +38,12 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #define dt runTime.deltaT()
     #include "createFields.H"
+    // Read the number of iterations each time-step
+    const int nRKstages = readLabel(mesh.solutionDict().lookup("nRKstages"));
+    // The off-centering of the time-stepping scheme
+    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -48,9 +53,18 @@ int main(int argc, char *argv[])
 
     while (runTime.loop())
     {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        Info<< "Time = " << runTime.timeName() << endl;
 
-        solve(fvm::ddt(T) + fvc::div(phi, T));
+        // Fixed number of iterations per time-step
+        for (int corr = 0; corr < nRKstages; corr++)
+        {
+            divPhiT = fvc::div(phi, T);
+            T = T.oldTime() - dt*
+            (
+                (1-offCentre)*divPhiT.oldTime()
+              + offCentre*divPhiT
+            );
+        }
         
         Info << "Max T = " << max(T) << " min T = " << min(T) << endl;
 

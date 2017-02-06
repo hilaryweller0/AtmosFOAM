@@ -1,14 +1,14 @@
 #include "solidBodyRotationVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
+#include "transform.H"
 
 defineTypeNameAndDebug(solidBodyRotationVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, solidBodyRotationVelocityField, dict);
 
 solidBodyRotationVelocityField::solidBodyRotationVelocityField(const dictionary& dict)
 :
-u0("speed", dimVelocity, dict.lookupOrDefault<scalar>("speed", scalar(10))),
-z1("zeroVelocityHeight", dimLength, dict.lookupOrDefault<scalar>("zeroVelocityHeight", scalar(4e3))),
-z2("maxVelocityHeight", dimLength, dict.lookupOrDefault<scalar>("maxVelocityHeight", scalar(5e3)))
+    rotation_(dict.lookup("solidBodyRotation")),
+    centre_(dict.lookup("centreOfRotation"))
 {};
 
 vector solidBodyRotationVelocityField::streamfunctionAt
@@ -17,15 +17,11 @@ vector solidBodyRotationVelocityField::streamfunctionAt
         const Time& t
 ) const
 {
-    const vector unitNormal(0, -1, 0);
-    const dimensionedScalar z("z", dimLength, p.z());
-    const dimensionedScalar x("x", dimLength, p.x());
-    const dimensionedScalar w("angular_velocity", dimensionSet(0,0,-1,0,0), scalar(M_PI/300));
-    dimensionedScalar psi("psi", cmptMultiply(dimVelocity, dimLength), scalar(0));
+    // Vector from point p to axis of rotation
+    vector d = p - centre_;
+    d = d - (d & rotation_)*rotation_/magSqr(rotation_);
 
-    psi = 0.5*( z*z + x*x )*w;
-
-    return unitNormal * psi.value();
+    return magSqr(d)*rotation_;
 }
 
 point solidBodyRotationVelocityField::initialPositionOf
@@ -34,18 +30,8 @@ point solidBodyRotationVelocityField::initialPositionOf
     const Time& t
 ) const
 {
-    const dimensionedScalar z("z", dimLength, p.z());
-
-    if (z.value() <= z1.value())
-    {
-        return p;
-    }
-    else if (z.value() <= z2.value())
-    {
-        return point(p.x() - (u0*sqr(Foam::sin(0.5*M_PI*(z-z1)/(z2-z1)))*t).value(), p.y(), p.z());
-    }
-    else
-    {
-        return point(p.x() - u0.value()*t.value(), p.y(), p.z());
-    }
+    // rotation matrix
+    tensor R = Ra(rotation_, -mag(rotation_)*t.value());
+    
+    return (R & (p - centre_)) + centre_;
 }

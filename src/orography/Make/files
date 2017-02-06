@@ -3,6 +3,7 @@ earthMountain.C
 mountain.C
 schaerCosMountain.C
 schaerExpMountain.C
+coneMountain.C
 terrainFollowingTransform.C
 
 LIB = $(FOAM_USER_LIBBIN)/liborography

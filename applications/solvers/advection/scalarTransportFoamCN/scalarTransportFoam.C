@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
               + 0.5*divPhiT.oldTime()
             );
         }
+        
+        Info << "Max T = " << max(T) << " min T = " << min(T) << endl;
 
 /*        // Keep doing iterations until converged version
         for(bool converged = false; !converged;)

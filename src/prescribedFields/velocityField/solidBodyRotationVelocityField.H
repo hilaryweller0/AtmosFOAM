@@ -13,9 +13,8 @@ class solidBodyRotationVelocityField final : public nonDivergentVelocityField, p
     private:
     vector streamfunctionAt(const point& p, const Time& t) const;
     point initialPositionOf(const point& p, const Time& t) const;
-    const dimensionedScalar u0;
-    const dimensionedScalar z1;
-    const dimensionedScalar z2;
+    const vector rotation_;
+    const point centre_;
 };
 
 #endif

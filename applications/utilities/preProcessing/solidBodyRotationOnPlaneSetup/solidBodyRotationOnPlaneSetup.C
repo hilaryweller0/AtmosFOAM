@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "solidBodyRotationOnPlaneSetupDict",
-            mesh.time().constant(),
+            mesh.time().system(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE

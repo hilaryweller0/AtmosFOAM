@@ -10,14 +10,14 @@ gaussianTracerField::gaussianTracerField
     const advectable& velocityField
 )
 :
-tracerField(velocityField),
-dxMid("width", dimLength, dict.lookupOrDefault<scalar>("width", scalar(8))),
-centre(dict.lookupOrDefault<point>("centre", point(100, 0, 100)))
-{};
+    tracerField(velocityField),
+    width_(dict.lookupOrDefault<scalar>("width", scalar(8))),
+    centre_(dict.lookupOrDefault<point>("centre", point(100, 0, 100))),
+    maxTracer_(dict.lookupOrDefault<scalar>("maxTracer", scalar(1)))
+{}
 
 scalar gaussianTracerField::tracerAt(const point& p, const Time& t) const
 {
-    const point diff = p - centre;
-    return Foam::exp(- sqr(diff.x()/dxMid.value()) - sqr(diff.z()/dxMid.value()));
+    return maxTracer_*Foam::exp(-0.5*(magSqr(p - centre_)/sqr(width_)));
 }
 

@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "advectionDict",
-            mesh.time().constant(),
+            mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE

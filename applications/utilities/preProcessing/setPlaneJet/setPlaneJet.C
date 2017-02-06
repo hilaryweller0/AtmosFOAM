@@ -39,6 +39,7 @@ using namespace Foam::constant::mathematical;
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::validArgs.append("dictionary name (in system)");
     Foam::argList::addOption
     (
         "region",
@@ -67,22 +68,19 @@ int main(int argc, char *argv[])
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    Info<< "Reading initial conditions\n" << endl;
+    const word dictName = args.args()[1].c_str();
+    Info<< "Reading initial conditions from" << dictName << endl;
 
     IOdictionary initDict
     (
         IOobject
         (
-            "initialConditionsDict",
-            mesh.time().system(),
-            mesh,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
+            dictName, mesh.time().system(), mesh, IOobject::MUST_READ
         )
     );
 
     // Maximum jet velocity
-    const dimensionedScalar u0(initDict.lookup("u0"));
+    const dimensionedScalar u0(initDict.lookup("Umax"));
     // y location of the centre of the jet
     const dimensionedScalar yc(initDict.lookup("jetCentre"));
     // jet half width

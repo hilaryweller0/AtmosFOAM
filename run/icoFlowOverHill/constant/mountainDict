@@ -3,7 +3,7 @@ FoamFile {
     format      ascii;
     class       dictionary;
     location    "constant";
-    object      amountainDict;
+    object      mountainDict;
 }
 
 type btf;

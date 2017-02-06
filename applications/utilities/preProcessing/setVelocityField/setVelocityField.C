@@ -3,17 +3,42 @@
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addOption
+    (
+        "dict", "dictName", "specify the dictionary name (in system)"
+    );
+    Foam::argList::addOption
+    (
+        "region",
+        "meshRegion",
+        "specify a non-default region to plot"
+    );
+
     timeSelector::addOptions();
 #   include "addTimeOptions.H"
     #include "setRootCase.H"
     #include "createTime.H"
     instantList timeDirs = timeSelector::select0(runTime, args);
-    #include "createMesh.H"
+    // Check for plotting non-default region
+    const string meshRegion = args.optionFound("region") ?
+                              args.optionRead<string>("region") :
+                              fvMesh::defaultRegion;
+
+    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
+         << meshRegion << endl;
+
+    fvMesh mesh
+    (
+        Foam::IOobject
+        (
+            meshRegion, runTime.timeName(), runTime, IOobject::MUST_READ
+        )
+    );
 
     Info << "Creating flux field phi" << endl;
     surfaceScalarField phi
     (
-        IOobject("phi", runTime.timeName(), mesh),
+        IOobject("phi", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
         dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0)),
        "fixedValue"
@@ -46,11 +71,15 @@ int main(int argc, char *argv[])
         linearInterpolate(fvc::reconstruct(phi))
     );
 
+    const word dictName = args.optionFound("dict") ?
+                          args.optionRead<word>("dict") :
+                          "velocityFieldDict";
+    Info<< "Reading initial conditions from" << dictName << endl;
     IOdictionary dict
     (
         IOobject
         (
-            "velocityFieldDict",
+            dictName,
             mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,

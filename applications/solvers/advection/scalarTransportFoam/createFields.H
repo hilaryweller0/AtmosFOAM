@@ -57,3 +57,6 @@ Uf.write();
 volScalarField divPhiT = fvc::div(phi, T);
 divPhiT.oldTime();
 
+// Calculate divU for checking divergence free
+volScalarField divU("divU", fvc::div(phi));
+divU.write();
