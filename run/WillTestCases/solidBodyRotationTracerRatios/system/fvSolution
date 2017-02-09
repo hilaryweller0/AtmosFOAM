@@ -15,12 +15,12 @@ FoamFile {
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-implicitAdvection false;
-implicitSource false;
+implicitAdvection true;
+implicitSource true;
 
 solvers
 {
-    "(T|T1|T2)"
+    "(T|q)"
     {
         solver          PBiCG;
         preconditioner  DILU;

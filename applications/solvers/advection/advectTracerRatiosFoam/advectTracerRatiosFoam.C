@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectTwoTracersFoam
+    advectTracerRatiosFoam
 
 Description
     Solves a transport equation for two tracers T1 and T2.
@@ -70,68 +70,59 @@ int main(int argc, char *argv[])
 
         for (int corr=0; corr < 3; corr++)
         {
+            const dimensionedScalar unitDamping("unitDamping", dimensionSet(0,0,0,0,0), 1);
+            q2 = -q+1;
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
-            fvScalarMatrix T1Eqn
+            fvScalarMatrix qEqn
             (
-                fvm::ddt(T1)
-              + 0.5*fvc::div(phi, T1.oldTime())
-              + 0.5*T1damping*T1.oldTime()
-              - 0.5*T2damping*T2.oldTime() - 0.5*T2damping*T2
+                fvm::ddt(q)
+              + 0.5*fvc::div(phi, q.oldTime())
+              + 0.5*T1damping*q.oldTime()
+              - 0.5*T2damping*(1-q.oldTime())
             );
-            fvScalarMatrix T2Eqn
+            fvScalarMatrix TEqn
             (
-                fvm::ddt(T2)
-              + 0.5*fvc::div(phi, T2.oldTime())
-              + 0.5*T2damping*T2.oldTime()
-              - 0.5*T1damping*T1.oldTime() - 0.5*T1damping*T1
+                fvm::ddt(T)
+              + 0.5*fvc::div(phi, T.oldTime())
             );
-            fvScalarMatrix TEqn(fvm::ddt(T) + 0.5*fvc::div(phi, T.oldTime()));
 
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
-                T1Eqn += 0.5*fvm::div(phi, T1);
-                T2Eqn += 0.5*fvm::div(phi, T2);
+                qEqn += 0.5*fvm::div(phi, q);
                 TEqn += 0.5*fvm::div(phi, T);
             }
             else
             {
-                T1Eqn += 0.5*fvc::div(phi, T1);
-                T2Eqn += 0.5*fvc::div(phi, T2);
+                qEqn += 0.5*fvc::div(phi, q);
                 TEqn += 0.5*fvc::div(phi, T);
             }
             
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                T1Eqn += fvm::Sp(0.5*T1damping, T1);
-                T2Eqn += fvm::Sp(0.5*T2damping, T2);
+                //qEqn += 0.5*fvm::Sp(T1damping, q);
+                //qEqn += -0.5*fvm::Sp(T2damping, q2);
+                //qEqn += 0.5*fvm::Sp(unitDamping, q*T1damping);
+                //qEqn += -0.5*fvm::Sp(unitDamping, q2*T2damping);
             }
             else
             {
-                T1Eqn += 0.5*T1damping*T1;
-                T2Eqn += 0.5*T2damping*T2;
+                qEqn += 0.5*T1damping*q;
+                qEqn += -0.5*T2damping*q2;
             }
             
             // Solve the matrices for the equations
-            T1Eqn.solve();
-            T2Eqn.solve();
+            qEqn.solve();
             TEqn.solve();
         }
         Info << " T goes from " << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;
-        Info << " T1 goes from " << min(T1.internalField()).value() << " to "
-             << max(T1.internalField()).value() << endl;
-        Info << " T2 goes from " << min(T2.internalField()).value() << " to "
-             << max(T2.internalField()).value() << endl;
-
+        Info << " q goes from " << min(q.internalField()).value() << " to "
+             << max(q.internalField()).value() << endl;
         Info << " Total T in system: " << sum(T.internalField()) << endl;
-        Info << " T1 fraction: " << sum(T1.internalField())/sum(T.internalField())
-         << endl;
-        Info << " T2 fraction: " << sum(T2.internalField())/sum(T.internalField())
-         << endl;
-        Info << " Total fraction: " << (sum(T1.internalField())+sum(T2.internalField()))/sum(T.internalField())
+        Info << " T1 fraction: " << sum(q.internalField()*T.internalField())/sum(T.internalField())
          << endl;
         runTime.write();
     }
