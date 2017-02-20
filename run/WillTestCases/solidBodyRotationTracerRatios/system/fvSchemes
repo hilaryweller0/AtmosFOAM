@@ -24,6 +24,7 @@ ddtSchemes
 
 divSchemes
 {
+    //default         Gauss vanLeer01;
     default         Gauss cubicUpwindCPCFit 3;
 }
 
@@ -34,7 +35,7 @@ interpolationSchemes
 
 gradSchemes
 {
-    default         none;
+    default         Gauss;
 }
 
 laplacianSchemes

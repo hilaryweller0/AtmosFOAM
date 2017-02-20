@@ -7,4 +7,4 @@ FoamFile
     object      advectionDict;
 }
 
-sourceLengthScale sourceLengthScale [0 1 0 0 0] 1;
+sourceLengthScale sourceLengthScale [0 1 0 0 0] 1000;

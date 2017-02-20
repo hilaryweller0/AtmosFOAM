@@ -30,7 +30,6 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "gdal_priv.h"
 #include "fvCFD.H"
 #include "OFstream.H"
 #include "velocityField.H"
@@ -102,8 +101,8 @@ int main(int argc, char *argv[])
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                //qEqn += 0.5*fvm::Sp(T1damping, q);
-                //qEqn += -0.5*fvm::Sp(T2damping, q2);
+                qEqn += 0.5*fvm::Sp(T1damping, q);
+                qEqn += -0.5*fvm::Sp(T2damping, q2);
                 //qEqn += 0.5*fvm::Sp(unitDamping, q*T1damping);
                 //qEqn += -0.5*fvm::Sp(unitDamping, q2*T2damping);
             }
