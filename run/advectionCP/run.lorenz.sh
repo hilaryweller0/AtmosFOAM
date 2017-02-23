@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-rm -r [0-9]*
+rm -rf [0-9]*
 blockMesh
 setInitialTracerField
 setVelocityField
