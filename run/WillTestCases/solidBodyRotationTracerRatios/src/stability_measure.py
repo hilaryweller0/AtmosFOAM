@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 
-dt = np.linspace(1.0,1.8,3)
+dt = np.linspace(0.9,1.8,10)
 # dt = np.array([0.9])
 
 controlDictString = '''FoamFile {

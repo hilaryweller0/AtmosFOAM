@@ -61,11 +61,11 @@ int main(int argc, char *argv[])
     {
         Info<< "\nTime = " << runTime.timeName() << nl << endl;
         #include "CourantNo.H"
-        if (!implicitAdvection && CoNum > 1.0)
-        {
-            FatalErrorInFunction << "Max Courant number > 1"
-                << exit(FatalError);
-        }
+        //if (!implicitAdvection && CoNum > 1.0)
+        //{
+        //    FatalErrorInFunction << "Max Courant number > 1"
+        //        << exit(FatalError);
+        //}
 
         for (int corr=0; corr < 3; corr++)
         {
@@ -76,7 +76,8 @@ int main(int argc, char *argv[])
             fvScalarMatrix qEqn
             (
                 fvm::ddt(q)
-              + 0.5*fvc::div(phi, q.oldTime())
+              //+ 0.5*fvc::div(phi, q.oldTime())
+              + 0.5*(U & fvc::grad(q.oldTime()))
               + 0.5*T1damping*q.oldTime()
               - 0.5*T2damping*(1-q.oldTime())
             );
@@ -94,7 +95,8 @@ int main(int argc, char *argv[])
             }
             else
             {
-                qEqn += 0.5*fvc::div(phi, q);
+//                qEqn += 0.5*fvc::div(phi, q);
+                qEqn += 0.5*(U & fvc::grad(q));
                 TEqn += 0.5*fvc::div(phi, T);
             }
             
