@@ -9,7 +9,8 @@ FoamFile {
 interpolationSchemes {
     default         none;
     interpolate(grad(Tf))         linear;
-    T_from_b    linearUpwind phi grad(T);
+//    T_from_b    linearUpwind phi grad(T);
+    T_from_b     linear;
 }
 
 gradSchemes {
