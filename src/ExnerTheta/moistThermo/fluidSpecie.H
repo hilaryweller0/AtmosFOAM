@@ -99,28 +99,30 @@ public:
         // Access
 
             //- gas and liquid phases
-            const word& name() { return name_; }
+            const word& name() const { return name_; }
+            const perfectGasPhase& gas() const { return gas_; }
             perfectGasPhase& gas() { return gas_; }
+            const liquidPhase& liquid() const { return liquid_; }
             liquidPhase& liquid() { return liquid_; }
             
             // Constants in equations for phase changes
-            const dimensionedScalar& Lv0() { return Lv0_; }
-            const dimensionedScalar& pvs0() { return pvs0_; }
+            const dimensionedScalar& Lv0() const { return Lv0_; }
+            const dimensionedScalar& pvs0() const { return pvs0_; }
 
             //- Latent heat of vaporisation
-            inline volScalarField latentHeat(const volScalarField& T)
+            inline volScalarField latentHeat(const volScalarField& T) const
             {
                 return Lv0_ - (liquid_.Cp() - gas_.Cp())*(T - gas_.T0());
             }
 
             //- Saturation vapour pressure
-            inline volScalarField pSat(const volScalarField& T)
+            inline volScalarField pSat(const volScalarField& T) const
             {
                 return pvs0_*exp(-Lv0_/gas_.R()*(1/T - 1/gas_.T0()));
             }
 
             //- Condensation in one time interval
-            const volScalarField& condensation() { return condensation_; }
+            const volScalarField& condensation() const { return condensation_; }
             const volScalarField& updateCondensation(const volScalarField& T);
 };
 

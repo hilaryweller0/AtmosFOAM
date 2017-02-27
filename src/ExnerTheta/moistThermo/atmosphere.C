@@ -65,9 +65,9 @@ Foam::atmosphere::~atmosphere()
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::volGas()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::volGas() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> tvG
     (
@@ -89,9 +89,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::volGas()
     return tvG;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::volAir()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::volAir() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> tvA
     (
@@ -109,9 +109,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::volAir()
     return tvA;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumDensity()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumDensity() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> tRho
     (
@@ -136,9 +136,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumDensity()
     return tRho;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoR()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoR() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> trhoRt
     (
@@ -160,9 +160,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoR()
     return trhoRt;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCp()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCp() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> trhoCp
     (
@@ -188,9 +188,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCp()
     return trhoCp;
 }
 
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCv()
+Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCv() const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> trhoCv
     (
@@ -219,9 +219,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCv()
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumPressure
 (
     const volScalarField& T
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> tp
     (
@@ -248,9 +248,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumPressure
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::pFromT
 (
     const volScalarField& T
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     tmp<volScalarField> tp
     (
@@ -271,9 +271,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::pFromT
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::ExnerFromTheta
 (
     const volScalarField& theta
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
     const scalar kappa = air.kappa();
     const dimensionedScalar& p0 = air.p0();
     
@@ -298,9 +298,8 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromP
 (
     const volScalarField& p,
     const volScalarField& T
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
     tmp<volScalarField> trho
     (
         new volScalarField
@@ -321,9 +320,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromExner
 (
     const volScalarField& Exner,
     const volScalarField& theta
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
     tmp<volScalarField> trho
     (
         new volScalarField
@@ -345,9 +344,9 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
 (
     const volScalarField& T,
     const volScalarField& divu
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
+    const perfectGasPhase& air = operator[](0).gas();
 
     // Initialise the source term as -divu
     tmp<volScalarField> tS
@@ -377,7 +376,7 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
     // Add the terms relating to condensation for each phase
     for(label ip = 0; ip < size(); ip++)
     {
-        fluidSpecie& phase = operator[](ip);
+        const fluidSpecie& phase = operator[](ip);
     
         // Only if there is any condensation
         if (phase.pvs0() < phase.gas().p0())
@@ -396,10 +395,10 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetaSource
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::thetae
 (
     const volScalarField& T
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
-    fluidSpecie& water = operator[](1);
+    const perfectGasPhase& air = operator[](0).gas();
+    const fluidSpecie& water = operator[](1);
 
     // Initialise the thetae as T
     tmp<volScalarField> tt
@@ -433,10 +432,10 @@ void Foam::atmosphere::TfromThetae
     volScalarField& T,
     const dimensionedScalar& thetae0,
     const scalar rt
-)
+) const
 {
-    perfectGasPhase& air = operator[](0).gas();
-    fluidSpecie& water = operator[](1);
+    const perfectGasPhase& air = operator[](0).gas();
+    const fluidSpecie& water = operator[](1);
 
     // Setup variables for a Newton method
     dimensionedScalar Cp = air.Cp() + water.liquid().Cp()*rt;
@@ -463,7 +462,7 @@ void Foam::atmosphere::write()
 {
     for(label ip = 0; ip < size(); ip++)
     {
-        fluidSpecie& phase = operator[](ip);
+        const fluidSpecie& phase = operator[](ip);
         phase.gas().rho().write();
         phase.liquid().v().write();
     }

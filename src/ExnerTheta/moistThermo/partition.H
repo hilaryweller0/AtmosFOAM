@@ -27,8 +27,8 @@ Class
 Description
     A partition of the atmosphere for solving the conditionally averaged
     Euler equations conditioned based on the presence of buoyant convection.
-    A partition consists of an atmosphere, a temperature field and a volume
-    fraction for the partition (sigma)
+    A partition consists of an atmosphere, a temperature field, a volume
+    fraction for the partition (sigma) and a velocity field
 
 SourceFiles
     partition.C
@@ -39,6 +39,7 @@ SourceFiles
 #define partition_H
 
 #include "atmosphere.H"
+#include "surfaceFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -66,6 +67,9 @@ class partition
 
         //- Potential temperature of this partition
         volScalarField theta_;
+        
+        //- Velocity of the partition
+        surfaceVectorField Uf_;
 
 
     // Private Member Functions
@@ -108,13 +112,19 @@ public:
     // Member Functions
 
         // Access
-        const word& partitionName() { return partitionName_; }
+        const word& partitionName() const { return partitionName_; }
         //- Volume fraction of this partition
+        const volScalarField& sigma() const { return sigma_; }
         volScalarField& sigma() { return sigma_; }
         //- Temperature of this partition
+        const volScalarField& T() const { return T_; }
         volScalarField& T() { return T_; }
         //- Potential temperature of this partition
+        const volScalarField& theta() const { return theta_; }
         volScalarField& theta() { return theta_; }
+        //- Velocity of the partition
+        const surfaceVectorField& Uf() const { return Uf_; }
+        surfaceVectorField& Uf() { return Uf_; }
 
         //- Update theta and T from Exner
         void updateThetaT(const volScalarField& Exner);

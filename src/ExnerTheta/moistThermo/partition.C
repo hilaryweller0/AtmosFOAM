@@ -66,6 +66,15 @@ Foam::partition::partition
         ),
         mesh,
         dimensionedScalar("T", dimTemperature, scalar(0))
+    ),
+    Uf_
+    (
+        IOobject
+        (
+            partitionName_+"Uf", mesh.time().timeName(), mesh,
+            IOobject::MUST_READ, IOobject::AUTO_WRITE
+        ),
+        mesh
     )
 {}
 
@@ -109,6 +118,15 @@ Foam::partition::partition
         ),
         mesh,
         dimensionedScalar("T", dimTemperature, scalar(0))
+    ),
+    Uf_
+    (
+        IOobject
+        (
+            partitionName_+"Uf", mesh.time().timeName(), mesh,
+            IOobject::MUST_READ, IOobject::AUTO_WRITE
+        ),
+        mesh
     )
 {
     updateThetaT(Exner);
@@ -142,12 +160,26 @@ void Foam::partition::write()
     sigma_.write();
     T_.write();
     theta_.write();
+    Uf_.write();
 }
 
 
 void Foam::partition::readUpdate(const volScalarField& Exner)
 {
+    const fvMesh& mesh = sigma_.mesh();
     atmosphere::readUpdate();
+    sigma_ = volScalarField
+    (
+        IOobject(partitionName_+"sigma", mesh.time().timeName(), mesh,
+                 IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
+        sigma_
+    );
+    Uf_ = surfaceVectorField
+    (
+        IOobject(partitionName_+"Uf", mesh.time().timeName(), mesh,
+                 IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
+        Uf_
+    );
     updateThetaT(Exner);
 }
 

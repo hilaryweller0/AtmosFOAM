@@ -93,12 +93,14 @@ public:
 
         // Access
             //- Additional thermodynamic data
-            const dimensionedScalar& Cp() { return Cp_; }
-            const dimensionedScalar& rho() { return rho_; }
+            const dimensionedScalar& Cp() const { return Cp_; }
+            const dimensionedScalar& rho() const { return rho_; }
             
             //- volume fraction
+            const volScalarField& v() const { return v_; }
             volScalarField& v() { return v_; }
             //- Rate of change of liquid fraction
+            const volScalarField& dvdt() const { return dvdt_; }
             volScalarField& dvdt() { return dvdt_; }
 };
 

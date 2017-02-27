@@ -81,43 +81,43 @@ public:
 
         // Access
         //- Volume fraction occupied by gases
-        tmp<volScalarField> volGas();
+        tmp<volScalarField> volGas() const;
         //- Volume fraction occupied by dry air
-        tmp<volScalarField> volAir();
+        tmp<volScalarField> volAir() const;
         //- Total density
-        tmp<volScalarField> sumDensity();
+        tmp<volScalarField> sumDensity() const;
         //- Density weighted total gas constant
-        tmp<volScalarField> rhoR();
+        tmp<volScalarField> rhoR() const;
         //- Density weighted total heat capacity (constant pressure)
-        tmp<volScalarField> rhoCp();
+        tmp<volScalarField> rhoCp() const;
         //- Density weighted total heat capacity (constant volume)
-        tmp<volScalarField> rhoCv();
+        tmp<volScalarField> rhoCv() const;
         //- Sum of partial pressures
-        tmp<volScalarField> sumPressure(const volScalarField& T);
+        tmp<volScalarField> sumPressure(const volScalarField& T) const;
         // Pressure from equation of state
-        tmp<volScalarField> pFromT(const volScalarField& T);
+        tmp<volScalarField> pFromT(const volScalarField& T) const;
         // Exner from equation of state
-        tmp<volScalarField> ExnerFromTheta(const volScalarField& theta);
+        tmp<volScalarField> ExnerFromTheta(const volScalarField& theta) const;
         // rho from eqn of state
         tmp<volScalarField> rhoFromP
         (
             const volScalarField& p,
             const volScalarField& T
-        );
+        ) const;
         // rho from eqn of state
         tmp<volScalarField> rhoFromExner
         (
             const volScalarField& Exner,
             const volScalarField& theta
-        );
+        ) const;
         // Source term in the theta equation (divided by rhoa theta)
         tmp<volScalarField> thetaSource
         (
             const volScalarField& T,
             const volScalarField& divu
-        );
+        ) const;
         
-        tmp<volScalarField> thetae(const volScalarField& T);
+        tmp<volScalarField> thetae(const volScalarField& T) const;
         
         //- Calculate temperautre, T, from uniform equivalent potential
         //- temperature and uniform total water mixing ratio, rt
@@ -126,7 +126,7 @@ public:
             volScalarField& T,
             const dimensionedScalar& thetae0,
             const scalar rt
-        );
+        ) const;
 
         // Output
         void write();

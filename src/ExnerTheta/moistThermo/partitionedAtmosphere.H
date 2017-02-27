@@ -90,6 +90,13 @@ public:
 
     // Member Functions
 
+    //- Variables summed over partitions
+        //- Total density
+        tmp<volScalarField> rho() const;
+        
+        //- Equivalent potential temperature
+        tmp<volScalarField> thetae() const;
+
         //- Update theta and T from Exner in each partition
         void updateThetaT(const volScalarField& Exner);
 

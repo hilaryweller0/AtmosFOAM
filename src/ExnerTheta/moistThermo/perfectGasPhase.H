@@ -101,25 +101,27 @@ public:
 
         // Access
             //- Additional thermodynamic data
-            const dimensionedScalar& R() { return R_; }
-            const dimensionedScalar& T0() { return T0_; }
-            const dimensionedScalar& p0() { return p0_; }
-            const dimensionedScalar& Cp() { return Cp_; }
-            const dimensionedScalar& Cv() { return Cv_; }
-            scalar kappa() { return kappa_; }
+            const dimensionedScalar& R() const { return R_; }
+            const dimensionedScalar& T0() const { return T0_; }
+            const dimensionedScalar& p0() const { return p0_; }
+            const dimensionedScalar& Cp() const { return Cp_; }
+            const dimensionedScalar& Cv() const { return Cv_; }
+            scalar kappa() const { return kappa_; }
             
             //- Density and its rate of chage
+            const volScalarField& rho() const { return rho_; }
             volScalarField& rho() { return rho_; }
+            const volScalarField& dRhodt() const { return dRhodt_; }
             volScalarField& dRhodt() { return dRhodt_; }
 
             //- Partial pressure (from perfect gas eqn of state)
-            inline volScalarField partialPressure(const volScalarField& T)
+            inline volScalarField partialPressure(const volScalarField& T) const
             {
                 return rho_*R()*T;
             }
             
-            //- Calculate pressure from Exner pressure
-            inline volScalarField pFromExner(const volScalarField& Exner)
+            //- Calculate pressure from Exner pressurek
+            inline volScalarField pFromExner(const volScalarField& Exner) const
             {
                 return p0()*pow(Exner, 1/kappa());
             }

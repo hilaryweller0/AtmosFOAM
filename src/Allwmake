@@ -19,3 +19,4 @@ wmake $makeType interpolation
 wmake $makeType sphericalGeometry
 wmake $makeType finiteVolume
 wmake $makeType ghostMesh
+wmake $makeType shallowWater

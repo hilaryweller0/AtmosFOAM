@@ -18,29 +18,9 @@ initMoistFoam_HW
 partitionedMoistFoam >& log &
 tail -f log
 
-time=0
-for var in airVapourRho waterVapourRho waterLiquidFrac theta Exner
-do
-    gmtFoam -time $time $var
-    gv $time/$var.pdf &
-done
-
-# de-bugging
-time=2
-for var in theta airVapourRho waterLiquidFrac waterVapourRho; do
-    sumFields $time ${var}Diff $time $var 0 ${var} -scale1 -1
-    gmtFoam -time $time ${var}Diff
-    gv $time/${var}Diff.pdf &
-done
-#for var in divu condensationOfwater heatSource; do
-for var in theta airVapourRho waterLiquidFrac waterVapourRho; do
-    gmtFoam -time $time $var
-    gv $time/$var.pdf &
-done
-
-# output
+# plotting output
 writeuvw Uf -time $time
-moistThermoVars_HW -time $time
+partitionedMoistThermoVars -time $time
 gmtFoam thetae -time $time
 gv $time/thetae.pdf &
 
