@@ -45,9 +45,31 @@ int main(int argc, char *argv[])
 #   include "createTime.H"
 #   include "createMesh.H"
 
+    surfaceScalarField Tf
+    (
+        IOobject
+        (
+            "Tf",
+            runTime.timeName(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        mesh
+    );
+
     CFCFaceToFaceStencil f2fStencil(mesh);
     extendedCentredFaceToFaceStencil extendedf2fStencil(f2fStencil);
 
+    scalarListList stencilFld;
+
+    extendedf2fStencil.collectData
+    (
+        Tf,
+        stencilFld
+    );
+
+    Info << stencilFld << endl;
 }
 
 
