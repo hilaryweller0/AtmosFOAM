@@ -19,7 +19,7 @@ const dimensionedScalar Cpv
 (
     "Cpv",
     dimGasConstant,
-    waterVapour.cp(pRef.value(), T0.value())/waterVapour.W()
+    waterVapour.Cp(pRef.value(), T0.value())/waterVapour.W()
 );
 
 // Specific heat of liquid water at constant pressure
