@@ -40,7 +40,7 @@ Foam::perfectGasPhase::perfectGasPhase
     R_("R", dimGasConstant, constTransport<hConstThermo<perfectGas<specie> > >::R()),
     T0_(dict.lookup("T0")),
     p0_(dict.lookup("p0")),
-    Cp_("Cp", dimGasConstant, cp(p0_.value(),T0_.value())/W()),
+    Cp_("Cp", dimGasConstant, constTransport<hConstThermo<perfectGas<specie> > >::Cp(p0_.value(),T0_.value())/W()),
     Cv_(Cp_-R_),
     kappa_(R_.value()/Cp_.value()),
     rho_(io, mesh),
