@@ -70,6 +70,9 @@ class partition
         
         //- Velocity of the partition
         surfaceVectorField Uf_;
+        
+        //- Flux of the partition
+        surfaceScalarField flux_;
 
 
     // Private Member Functions
@@ -125,6 +128,9 @@ public:
         //- Velocity of the partition
         const surfaceVectorField& Uf() const { return Uf_; }
         surfaceVectorField& Uf() { return Uf_; }
+        //- Flux of the partition
+        const surfaceScalarField& flux() const { return flux_; }
+        surfaceScalarField& flux() { return flux_; }
 
         //- Update theta and T from Exner
         void updateThetaT(const volScalarField& Exner);

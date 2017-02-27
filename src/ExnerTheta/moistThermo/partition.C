@@ -25,6 +25,7 @@ License
 
 #include "partition.H"
 #include "moreListOps.H"
+#include "fvCFD.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -75,6 +76,11 @@ Foam::partition::partition
             IOobject::MUST_READ, IOobject::AUTO_WRITE
         ),
         mesh
+    ),
+    flux_
+    (
+        IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
+        linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
     )
 {}
 
@@ -127,6 +133,11 @@ Foam::partition::partition
             IOobject::MUST_READ, IOobject::AUTO_WRITE
         ),
         mesh
+    ),
+    flux_
+    (
+        IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
+        linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
     )
 {
     updateThetaT(Exner);
@@ -180,6 +191,7 @@ void Foam::partition::readUpdate(const volScalarField& Exner)
                  IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
         Uf_
     );
+    flux_ = linearInterpolate(sumDensity())*(Uf_ & mesh.Sf());
     updateThetaT(Exner);
 }
 

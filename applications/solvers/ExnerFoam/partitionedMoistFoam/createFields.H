@@ -61,18 +61,11 @@ dRhoThetadt.oldTime();
 volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
-Info << "Reading in velocity field" << endl;
+Info << "Setting total velocity field" << endl;
 surfaceVectorField Uf
 (
-    IOobject
-    (
-        "Uf",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
+    IOobject("Uf", runTime.timeName(), mesh),
+    atmosParts.Uf()
 );
 
 // Fields needed in the Helmholtz equation
