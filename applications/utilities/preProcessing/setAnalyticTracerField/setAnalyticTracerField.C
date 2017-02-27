@@ -61,22 +61,11 @@ int main(int argc, char *argv[])
        "fixedValue"
     );
 
-<<<<<<< HEAD
     const word tracerDictName = args.optionFound("tracerDict") ?
                                 args.optionRead<word>("tracerDict") :
                                 "tracerFieldDict";
     Info<< "Reading initial conditions from" << tracerDictName << endl;
-=======
-    Info << "Creating Tf_analytic" << endl;
-    surfaceScalarField Tf
-    (
-        IOobject("Tf_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
-        mesh,
-        dimensionedScalar("Tf_analytic", dimless, scalar(0)),
-       "fixedValue"
-    );
 
->>>>>>> 3857bc299098762cbb24c2eb326463b72b7d3a86
     IOdictionary tracerDict
     (
         IOobject
@@ -115,21 +104,26 @@ int main(int argc, char *argv[])
         )
     );
 
+    Info << "Creating Tf_analytic" << endl;
+    surfaceScalarField Tf
+    (
+        IOobject("Tf_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        mesh,
+        dimensionedScalar("Tf_analytic", dimless, scalar(0)),
+       "fixedValue"
+    );
+
     forAll(timeDirs, timeI)
     {
         Info << "writing " << tracerName << " for time " << runTime.timeName()
              << endl;
         tracer->applyTo(T);
         T.write();
-<<<<<<< HEAD
-    }
-=======
 
         Info << "writing Tf_analytic for time " << runTime.timeName() << endl;
         tracer->applyTo(Tf);
         Tf.write();
     } while (runTime.loop());
->>>>>>> 3857bc299098762cbb24c2eb326463b72b7d3a86
 
     return EXIT_SUCCESS;
 }
