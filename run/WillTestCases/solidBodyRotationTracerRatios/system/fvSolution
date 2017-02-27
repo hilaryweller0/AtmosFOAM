@@ -20,7 +20,7 @@ implicitSource false;
 
 solvers
 {
-    "(T|T1|T2)"
+    "(T|q)"
     {
         solver          PBiCG;
         preconditioner  DILU;

@@ -9,17 +9,18 @@ FoamFile {
 startFrom       startTime;
 startTime       0;
 stopAt          endTime;
-endTime         2000;
-deltaT          1;
+endTime         10000;
+deltaT          25;
 writeControl    runTime;
-writeInterval   100;
+writeInterval   1000;
 purgeWrite      0;
-writeFormat     ascii;
-writePrecision  6;
+writeFormat     binary;
+writePrecision  12;
 writeCompression uncompressed;
 timeFormat      general;
 timePrecision   6;
-runTimeModifiable no;
+runTimeModifiable yes;
 adjustTimeStep no;
 maxCo          1;
-libs           ("libfiniteVolumeAtmos.so");
+libs           ("libOpenFOAM.so" "libExnerTheta.so" "libspecie.so" "libfiniteVolumeAtmos.so");
+

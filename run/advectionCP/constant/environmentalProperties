@@ -8,45 +8,25 @@
 
 FoamFile
 {
-    version     2.0;
-    format      ascii;
-    class       dictionary;
-    location    "system";
-    object      fvSchemes;
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          environmentalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
-{
-    default         Euler;
-}
+g               g [0 1 -2 0 0 0 0] (0 0 -9.81);
+Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
+//diffusionCoefficient diffusionCoeff [0 2 -1 0 0] 0;
 
-divSchemes
-{
-    default         Gauss cubicUpwindCPCFit 3;
-    //default         Gauss vanLeer01;
-}
-
-interpolationSchemes
-{
-    default         none;
-}
-
-gradSchemes
-{
-    default         Gauss;
-}
-
-laplacianSchemes
-{
-    default         none;
-}
-
-fluxRequired
-{
-    default         no;
-}
+//BruntVaisallaFreq  1(0.01962);
+//zN  2(0 53.0001e3);
 
 // ************************************************************************* //
-

@@ -1,0 +1,30 @@
+FoamFile {
+        version         1.4;
+        format          ascii;
+
+        root            "";
+        case            "";
+        instance        "constant";
+        local           "";
+
+        class           dictionary;
+        object          gmtDict;
+}
+
+projection "X9i/5i";
+projection2D XZ;
+separateLegend false;
+plotBoundaryDots false;
+plotZeroValuePolys false;
+
+FieldsToPlot (
+	[T_diff filledContours -0.25 0.25 0.02 "$GMTU/colours/red_white_blue.cpt"]
+//	[T_diff rawValues -0.25 0.25 0.02 "$GMTU/colours/red_white_blue.cpt"]
+        [none mesh "gray"]
+	[T contours 0.1 1 0.1 "black"]
+	[T_analytic contours 0.1 1 0.1 "black,2_2:0"]
+//      [none numbered 0]
+);
+
+region "10e3/80e3/3e3/15e3";
+boundaryMarks "25e3/5e3WSen";
