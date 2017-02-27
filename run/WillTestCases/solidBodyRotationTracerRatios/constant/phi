@@ -23,23 +23,27 @@ boundaryField
 {
     top
     {
-        type            fixedValue;
-        value           uniform 0;
+        type            zeroGradient;
+//        type            fixedValue;
+//        value           uniform 0;
     }
     inlet
     {
-        type            fixedValue;
-        value           uniform 0;
+        type            zeroGradient;
+//        type            fixedValue;
+//        value           uniform 0;
     }
     outlet
     {
-        type            fixedValue;
-        value           uniform 0;
+        type            zeroGradient;
+//        type            fixedValue;
+//        value           uniform 0;
     }
     ground
     {
-        type            fixedValue;
-        value           uniform 0;
+        type            zeroGradient;
+//        type            fixedValue;
+//        value           uniform 0;
     }
     front
     {

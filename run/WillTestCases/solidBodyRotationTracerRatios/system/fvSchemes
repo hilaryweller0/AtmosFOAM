@@ -24,7 +24,7 @@ ddtSchemes
 
 divSchemes
 {
-    //default         Gauss vanLeer01;
+//    default         Gauss vanLeer01;
     default         Gauss cubicUpwindCPCFit 3;
 }
 
