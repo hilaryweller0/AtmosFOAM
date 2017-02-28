@@ -31,6 +31,7 @@ Description
 
 #include "fvCFD.H"
 #include "OFstream.H"
+#include "fcfBilinearFit.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,6 +43,9 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "readEnvironmentalProperties.H"
     #include "createFields.H"
+
+    const fcfBilinearFit sGrad(mesh);
+    tmp<surfaceVectorField> gradTf = sGrad(Tf);
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -55,14 +59,9 @@ int main(int argc, char *argv[])
         {
             Tf = Tf.oldTime() - 0.5*dt *
             (
-                (Uf & fvc::interpolate(fvc::grad(Tf))) + 
-                (Uf & fvc::interpolate(fvc::grad(Tf.oldTime()), "interpolate(grad(Tf))"))
+                (Uf & sGrad(Tf)) + 
+                (Uf & sGrad(Tf.oldTime()))
             );
-
-	    bf = Tf * gUnitNormal;
-	    b = fvc::reconstruct(bf * mesh.magSf());
-	    T == (b & ghat);
-	    Tf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(T, "T_from_b");
         }
         
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
