@@ -115,6 +115,7 @@ int main(int argc, char *argv[])
 
     forAll(timeDirs, timeI)
     {
+        runTime.setTime(timeDirs[timeI], timeI);
         Info << "writing " << tracerName << " for time " << runTime.timeName()
              << endl;
         tracer->applyTo(T);
@@ -123,7 +124,7 @@ int main(int argc, char *argv[])
         Info << "writing Tf_analytic for time " << runTime.timeName() << endl;
         tracer->applyTo(Tf);
         Tf.write();
-    } while (runTime.loop());
+    }
 
     return EXIT_SUCCESS;
 }
