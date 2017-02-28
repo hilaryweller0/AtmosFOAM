@@ -59,17 +59,19 @@ int main(int argc, char *argv[])
     );
 
     CFCFaceToFaceStencil f2fStencil(mesh);
-    extendedCentredFaceToFaceStencil extendedf2fStencil(f2fStencil);
+    extendedCentredFaceToFaceStencil stencil(f2fStencil);
 
-    scalarListList stencilFld;
+    Info << "stencil faceI\n" << stencil.elements() << endl;
 
-    extendedf2fStencil.collectData
+    List<List<point> > stencilPoints(mesh.nFaces());
+
+    stencil.collectData
     (
-        Tf,
-        stencilFld
+        mesh.Cf(),
+        stencilPoints
     );
 
-    Info << stencilFld << endl;
+    Info << "stencil points\n" << stencilPoints << endl;
 }
 
 
