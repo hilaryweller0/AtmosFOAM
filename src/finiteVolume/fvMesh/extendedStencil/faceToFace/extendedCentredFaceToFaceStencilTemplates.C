@@ -145,7 +145,7 @@ Foam::extendedCentredFaceToFaceStencil::weightedSum
             )
         )
     );
-    GeometricField<GradType, fvsPatchField, surfaceMesh>& sf = tsfCorr();
+    GeometricField<GradType, fvsPatchField, surfaceMesh>& sf = tsfCorr.ref();
 
     // Internal faces
     for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
@@ -161,7 +161,7 @@ Foam::extendedCentredFaceToFaceStencil::weightedSum
 
     // Boundaries
     typename GeometricField<GradType, fvsPatchField, surfaceMesh>::
-        GeometricBoundaryField& bSfCorr = sf.boundaryField();
+        Boundary& bSfCorr = sf.boundaryFieldRef();
 
     forAll(bSfCorr, patchi)
     {
