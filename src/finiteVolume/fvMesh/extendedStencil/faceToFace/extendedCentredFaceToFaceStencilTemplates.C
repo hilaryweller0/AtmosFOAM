@@ -140,7 +140,7 @@ Foam::extendedCentredFaceToFaceStencil::weightedSum
             dimensioned<GradType>
             (
                 fld.name(),
-                fld.dimensions()/dimArea,
+                fld.dimensions()/dimArea, // TODO: why is this /dimArea and not /dimLength ?
                 pTraits<GradType>::zero
             )
         )
