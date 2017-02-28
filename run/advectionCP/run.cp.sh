@@ -7,7 +7,7 @@ setVelocityField
 
 advectiveFoamF
 
-setAnalyticTracerField
+setAnalyticTracerField -time 10000
 sumFields -scale0 1 -scale1 -1 10000 Tf_diff 10000 Tf 10000 Tf_analytic
 
 globalSum -time 10000 Tf_diff
