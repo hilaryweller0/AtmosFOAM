@@ -1,3 +1,0 @@
-initMoistFoam.C
-
-EXE = $(FOAM_USER_APPBIN)/initMoistFoam_JKKV15

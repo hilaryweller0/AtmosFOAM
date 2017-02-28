@@ -63,9 +63,9 @@ scalar variance(const volScalarField& field) {
     scalar variance = 0;
     forAll(field.mesh().cells(), cellI)
     {
-	scalar value = field[cellI];
-	scalar cellVolume = field.mesh().V()[cellI];
-	variance += pow(value - average, 2) * cellVolume;
+        scalar value = field[cellI];
+        scalar cellVolume = field.mesh().V()[cellI];
+        variance += pow(value - average, 2) * cellVolume;
     }
 
     variance /= totalVolume;

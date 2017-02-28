@@ -32,15 +32,22 @@ Foam::perfectGasPhase::perfectGasPhase
 (
     const IOobject& io,
     const fvMesh& mesh,
-    Istream& is,
     const dictionary& dict
 )
 :
-    constTransport<hConstThermo<perfectGas<specie> > >(is),
+    constTransport<hConstThermo<perfectGas<specie> > >(dict.subDict("gas")),
     R_("R", dimGasConstant, constTransport<hConstThermo<perfectGas<specie> > >::R()),
-    T0_(dict.lookup("T0")),
-    p0_(dict.lookup("p0")),
-    Cp_("Cp", dimGasConstant, cp(p0_.value(),T0_.value())/W()),
+    T0_(dict.subDict("gasDict").lookup("T0")),
+    p0_(dict.subDict("gasDict").lookup("p0")),
+    Cp_
+    (
+        "Cp",
+        dimGasConstant,
+        constTransport<hConstThermo<perfectGas<specie> > >::Cp
+        (
+            p0_.value(),T0_.value()
+        )
+    ),
     Cv_(Cp_-R_),
     kappa_(R_.value()/Cp_.value()),
     rho_(io, mesh),

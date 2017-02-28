@@ -37,7 +37,7 @@ Foam::fluidSpecie::fluidSpecie
 )
 :
     name_(name__),
-    gas_(gasIO, mesh, dict.lookup("gas"), dict.subDict("gasDict")),
+    gas_(gasIO, mesh, dict),
     liquid_(liquidIO, mesh, dict.subDict("liquidDict")),
     Lv0_(dict.lookup("Lv0")),
     pvs0_(dict.lookup("pvs0")),

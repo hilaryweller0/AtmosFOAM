@@ -88,7 +88,6 @@ public:
         (
             const IOobject&,
             const fvMesh&,
-            Istream&,
             const dictionary&
         );
 
