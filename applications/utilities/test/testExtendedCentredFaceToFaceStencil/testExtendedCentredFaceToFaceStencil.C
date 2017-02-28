@@ -72,6 +72,22 @@ int main(int argc, char *argv[])
     );
 
     Info << "stencil points\n" << stencilPoints << endl;
+
+    List<List<vector > > coeffs(mesh.nFaces());
+
+    forAll(stencilPoints, stencilForFaceI)
+    {
+        forAll(stencilPoints[stencilForFaceI], faceIInStencil)
+        {
+            coeffs[stencilForFaceI].append(vector(1, 0, 0));
+        }
+    }
+
+    tmp<surfaceVectorField> tsvf = stencil.weightedSum(Tf, coeffs);
+    Info << "grad(Tf)" << tsvf() << endl;
+
+    // for each stencil, we want to calculate the gradient which is a weighted sum
+    // can we use stencil.weightedSum()?  yes! I think so.
 }
 
 
