@@ -40,6 +40,30 @@ Foam::tmp
     const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
 ) const
 {
-    return fvc::interpolate(fvc::grad(s));
+//    return fvc::interpolate(fvc::grad(s));
+    return stencil.weightedSum(s, coeffs);
 }
 
+template<class Type>
+void Foam::fv::fcfBilinearFit<Type>::initCoeffs
+(
+    const fvMesh& mesh
+)
+{
+    List<List<point> > stencilPoints(mesh.nFaces());
+
+    stencil.collectData
+    (
+        mesh.Cf(),
+        stencilPoints
+    );
+
+    forAll(stencilPoints, stencilForFaceI)
+    {
+        // TODO: construct a matrix using the stencil points and get the pseudo-inverse
+        forAll(stencilPoints[stencilForFaceI], faceIInStencil)
+        {
+            coeffs[stencilForFaceI].append(vector(1, 0, 0));
+        }
+    }
+}

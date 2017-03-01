@@ -37,6 +37,8 @@ SourceFiles
 #define fcfBilinearFit_H
 
 #include "sGradScheme.H"
+#include "extendedCentredFaceToFaceStencil.H"
+#include "CFCFaceToFaceStencil.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -51,22 +53,28 @@ class fcfBilinearFit
 :
     public fv::sGradScheme<Type>
 {
-    fcfBilinearFit(const fcfBilinearFit&);
-
-    void operator=(const fcfBilinearFit&);
-
 public:
     TypeName("fcfBilinearFit");
 
     fcfBilinearFit(const fvMesh& mesh)
     :
-        sGradScheme<Type>(mesh)
-    {}
+        sGradScheme<Type>(mesh),
+        coeffs(mesh.nFaces()),
+        f2fStencil(mesh),
+        stencil(f2fStencil)
+    {
+        initCoeffs(mesh);
+    }
 
     fcfBilinearFit(const fvMesh& mesh, Istream&)
     :
-        sGradScheme<Type>(mesh)
-    {}
+        sGradScheme<Type>(mesh),
+        coeffs(mesh.nFaces()),
+        f2fStencil(mesh),
+        stencil(f2fStencil)
+    {
+        initCoeffs(mesh);
+    }
 
     virtual tmp
     <
@@ -77,6 +85,15 @@ public:
         const GeometricField<Type, fvsPatchField, surfaceMesh>&
     ) const;
     
+private:
+    fcfBilinearFit(const fcfBilinearFit&);
+    void operator=(const fcfBilinearFit&);
+
+    void initCoeffs(const fvMesh& mesh);
+
+    List<List<vector > > coeffs;
+    const CFCFaceToFaceStencil f2fStencil;
+    const extendedCentredFaceToFaceStencil stencil;
 };
 
 }
