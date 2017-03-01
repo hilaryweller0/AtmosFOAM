@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2015 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,23 +23,8 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvc.H"
+#include "fvMesh.H"
 #include "fcfBilinearFit.H"
 
-template<class Type>
-Foam::tmp
-<
-    Foam::GeometricField
-    <
-        typename Foam::outerProduct<Foam::vector, Type>::type,
-        Foam::fvsPatchField,
-        Foam::surfaceMesh
-    >
-> Foam::fv::fcfBilinearFit<Type>::operator()
-(
-    const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
-) const
-{
-    return fvc::interpolate(fvc::grad(s));
-}
+makeFvsGradScheme(fcfBilinearFit)
 

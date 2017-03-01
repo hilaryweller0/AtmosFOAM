@@ -31,7 +31,7 @@ Description
 
 #include "fvCFD.H"
 #include "OFstream.H"
-#include "fcfBilinearFit.H"
+#include "sGradScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,8 +44,9 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "createFields.H"
 
-    const fcfBilinearFit sGrad(mesh);
-    tmp<surfaceVectorField> gradTf = sGrad(Tf);
+    IStringStream type("fcfBilinearFit");
+    tmp<fv::sGradScheme<scalar> > tsGrad = fv::sGradScheme<scalar>::New(mesh, type);
+    const fv::sGradScheme<scalar>& sGrad = tsGrad();
 
     Info<< "\nCalculating advection\n" << endl;
 

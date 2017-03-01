@@ -36,22 +36,55 @@ SourceFiles
 #ifndef fcfBilinearFit_H
 #define fcfBilinearFit_H
 
-#include "fvCFD.H"
+#include "sGradScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-class fcfBilinearFit
+namespace fv
 {
-    public:
 
-    fcfBilinearFit(const fvMesh& mesh);
+template<class Type>
+class fcfBilinearFit
+:
+    public fv::sGradScheme<Type>
+{
+    fcfBilinearFit(const fcfBilinearFit&);
 
-    tmp<surfaceVectorField> operator()(const surfaceScalarField& s) const;
+    void operator=(const fcfBilinearFit&);
+
+public:
+    TypeName("fcfBilinearFit");
+
+    fcfBilinearFit(const fvMesh& mesh)
+    :
+        sGradScheme<Type>(mesh)
+    {}
+
+    fcfBilinearFit(const fvMesh& mesh, Istream&)
+    :
+        sGradScheme<Type>(mesh)
+    {}
+
+    virtual tmp
+    <
+        GeometricField
+        <typename outerProduct<vector, Type>::type, fvsPatchField, surfaceMesh>
+    > operator()
+    (
+        const GeometricField<Type, fvsPatchField, surfaceMesh>&
+    ) const;
+    
 };
 
 }
+
+}
+
+#ifdef NoRepository
+    #include "fcfBilinearFit.C"
+#endif
 
 #endif

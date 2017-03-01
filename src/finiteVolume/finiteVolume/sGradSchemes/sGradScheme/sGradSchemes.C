@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2012 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,25 +21,24 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
+Description
+    Abstract base class for finite volume calculus surface gradient schemes.
+
 \*---------------------------------------------------------------------------*/
 
-#include "fvc.H"
-#include "fcfBilinearFit.H"
+#include "sGradScheme.H"
+#include "HashTable.H"
 
-template<class Type>
-Foam::tmp
-<
-    Foam::GeometricField
-    <
-        typename Foam::outerProduct<Foam::vector, Type>::type,
-        Foam::fvsPatchField,
-        Foam::surfaceMesh
-    >
-> Foam::fv::fcfBilinearFit<Type>::operator()
-(
-    const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
-) const
+namespace Foam
 {
-    return fvc::interpolate(fvc::grad(s));
+
+namespace fv
+{
+
+defineTemplateRunTimeSelectionTable(sGradScheme<scalar>, Istream);
+//defineTemplateRunTimeSelectionTable(sGradScheme<vector>, Istream);
+
+}
+
 }
 
