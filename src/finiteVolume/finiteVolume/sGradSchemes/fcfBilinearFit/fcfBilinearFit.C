@@ -25,6 +25,7 @@ License
 
 #include "fvc.H"
 #include "fcfBilinearFit.H"
+#include "SVD.H"
 
 template<class Type>
 Foam::tmp
@@ -60,10 +61,44 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
 
     forAll(stencilPoints, stencilForFaceI)
     {
-        // TODO: construct a matrix using the stencil points and get the pseudo-inverse
-        forAll(stencilPoints[stencilForFaceI], faceIInStencil)
+        const List<point>& stencil = stencilPoints[stencilForFaceI];
+
+        if (stencil.size() >= 3)
         {
-            coeffs[stencilForFaceI].append(vector(1, 0, 0));
+            calculateGradCoeffs(stencil, coeffs[stencilForFaceI]);
         }
+        else
+        {
+            // TODO: oh dear! not enough faces to fit phi = a_1 + a_2 x + a_3 z
+            forAll(stencil, faceI)
+            {
+                coeffs[stencilForFaceI].append(vector(0, 0, 0));
+            }
+        }
+    }
+}
+
+template<class Type>
+void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
+(
+    const List<point>& stencil,
+    List<vector>& coeffs
+)
+{
+    scalarRectangularMatrix B(stencil.size(), 3);
+    
+    forAll(stencil, faceI)
+    {
+        B(faceI, 0) = 1;
+        B(faceI, 1) = stencil[faceI].x();
+        B(faceI, 2) = stencil[faceI].z();
+    }
+
+    const SVD svd(B);
+    const scalarRectangularMatrix& Binv = svd.VSinvUt();
+
+    forAll(stencil, faceI)
+    {
+        coeffs.append(vector(Binv(1, faceI), 0, Binv(2, faceI)));
     }
 }

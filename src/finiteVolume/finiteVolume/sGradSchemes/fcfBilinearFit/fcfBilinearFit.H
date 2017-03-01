@@ -90,6 +90,11 @@ private:
     void operator=(const fcfBilinearFit&);
 
     void initCoeffs(const fvMesh& mesh);
+    void calculateGradCoeffs
+    (
+        const List<point>& stencil,
+        List<vector>& coeffs
+    );
 
     List<List<vector > > coeffs;
     const CFCFaceToFaceStencil f2fStencil;
