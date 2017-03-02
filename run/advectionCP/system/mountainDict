@@ -1,0 +1,19 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      add2dMountainDict;
+}
+
+type			btf;
+domainHeight		25e3;
+
+mountain
+{
+	type		schaerCos;
+	halfWidth	25e3;
+	peakHeight	3e3;
+	wavelength	8e3;
+}
+
