@@ -24,7 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "fvc.H"
-#include "fcfBilinearFit.H"
+#include "interpGrad.H"
 #include "SVD.H"
 
 template<class Type>
@@ -36,68 +36,11 @@ Foam::tmp
         Foam::fvsPatchField,
         Foam::surfaceMesh
     >
-> Foam::fv::fcfBilinearFit<Type>::operator()
+> Foam::fv::interpGrad<Type>::operator()
 (
     const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
 ) const
 {
-    return stencil.weightedSum(s, coeffs);
+    return fvc::interpolate(fvc::grad(s));
 }
 
-template<class Type>
-void Foam::fv::fcfBilinearFit<Type>::initCoeffs
-(
-    const fvMesh& mesh
-)
-{
-    List<List<point> > stencilPoints(mesh.nFaces());
-
-    stencil.collectData
-    (
-        mesh.Cf(),
-        stencilPoints
-    );
-
-    forAll(stencilPoints, stencilForFaceI)
-    {
-        const List<point>& stencil = stencilPoints[stencilForFaceI];
-
-        if (stencil.size() >= 3)
-        {
-            calculateGradCoeffs(stencil, coeffs[stencilForFaceI]);
-        }
-        else
-        {
-            // TODO: oh dear! not enough faces to fit phi = a_1 + a_2 x + a_3 z
-            forAll(stencil, faceI)
-            {
-                coeffs[stencilForFaceI].append(vector(0, 0, 0));
-            }
-        }
-    }
-}
-
-template<class Type>
-void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
-(
-    const List<point>& stencil,
-    List<vector>& coeffs
-)
-{
-    scalarRectangularMatrix B(stencil.size(), 3);
-    
-    forAll(stencil, faceI)
-    {
-        B(faceI, 0) = 1;
-        B(faceI, 1) = stencil[faceI].x();
-        B(faceI, 2) = stencil[faceI].z();
-    }
-
-    const SVD svd(B);
-    const scalarRectangularMatrix& Binv = svd.VSinvUt();
-
-    forAll(stencil, faceI)
-    {
-        coeffs.append(vector(Binv(1, faceI), 0, Binv(2, faceI)));
-    }
-}

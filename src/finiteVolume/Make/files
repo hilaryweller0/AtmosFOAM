@@ -40,6 +40,7 @@ $(extendedStencil)/cellToCell/globalIndexStencils/CFCFCCellToCellStencil.C
 $(extendedStencil)/cellToCell/MeshObjects/centredCFCFCCellToCellStencilObject.C
 
 finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C
+finiteVolume/sGradSchemes/interpGrad/interpGrads.C
 finiteVolume/sGradSchemes/fcfBilinearFit/fcfBilinearFits.C
 
 LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeAtmos
