@@ -169,6 +169,25 @@ void Foam::CFCFaceToFaceStencil::calcCellStencil
                 fFaces[n++] = globalNumbering().toGlobal(neiFaces[neiI]);
             }
         }
+        // now include all faces connected via vertices
+        HashSet<label, Hash<label>> faceSet(fFaces);
+        const face& f = mesh().faces()[faceI];
+
+        forAll(f, pointForFaceI)
+        {
+            const label pointI = f[pointForFaceI];
+            const labelList& pointFaces = mesh().pointFaces()[pointI];
+
+            forAll(pointFaces, i)
+            {
+                if (validFace[pointFaces[i]] && 
+                    !faceSet.found(pointFaces[i]))
+                {
+                    faceSet.insert(pointFaces[i]);
+                    fFaces.append(pointFaces[i]);
+                }
+            }
+        }
     }
 
 
