@@ -8,5 +8,6 @@ moistThermo/fluidSpecie.C
 moistThermo/atmosphere.C
 moistThermo/partition.C
 moistThermo/partitionedAtmosphere.C
+gravity/gravity.C
 
 LIB = $(FOAM_USER_LIBBIN)/libExnerTheta

@@ -41,7 +41,7 @@ Foam::tmp
     const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
 ) const
 {
-    return stencil.weightedSum(s, coeffs);
+    return stencilDescription.weightedSum(s, coeffs);
 }
 
 template<class Type>
@@ -52,7 +52,7 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
 {
     List<List<point> > stencilPoints(mesh.nFaces());
 
-    stencil.collectData
+    stencilDescription.collectData
     (
         mesh.Cf(),
         stencilPoints
@@ -62,9 +62,15 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
     {
         const List<point>& stencil = stencilPoints[stencilForFaceI];
 
+//        bool horizontal = mag(g.unitFaceNormal()[stencilForFaceI]) > 1e-12;
         if (stencil.size() >= 3)
         {
-            calculateGradCoeffs(stencil, coeffs[stencilForFaceI]);
+            calculateGradCoeffs
+            (
+                stencilDescription.elements()[stencilForFaceI],
+                stencil,
+                coeffs[stencilForFaceI]
+            );
         }
         else
         {
@@ -81,27 +87,50 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
 template<class Type>
 void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
 (
+    const labelList& stencilFaceIndices,
     const List<point>& stencil,
     List<vector>& coeffs
 )
 {
-    scalarRectangularMatrix B(stencil.size(), 3);
-    
-    const point& origin = stencil.first();
-    forAll(stencil, faceI)
+    label horizontalFaces = 0;
+    boolList include(stencilFaceIndices.size());
+    forAll(stencilFaceIndices, i)
     {
-        const point& p = stencil[faceI] - origin;
+        include[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]) > 1e-12;
+        if (include[i]) horizontalFaces++;
+    }
 
-        B(faceI, 0) = 1;
-        B(faceI, 1) = p.x();
-        B(faceI, 2) = p.z();
+    scalarRectangularMatrix B(horizontalFaces, 3);
+    
+    label n = 0;
+    const point& origin = stencil.first();
+    forAll(stencil, i)
+    {
+        if (include[i])
+        {
+            const point& p = stencil[i] - origin;
+
+            B(n, 0) = 1;
+            B(n, 1) = p.x();
+            B(n, 2) = p.z();
+            n++;
+        }
     }
 
     const SVD svd(B);
     const scalarRectangularMatrix& Binv = svd.VSinvUt();
 
-    forAll(stencil, faceI)
+    n = 0;
+    forAll(stencil, i)
     {
-        coeffs.append(vector(Binv(1, faceI), 0, Binv(2, faceI)));
+        if (include[i])
+        {
+            coeffs.append(vector(Binv(1, n), 0, Binv(2, n)));
+            n++;
+        }
+        else
+        {
+            coeffs.append(vector(0, 0, 0));
+        }
     }
 }

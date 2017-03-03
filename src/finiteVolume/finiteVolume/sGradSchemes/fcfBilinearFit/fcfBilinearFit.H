@@ -39,6 +39,7 @@ SourceFiles
 #include "sGradScheme.H"
 #include "extendedCentredFaceToFaceStencil.H"
 #include "CFCFaceToFaceStencil.H"
+#include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -59,9 +60,10 @@ public:
     fcfBilinearFit(const fvMesh& mesh)
     :
         sGradScheme<Type>(mesh),
-        coeffs(mesh.nFaces()),
         f2fStencil(mesh),
-        stencil(f2fStencil)
+        stencilDescription(f2fStencil),
+        coeffs(mesh.nFaces()),
+        g(mesh)
     {
         initCoeffs(mesh);
     }
@@ -69,9 +71,10 @@ public:
     fcfBilinearFit(const fvMesh& mesh, Istream&)
     :
         sGradScheme<Type>(mesh),
-        coeffs(mesh.nFaces()),
         f2fStencil(mesh),
-        stencil(f2fStencil)
+        stencilDescription(f2fStencil),
+        coeffs(mesh.nFaces()),
+        g(mesh)
     {
         initCoeffs(mesh);
     }
@@ -92,13 +95,15 @@ private:
     void initCoeffs(const fvMesh& mesh);
     void calculateGradCoeffs
     (
+        const labelList& stencilFaceIndices,
         const List<point>& stencil,
         List<vector>& coeffs
     );
 
-    List<List<vector > > coeffs;
     const CFCFaceToFaceStencil f2fStencil;
-    const extendedCentredFaceToFaceStencil stencil;
+    const extendedCentredFaceToFaceStencil stencilDescription;
+    List<List<vector > > coeffs;
+    const gravity g;
 };
 
 }
