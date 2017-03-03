@@ -68,7 +68,8 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
         }
         else
         {
-            // TODO: oh dear! not enough faces to fit phi = a_1 + a_2 x + a_3 z
+            // not enough faces to fit phi = a_1 + a_2 x + a_3 z
+            Info << "ignoring faceI " << stencilForFaceI << " stencil of size " << stencil.size() << endl;
             forAll(stencil, faceI)
             {
                 coeffs[stencilForFaceI].append(vector(0, 0, 0));
@@ -86,11 +87,14 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
 {
     scalarRectangularMatrix B(stencil.size(), 3);
     
+    const point& origin = stencil.first();
     forAll(stencil, faceI)
     {
+        const point& p = stencil[faceI] - origin;
+
         B(faceI, 0) = 1;
-        B(faceI, 1) = stencil[faceI].x();
-        B(faceI, 2) = stencil[faceI].z();
+        B(faceI, 1) = p.x();
+        B(faceI, 2) = p.z();
     }
 
     const SVD svd(B);
