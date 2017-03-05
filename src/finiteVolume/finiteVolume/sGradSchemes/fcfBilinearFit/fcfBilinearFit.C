@@ -62,7 +62,6 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
     {
         const List<point>& stencil = stencilPoints[stencilForFaceI];
 
-//        bool horizontal = mag(g.unitFaceNormal()[stencilForFaceI]) > 1e-12;
         if (stencil.size() >= 3)
         {
             calculateGradCoeffs
@@ -92,16 +91,18 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
     List<vector>& coeffs
 )
 {
-    label horizontalFaces = 0;
+    label nonVerticalFaces = 0;
     boolList include(stencilFaceIndices.size());
+    scalarList multipliers(stencil.size());
     forAll(stencilFaceIndices, i)
     {
+        multipliers[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]);
         include[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]) > 1e-12;
-        if (include[i]) horizontalFaces++;
+        if (include[i]) nonVerticalFaces++;
     }
 
-    scalarRectangularMatrix B(horizontalFaces, 3);
-    
+    scalarRectangularMatrix B(nonVerticalFaces, 3);
+
     label n = 0;
     const point& origin = stencil.first();
     forAll(stencil, i)
@@ -110,9 +111,10 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
         {
             const point& p = stencil[i] - origin;
 
-            B(n, 0) = 1;
-            B(n, 1) = p.x();
-            B(n, 2) = p.z();
+            B(n, 0) = multipliers[i] * 1;
+            B(n, 1) = multipliers[i] * p.x();
+            B(n, 2) = multipliers[i] * p.z();
+
             n++;
         }
     }
@@ -124,8 +126,8 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
     forAll(stencil, i)
     {
         if (include[i])
-        {
-            coeffs.append(vector(Binv(1, n), 0, Binv(2, n)));
+        {            
+            coeffs.append(vector(multipliers[i]*Binv(1, n), 0, multipliers[i]*Binv(2, n)));
             n++;
         }
         else
