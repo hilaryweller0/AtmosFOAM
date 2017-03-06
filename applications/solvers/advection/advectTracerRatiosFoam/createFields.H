@@ -41,7 +41,7 @@ volScalarField q2
     ),
     -q+1
 );
-
+q2.oldTime();
 
 surfaceScalarField phi
 (

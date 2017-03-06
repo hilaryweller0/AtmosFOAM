@@ -70,7 +70,8 @@ int main(int argc, char *argv[])
         for (int corr=0; corr < 3; corr++)
         {
             const dimensionedScalar unitDamping("unitDamping", dimensionSet(0,0,0,0,0), 1);
-            q2 = -q+1;
+            q2 = -q;
+            q2 += 1.;
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix qEqn
@@ -90,7 +91,8 @@ int main(int argc, char *argv[])
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
-                qEqn += 0.5*fvm::div(phi, q);
+                //qEqn += 0.5*fvm::div(phi, q);
+                qEqn += 0.5*(U & fvc::grad(q));
                 TEqn += 0.5*fvm::div(phi, T);
             }
             else

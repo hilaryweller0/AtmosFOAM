@@ -11,6 +11,6 @@ EXE_LIBS = \
     -lmeshTools \
     -lfiniteVolume \
     -lfiniteVolumeAtmos \
-    -lCharneyPhillips \
+#    -lCharneyPhillips \
     -lExnerTheta \
     -lspecie
