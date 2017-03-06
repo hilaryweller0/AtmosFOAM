@@ -2,17 +2,22 @@
 set -e
 rm -rf [0-9]*
 blockMesh
-#terrainFollowingMesh
+terrainFollowingMesh
 setInitialTracerField
 setVelocityField
 
 advectiveFoamF
 
+setAnalyticTracerField -time 5000
 setAnalyticTracerField -time 10000
-zeroVerticalFaces Tf
-zeroVerticalFaces -time 10000 Tf_analytic
+#zeroVerticalFaces Tf
+#zeroVerticalFaces -time 5000 Tf_analytic
+#zeroVerticalFaces -time 10000 Tf_analytic
 
+sumFields -scale0 1 -scale1 -1 5000 Tf_diff 5000 Tf 5000 Tf_analytic
 sumFields -scale0 1 -scale1 -1 10000 Tf_diff 10000 Tf 10000 Tf_analytic
+gmtFoam -time 5000 Tf_diff
+gmtFoam -time 10000 Tf_diff
 
 globalSum -time 10000 Tf_diff
 mv globalSumTf_diff.dat 10000
