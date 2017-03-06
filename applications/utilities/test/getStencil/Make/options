@@ -9,5 +9,6 @@ EXE_LIBS = \
     -lfiniteVolumeAtmos \
     -lOpenFOAM \
     -lmeshTools \
-    -lfiniteVolume
+    -lfiniteVolume \
+    -lspecie
 
