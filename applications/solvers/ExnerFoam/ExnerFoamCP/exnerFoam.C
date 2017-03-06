@@ -82,10 +82,6 @@ int main(int argc, char *argv[])
         #include "rhoEqn.H"
         {
             thetaf += dt * (radiationf - thetaf)/radiativeTimescale;
-            bf = thetaf * gUnitNormal;
-            b = fvc::reconstruct(bf * mesh.magSf());
-            theta == (b & ghat);
-            thetaf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(theta, "thetaFromb");
         }
         #include "compressibleContinuityErrs.H"
 

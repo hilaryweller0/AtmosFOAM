@@ -53,23 +53,6 @@ surfaceScalarField radiationf
     )
 );
 
-surfaceScalarField bf
-(
-    IOobject
-    (
-        "bf",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    thetaf * gUnitNormal
-);
-bf.write();
-bf.oldTime();
-
-volVectorField b("b", fvc::reconstruct(bf * mesh.magSf()));
-b.oldTime();
 
 // theta is read from disk to pick up the boundary patch types
 volScalarField theta
@@ -82,12 +65,13 @@ volScalarField theta
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    b & ghat
+    // FIXME: face-to-cell interpolation isn't built into OpenFOAM
+    // see https://github.com/hertzsprung/charney-phillips/wiki/Cell-centre-reconstruction
+    fvc::interpolate(thetaf)
 );
 theta.oldTime();
 theta.write();
 
-thetaf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(theta, "thetaFromb");
 radiationf += thetaf;
 
 // Reading in the sponge layer coefficients (if present)
