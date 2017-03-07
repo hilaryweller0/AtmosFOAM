@@ -32,6 +32,7 @@ Description
 #include "fvCFD.H"
 #include "OFstream.H"
 #include "sGradScheme.H"
+#include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -41,7 +42,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
-    #include "readEnvironmentalProperties.H"
+    #include "createGravity.H"
     #include "createFields.H"
 
     IStringStream type("fcfBilinearFit");
@@ -64,6 +65,10 @@ int main(int argc, char *argv[])
                 (Uf & sGrad(Tf.oldTime()))
             );
         }
+
+        bf = Tf * (g.unit() & mesh.Sf());
+        b = fvc::reconstruct(bf);
+        T = b & g.unit();
         
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
              << max(Tf.internalField()) << endl;

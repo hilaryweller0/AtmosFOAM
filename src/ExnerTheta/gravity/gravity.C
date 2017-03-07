@@ -14,7 +14,8 @@ Foam::gravity::gravity(const fvMesh& mesh)
         )
     ),
     g_(dict_.lookup("g")),
-    unitFaceNormal_(mesh.Sf() / mesh.magSf() & (g_ / mag(g_)))
+    gHat_(g_/mag(g_)),
+    unitFaceNormal_(mesh.Sf() / mesh.magSf() & gHat_)
 {}
 
 Foam::dimensionedVector Foam::gravity::operator()() const

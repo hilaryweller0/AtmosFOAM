@@ -59,10 +59,16 @@ public:
         return unitFaceNormal_;
     }
 
+    const dimensionedVector unit() const
+    {
+        return gHat_;
+    }
+
 private:
     const fvMesh& mesh_;
     const IOdictionary dict_;
     const dimensionedVector g_;
+    const dimensionedVector gHat_;
     const surfaceScalarField unitFaceNormal_;
 
     gravity(const gravity&);
