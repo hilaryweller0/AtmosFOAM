@@ -18,5 +18,6 @@ wmake $makeType prescribedFields
 wmake $makeType interpolation
 wmake $makeType sphericalGeometry
 wmake $makeType finiteVolume
+wmake $makeType CharneyPhillips
 wmake $makeType ghostMesh
 wmake $makeType shallowWater
