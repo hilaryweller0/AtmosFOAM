@@ -24,13 +24,13 @@ ddtSchemes
 
 divSchemes
 {
-//    default         Gauss vanLeer01;
-    default         Gauss cubicUpwindCPCFit 3;
+    default         Gauss vanLeer01;
+//    default         Gauss cubicUpwindCPCFit 3;
 }
 
 interpolationSchemes
 {
-    default         none;
+    default         cubic;
 }
 
 gradSchemes

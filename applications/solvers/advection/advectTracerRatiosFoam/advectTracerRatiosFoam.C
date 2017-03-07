@@ -70,15 +70,17 @@ int main(int argc, char *argv[])
         for (int corr=0; corr < 3; corr++)
         {
             const dimensionedScalar unitDamping("unitDamping", dimensionSet(0,0,0,0,0), 1);
-            q2 = -q;
-            q2 += 1.;
+            q2 = -q+1;
+            fluxOld = fvc::interpolate(T.oldTime())*phi;
+            flux = fvc::interpolate(T)*phi;
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix qEqn
             (
-                fvm::ddt(q)
-              //+ 0.5*fvc::div(phi, q.oldTime())
-              + 0.5*(U & fvc::grad(q.oldTime()))
+                //fvm::ddt(q)
+              fvm::ddt(T,q)
+              + 0.5*fvc::div(fluxOld,q.oldTime())
+              //+ 0.5*( U & fvc::grad(q.oldTime()) )
               + 0.5*T1damping*q.oldTime()
               - 0.5*T2damping*(1-q.oldTime())
             );
@@ -91,22 +93,21 @@ int main(int argc, char *argv[])
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
-                //qEqn += 0.5*fvm::div(phi, q);
-                qEqn += 0.5*(U & fvc::grad(q));
+                qEqn += 0.5*fvm::div(flux,q);
                 TEqn += 0.5*fvm::div(phi, T);
             }
             else
             {
-//                qEqn += 0.5*fvc::div(phi, q);
-                qEqn += 0.5*(U & fvc::grad(q));
+                qEqn += 0.5*fvc::div(flux,q);
+                //qEqn += 0.5*( U & fvc::grad(q) );
                 TEqn += 0.5*fvc::div(phi, T);
             }
             
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                qEqn += 0.5*fvm::Sp(T1damping, q);
-                qEqn += -0.5*fvm::Sp(T2damping, q2);
+                //qEqn += 0.5*fvm::Sp(T1damping, q);
+                //qEqn += -0.5*fvm::Sp(T2damping, q2);
                 //qEqn += 0.5*fvm::Sp(unitDamping, q*T1damping);
                 //qEqn += -0.5*fvm::Sp(unitDamping, q2*T2damping);
             }
@@ -117,8 +118,9 @@ int main(int argc, char *argv[])
             }
             
             // Solve the matrices for the equations
-            qEqn.solve();
             TEqn.solve();
+            qEqn.solve();
+            
         }
         Info << " T goes from " << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;

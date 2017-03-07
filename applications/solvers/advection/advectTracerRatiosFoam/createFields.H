@@ -56,6 +56,32 @@ surfaceScalarField phi
     mesh
 );
 
+surfaceScalarField flux
+(
+    IOobject
+    (
+        "flux",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    fvc::interpolate(T)*phi
+);
+
+surfaceScalarField fluxOld
+(
+    IOobject
+    (
+        "fluxOld",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    fvc::interpolate(T)*phi
+);
+
 volVectorField U
 (
     IOobject
