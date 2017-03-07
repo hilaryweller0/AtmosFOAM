@@ -22,19 +22,25 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::singleFaceToCellStencil
+    Foam::linearCP
 
 Description
+    Linear interpolation using a least squares fit of a_1 + a_2 z to
+    surrounding faces.  Vertical face values are not included in the fit.
 
 SourceFiles
-    singleFaceToCellStencil.C
+    linearCP.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef singleFaceToCellStencil_H
-#define singleFaceToCellStencil_H
+#ifndef linearCP_H
+#define linearCP_H
 
-#include "faceToCellStencil.H"
+#include "volInterpolationScheme.H"
+#include "volFields.H"
+#include "singleFaceToCellStencil.H"
+#include "extendedCentredFaceToCellStencil.H"
+#include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,25 +48,51 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                    Class singleFaceToCellStencil Declaration
+                           Class linearCP Declaration
 \*---------------------------------------------------------------------------*/
 
-class singleFaceToCellStencil
+template<class Type>
+class linearCP
 :
-    public faceToCellStencil
+    public volInterpolationScheme<Type>
 {
 public:
-    explicit singleFaceToCellStencil(const polyMesh&);
+    TypeName("linearCP");
+
+    linearCP(const fvMesh& mesh)
+    :
+        volInterpolationScheme<Type>(mesh),
+        f2cStencil(mesh),
+        stencilDescription(f2cStencil),
+        coeffs(mesh.nCells()),
+        g(mesh)
+    {} // FIXME: initCoeffs
+
+    linearCP(const fvMesh& mesh, Istream&)
+    :
+        volInterpolationScheme<Type>(mesh),
+        f2cStencil(mesh),
+        stencilDescription(f2cStencil),
+        coeffs(mesh.nCells()),
+        g(mesh)
+    {} // FIXME: initCoeffs
+
+    virtual tmp<GeometricField<Type, fvPatchField, volMesh>>
+    interpolate
+    (
+        const GeometricField<Type, fvsPatchField, surfaceMesh>&
+    ) const;
 
 private:
-        //- Calculates per face the neighbour data (= faces of cell).
-        //  Leaves out the face itself since this is already in stencil.
-        void calcFaceBoundaryData(labelListList& neiGlobal) const;
+    linearCP(const linearCP&);
+    void operator=(const linearCP&);
 
-        //- Calculates per cell the neighbour data
-        //  (= cell or boundary in global numbering).
-        //  First element is always cell itself!
-        void calcCellStencil(labelListList& globalCellFaces) const;
+    void initCoeffs(const fvMesh& mesh);
+
+    const singleFaceToCellStencil f2cStencil;
+    const extendedCentredFaceToCellStencil stencilDescription;
+    List<scalarList> coeffs;
+    const gravity g;
 };
 
 
@@ -69,6 +101,10 @@ private:
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#ifdef NoRepository
+    #include "linearCP.C"
+#endif
 
 #endif
 

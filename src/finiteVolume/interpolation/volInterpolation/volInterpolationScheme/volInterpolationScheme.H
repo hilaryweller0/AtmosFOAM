@@ -90,7 +90,7 @@ public:
     interpolate
     (
         const GeometricField<Type, fvsPatchField, surfaceMesh>&
-    ) const;
+    ) const = 0;
 
 private:
     const fvMesh& mesh_;
@@ -107,7 +107,7 @@ private:
 
 // Add the patch constructor functions to the hash tables
 
-#define makeSurfaceInterpolationTypeScheme(SS, Type)                           \
+#define makeVolInterpolationTypeScheme(SS, Type)                           \
                                                                                \
 defineNamedTemplateTypeNameAndDebug(SS<Type>, 0);                              \
                                                                                \
