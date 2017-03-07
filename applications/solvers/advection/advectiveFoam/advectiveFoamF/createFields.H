@@ -13,6 +13,22 @@ surfaceScalarField Tf
     mesh
 );
 
+surfaceScalarField bf = Tf * (g.unit() & mesh.Sf());
+volVectorField b = fvc::reconstruct(bf);
+
+volScalarField T
+(
+    IOobject
+    (
+        "T",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    b & g.unit()
+);
+
 Info<< "Reading field Uf\n" << endl;
 
 surfaceVectorField Uf
