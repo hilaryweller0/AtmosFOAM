@@ -25,6 +25,8 @@ Application
     testExtendedCentredCellToFaceStencil
 
 Description
+    A demonstration of extendedCentredCellToFaceStencil to create stencils
+    having indices of faces surrounding a cell.
 
 \*---------------------------------------------------------------------------*/
 
