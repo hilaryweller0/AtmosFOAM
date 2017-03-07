@@ -33,6 +33,7 @@ Description
 #include "fvCFD.H"
 #include "extendedCentredCellToFaceStencil.H"
 #include "cellToFaceStencil.H"
+#include "centredCFCCellToFaceStencilObject.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,8 +43,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
-    cellToFaceStencil cfStencil(mesh);
-    extendedCentredCellToFaceStencil stencil(cfStencil);
+    centredCFCCellToFaceStencilObject stencil(mesh);
 
     Info << stencil.stencil() << endl;
 
