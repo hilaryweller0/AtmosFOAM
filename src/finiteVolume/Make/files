@@ -38,6 +38,7 @@ $(faceToFace)/MeshObjects/centredCFCFaceToFaceStencilObject.C
 
 $(extendedStencil)/cellToCell/globalIndexStencils/CFCFCCellToCellStencil.C
 $(extendedStencil)/cellToCell/MeshObjects/centredCFCFCCellToCellStencilObject.C
+$(extendedStencil)/faceToCell/globalIndexStencils/singleFaceToCellStencil.C
 
 finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C
 finiteVolume/sGradSchemes/interpGrad/interpGrads.C
