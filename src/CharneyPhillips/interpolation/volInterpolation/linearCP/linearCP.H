@@ -66,7 +66,9 @@ public:
         stencilDescription(f2cStencil),
         coeffs(mesh.nCells()),
         g(mesh)
-    {} // FIXME: initCoeffs
+    {
+        initCoeffs(mesh);
+    }
 
     linearCP(const fvMesh& mesh, Istream&)
     :
@@ -75,7 +77,9 @@ public:
         stencilDescription(f2cStencil),
         coeffs(mesh.nCells()),
         g(mesh)
-    {} // FIXME: initCoeffs
+    {
+        initCoeffs(mesh);
+    }
 
     virtual tmp<GeometricField<Type, fvPatchField, volMesh>>
     interpolate
@@ -88,6 +92,12 @@ private:
     void operator=(const linearCP&);
 
     void initCoeffs(const fvMesh& mesh);
+    void calculateInterpolationCoeffs
+    (
+        const labelList& stencilCellIndices,
+        const List<point>& stencil,
+        scalarList& coeffs
+    );
 
     const singleFaceToCellStencil f2cStencil;
     const extendedCentredFaceToCellStencil stencilDescription;

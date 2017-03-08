@@ -42,3 +42,41 @@ Foam::tmp<
 {
     return stencilDescription.weightedSum(s, coeffs);
 }
+
+template<class Type>
+void Foam::linearCP<Type>::initCoeffs
+(
+    const fvMesh& mesh
+)
+{
+    List<List<point> > stencilPoints(mesh.nCells());
+
+    stencilDescription.collectData
+    (
+        mesh.Cf(),
+        stencilPoints
+    );
+
+    forAll(stencilPoints, stencilForCellI)
+    {
+        const List<point>& stencil = stencilPoints[stencilForCellI];
+
+        calculateInterpolationCoeffs
+        (
+            stencilDescription.stencil()[stencilForCellI],
+            stencil,
+            coeffs[stencilForCellI]
+        );
+    }
+}
+
+template<class Type>
+void Foam::linearCP<Type>::calculateInterpolationCoeffs
+(
+    const labelList& stencilCellIndices,
+    const List<point>& stencil,
+    scalarList& coeffs
+)
+{
+    // TODO
+}
