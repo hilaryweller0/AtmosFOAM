@@ -86,6 +86,7 @@ void Foam::linearCP<Type>::initCoeffs
 
         calculateInterpolationCoeffs
         (
+            mesh.C()[stencilForCellI],
             stencilDescription.stencil()[stencilForCellI],
             stencil,
             coeffs[stencilForCellI]
@@ -96,6 +97,7 @@ void Foam::linearCP<Type>::initCoeffs
 template<class Type>
 void Foam::linearCP<Type>::calculateInterpolationCoeffs
 (
+    const point& origin,
     const labelList& stencilFaceIndices,
     const List<point>& stencil,
     scalarList& coeffs
@@ -113,7 +115,6 @@ void Foam::linearCP<Type>::calculateInterpolationCoeffs
     scalarRectangularMatrix B(nonVerticalFaces, 2);
 
     label n = 0;
-    const point& origin = stencil.first();
     forAll(stencil, i)
     {
         if (include[i])
