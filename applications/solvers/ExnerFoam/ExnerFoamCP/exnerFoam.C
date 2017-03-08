@@ -34,6 +34,7 @@ Description
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
+#include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,10 +44,11 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "readEnvironmentalProperties.H"
+    #include "createGravity.H"
+    #include "readRotation.H"
     #include "readThermoProperties.H"
     HodgeOps H(mesh);
-    surfaceScalarField gd("gd", g & H.delta());
+    surfaceScalarField gd("gd", g() & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
@@ -82,10 +84,10 @@ int main(int argc, char *argv[])
         #include "rhoEqn.H"
         {
             thetaf += dt * (radiationf - thetaf)/radiativeTimescale;
-            bf = thetaf * gUnitNormal;
+            bf = thetaf * g.unitFaceNormal();
             b = fvc::reconstruct(bf * mesh.magSf());
-            theta == (b & ghat);
-            thetaf = mag(bf) + (1.0 - mag(gUnitNormal))*fvc::interpolate(theta, "thetaFromb");
+            theta == (b & g.unit());
+            thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
         }
         #include "compressibleContinuityErrs.H"
 

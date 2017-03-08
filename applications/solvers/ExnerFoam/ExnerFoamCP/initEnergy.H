@@ -20,7 +20,7 @@ volScalarField internalEnergy
 volScalarField potentialEnergy
 (
     IOobject("potentialEnergy", runTime.timeName(), mesh),
-    -rho*(g & mesh.C())
+    -rho*(g() & mesh.C())
 );
 
 const dimensionedScalar KEInitTot = fvc::domainIntegrate(KE)/Vtot;

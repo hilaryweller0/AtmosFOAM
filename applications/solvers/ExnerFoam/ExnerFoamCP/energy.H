@@ -3,7 +3,7 @@
         /dimensionedScalar("V", dimVol, scalar(1));
     KE.ref() /= mesh.V()/dimensionedScalar("V", dimVol, scalar(1));
     internalEnergy = rho*theta*Exner*Cv;
-    potentialEnergy = -rho*(g & mesh.C());
+    potentialEnergy = -rho*(g() & mesh.C());
 
     dimensionedScalar KETot = fvc::domainIntegrate(KE)/Vtot;
     dimensionedScalar internalTot = fvc::domainIntegrate(internalEnergy)/Vtot;
