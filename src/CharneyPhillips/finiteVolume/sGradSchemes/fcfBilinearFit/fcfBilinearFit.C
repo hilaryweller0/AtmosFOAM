@@ -26,6 +26,7 @@ License
 #include "fvc.H"
 #include "fcfBilinearFit.H"
 #include "SVD.H"
+#include "fieldAccess.H"
 
 template<class Type>
 Foam::tmp
@@ -96,7 +97,7 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
     forAll(stencilFaceIndices, i)
     {
         // non-vertical faces are included
-        include[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]) > 1e-12;
+        include[i] = mag(fieldAccess(g.unitFaceNormal(), stencilFaceIndices[i])) > 1e-12;
         if (include[i]) nonVerticalFaces++;
     }
 

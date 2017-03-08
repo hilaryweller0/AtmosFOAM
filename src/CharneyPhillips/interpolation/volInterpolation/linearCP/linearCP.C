@@ -26,6 +26,7 @@ License
 #include "fvc.H"
 #include "linearCP.H"
 #include "SVD.H"
+#include "fieldAccess.H"
 
 template<class Type>
 Foam::tmp<
@@ -108,7 +109,7 @@ void Foam::linearCP<Type>::calculateInterpolationCoeffs
     forAll(stencilFaceIndices, i)
     {
         // non-vertical faces are included
-        include[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]) > 1e-12;
+        include[i] = mag(fieldAccess(g.unitFaceNormal(), stencilFaceIndices[i])) > 1e-12;
         if (include[i]) nonVerticalFaces++;
     }
 
