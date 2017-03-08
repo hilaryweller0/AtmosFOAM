@@ -46,10 +46,7 @@ int main(int argc, char *argv[])
     #include "createGravity.H"
     #include "createVolInterpolation.H"
     #include "createFields.H"
-
-    IStringStream type("fcfBilinearFit");
-    tmp<fv::sGradScheme<scalar> > tsGrad = fv::sGradScheme<scalar>::New(mesh, type);
-    const fv::sGradScheme<scalar>& sGrad = tsGrad();
+    #include "createSurfaceGrad.H"
 
     Info<< "\nCalculating advection\n" << endl;
 
