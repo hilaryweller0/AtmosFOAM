@@ -144,4 +144,6 @@ void Foam::linearCP<Type>::calculateInterpolationCoeffs
             coeffs.append(0);
         }
     }
+
+    Info << "stencil size " << n << " coeffs " << coeffs << " faceI " << stencilFaceIndices << " at " << stencil << endl;
 }
