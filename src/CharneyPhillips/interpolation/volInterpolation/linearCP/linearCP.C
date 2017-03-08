@@ -40,7 +40,30 @@ Foam::tmp<
     const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
 ) const
 {
-    return stencilDescription.weightedSum(s, coeffs);
+    Foam::tmp<
+        Foam::GeometricField
+        <
+            Type,
+            Foam::fvPatchField,
+            Foam::volMesh
+        >
+    > tInterpField = stencilDescription.weightedSum(s, coeffs);
+    Foam::GeometricField
+    <
+        Type,
+        Foam::fvPatchField,
+        Foam::volMesh
+    >& interpField = tInterpField.ref();
+
+    // copy boundary values
+    forAll(s.boundaryField(), patchI)
+    {
+        const fvsPatchField<Type>& sourcePatch = s.boundaryField()[patchI];
+        fvPatchField<Type>& targetPatch = interpField.boundaryFieldRef()[patchI];
+        targetPatch = sourcePatch;
+    }
+
+    return tInterpField;
 }
 
 template<class Type>
