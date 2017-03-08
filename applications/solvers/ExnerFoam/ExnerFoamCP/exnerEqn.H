@@ -3,11 +3,8 @@
     rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
 
-    thetaf = thetaf.oldTime() - dt*(Uf & fvc::interpolate(fvc::grad(thetaf)));
-    bf = thetaf * g.unitFaceNormal();
-    b = fvc::reconstruct(bf * mesh.magSf());
-    theta == (b & g.unit());
-    thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
+    thetaf = thetaf.oldTime() - dt*(Uf & sGrad(thetaf));
+    theta == cellCentreReconstruction.interpolate(thetaf);
 
     for (int corr=0; corr<nCorr; corr++)
     {
