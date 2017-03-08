@@ -73,10 +73,51 @@ void Foam::linearCP<Type>::initCoeffs
 template<class Type>
 void Foam::linearCP<Type>::calculateInterpolationCoeffs
 (
-    const labelList& stencilCellIndices,
+    const labelList& stencilFaceIndices,
     const List<point>& stencil,
     scalarList& coeffs
 )
 {
-    // TODO
+    label nonVerticalFaces = 0;
+    boolList include(stencilFaceIndices.size());
+    forAll(stencilFaceIndices, i)
+    {
+        // non-vertical faces are included
+        include[i] = mag(g.unitFaceNormal()[stencilFaceIndices[i]]) > 1e-12;
+        if (include[i]) nonVerticalFaces++;
+    }
+
+    scalarRectangularMatrix B(nonVerticalFaces, 2);
+
+    label n = 0;
+    const point& origin = stencil.first();
+    forAll(stencil, i)
+    {
+        if (include[i])
+        {
+            const point& p = stencil[i] - origin;
+
+            B(n, 0) = 1;
+            B(n, 1) = p.z();
+
+            n++;
+        }
+    }
+
+    const SVD svd(B);
+    const scalarRectangularMatrix& Binv = svd.VSinvUt();
+
+    n = 0;
+    forAll(stencil, i)
+    {
+        if (include[i])
+        {            
+            coeffs.append(Binv(0, n));
+            n++;
+        }
+        else
+        {
+            coeffs.append(0);
+        }
+    }
 }

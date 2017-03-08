@@ -94,7 +94,7 @@ private:
     void initCoeffs(const fvMesh& mesh);
     void calculateInterpolationCoeffs
     (
-        const labelList& stencilCellIndices,
+        const labelList& stencilFaceIndices,
         const List<point>& stencil,
         scalarList& coeffs
     );
