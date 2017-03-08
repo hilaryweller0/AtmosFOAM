@@ -25,13 +25,15 @@ Application
     advectionFoam
 
 Description
-    Solves a transport equation for a passive scalar using explicit leap-frog
-    time-stepping or RK2
+    Solves a transport equation for a passive scalar using RK2 timestepping
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
 #include "OFstream.H"
+#include "sGradScheme.H"
+#include "volInterpolationScheme.H"
+#include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -41,7 +43,13 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
+    #include "createGravity.H"
+    #include "createVolInterpolation.H"
     #include "createFields.H"
+
+    IStringStream type("fcfBilinearFit");
+    tmp<fv::sGradScheme<scalar> > tsGrad = fv::sGradScheme<scalar>::New(mesh, type);
+    const fv::sGradScheme<scalar>& sGrad = tsGrad();
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -51,16 +59,19 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        /*solve
-        (
-            fvm::ddt(T)
-            + (U & fvc::grad(T))
-            ==
-            0
-        );*/
-        T = T.oldTime() - dt * (U & fvc::grad(T));
-        T.correctBoundaryConditions();
+        for (int corr=0; corr < 3; corr++)
+        {
+            Tf = Tf.oldTime() - 0.5*dt *
+            (
+                (Uf & sGrad(Tf)) + 
+                (Uf & sGrad(Tf.oldTime()))
+            );
+        }
+
+        T = cellCentreReconstruction.interpolate(Tf);
         
+        Info << " Tf goes from " << min(Tf.internalField()) << " to "
+             << max(Tf.internalField()) << endl;
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << endl;
         runTime.write();
