@@ -48,6 +48,10 @@ Foam::partition::partition
         ),
         mesh
     ),
+    rho_
+    (
+        atmosphere::sumDensity()
+    ),
     T_
     (
         IOobject
@@ -81,8 +85,20 @@ Foam::partition::partition
     (
         IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
         linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
+    ),
+    drhoSigmadt_
+    (
+        IOobject(partitionName_+"drhoSigmadt", mesh.time().timeName(), mesh),
+        -fvc::div(flux_, sigma_)
     )
-{}
+{
+    sigma_.oldTime();
+    rho_.oldTime();
+    theta_.oldTime();
+    Uf_.oldTime();
+    flux_.oldTime();
+    drhoSigmadt_.oldTime();
+}
 
 
 Foam::partition::partition
@@ -105,6 +121,10 @@ Foam::partition::partition
         ),
         mesh
     ),
+    rho_
+    (
+        atmosphere::sumDensity()
+    ),
     T_
     (
         IOobject
@@ -138,8 +158,19 @@ Foam::partition::partition
     (
         IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
         linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
+    ),
+    drhoSigmadt_
+    (
+        IOobject(partitionName_+"drhoSigmadt", mesh.time().timeName(), mesh),
+        -fvc::div(flux_, sigma_)
     )
 {
+    sigma_.oldTime();
+    rho_.oldTime();
+    theta_.oldTime();
+    Uf_.oldTime();
+    flux_.oldTime();
+    drhoSigmadt_.oldTime();
     updateThetaT(Exner);
 }
 

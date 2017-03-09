@@ -117,10 +117,10 @@ void fixedFluxBuoyantExnerFvPatchScalarField::updateCoeffs()
 
     const constTransport<hConstThermo<perfectGas<specie> > > air
     (
-         thermoProperties.lookup("mixture")
+         thermoProperties.subDict("mixture")
     );
 
-    const dimensionedScalar Cp("Cp", dimGasConstant, air.cp(0,0)/air.W());
+    const dimensionedScalar Cp("Cp", dimGasConstant, air.Cp(0,0));
 
     const fvsPatchField<scalar>& thetaf =
         patch().lookupPatchField<surfaceScalarField, scalar>("thetaf");

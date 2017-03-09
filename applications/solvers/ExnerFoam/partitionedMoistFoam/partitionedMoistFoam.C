@@ -72,12 +72,13 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoEqn.H"
+            #include "partionFractionEqns.H"
             #include "phaseEqns.H"
             for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
             {
                 #include "rhoThetaEqn.H"
             }
-            #include "exnerEqn.H"
+            //#include "exnerEqn.H"
             p = air.pFromExner(Exner);
         }
 

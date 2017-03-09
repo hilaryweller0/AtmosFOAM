@@ -62,6 +62,9 @@ class partition
         //- Volume fraction of this partition
         volScalarField sigma_;
         
+        //- Density of the partition
+        volScalarField rho_;
+        
         //- Temperature of this partition
         volScalarField T_;
 
@@ -73,6 +76,9 @@ class partition
         
         //- Flux of the partition
         surfaceScalarField flux_;
+        
+        //- Rate of change of rhoSigma
+        volScalarField drhoSigmadt_;
 
 
     // Private Member Functions
@@ -116,24 +122,44 @@ public:
 
         // Access
         const word& partitionName() const { return partitionName_; }
+        
         //- Volume fraction of this partition
         const volScalarField& sigma() const { return sigma_; }
         volScalarField& sigma() { return sigma_; }
+        
+        //- Density of the partition
+        const volScalarField& rho() const { return rho_; }
+        volScalarField& rho() { return rho_; }
+
         //- Temperature of this partition
         const volScalarField& T() const { return T_; }
         volScalarField& T() { return T_; }
+        
         //- Potential temperature of this partition
         const volScalarField& theta() const { return theta_; }
         volScalarField& theta() { return theta_; }
+        
         //- Velocity of the partition
         const surfaceVectorField& Uf() const { return Uf_; }
         surfaceVectorField& Uf() { return Uf_; }
+        
         //- Flux of the partition
         const surfaceScalarField& flux() const { return flux_; }
         surfaceScalarField& flux() { return flux_; }
+        
+        //- Rate of change of rhoSigma
+        const volScalarField& drhoSigmadt() const { return drhoSigmadt_; }
+        volScalarField& drhoSigmadt() { return drhoSigmadt_; }
 
         //- Update theta and T from Exner
         void updateThetaT(const volScalarField& Exner);
+
+        //- Update rho from the phases
+        volScalarField& sumDensity() const
+        {
+            rho_ = atmosphere::sumDensity();
+            return rho_;
+        }
 
         // Write
         void write();

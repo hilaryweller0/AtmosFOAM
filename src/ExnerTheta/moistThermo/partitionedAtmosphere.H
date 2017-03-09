@@ -96,6 +96,12 @@ public:
         
         //- Equivalent potential temperature
         tmp<volScalarField> thetae() const;
+        
+        //- Density weighted velocity on faces
+        tmp<surfaceVectorField> rhoUf() const;
+        
+        //- Density weighted theta
+        tmp<volScalarField> rhoTheta() const;
 
         //- Update theta and T from Exner in each partition
         void updateThetaT(const volScalarField& Exner);

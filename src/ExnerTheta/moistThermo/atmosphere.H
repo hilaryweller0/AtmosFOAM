@@ -82,34 +82,45 @@ public:
         // Access
         //- Volume fraction occupied by gases
         tmp<volScalarField> volGas() const;
+        
         //- Volume fraction occupied by dry air
         tmp<volScalarField> volAir() const;
+        
         //- Total density
         tmp<volScalarField> sumDensity() const;
+        
         //- Density weighted total gas constant
         tmp<volScalarField> rhoR() const;
+        
         //- Density weighted total heat capacity (constant pressure)
         tmp<volScalarField> rhoCp() const;
+        
         //- Density weighted total heat capacity (constant volume)
         tmp<volScalarField> rhoCv() const;
+        
         //- Sum of partial pressures
         tmp<volScalarField> sumPressure(const volScalarField& T) const;
+        
         // Pressure from equation of state
         tmp<volScalarField> pFromT(const volScalarField& T) const;
+        
         // Exner from equation of state
         tmp<volScalarField> ExnerFromTheta(const volScalarField& theta) const;
+        
         // rho from eqn of state
         tmp<volScalarField> rhoFromP
         (
             const volScalarField& p,
             const volScalarField& T
         ) const;
+        
         // rho from eqn of state
         tmp<volScalarField> rhoFromExner
         (
             const volScalarField& Exner,
             const volScalarField& theta
         ) const;
+        
         // Source term in the theta equation (divided by rhoa theta)
         tmp<volScalarField> thetaSource
         (

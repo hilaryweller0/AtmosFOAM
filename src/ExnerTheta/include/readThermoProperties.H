@@ -17,13 +17,13 @@ const dimensionedScalar pRef(thermoDict.lookup("pRef"));
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
-    thermoDict.lookup("mixture")
+    thermoDict.subDict("mixture")
 );
 
 const dimensionedScalar R("R", dimGasConstant, air.R());
 const dimensionedScalar Cp
 (
-    "Cp", dimGasConstant, air.cp(pRef.value(),T0.value())/air.W()
+    "Cp", dimGasConstant, air.Cp(pRef.value(),T0.value())
 );
 const dimensionedScalar kappa("kappa", R/Cp);
 const scalar gamma = (1/(1-kappa)).value();

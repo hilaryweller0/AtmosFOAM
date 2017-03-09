@@ -45,13 +45,16 @@ perfectGasPhase& air = atmos[0].gas();
 //fluidSpecie& water = atmos[1];
 
 
-Info << "Calculating, density, pressure and temperature from atmos and Exner"
+Info << "Calculating the total density, pressure, temperature and velocity"
      << endl;
 
-volScalarField& theta = atmos.theta();
-volScalarField& T = atmos.T();
+volScalarField rho("rho", atmosParts.rho());
+volScalarField theta("theta", atmosParts.rhoTheta()/rho);
+volScalarField T("T", theta*Exner);
 volScalarField p("p", air.pFromExner(Exner));
-volScalarField rho("rho", atmos.sumDensity());
+surfaceVectorField Uf("Uf", atmosParts.rhoUf()/linearInterpolate(rho));
+
+// Time-stepping variables
 rho.oldTime();
 volScalarField dRhodt("dRhodt", 0*rho/dt);
 dRhodt.oldTime();
@@ -61,12 +64,6 @@ dRhoThetadt.oldTime();
 volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
-Info << "Setting total velocity field" << endl;
-surfaceVectorField Uf
-(
-    IOobject("Uf", runTime.timeName(), mesh),
-    atmosParts.Uf()
-);
 
 // Fields needed in the Helmholtz equation
 volScalarField Psi("Psi", rho/Exner);
@@ -77,7 +74,7 @@ surfaceScalarField gradPcoeff
     fvc::interpolate
     (
         air.Cp()*theta*atmos.rhoR()
-       /(atmos.sumDensity()*air.R()*atmos.volGas())
+       /(rho*air.R()*atmos.volGas())
     )
 );
 
@@ -134,8 +131,7 @@ surfaceScalarField V
 V.oldTime();
 
 // Velocity flux
-surfaceScalarField un("un", Uf & mesh.Sf());
-volScalarField divu("divu", fvc::div(un));
+volScalarField divu("divu", fvc::div(Uf & mesh.Sf()));
 
 // Temporary flux with fixed boundary conditions (without hydrostatic terms)
 surfaceScalarField Vu

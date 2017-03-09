@@ -157,6 +157,68 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::thetae() const
     return tt;
 }
 
+Foam::tmp<Foam::surfaceVectorField> Foam::partitionedAtmosphere::rhoUf() const
+{
+    // The zero'th partition
+    const partition& part = operator[](0);
+
+    // Initialise the momentum from partion 0
+    tmp<surfaceVectorField> rhoUt
+    (
+        new surfaceVectorField
+        (
+            IOobject
+            (
+                "rhoUf",
+                part.T().time().timeName(),
+                part.T().mesh()
+            ),
+            linearInterpolate(part.sumDensity()*part.sigma())*part.Uf()
+        )
+    );
+    volScalarField& rhoU = rhoUt.ref();
+
+    // Sum contributions from other partitions
+    for (label ipart = 1; ipart < size(); ipart++)
+    {
+        const partition& part = operator[](ipart);
+        rhoU += linearInterpolate(part.sumDensity()*part.sigma())*part.Uf();
+    }
+    
+    return rhoUt;
+}
+
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::rhoTheta() const
+{
+    // The zero'th partition
+    const partition& part = operator[](0);
+
+    // Initialise the momentum from partion 0
+    tmp<volScalarField> rhoTt
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rhoTheta",
+                part.T().time().timeName(),
+                part.T().mesh()
+            ),
+            part.sumDensity()*part.sigma()*part.theta()
+        )
+    );
+    volScalarField& rhoT = rhoTt.ref();
+
+    // Sum contributions from other partitions
+    for (label ipart = 1; ipart < size(); ipart++)
+    {
+        const partition& part = operator[](ipart);
+        rhoT += part.sumDensity()*part.sigma()*part.theta();
+    }
+    
+    return rhoTt;
+}
+
 void Foam::partitionedAtmosphere::updateThetaT(const volScalarField& Exner)
 {
     for(label ip = 0; ip < size(); ip++)
