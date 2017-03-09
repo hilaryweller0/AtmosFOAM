@@ -74,20 +74,34 @@ int main(int argc, char *argv[])
         mesh
     );
 
+    Info<< "Reading thetaf_init\n" << endl;
+    surfaceScalarField thetaf_init
+    (
+        IOobject("thetaf_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        linearInterpolate(theta_init)
+    );
+
     Info<< "Setting theta\n" << endl;
     volScalarField theta
     (
         IOobject("theta", runTime.timeName(), mesh, IOobject::NO_READ),
         theta_init
     );
+    Info << "Creating thetaf\n" << endl;
+    surfaceScalarField thetaf
+    (
+        IOobject("thetaf", runTime.timeName(), mesh, IOobject::NO_READ),
+	    thetaf_init
+    );
 
     forAll(theta, celli)
     {
+        const point& p = C[celli];
         scalar L = Foam::sqrt
         (
-            sqr((C[celli].x() - bubbleCentre.x())/bubbleRadii.x())
-          + sqr((C[celli].y() - bubbleCentre.y())/bubbleRadii.y())
-          + sqr((C[celli].z() - bubbleCentre.z())/bubbleRadii.z())
+            sqr((p.x() - bubbleCentre.x())/bubbleRadii.x())
+          + sqr((p.y() - bubbleCentre.y())/bubbleRadii.y())
+          + sqr((p.z() - bubbleCentre.z())/bubbleRadii.z())
         );
 
         if (L < 1)
@@ -96,8 +110,27 @@ int main(int argc, char *argv[])
         }
     }
 
+    forAll(thetaf, facei)
+    {
+        const point& p = mesh.Cf()[facei];
+        scalar L = Foam::sqrt
+        (
+            sqr((p.x() - bubbleCentre.x())/bubbleRadii.x())
+          + sqr((p.y() - bubbleCentre.y())/bubbleRadii.y())
+          + sqr((p.z() - bubbleCentre.z())/bubbleRadii.z())
+        );
+
+        if (L < 1)
+        {
+            thetaf[facei] += thetaPrime.value()*sqr(Foam::cos(piby2*L));
+        }
+    }
+
     Info<< "Writing theta\n" << endl;
     theta.write();
+
+    Info<< "Writing thetaf\n" << endl;
+    thetaf.write();
 
     Info<< "End\n" << endl;
 
