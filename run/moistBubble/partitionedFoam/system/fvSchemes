@@ -33,19 +33,13 @@ gradSchemes
 {
     default         none;
     linearUpwind    leastSquares;
-    //grad(stable.theta)     Gauss linear;
+    grad(theta)     Gauss linear;
     //grad(buoyant.theta)     Gauss linear;
 }
 
 divSchemes
 {
-    default none;
-    div(stable.flux,(stable.waterVapourRho|rho))   Gauss linearUpwind linearUpwind;
-    div(stable.flux,(stable.waterLiquidFrac|rho))   Gauss linearUpwind linearUpwind;
-    div(buoyant.flux,(buoyant.waterVapourRho|rho)) Gauss linearUpwind linearUpwind;
-    div(buoyant.flux,(buoyant.waterLiquidFrac|rho)) Gauss linearUpwind linearUpwind;
-    //div(U,stable.theta)   Gauss linearUpwind linearUpwind;
-    //div(U,u)   Gauss linearUpwind linearUpwind;
+    default    Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes

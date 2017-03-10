@@ -38,7 +38,7 @@ SourceFiles
 #ifndef partition_H
 #define partition_H
 
-#include "atmosphere.H"
+#include "baseAtmosphere.H"
 #include "surfaceFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -52,15 +52,18 @@ namespace Foam
 
 class partition
 :
-    public atmosphere
+    public baseAtmosphere
 {
     // Private data
 
         //- Name of this partition
         const word partitionName_;
         
-        //- Density of the partition
-        volScalarField rho_;
+        //- Volume fraction of the partition
+        volScalarField sigma_;
+
+        //- Density of the partition multiplied by the volume ratio
+        volScalarField sigmaRho_;
         
         //- Potential temperature of this partition
         volScalarField theta_;
@@ -71,15 +74,18 @@ class partition
         //- Velocity of the partition
         surfaceVectorField Uf_;
         
-        //- Flux of the partition
+        //- Flux of the partition (sigmaRho * Uf).Sf
         surfaceScalarField flux_;
 
         //- Volume of liquid in the partition
-        volScalarField volLiquid_;
+        volScalarField sigmaVolLiquid_;
 
         //- Rate of change of density of the partition
-        volScalarField dRhodt_;
+        volScalarField dSigmaRhodt_;
 
+        //- Rate of change of rhoTheta of the partition
+        volScalarField dSigmaRhoThetadt_;
+        
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -92,15 +98,6 @@ class partition
 public:
 
     // Constructors
-
-        //- Construct from components, dictionaries and IOobjects
-        partition
-        (
-            const word& partitionName__,
-            const wordList& partNames,
-            const fvMesh& mesh,
-            const dictionary dict
-        );
 
         //- Construct from components, dictionaries and IOobjects and Exner
         partition
@@ -121,14 +118,18 @@ public:
 
     // Access
         const word& partitionName() const { return partitionName_; }
-        
+
+        //- Volume fraction of the partition
+        volScalarField& sigma() { return sigma_;}
+        const volScalarField& sigma() const { return sigma_;}
+
         //- Density of the partition
-        const volScalarField& rho() const { return rho_; }
-        volScalarField& rho() { return rho_; }
+        const volScalarField& sigmaRho() const { return sigmaRho_; }
+        volScalarField& sigmaRho() { return sigmaRho_; }
 
         //- Rate of change of density of the partition
-        const volScalarField& dRhodt() const { return dRhodt_; }
-        volScalarField& dRhodt() { return dRhodt_; }
+        const volScalarField& dSigmaRhodt() const { return dSigmaRhodt_; }
+        volScalarField& dSigmaRhodt() { return dSigmaRhodt_; }
 
         //- Temperature of this partition
         const volScalarField& T() const { return T_; }
@@ -147,8 +148,13 @@ public:
         surfaceScalarField& flux() { return flux_; }
         
         //- Volume of liquid in the partition
-        volScalarField& volLiquid() { return volLiquid_;}
-        const volScalarField& volLiquid() const { return volLiquid_;}
+        volScalarField& sigmaVolLiquid() { return sigmaVolLiquid_;}
+        const volScalarField& sigmaVolLiquid() const { return sigmaVolLiquid_;}
+
+        //- Rate of change of rhoTheta of the partition
+        volScalarField& dSigmaRhoThetadt() { return dSigmaRhoThetadt_;}
+        const volScalarField& dSigmaRhoThetadt() const
+             { return dSigmaRhoThetadt_;}
 
     // Update functions
 
@@ -157,6 +163,9 @@ public:
 
         //- Update volLiquied from the phases
         volScalarField& sumVolLiquid();
+        
+        //- Calculate sigma from the total pressure
+        volScalarField& updateSigma(const volScalarField& p);
 
         // Write
         void write();

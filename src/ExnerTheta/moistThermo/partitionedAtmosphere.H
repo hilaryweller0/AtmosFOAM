@@ -88,14 +88,6 @@ public:
             const wordList& partitionNames,
             const wordList& partNames,
             const fvMesh& mesh,
-            const dictionary dict
-        );
-
-        partitionedAtmosphere
-        (
-            const wordList& partitionNames,
-            const wordList& partNames,
-            const fvMesh& mesh,
             const dictionary dict,
             const volScalarField& Exner
         );
@@ -144,6 +136,9 @@ public:
 
         //- Update flux from partitions
         surfaceScalarField& updateFlux();
+        
+        //- Update volume fractions in all the partitions
+        void updateSigmas(const volScalarField& p);
 
 //        //- Update theta and T from Exner in each partition
 //        void updateThetaT(const volScalarField& Exner);

@@ -34,62 +34,6 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     const wordList& partitionNames,
     const wordList& partNames,
     const fvMesh& mesh,
-    const dictionary dict
-)
-:
-    PtrList<partition>(partitionNames.size()),
-    rho_
-    (
-        IOobject("rho", mesh.time().timeName(), mesh),
-        mesh, dimensionedScalar("rho", dimDensity, scalar(0))
-    ),
-    dRhodt_
-    (
-        IOobject("dRhodt", mesh.time().timeName(), mesh),
-        mesh, dimensionedScalar("dRhodt", dimDensity-dimTime, scalar(0))
-    ),
-    theta_
-    (
-        IOobject("theta", mesh.time().timeName(), mesh),
-        mesh, dimensionedScalar("theta", dimTemperature, scalar(0))
-    ),
-    Uf_
-    (
-        IOobject("Uf", mesh.time().timeName(), mesh),
-        mesh, dimensionedVector("Uf", dimVelocity, vector::zero)
-    ),
-    flux_
-    (
-        IOobject("flux", mesh.time().timeName(), mesh),
-        mesh, dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0))
-    )
-{
-    for(label ip = 0; ip < size(); ip++)
-    {
-        set
-        (
-            ip,
-            new partition
-            (
-                partitionNames[ip],
-                partNames,
-                mesh,
-                dict
-            )
-        );
-    }
-    sumDensity();
-    updateUf();
-    updateFlux();
-    updateTheta();
-}
-
-
-Foam::partitionedAtmosphere::partitionedAtmosphere
-(
-    const wordList& partitionNames,
-    const wordList& partNames,
-    const fvMesh& mesh,
     const dictionary dict,
     const volScalarField& Exner
 )
@@ -270,6 +214,31 @@ Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
     return theta_;
 }
 
+void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
+{
+    volScalarField sumSigma
+    (
+        IOobject("sumSigma", p.mesh().time().timeName(), p.mesh()),
+        p.mesh(), dimensionedScalar("sum", dimless, scalar(0))
+    );
+    
+    // Re-calculate all the sigmas
+    for(label ip = 0; ip < size(); ip++)
+    {
+        partition& parti = operator[](ip);
+        parti.updateSigma(p);
+        sumSigma += parti.sigma();
+    }
+    
+    // Scale fields so that sigmas sum to 1
+    for(label ip = 0; ip < size(); ip++)
+    {
+        partition& parti = operator[](ip);
+        parti.sigma() /= sumSigma;
+        parti.sigmaRho() /= sumSigma;
+        parti.flux() /= linearInterpolate(sumSigma);
+    }
+}
 
 void Foam::partitionedAtmosphere::write()
 {

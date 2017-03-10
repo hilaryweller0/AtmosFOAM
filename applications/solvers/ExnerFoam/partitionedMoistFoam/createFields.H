@@ -36,7 +36,7 @@ wordList partNames(2);
 partNames[0] = "stable.";
 partNames[1] = "buoyant.";
 
-partitionedAtmosphere atmosParts(partNames, phaseNames, mesh, thermoDict, Exner);
+partitionedAtmosphere atmosParts(partNames, phaseNames, mesh, thermoDict,Exner);
 
 // Select just the stable part
 partition& atmos = atmosParts[0];
@@ -51,7 +51,7 @@ Info << "Calculating the total density, pressure, temperature and velocity"
 //volScalarField rho("rho", atmosParts.rho());
 //volScalarField theta("theta", atmosParts.rhoTheta()/rho);
 //volScalarField T("T", theta*Exner);
-//volScalarField p("p", air.pFromExner(Exner));
+volScalarField p("p", air.pFromExner(Exner));
 //surfaceVectorField Uf("Uf", atmosParts.rhoUf()/linearInterpolate(rho));
 
 //// Time-stepping variables

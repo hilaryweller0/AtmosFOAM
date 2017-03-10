@@ -37,8 +37,8 @@ if (mesh.nInternalFaces())
 {
     scalarField sumPhi
     (
-        fvc::surfaceSum(mag(U))().internalField()
-      / rho.internalField()
+        fvc::surfaceSum(mag(atmosParts.flux()))().internalField()
+      / atmosParts.rho().internalField()
     );
 
     CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
@@ -49,7 +49,7 @@ if (mesh.nInternalFaces())
     volScalarField Ndt
     (
         "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(theta))/theta))
+        dt*Foam::sqrt(mag((g & fvc::grad(atmosParts.theta()))/atmosParts.theta()))
     );
     maxNdt = gMax(Ndt);
 }

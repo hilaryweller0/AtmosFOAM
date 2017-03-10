@@ -4,17 +4,18 @@
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
-    volScalarField& rhoi = parti.rho();
-    surfaceScalarField& fluxi = parti.flux();
+    volScalarField& sigmaRhoi = parti.sigmaRho();
+    const surfaceScalarField& fluxi = parti.flux();
+    const volScalarField& sigmai = parti.sigma();
     
     // Advect density for this partition
     // (without partition transfer terms)
-    parti.dRhodt() = -fvc::div(fluxi);
+    parti.dSigmaRhodt() = -fvc::div(fluxi);
 
-    rhoi = rhoi.oldTime() + dt*
+    sigmaRhoi = sigmaRhoi.oldTime() + dt*
     (
-        (1-offCentre)*parti.dRhodt().oldTime()
-      + offCentre*parti.dRhodt()
+        (1-offCentre)*parti.dSigmaRhodt().oldTime()
+      + offCentre*parti.dSigmaRhodt()
     );
 
     // Loop over all atmospheric constituents (species) except air (is=0)
@@ -23,39 +24,51 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         fluidSpecie& specie = parti[is];
         
         // Update the rate of change and advect the gaseous phase of specie
-        specie.gas().dRhodt() = -fvc::div(fluxi, specie.gas().rho()/rhoi);
-
-        specie.gas().rho() = specie.gas().rho().oldTime() + dt*
+        specie.gas().dRhodt() = -fvc::div
         (
-            (1-offCentre)*specie.gas().dRhodt().oldTime()
-          + offCentre*specie.gas().dRhodt()
+            fluxi, sigmai*specie.gas().rho()/sigmaRhoi
         );
+
+        specie.gas().rho() = 
+        (
+            sigmai.oldTime()*specie.gas().rho().oldTime() + dt*
+            (
+                (1-offCentre)*specie.gas().dRhodt().oldTime()
+              + offCentre*specie.gas().dRhodt()
+            )
+        )/sigmai;
 
         // And the liquid phase
-        specie.liquid().dvdt() = -fvc::div(fluxi, specie.liquid().v()/rhoi);
-
-        specie.liquid().v() = specie.liquid().v().oldTime() + dt*
+        specie.liquid().dvdt() = -fvc::div
         (
-            (1-offCentre)*specie.liquid().dvdt().oldTime()
-          + offCentre*specie.liquid().dvdt()
+            fluxi, sigmai*specie.liquid().v()/sigmaRhoi
         );
+
+        specie.liquid().v() = 
+        (
+            sigmai.oldTime()*specie.liquid().v().oldTime() + dt*
+            (
+                (1-offCentre)*specie.liquid().dvdt().oldTime()
+              + offCentre*specie.liquid().dvdt()
+            )
+        )/sigmai;
         
         // Apply condensation to volatile species (ie water, not air)
         if (specie.pvs0() < specie.gas().p0())
         {
-            //specie.updateCondensation(T);
+            specie.updateCondensation(parti.T());
         
             specie.gas().rho()  -= offCentre*specie.condensation();
             specie.liquid().v() += offCentre*specie.condensation()
                                         /specie.liquid().rho();
-            specie.gas().dRhodt() -= specie.condensation()/dt;
-            specie.liquid().dvdt() += specie.condensation()/dt
+            specie.gas().dRhodt() -= sigmai*specie.condensation()/dt;
+            specie.liquid().dvdt() += sigmai*specie.condensation()/dt
                                         /specie.liquid().rho();
         }
     }
 
     // Update air density for this partition
-    parti[0].gas().rho() += rhoi - parti.sumDensity();
+    parti[0].gas().rho() += (sigmaRhoi - parti.sumDensity())/sigmai;
 }
 
 // Update total density

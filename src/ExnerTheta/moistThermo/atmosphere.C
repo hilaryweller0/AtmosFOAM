@@ -34,27 +34,8 @@ Foam::atmosphere::atmosphere
     const dictionary dict
 )
 :
-    PtrList<fluidSpecie>(partNames.size())
-{
-    for(label ip = 0; ip < size(); ip++)
-    {
-        set
-        (
-            ip,
-            new fluidSpecie
-            (
-                partNames[ip],
-                IOobject(partNames[ip]+"VapourRho", mesh.time().timeName(), mesh,
-                         IOobject::MUST_READ, IOobject::AUTO_WRITE),
-                IOobject(partNames[ip]+"LiquidFrac", mesh.time().timeName(), mesh,
-                         IOobject::MUST_READ, IOobject::AUTO_WRITE),
-                mesh,
-                dict.subDict(partNames[ip])
-            )
-        );
-    }
-    sumDensity();
-}
+    baseAtmosphere(partNames, mesh, dict)
+{}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -64,30 +45,6 @@ Foam::atmosphere::~atmosphere()
 
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
-
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::volGas() const
-{
-    const perfectGasPhase& air = operator[](0).gas();
-
-    tmp<volScalarField> tvG
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "volGas",
-                air.rho().time().timeName(),
-                air.rho().mesh()
-            ),
-            1 - operator[](0).liquid().v()
-        )
-    );
-    for(label ip = 1; ip < size(); ip++)
-    {
-        tvG.ref() -= operator[](ip).liquid().v();
-    }
-    return tvG;
-}
 
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::volAir() const
 {
@@ -107,33 +64,6 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::volAir() const
         )
     );
     return tvA;
-}
-
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumDensity() const
-{
-    const perfectGasPhase& air = operator[](0).gas();
-
-    tmp<volScalarField> tRho
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "rho",
-                air.rho().time().timeName(),
-                air.rho().mesh()
-            ),
-            air.rho()
-          + operator[](0).liquid().rho()*operator[](0).liquid().v()
-        )
-    );
-
-    for(label ip = 1; ip < size(); ip++)
-    {
-        tRho.ref() += operator[](ip).gas().rho()
-                   + operator[](ip).liquid().rho()*operator[](ip).liquid().v();
-    }
-    return tRho;
 }
 
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoR() const
@@ -214,35 +144,6 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoCv() const
                       *operator[](ip).liquid().Cp();
     }
     return trhoCv;
-}
-
-Foam::tmp<Foam::volScalarField> Foam::atmosphere::sumPressure
-(
-    const volScalarField& T
-) const
-{
-    const perfectGasPhase& air = operator[](0).gas();
-
-    tmp<volScalarField> tp
-    (
-        new volScalarField
-        (
-            IOobject
-            (
-                "p",
-                air.rho().time().timeName(),
-                air.rho().mesh()
-            ),
-            air.partialPressure(T)
-        )
-    );
-    for(label ip = 1; ip < size(); ip++)
-    {
-        tp.ref() += operator[](ip).gas().partialPressure(T);
-    }
-    // Divide by the volume fraction occupied by gas
-    tp.ref() /= volGas();
-    return tp;
 }
 
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::pFromT
@@ -457,39 +358,5 @@ void Foam::atmosphere::TfromThetae
         RMSresid = Foam::sqrt(sum(sqr(resid.internalField())).value());
     }
 }
-
-void Foam::atmosphere::write()
-{
-    for(label ip = 0; ip < size(); ip++)
-    {
-        const fluidSpecie& phase = operator[](ip);
-        phase.gas().rho().write();
-        phase.liquid().v().write();
-    }
-}
-
-
-void Foam::atmosphere::readUpdate()
-{
-    for(label ip = 0; ip < size(); ip++)
-    {
-        fluidSpecie& phase = operator[](ip);
-        const fvMesh& mesh = phase.gas().rho().mesh();
-        
-        phase.gas().rho() = volScalarField
-        (
-            IOobject(phase.name()+"VapourRho", mesh.time().timeName(), mesh,
-                     IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
-            phase.gas().rho()
-        );
-        phase.liquid().v() = volScalarField
-        (
-            IOobject(phase.name()+"LiquidFrac", mesh.time().timeName(), mesh,
-                     IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
-            phase.liquid().v()
-        );
-    }
-}
-
 
 // ************************************************************************* //
