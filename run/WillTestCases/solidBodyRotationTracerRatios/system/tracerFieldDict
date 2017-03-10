@@ -6,7 +6,7 @@ FoamFile {
     object	tracerFieldDict;
 }
 
-type		schaerRadial;
+type		schaerDamped;
 maxMagnitude    1;
 centre          (0 0 500);
 halfWidth       (300 0 300);

@@ -24,23 +24,27 @@ boundaryField
     top
     {
         type            zeroGradient;
+//        type            cyclic;
         //type            extrapolatedCalculated;
         //value           uniform (0 0 0);
     }
     inlet
     {
+//        type            cyclic;
         type            zeroGradient;
 //        type            extrapolatedCalculated;
 //        value           uniform (0 0 0);
     }
     outlet
     {
+//        type            cyclic;
         type            zeroGradient;
 //        type            extrapolatedCalculated;
 //        value           uniform (0 0 0);
     }
     ground
     {
+//        type            cyclic;
         type            zeroGradient;
 //        type            extrapolatedCalculated;
 //        value           uniform (0 0 0);
