@@ -59,27 +59,26 @@ class partition
         //- Name of this partition
         const word partitionName_;
         
-        //- Volume fraction of this partition
-        volScalarField sigma_;
-        
         //- Density of the partition
         volScalarField rho_;
+        
+        //- Potential temperature of this partition
+        volScalarField theta_;
         
         //- Temperature of this partition
         volScalarField T_;
 
-        //- Potential temperature of this partition
-        volScalarField theta_;
-        
         //- Velocity of the partition
         surfaceVectorField Uf_;
         
         //- Flux of the partition
         surfaceScalarField flux_;
-        
-        //- Rate of change of rhoSigma
-        volScalarField drhoSigmadt_;
 
+        //- Volume of liquid in the partition
+        volScalarField volLiquid_;
+
+        //- Rate of change of density of the partition
+        volScalarField dRhodt_;
 
     // Private Member Functions
 
@@ -120,16 +119,16 @@ public:
 
     // Member Functions
 
-        // Access
+    // Access
         const word& partitionName() const { return partitionName_; }
-        
-        //- Volume fraction of this partition
-        const volScalarField& sigma() const { return sigma_; }
-        volScalarField& sigma() { return sigma_; }
         
         //- Density of the partition
         const volScalarField& rho() const { return rho_; }
         volScalarField& rho() { return rho_; }
+
+        //- Rate of change of density of the partition
+        const volScalarField& dRhodt() const { return dRhodt_; }
+        volScalarField& dRhodt() { return dRhodt_; }
 
         //- Temperature of this partition
         const volScalarField& T() const { return T_; }
@@ -147,24 +146,22 @@ public:
         const surfaceScalarField& flux() const { return flux_; }
         surfaceScalarField& flux() { return flux_; }
         
-        //- Rate of change of rhoSigma
-        const volScalarField& drhoSigmadt() const { return drhoSigmadt_; }
-        volScalarField& drhoSigmadt() { return drhoSigmadt_; }
+        //- Volume of liquid in the partition
+        volScalarField& volLiquid() { return volLiquid_;}
+        const volScalarField& volLiquid() const { return volLiquid_;}
 
-        //- Update theta and T from Exner
-        void updateThetaT(const volScalarField& Exner);
+    // Update functions
 
         //- Update rho from the phases
-        volScalarField& sumDensity() const
-        {
-            rho_ = atmosphere::sumDensity();
-            return rho_;
-        }
+        volScalarField& sumDensity();
+
+        //- Update volLiquied from the phases
+        volScalarField& sumVolLiquid();
 
         // Write
         void write();
 
-        // Input (re-read densities, liquid fractions, temperature and sigma)
+        // Input (re-read densities, liquid fractions and theta)
         void readUpdate(const volScalarField& Exner);
 
 };

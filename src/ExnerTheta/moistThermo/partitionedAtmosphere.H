@@ -52,6 +52,23 @@ class partitionedAtmosphere
 :
     public PtrList<partition>
 {
+    // Private data
+    
+        //- Total density over all partitions
+        volScalarField rho_;
+
+        //- Rate of change of density over all partitions
+        volScalarField dRhodt_;
+        
+        //- Theta density averaged over all partitions
+        volScalarField theta_;
+        
+        //- Velocity at faces
+        surfaceVectorField Uf_;
+        
+        //- Flux at faces
+        surfaceScalarField flux_;
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -90,21 +107,46 @@ public:
 
     // Member Functions
 
-    //- Variables summed over partitions
-        //- Total density
-        tmp<volScalarField> rho() const;
-        
-        //- Equivalent potential temperature
-        tmp<volScalarField> thetae() const;
-        
-        //- Density weighted velocity on faces
-        tmp<surfaceVectorField> rhoUf() const;
-        
-        //- Density weighted theta
-        tmp<volScalarField> rhoTheta() const;
+    // Access
+        //- Total density over all partitions
+        volScalarField& rho() { return rho_;}
+        const volScalarField& rho() const { return rho_;}
 
-        //- Update theta and T from Exner in each partition
-        void updateThetaT(const volScalarField& Exner);
+        //- Rate of change of density over all partitions
+        volScalarField dRhodt() { return dRhodt_;}
+        const volScalarField dRhodt() const { return dRhodt_;}
+        
+        //- Theta density averaged over all partitions
+        volScalarField& theta() { return theta_; }
+        const volScalarField& theta() const { return theta_; }
+        
+        //- Velocity at faces
+        surfaceVectorField& Uf() { return Uf_;}
+        const surfaceVectorField& Uf() const { return Uf_;}
+        
+        //- Flux at faces
+        surfaceScalarField& flux() { return flux_;}
+        const surfaceScalarField& flux() const { return flux_;}
+
+
+    //- Update and return fields summed over partitions
+        //- Total density
+        volScalarField& sumDensity();
+        
+//        //- Equivalent potential temperature
+//        tmp<volScalarField> thetae() const;
+//        
+        //- Update theta from partitions
+        volScalarField& updateTheta();
+        
+        //- Update Uf from partitions
+        surfaceVectorField& updateUf();
+
+        //- Update flux from partitions
+        surfaceScalarField& updateFlux();
+
+//        //- Update theta and T from Exner in each partition
+//        void updateThetaT(const volScalarField& Exner);
 
         // Output
         void write();

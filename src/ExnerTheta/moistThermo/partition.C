@@ -39,34 +39,21 @@ Foam::partition::partition
 :
     atmosphere(add(partitionName__, partNames), mesh, dict),
     partitionName_(partitionName__),
-    sigma_
+    rho_(atmosphere::sumDensity()),
+    theta_
     (
         IOobject
         (
-            partitionName_+"sigma", mesh.time().timeName(), mesh,
+            partitionName_+"theta", mesh.time().timeName(), mesh,
             IOobject::MUST_READ, IOobject::AUTO_WRITE
         ),
         mesh
-    ),
-    rho_
-    (
-        atmosphere::sumDensity()
     ),
     T_
     (
         IOobject
         (
             partitionName_+"T", mesh.time().timeName(), mesh,
-            IOobject::NO_READ, IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("T", dimTemperature, scalar(0))
-    ),
-    theta_
-    (
-        IOobject
-        (
-            partitionName_+"theta", mesh.time().timeName(), mesh,
             IOobject::NO_READ, IOobject::AUTO_WRITE
         ),
         mesh,
@@ -84,20 +71,26 @@ Foam::partition::partition
     flux_
     (
         IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
-        linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
+        linearInterpolate(rho_)*(Uf_ & mesh.Sf())
     ),
-    drhoSigmadt_
+    volLiquid_
     (
-        IOobject(partitionName_+"drhoSigmadt", mesh.time().timeName(), mesh),
-        -fvc::div(flux_, sigma_)
+        IOobject(partitionName_+"volLiquid", mesh.time().timeName(), mesh),
+        mesh,
+        dimensionedScalar("volLiquid", dimless, scalar(0))
+    ),
+    dRhodt_
+    (
+        IOobject(partitionName_+"dRhodt", mesh.time().timeName(), mesh),
+        -fvc::div(flux_)
     )
 {
-    sigma_.oldTime();
     rho_.oldTime();
+    dRhodt_.oldTime();
     theta_.oldTime();
     Uf_.oldTime();
     flux_.oldTime();
-    drhoSigmadt_.oldTime();
+    sumVolLiquid();
 }
 
 
@@ -112,34 +105,21 @@ Foam::partition::partition
 :
     atmosphere(add(partitionName__, partNames), mesh, dict),
     partitionName_(partitionName__),
-    sigma_
+    rho_(atmosphere::sumDensity()),
+    theta_
     (
         IOobject
         (
-            partitionName_+"sigma", mesh.time().timeName(), mesh,
+            partitionName_+"theta", mesh.time().timeName(), mesh,
             IOobject::MUST_READ, IOobject::AUTO_WRITE
         ),
         mesh
-    ),
-    rho_
-    (
-        atmosphere::sumDensity()
     ),
     T_
     (
         IOobject
         (
             partitionName_+"T", mesh.time().timeName(), mesh,
-            IOobject::NO_READ, IOobject::AUTO_WRITE
-        ),
-        mesh,
-        dimensionedScalar("T", dimTemperature, scalar(0))
-    ),
-    theta_
-    (
-        IOobject
-        (
-            partitionName_+"theta", mesh.time().timeName(), mesh,
             IOobject::NO_READ, IOobject::AUTO_WRITE
         ),
         mesh,
@@ -157,21 +137,27 @@ Foam::partition::partition
     flux_
     (
         IOobject(partitionName_+"flux", mesh.time().timeName(), mesh),
-        linearInterpolate(sumDensity())*(Uf_ & mesh.Sf())
+        linearInterpolate(rho_)*(Uf_ & mesh.Sf())
     ),
-    drhoSigmadt_
+    volLiquid_
     (
-        IOobject(partitionName_+"drhoSigmadt", mesh.time().timeName(), mesh),
-        -fvc::div(flux_, sigma_)
+        IOobject(partitionName_+"volLiquid", mesh.time().timeName(), mesh),
+        mesh,
+        dimensionedScalar("volLiquid", dimless, scalar(0))
+    ),
+    dRhodt_
+    (
+        IOobject(partitionName_+"dRhodt", mesh.time().timeName(), mesh),
+        -fvc::div(flux_)
     )
 {
-    sigma_.oldTime();
     rho_.oldTime();
+    dRhodt_.oldTime();
     theta_.oldTime();
     Uf_.oldTime();
     flux_.oldTime();
-    drhoSigmadt_.oldTime();
-    updateThetaT(Exner);
+    sumVolLiquid();
+//    updateThetaT(Exner);
 }
 
 
@@ -184,22 +170,46 @@ Foam::partition::~partition()
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 
-void Foam::partition::updateThetaT(const volScalarField& Exner)
+Foam::volScalarField& Foam::partition::sumDensity()
 {
-    // Update theta and T from Exner using the equation of state for the
-    // perfect gas part of the partition
-    perfectGasPhase& air = operator[](0).gas();
-    const scalar kappa = air.kappa();
-    const dimensionedScalar& p0 = air.p0();
-    theta_ = p0*volGas()*pow(Exner, (1-kappa)/kappa)/rhoR();
-    T_ = theta_*Exner;
+    rho_ == dimensionedScalar("zero", dimDensity, scalar(0));
+    for(label is = 0; is < size(); is++)
+    {
+        rho_ += operator[](is).gas().rho()
+             + operator[](is).liquid().rho()*operator[](is).liquid().v();
+    }
+    
+    return rho_;
 }
+
+
+Foam::volScalarField& Foam::partition::sumVolLiquid()
+{
+    volLiquid_ = dimensionedScalar("zero", dimless, scalar(0));
+    for(label is = 0; is < size(); is++)
+    {
+        volLiquid_ += operator[](is).liquid().v();
+    }
+    return volLiquid_;
+}
+
+
+//void Foam::partition::updateThetaT(const volScalarField& Exner)
+//{
+//    // Update theta and T from Exner using the equation of state for the
+//    // perfect gas part of the partition
+//    perfectGasPhase& air = operator[](0).gas();
+//    const scalar kappa = air.kappa();
+//    const dimensionedScalar& p0 = air.p0();
+//    theta_ = p0*volGas()*pow(Exner, (1-kappa)/kappa)/rhoR();
+//    T_ = theta_*Exner;
+//}
 
 
 void Foam::partition::write()
 {
     atmosphere::write();
-    sigma_.write();
+    rho_.write();
     T_.write();
     theta_.write();
     Uf_.write();
@@ -208,14 +218,8 @@ void Foam::partition::write()
 
 void Foam::partition::readUpdate(const volScalarField& Exner)
 {
-    const fvMesh& mesh = sigma_.mesh();
+    const fvMesh& mesh = rho_.mesh();
     atmosphere::readUpdate();
-    sigma_ = volScalarField
-    (
-        IOobject(partitionName_+"sigma", mesh.time().timeName(), mesh,
-                 IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
-        sigma_
-    );
     Uf_ = surfaceVectorField
     (
         IOobject(partitionName_+"Uf", mesh.time().timeName(), mesh,
@@ -223,7 +227,8 @@ void Foam::partition::readUpdate(const volScalarField& Exner)
         Uf_
     );
     flux_ = linearInterpolate(sumDensity())*(Uf_ & mesh.Sf());
-    updateThetaT(Exner);
+    sumDensity();
+    sumVolLiquid();
 }
 
 // ************************************************************************* //

@@ -53,10 +53,10 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nNonOrthCorr =
-        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
+//    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
+//    const int nNonOrthCorr =
+//        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
+//    const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -67,22 +67,20 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "compressibleCourantNo.H"
+//        #include "compressibleCourantNo.H"
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "rhoEqn.H"
-            #include "partionFractionEqns.H"
             #include "phaseEqns.H"
-            for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
-            {
-                #include "rhoThetaEqn.H"
-            }
+//            for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
+//            {
+//                #include "rhoThetaEqn.H"
+//            }
             //#include "exnerEqn.H"
-            p = air.pFromExner(Exner);
+//            p = air.pFromExner(Exner);
         }
 
-        #include "compressibleContinuityErrs.H"
+//        #include "compressibleContinuityErrs.H"
 
        runTime.write();
 
