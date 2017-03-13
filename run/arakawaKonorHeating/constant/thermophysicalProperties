@@ -22,7 +22,23 @@ FoamFile
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-mixture  air 1 28.9 1000 0 1.8e-05 0.7;
+mixture
+{
+    specie
+    {
+        molWeight       28.9;
+    }
+    thermodynamics
+    {
+        Cp              1005;
+        Hf              0;
+    }
+    transport
+    {
+        mu              1.8e-05;
+        Pr              0.7;
+    }
+}
 
 pRef     pRef [1 -1 -2 0 0 0 0] 100000;
 T0       T0   [0  0  0 1 0 0 0] 250;

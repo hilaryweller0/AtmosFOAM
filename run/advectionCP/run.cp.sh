@@ -10,10 +10,11 @@ advectiveFoamF
 
 setAnalyticTracerField -time 5000
 setAnalyticTracerField -time 10000
-#zeroVerticalFaces Tf
-#zeroVerticalFaces -time 5000 Tf_analytic
-#zeroVerticalFaces -time 10000 Tf_analytic
+zeroVerticalFaces Tf
+zeroVerticalFaces -time 5000 Tf_analytic
+zeroVerticalFaces -time 10000 Tf_analytic
 
+sumFields -scale0 1 -scale1 -1 10000 T_diff 10000 T 10000 T_analytic
 sumFields -scale0 1 -scale1 -1 5000 Tf_diff 5000 Tf 5000 Tf_analytic
 sumFields -scale0 1 -scale1 -1 10000 Tf_diff 10000 Tf 10000 Tf_analytic
 gmtFoam -time 5000 Tf_diff

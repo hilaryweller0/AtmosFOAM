@@ -24,34 +24,56 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "fvc.H"
-#include "fcfBilinearFit.H"
+#include "linearCP.H"
 #include "SVD.H"
 #include "fieldAccess.H"
 
 template<class Type>
-Foam::tmp
-<
+Foam::tmp<
     Foam::GeometricField
     <
-        typename Foam::outerProduct<Foam::vector, Type>::type,
-        Foam::fvsPatchField,
-        Foam::surfaceMesh
+        Type,
+        Foam::fvPatchField,
+        Foam::volMesh
     >
-> Foam::fv::fcfBilinearFit<Type>::operator()
+> Foam::linearCP<Type>::interpolate
 (
     const Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>& s
 ) const
 {
-    return stencilDescription.weightedSum(s, coeffs);
+    Foam::tmp<
+        Foam::GeometricField
+        <
+            Type,
+            Foam::fvPatchField,
+            Foam::volMesh
+        >
+    > tInterpField = stencilDescription.weightedSum(s, coeffs);
+    Foam::GeometricField
+    <
+        Type,
+        Foam::fvPatchField,
+        Foam::volMesh
+    >& interpField = tInterpField.ref();
+
+    // copy boundary values
+    forAll(s.boundaryField(), patchI)
+    {
+        const fvsPatchField<Type>& sourcePatch = s.boundaryField()[patchI];
+        fvPatchField<Type>& targetPatch = interpField.boundaryFieldRef()[patchI];
+        targetPatch = sourcePatch;
+    }
+
+    return tInterpField;
 }
 
 template<class Type>
-void Foam::fv::fcfBilinearFit<Type>::initCoeffs
+void Foam::linearCP<Type>::initCoeffs
 (
     const fvMesh& mesh
 )
 {
-    List<List<point> > stencilPoints(mesh.nFaces());
+    List<List<point> > stencilPoints(mesh.nCells());
 
     stencilDescription.collectData
     (
@@ -59,37 +81,27 @@ void Foam::fv::fcfBilinearFit<Type>::initCoeffs
         stencilPoints
     );
 
-    forAll(stencilPoints, stencilForFaceI)
+    forAll(stencilPoints, stencilForCellI)
     {
-        const List<point>& stencil = stencilPoints[stencilForFaceI];
+        const List<point>& stencil = stencilPoints[stencilForCellI];
 
-        if (stencil.size() >= 3)
-        {
-            calculateGradCoeffs
-            (
-                stencilDescription.elements()[stencilForFaceI],
-                stencil,
-                coeffs[stencilForFaceI]
-            );
-        }
-        else
-        {
-            // not enough faces to fit phi = a_1 + a_2 x + a_3 z
-            Info << "ignoring faceI " << stencilForFaceI << " stencil of size " << stencil.size() << endl;
-            forAll(stencil, faceI)
-            {
-                coeffs[stencilForFaceI].append(vector(0, 0, 0));
-            }
-        }
+        calculateInterpolationCoeffs
+        (
+            mesh.C()[stencilForCellI],
+            stencilDescription.stencil()[stencilForCellI],
+            stencil,
+            coeffs[stencilForCellI]
+        );
     }
 }
 
 template<class Type>
-void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
+void Foam::linearCP<Type>::calculateInterpolationCoeffs
 (
+    const point& origin,
     const labelList& stencilFaceIndices,
     const List<point>& stencil,
-    List<vector>& coeffs
+    scalarList& coeffs
 )
 {
     label nonVerticalFaces = 0;
@@ -101,10 +113,9 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
         if (include[i]) nonVerticalFaces++;
     }
 
-    scalarRectangularMatrix B(nonVerticalFaces, 3);
+    scalarRectangularMatrix B(nonVerticalFaces, 2);
 
     label n = 0;
-    const point& origin = stencil.first();
     forAll(stencil, i)
     {
         if (include[i])
@@ -112,8 +123,7 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
             const point& p = stencil[i] - origin;
 
             B(n, 0) = 1;
-            B(n, 1) = p.x();
-            B(n, 2) = p.z();
+            B(n, 1) = p.z();
 
             n++;
         }
@@ -127,12 +137,14 @@ void Foam::fv::fcfBilinearFit<Type>::calculateGradCoeffs
     {
         if (include[i])
         {            
-            coeffs.append(vector(Binv(1, n), 0, Binv(2, n)));
+            coeffs.append(Binv(0, n));
             n++;
         }
         else
         {
-            coeffs.append(vector(0, 0, 0));
+            coeffs.append(0);
         }
     }
+
+    Info << "stencil size " << n << " coeffs " << coeffs << " faceI " << stencilFaceIndices << " at " << stencil << endl;
 }

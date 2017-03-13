@@ -119,6 +119,9 @@ int main(int argc, char *argv[])
             
             // Solve the matrices for the equations
             TEqn.solve();
+            Info << "Writing T and q after T.solve" << endl;
+            T.write();
+            q.write();
             qEqn.solve();
             
         }

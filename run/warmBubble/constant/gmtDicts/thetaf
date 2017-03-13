@@ -1,0 +1,32 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X8c/8c";
+projection2D XZ;
+plotZeroValuePolys false;
+separateLegend true;
+
+FieldsToPlot
+1
+(
+    [thetaf rawValues 298 302 0.2 "$GMTU/colours/red_white_blue.cpt"]
+);
+
+//separateLegend true;
+region "-5000/5000/5e3/12.5e3";
+annotate "minMax -1.2e3 400";
+boundaryMarks "2500/2500SWen";
+

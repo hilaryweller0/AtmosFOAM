@@ -34,8 +34,6 @@ Description
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
-#include "volInterpolationScheme.H"
-#include "sGradScheme.H"
 #include "gravity.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -52,15 +50,13 @@ int main(int argc, char *argv[])
     HodgeOps H(mesh);
     surfaceScalarField gd("gd", g() & H.delta());
     #define dt runTime.deltaT()
-    #include "createVolInterpolation.H"
-    #include "createSurfaceGrad.H"
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     #include "initCourantFile.H"
-
+    
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
@@ -88,7 +84,10 @@ int main(int argc, char *argv[])
         #include "rhoEqn.H"
         {
             thetaf += dt * (radiationf - thetaf)/radiativeTimescale;
-            theta = cellCentreReconstruction.interpolate(thetaf);
+            bf = thetaf * g.unitFaceNormal();
+            b = fvc::reconstruct(bf * mesh.magSf());
+            theta == (b & g.unit());
+            thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
         }
         #include "compressibleContinuityErrs.H"
 

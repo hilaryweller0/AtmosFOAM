@@ -1,4 +1,5 @@
 finiteVolume/sGradSchemes/fcfBilinearFit/fcfBilinearFits.C
+interpolation/volInterpolation/linearCP/linearCPs.C
 
 LIB = $(FOAM_USER_LIBBIN)/libCharneyPhillips
 

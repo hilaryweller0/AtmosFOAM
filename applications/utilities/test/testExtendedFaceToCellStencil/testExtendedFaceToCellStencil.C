@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,17 +22,15 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectionFoam
+    testExtendedFaceToCellStencil
 
 Description
-    Solves a transport equation for a passive scalar using RK2 timestepping
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
-#include "OFstream.H"
-#include "sGradScheme.H"
-#include "gravity.H"
+#include "singleFaceToCellStencil.H"
+#include "extendedCentredFaceToCellStencil.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -41,39 +39,17 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #define dt runTime.deltaT()
-    #include "createGravity.H"
-    #include "createFields.H"
 
-    IStringStream type("fcfBilinearFit");
-    tmp<fv::sGradScheme<scalar> > tsGrad = fv::sGradScheme<scalar>::New(mesh, type);
-    const fv::sGradScheme<scalar>& sGrad = tsGrad();
+    singleFaceToCellStencil f2cStencil(mesh);
+    extendedCentredFaceToCellStencil stencil(f2cStencil);
 
-    Info<< "\nCalculating advection\n" << endl;
+    Info << stencil.stencil() << endl;
 
-    #include "CourantNo.H"
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    while (runTime.loop())
-    {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
-
-        for (int corr=0; corr < 3; corr++)
-        {
-            Tf = Tf.oldTime() - 0.5*dt *
-            (
-                (Uf & sGrad(Tf)) + 
-                (Uf & sGrad(Tf.oldTime()))
-            );
-        }
-
-        bf = Tf * (g.unit() & mesh.Sf());
-        b = fvc::reconstruct(bf);
-        T = b & g.unit();
-        
-        Info << " Tf goes from " << min(Tf.internalField()) << " to "
-             << max(Tf.internalField()) << endl;
-        runTime.write();
-    }
+    Info<< nl << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+        << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+        << nl << endl;
 
     Info<< "End\n" << endl;
 

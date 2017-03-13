@@ -13,9 +13,6 @@ surfaceScalarField Tf
     mesh
 );
 
-surfaceScalarField bf = Tf * (g.unit() & mesh.Sf());
-volVectorField b = fvc::reconstruct(bf);
-
 volScalarField T
 (
     IOobject
@@ -26,7 +23,7 @@ volScalarField T
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    b & g.unit()
+    cellCentreReconstruction.interpolate(Tf)
 );
 
 Info<< "Reading field Uf\n" << endl;
