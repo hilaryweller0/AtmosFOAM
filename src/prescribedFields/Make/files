@@ -1,4 +1,5 @@
 noAdvection.C
+tracerField/arakawaKonorStripes.C
 tracerField/gaussianTracerField.C
 tracerField/geodesicCosBellsTracerField.C
 tracerField/geodesicGaussiansTracerField.C
