@@ -4,6 +4,7 @@ tracerField/gaussianTracerField.C
 tracerField/geodesicCosBellsTracerField.C
 tracerField/geodesicGaussiansTracerField.C
 tracerField/schaerRadialTracerField.C
+tracerField/schaerRadialDampedField.C
 tracerField/schaerBlockField.C
 tracerField/schaer1DTracerField.C
 tracerField/polynomialTracerField.C

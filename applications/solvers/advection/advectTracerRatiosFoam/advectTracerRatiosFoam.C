@@ -81,8 +81,8 @@ int main(int argc, char *argv[])
               fvm::ddt(T,q)
               + 0.5*fvc::div(fluxOld,q.oldTime())
               //+ 0.5*( U & fvc::grad(q.oldTime()) )
-              + 0.5*T1damping*q.oldTime()
-              - 0.5*T2damping*(1-q.oldTime())
+              + 0.5*T1damping*q.oldTime()*T.oldTime()
+              - 0.5*T2damping*(1-q.oldTime())*T.oldTime()
             );
             fvScalarMatrix TEqn
             (
@@ -113,8 +113,8 @@ int main(int argc, char *argv[])
             }
             else
             {
-                qEqn += 0.5*T1damping*q;
-                qEqn += -0.5*T2damping*q2;
+                qEqn += 0.5*T1damping*q*T;
+                qEqn += -0.5*T2damping*q2*T;
             }
             
             // Solve the matrices for the equations
