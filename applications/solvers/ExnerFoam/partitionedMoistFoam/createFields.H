@@ -32,44 +32,36 @@ perfectGasPhase& air = atmos[0].gas();
 Info << "Initialising the Exner pressure and the pressure" << endl;
 volScalarField Exner
 (
-    IOobject("Exner", runTime.timeName(), mesh),
-    atmosParts.exnerFromState()
+    IOobject
+    (
+        "Exner", runTime.timeName(), mesh,
+        IOobject::NO_READ, IOobject::AUTO_WRITE
+    ),
+    atmosParts.ExnerFromState(),
+    "partitionedHydrostaticExner"
 );
 Exner.oldTime();
+Exner.write();
 
 volScalarField p("p", air.pFromExner(Exner));
 
-//Info << "Calculating the total density, temperature and velocity"
-//     << endl;
-
-//volScalarField rho("rho", atmosParts.rho());
-//volScalarField theta("theta", atmosParts.rhoTheta()/rho);
-//volScalarField T("T", theta*Exner);
-//surfaceVectorField Uf("Uf", atmosParts.rhoUf()/linearInterpolate(rho));
-
-//// Time-stepping variables
-//rho.oldTime();
-//volScalarField dRhodt("dRhodt", 0*rho/dt);
-//dRhodt.oldTime();
-
-//volScalarField dRhoThetadt("dRhoThetadt", 0*rho*theta/dt);
-//dRhoThetadt.oldTime();
-//volScalarField rhoThetaSource("rhoThetaSource", dRhoThetadt);
-//surfaceScalarField rhof("rhof", fvc::interpolate(rho));
-
-
 // Fields needed in the Helmholtz equation
-//volScalarField Psi("Psi", rho/Exner);
-//Psi.oldTime();
-//surfaceScalarField gradPcoeff
-//(
-//    "gradPcoeff",
-//    fvc::interpolate
-//    (
-//        air.Cp()*theta*atmos.rhoR()
-//       /(rho*air.R()*atmos.volGas())
-//    )
-//);
+volScalarField Psi("Psi", atmosParts.rho()/Exner);
+Psi.oldTime();
+
+surfaceScalarField gradPcoeff
+(
+    IOobject("gradPcoeff", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("gradPcoeff", dimensionSet(1,-1,-2,0,0), scalar(0))
+);
+atmosParts.setGradPcoeff(gradPcoeff);
+
+surfaceScalarField rhog
+(
+    IOobject("rhog", runTime.timeName(), mesh),
+    fvc::interpolate(atmosParts.rho())*gSf
+);
 
 //// fixed flux boundary conditions
 //wordList VuBCs(mesh.boundaryMesh().size(), "calculated");

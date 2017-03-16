@@ -1,88 +1,85 @@
 {
     // Global Eqn of state and from each partition
-    Exner = atmosParts.exnerFromState();
-
-    // Implicit parts of momentum equation
-    //surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
+    atmosParts.ExnerFromState(Exner);
     
     for (int corr=0; corr<nCorr; corr++)
     {
-        volScalarField Psi = atmosParts.rho()/Exner;
+        Psi = atmosParts.rho()/Exner;
 
         // Contributions from each partition
         
         // Diffusivity in each partition
-        surfaceScalarField gradPcoeff
-        (
-            IOobject("gradPcoeff", runTime.timeName(), mesh),
-            mesh,
-            dimensionedScalar("d",dimensionSet(1,-1,-2,0,0), scalar(0))
-        );
+        atmosParts.setGradPcoeff(gradPcoeff);
+
+        // Total flux
+        atmosParts.flux()
+             == dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0));
+        
+        // Flux without pressure gradient for each partition
         for(label ip = 0; ip < atmosParts.size(); ip++)
         {
             partition& parti = atmosParts[ip];
-            gradPcoeff += air.Cp()/air.R()*fvc::interpolate
+            surfaceScalarField& fluxi = parti.flux();
+
+            parti.dFluxdt() = -mesh.Sf() & 
             (
-                parti.sigmaRho()*parti.sigma()*parti.rhoR()*parti.theta()
-              / (parti.sigmaRho()*parti.volGas())
+                fvc::interpolate(fvc::div(fluxi, parti.u()))
+              + (2*fvc::interpolate(parti.sigmaRho())*(Omega^parti.Uf()))
             );
+            fluxi = fluxi.oldTime()
+                  + (1-offCentre)*dt*parti.dFluxdt().oldTime()
+                  + offCentre*dt*parti.dFluxdt();
+
+            atmosParts.flux() += fluxi;
+        }
+        rhog = fvc::interpolate(atmosParts.rho())*gSf;
+        atmosParts.flux() += offCentre*dt*rhog;
+    
+        // The Helmholtz equation for the global Exner pressure 
+        fvScalarMatrix ExnerEqn
+        (
+            fvm::ddt(Psi, Exner)
+          - (1-offCentre)*atmosParts.dRhodt().oldTime()
+          + offCentre*fvc::div(atmosParts.flux())
+          - fvm::laplacian(sqr(offCentre)*dt*gradPcoeff, Exner)
+        );
+        surfaceScalarField gradPcoeff2("gradPcoeff2",gradPcoeff*offCentre*dt);
+
+        if(ucorr == nOuterCorr-1 && corr == nCorr-1)
+        {
+            ExnerEqn.solve(mesh.solver(Exner.name() + "Final"));
+        }
+        else
+        {
+            ExnerEqn.solve(mesh.solver(Exner.name()));
         }
 
-/*        surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
-        dVdt = -(H.delta() &
+        // Global back-substitutions
+        atmosParts.flux() += ExnerEqn.flux()/offCentre;
+        atmosParts.Uf() = fvc::interpolate
         (
-            fvc::interpolate(fvc::div(U, u))
-         + (2*rhof*(Omega^(Uf-Ug)))
-        ));
-
-        // Vu is the flux without g or dpdz (to get the BCs right)
-        Vu = G*
-        (
-            V.oldTime()
-          + (1-offCentre)*dt*dVdt.oldTime()
-          + offCentre*dt*dVdt
+            fvc::reconstruct(atmosParts.flux())/atmosParts.rho()
         );
-
-        // add the gravity terms
-        V = Vu + G*offCentre*dt*rhof*gd;
-
-        // Flux in the normal direction (including off diagonal part of pressure
-        // gradient)
-
-        for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
+        atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
+        
+        // Partition back-substitutions
+        for(label ip = 0; ip < atmosParts.size(); ip++)
         {
-            U = H.ddirToFlux(V)
-              - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
-
-            fvScalarMatrix ExnerEqn
-            (
-                fvm::ddt(Psi, Exner)
-              - (1-offCentre)*dRhodt.oldTime()
-              + offCentre*fvc::div(U)
-              - fvm::laplacian(offCentre*gradPcoeff2, Exner)
-            );
-
-            if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
-            {
-                ExnerEqn.solve(mesh.solver(Exner.name() + "Final"));
-            }
-            else
-            {
-                ExnerEqn.solve(mesh.solver(Exner.name()));
-            }
-
-            if (nonOrth == nNonOrthCorr)
-            {
-                U += ExnerEqn.flux()/offCentre;
-                V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
-                u = H.reconstructd(V/rhof);
-                divu = fvc::div(U/rhof);
-                Uf = fvc::interpolate(u);
-                dVdt += rhof*gd
-                     - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
-                     - muSponge*V;
-            }
-        }*/
+            partition& parti = atmosParts[ip];
+            parti.flux() += -offCentre*dt*parti.gradPcoeff()
+                               *fvc::snGrad(Exner)*mesh.magSf()
+                        + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
+            parti.u() = fvc::reconstruct(parti.flux())/parti.sigmaRho();
+            parti.Uf() = fvc::interpolate(parti.u());
+            parti.dFluxdt() += fvc::interpolate(parti.sigmaRho())*gSf
+                          - parti.gradPcoeff()*fvc::snGrad(Exner)*mesh.magSf();
+        }
+        atmosParts.write();
+        atmosParts.flux().write();
+        Exner.write();
+        Psi.write();
+        gradPcoeff2.write();
+        FatalErrorIn("") << exit(FatalError);
     }
 }
 

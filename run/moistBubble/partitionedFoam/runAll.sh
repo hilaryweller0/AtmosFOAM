@@ -18,10 +18,9 @@ initMoistFoam_HW
 partitionedMoistFoam >& log &
 tail -f log
 
-sumFields  2 buoyant.ExnerDiff 2 buoyant.Exner 2 Exner -scale1 -1
-sumFields  2 stable.ExnerDiff 2 stable.Exner 2 Exner -scale1 -1
-gmtFoam -time 2 ExnerDiff
-gv 2/ExnerDiff.pdf &
+time=10
+gmtFoam -time $time thetaU
+gv $time/thetaU.pdf &
 
 # plotting output
 writeuvw Uf -time $time

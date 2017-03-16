@@ -146,7 +146,13 @@ public:
         tmp<volScalarField> volLiquid() const;
 
         // Enxer from the equation of state
-        tmp<volScalarField> exnerFromState();
+        tmp<volScalarField> ExnerFromState();
+
+        // Enxer from the equation of state
+        volScalarField& ExnerFromState(volScalarField& Exner);
+
+        //- The coefficient in from of grad(Exner) for the Helmholtz eqn
+        void setGradPcoeff(surfaceScalarField& gradPcoeff) const;
 
         // Output
         void write();

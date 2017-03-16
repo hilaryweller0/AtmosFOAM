@@ -26,22 +26,19 @@ ddtSchemes
 {
     default Euler;
 }
-offCentre 0.5;
+offCentre 1;
 SIgravityWaves false;
 
 gradSchemes
 {
     default         none;
+    linearUpwind    leastSquares;
     grad(theta)     Gauss linear;
 }
 
 divSchemes
 {
-    default none;
-    div(U,(waterVapourRho|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,(waterLiquidFrac|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,theta)   Gauss cubicUpwindCPCFit 3;
-    div(U,u)   Gauss cubicUpwindCPCFit 3; //linearUpwind linearUpwind;
+    default    Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes

@@ -50,7 +50,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     ),
     theta_
     (
-        IOobject("theta", mesh.time().timeName(), mesh),
+        IOobject("theta", mesh.time().timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
         mesh, dimensionedScalar("theta", dimTemperature, scalar(0))
     ),
     Uf_
@@ -60,7 +60,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     ),
     flux_
     (
-        IOobject("flux", mesh.time().timeName(), mesh),
+        IOobject("flux", mesh.time().timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
         mesh, dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0))
     )
 {
@@ -296,14 +296,13 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid() const
 }
 
 
-Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::exnerFromState()
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::ExnerFromState()
 {
     const perfectGasPhase& air = operator[](0).operator[](0).gas();
-    const fvMesh& mesh = rho_.mesh();
-    const Time& time = rho_.time();
     const scalar kappa = air.kappa();
+    const fvMesh& mesh = air.rho().mesh();
+    const Time& time = air.rho().time();
 
-    // Initialise Exner
     tmp<volScalarField> tExner
     (
         new volScalarField
@@ -311,13 +310,50 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::exnerFromState()
             IOobject("Exner", time.timeName(), mesh),
             pow
             (
-                rhoR()*updateTheta()/(air.p0()*(1-volLiquid())),
+                rhoR()*updateTheta()/(air.p0()*(1-volLiquid())), 
                 kappa/(1-kappa)
             )
         )
     );
-    
+
     return tExner;
+}
+
+
+Foam::volScalarField& Foam::partitionedAtmosphere::ExnerFromState
+(
+    volScalarField& Exner
+)
+{
+    const perfectGasPhase& air = operator[](0).operator[](0).gas();
+    const scalar kappa = air.kappa();
+
+    Exner = pow
+    (
+        rhoR()*updateTheta()/(air.p0()*(1-volLiquid())),
+        kappa/(1-kappa)
+    );
+
+    return Exner;
+}
+
+
+void Foam::partitionedAtmosphere::setGradPcoeff
+(
+    surfaceScalarField& gradPcoeff
+) const
+{
+    gradPcoeff == dimensionedScalar
+    (
+        "gradPcoeff",
+        dimensionSet(1,-1,-2,0,0), scalar(0)
+    );
+    
+    for (label ip = 0; ip < size(); ip++)
+    {
+        const partition& parti = operator[](ip);
+        gradPcoeff += parti.gradPcoeff();
+    }
 }
 
 
@@ -330,6 +366,9 @@ void Foam::partitionedAtmosphere::write()
     }
     rho_.write();
     theta_.write();
+    flux_.write();
+    Uf_.write();
+    static_cast<volScalarField>(ExnerFromState()).write();
 }
 
 

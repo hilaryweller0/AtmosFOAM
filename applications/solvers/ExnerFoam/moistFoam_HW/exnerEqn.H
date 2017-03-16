@@ -21,7 +21,7 @@
             air.Cp()*theta*atmos.rhoR()
            /(atmos.sumDensity()*air.R()*atmos.volGas())
         );
-        surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
+        surfaceScalarField gradPcoeff2("gradPcoeff2", gradPcoeff*G*offCentre*rhof*dt);
         dVdt = -(H.delta() &
         (
             fvc::interpolate(fvc::div(U, u))
@@ -75,6 +75,13 @@
                      - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
                      - muSponge*V;
             }
+            Exner.write();
+            U.write();
+            atmos.write();
+            gradPcoeff2.write();
+            Psi.write();
+            theta.write();
+            FatalErrorIn("") << exit(FatalError);
         }
     }
 }

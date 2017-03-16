@@ -71,11 +71,17 @@ class partition
         //- Temperature of this partition
         volScalarField T_;
 
-        //- Velocity of the partition
+        //- Velocity of the partition at cell faces
         surfaceVectorField Uf_;
+        
+        //- Velocity of the partition at cell centres
+        volVectorField u_;
         
         //- Flux of the partition (sigmaRho * Uf).Sf
         surfaceScalarField flux_;
+        
+        //- Rate of change of flux
+        surfaceScalarField dFluxdt_;
 
         //- Volume of liquid in the partition
         volScalarField sigmaVolLiquid_;
@@ -138,14 +144,22 @@ public:
         const volScalarField& theta() const { return theta_; }
         volScalarField& theta() { return theta_; }
         
-        //- Velocity of the partition
+        //- Velocity of the partition at cell faces
         const surfaceVectorField& Uf() const { return Uf_; }
         surfaceVectorField& Uf() { return Uf_; }
+        
+        //- Velocity of the partition at cell centres
+        const volVectorField& u() const { return u_; }
+        volVectorField& u() { return u_; }
         
         //- Flux of the partition
         const surfaceScalarField& flux() const { return flux_; }
         surfaceScalarField& flux() { return flux_; }
         
+        //- Rate of change of flux
+        const surfaceScalarField& dFluxdt() const { return dFluxdt_; }
+        surfaceScalarField& dFluxdt() { return dFluxdt_; }
+
         //- Volume of liquid in the partition
         volScalarField& sigmaVolLiquid() { return sigmaVolLiquid_;}
         const volScalarField& sigmaVolLiquid() const { return sigmaVolLiquid_;}
@@ -168,11 +182,17 @@ public:
 
     // Constant member functions
 
-        // Source term in the theta equation
+        //- Source term in the theta equation
         tmp<volScalarField> thetaSource() const;
         
-        // Enxer from the equation of state
-        tmp<volScalarField> exnerFromState() const;
+        //- Enxer from the equation of state
+        tmp<volScalarField> ExnerFromState() const;
+        
+        //- Enxer from the equation of state
+        volScalarField& ExnerFromState(volScalarField& Exner) const;
+        
+        //- The coefficient in from of grad(Exner) for the Helmholtz eqn
+        tmp<Foam::surfaceScalarField> gradPcoeff() const;
         
         // Write
         void write();

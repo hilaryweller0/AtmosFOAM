@@ -54,8 +54,6 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-//    const int nNonOrthCorr =
-//        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
