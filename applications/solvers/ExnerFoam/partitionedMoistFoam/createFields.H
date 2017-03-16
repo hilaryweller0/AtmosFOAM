@@ -1,18 +1,3 @@
-Info << "Reading in Exner pressure" << endl;
-volScalarField Exner
-(
-    IOobject
-    (
-        "Exner",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-Exner.oldTime();
-
 Info<< "Reading thermophysical properties\n" << endl;
 
 IOdictionary thermoDict
@@ -44,14 +29,22 @@ partition& atmos = atmosParts[0];
 perfectGasPhase& air = atmos[0].gas();
 //fluidSpecie& water = atmos[1];
 
+Info << "Initialising the Exner pressure and the pressure" << endl;
+volScalarField Exner
+(
+    IOobject("Exner", runTime.timeName(), mesh),
+    atmosParts.exnerFromState()
+);
+Exner.oldTime();
 
-Info << "Calculating the total density, pressure, temperature and velocity"
-     << endl;
+volScalarField p("p", air.pFromExner(Exner));
+
+//Info << "Calculating the total density, temperature and velocity"
+//     << endl;
 
 //volScalarField rho("rho", atmosParts.rho());
 //volScalarField theta("theta", atmosParts.rhoTheta()/rho);
 //volScalarField T("T", theta*Exner);
-volScalarField p("p", air.pFromExner(Exner));
 //surfaceVectorField Uf("Uf", atmosParts.rhoUf()/linearInterpolate(rho));
 
 //// Time-stepping variables

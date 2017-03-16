@@ -146,7 +146,7 @@ public:
         tmp<volScalarField> volLiquid() const;
 
         // Enxer from the equation of state
-        tmp<volScalarField> exnerFromState() const;
+        tmp<volScalarField> exnerFromState();
 
         // Output
         void write();

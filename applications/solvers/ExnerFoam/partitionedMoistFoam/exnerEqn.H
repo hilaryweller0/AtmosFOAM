@@ -1,38 +1,34 @@
 {
     // Global Eqn of state and from each partition
     Exner = atmosParts.exnerFromState();
-    Exner.write();
-    for(label ip = 0; ip < atmosParts.size(); ip++)
-    {
-        volScalarField Exneri
-        (
-            atmosParts[ip].partitionName()+"Exner",
-            atmosParts[ip].exnerFromState()
-        );
-        Exneri.write();
-    }
-    FatalErrorIn("partitionedMoistFoam") << exit(FatalError);
-/*
+
     // Implicit parts of momentum equation
-    surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
+    //surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
     
     for (int corr=0; corr<nCorr; corr++)
     {
-        // Compressibility and updated density
-        if (corr != 0)
-        {
-            #include "rhoEqn.H"
-        }
-        Psi == rho/Exner;
-        rhof = fvc::interpolate(rho);
+        volScalarField Psi = atmosParts.rho()/Exner;
 
-        // Explicit part of rate of change of flux
-        gradPcoeff = fvc::interpolate
+        // Contributions from each partition
+        
+        // Diffusivity in each partition
+        surfaceScalarField gradPcoeff
         (
-            air.Cp()*theta*atmos.rhoR()
-           /(atmos.sumDensity()*air.R()*atmos.volGas())
+            IOobject("gradPcoeff", runTime.timeName(), mesh),
+            mesh,
+            dimensionedScalar("d",dimensionSet(1,-1,-2,0,0), scalar(0))
         );
-        surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
+        for(label ip = 0; ip < atmosParts.size(); ip++)
+        {
+            partition& parti = atmosParts[ip];
+            gradPcoeff += air.Cp()/air.R()*fvc::interpolate
+            (
+                parti.sigmaRho()*parti.sigma()*parti.rhoR()*parti.theta()
+              / (parti.sigmaRho()*parti.volGas())
+            );
+        }
+
+/*        surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
         dVdt = -(H.delta() &
         (
             fvc::interpolate(fvc::div(U, u))
@@ -86,7 +82,7 @@
                      - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
                      - muSponge*V;
             }
-        }
-    }*/
+        }*/
+    }
 }
 

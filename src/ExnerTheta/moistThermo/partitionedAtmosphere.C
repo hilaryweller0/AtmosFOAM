@@ -83,7 +83,6 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     updateUf();
     updateFlux();
     updateTheta();
-    updateTheta();
 }
 
 
@@ -192,6 +191,9 @@ Foam::surfaceScalarField& Foam::partitionedAtmosphere::updateFlux()
 
 Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
 {
+    const perfectGasPhase& air = operator[](0).operator[](0).gas();
+    const scalar kappa = air.kappa();
+
     // The averaging of theta over partitions is a complicated sum derived
     // so that the equation of state holds in each partition
 
@@ -199,18 +201,25 @@ Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
     partition& part = operator[](0);
 
     // Initialise the sums from partion 0
-    volScalarField rhoR = part.sigma()*part.rhoR();
-    volScalarField rhoRTheta = rhoR*part.theta()/part.volGas();
+    volScalarField thetaSum = part.sigma()*pow
+    (
+        part.rhoR()*part.theta()/(air.p0()*part.volGas()),
+        kappa/(1-kappa)
+    );
 
     // Sum contributions from other partitions
     for (label ipart = 1; ipart < size(); ipart++)
     {
         partition& part = operator[](ipart);
-        rhoR += part.sigma()*part.rhoR();
-        rhoRTheta += part.sigma()*part.rhoR()*part.theta()/part.volGas();
+        thetaSum += part.sigma()*pow
+        (
+            part.rhoR()*part.theta()/(air.p0()*part.volGas()),
+            kappa/(1-kappa)
+        );
     }
     
-    theta_ = rhoRTheta/(rhoR*(1-volLiquid()));
+    theta_ = air.p0()*(1-volLiquid())/rhoR()*pow(thetaSum, (1-kappa)/kappa);
+    
     return theta_;
 }
 
@@ -288,7 +297,6 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid() const
 
 
 Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::exnerFromState()
-    const
 {
     const perfectGasPhase& air = operator[](0).operator[](0).gas();
     const fvMesh& mesh = rho_.mesh();
@@ -303,7 +311,7 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::exnerFromState()
             IOobject("Exner", time.timeName(), mesh),
             pow
             (
-                rhoR()*theta()/(air.p0()*(1-volLiquid())),
+                rhoR()*updateTheta()/(air.p0()*(1-volLiquid())),
                 kappa/(1-kappa)
             )
         )

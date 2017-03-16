@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
-//    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
+    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
 //    const int nNonOrthCorr =
 //        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
@@ -66,21 +66,6 @@ int main(int argc, char *argv[])
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
-
-        // Global Eqn of state and from each partition
-        Exner = atmosParts.exnerFromState();
-        Exner.write();
-        for(label ip = 0; ip < atmosParts.size(); ip++)
-        {
-            volScalarField Exneri
-            (
-                atmosParts[ip].partitionName()+"Exner",
-                atmosParts[ip].exnerFromState()
-            );
-            Exneri.write();
-        }
-        FatalErrorIn("partitionedMoistFoam") << exit(FatalError);
-
 
         #include "compressibleCourantNo.H"
 
