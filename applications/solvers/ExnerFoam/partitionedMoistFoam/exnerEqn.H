@@ -1,10 +1,21 @@
 {
-    // Eqn of state
-    Exner = atmos.ExnerFromTheta(theta);
-
+    // Global Eqn of state and from each partition
+    Exner = atmosParts.exnerFromState();
+    Exner.write();
+    for(label ip = 0; ip < atmosParts.size(); ip++)
+    {
+        volScalarField Exneri
+        (
+            atmosParts[ip].partitionName()+"Exner",
+            atmosParts[ip].exnerFromState()
+        );
+        Exneri.write();
+    }
+    FatalErrorIn("partitionedMoistFoam") << exit(FatalError);
+/*
     // Implicit parts of momentum equation
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
-
+    
     for (int corr=0; corr<nCorr; corr++)
     {
         // Compressibility and updated density
@@ -76,6 +87,6 @@
                      - muSponge*V;
             }
         }
-    }
+    }*/
 }
 

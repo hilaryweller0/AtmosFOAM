@@ -99,14 +99,13 @@ public:
 
     // Constructors
 
-        //- Construct from components, dictionaries and IOobjects and Exner
+        //- Construct from components, dictionaries and IOobjects
         partition
         (
             const word& partitionName__,
             const wordList& partNames,
             const fvMesh& mesh,
-            const dictionary dict,
-            const volScalarField& Exner
+            const dictionary dict
         );
 
 
@@ -167,11 +166,19 @@ public:
         //- Calculate sigma from the total pressure
         volScalarField& updateSigma(const volScalarField& p);
 
+    // Constant member functions
+
+        // Source term in the theta equation
+        tmp<volScalarField> thetaSource() const;
+        
+        // Enxer from the equation of state
+        tmp<volScalarField> exnerFromState() const;
+        
         // Write
         void write();
 
         // Input (re-read densities, liquid fractions and theta)
-        void readUpdate(const volScalarField& Exner);
+        void readUpdate();
 
 };
 

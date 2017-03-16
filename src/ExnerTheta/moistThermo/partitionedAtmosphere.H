@@ -88,8 +88,7 @@ public:
             const wordList& partitionNames,
             const wordList& partNames,
             const fvMesh& mesh,
-            const dictionary dict,
-            const volScalarField& Exner
+            const dictionary dict
         );
 
 
@@ -140,14 +139,20 @@ public:
         //- Update volume fractions in all the partitions
         void updateSigmas(const volScalarField& p);
 
-//        //- Update theta and T from Exner in each partition
-//        void updateThetaT(const volScalarField& Exner);
+        //- Density weighted total gas constant
+        tmp<volScalarField> rhoR() const;
+        
+        //- Total volume fraction of liquid
+        tmp<volScalarField> volLiquid() const;
+
+        // Enxer from the equation of state
+        tmp<volScalarField> exnerFromState() const;
 
         // Output
         void write();
 
         // Input (re-read all fields)
-        void readUpdate(const volScalarField& Exner);
+        void readUpdate();
 };
 
 

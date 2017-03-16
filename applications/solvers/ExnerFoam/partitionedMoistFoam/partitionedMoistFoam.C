@@ -67,6 +67,21 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
+        // Global Eqn of state and from each partition
+        Exner = atmosParts.exnerFromState();
+        Exner.write();
+        for(label ip = 0; ip < atmosParts.size(); ip++)
+        {
+            volScalarField Exneri
+            (
+                atmosParts[ip].partitionName()+"Exner",
+                atmosParts[ip].exnerFromState()
+            );
+            Exneri.write();
+        }
+        FatalErrorIn("partitionedMoistFoam") << exit(FatalError);
+
+
         #include "compressibleCourantNo.H"
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
@@ -77,7 +92,7 @@ int main(int argc, char *argv[])
                 #include "rhoThetaEqn.H"
             }
             atmosParts.updateSigmas(p);
-            //#include "exnerEqn.H"
+            #include "exnerEqn.H"
             p = air.pFromExner(Exner);
         }
 

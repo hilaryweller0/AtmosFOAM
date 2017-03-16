@@ -34,8 +34,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     const wordList& partitionNames,
     const wordList& partNames,
     const fvMesh& mesh,
-    const dictionary dict,
-    const volScalarField& Exner
+    const dictionary dict
 )
 :
     PtrList<partition>(partitionNames.size()),
@@ -75,8 +74,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
                 partitionNames[ip],
                 partNames,
                 mesh,
-                dict,
-                Exner
+                dict
             )
         );
     }
@@ -84,6 +82,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     sumDensity();
     updateUf();
     updateFlux();
+    updateTheta();
     updateTheta();
 }
 
@@ -193,24 +192,25 @@ Foam::surfaceScalarField& Foam::partitionedAtmosphere::updateFlux()
 
 Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
 {
+    // The averaging of theta over partitions is a complicated sum derived
+    // so that the equation of state holds in each partition
+
     // The zero'th partition
     partition& part = operator[](0);
 
-    // Initialise the momentum from partion 0
-    volScalarField rho = part.sumDensity();
-    volScalarField rhoTheta = rho*part.theta();
-    volScalarField rhoSum = rho;
+    // Initialise the sums from partion 0
+    volScalarField rhoR = part.sigma()*part.rhoR();
+    volScalarField rhoRTheta = rhoR*part.theta()/part.volGas();
 
     // Sum contributions from other partitions
     for (label ipart = 1; ipart < size(); ipart++)
     {
         partition& part = operator[](ipart);
-        rho = part.sumDensity();
-        rhoTheta += rho*part.theta();
-        rhoSum += rho;
+        rhoR += part.sigma()*part.rhoR();
+        rhoRTheta += part.sigma()*part.rhoR()*part.theta()/part.volGas();
     }
     
-    theta_ = rhoTheta/rhoSum;
+    theta_ = rhoRTheta/(rhoR*(1-volLiquid()));
     return theta_;
 }
 
@@ -240,6 +240,79 @@ void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
     }
 }
 
+
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::rhoR() const
+{
+    tmp<volScalarField> trhoRt
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rhoRt",
+                rho_.time().timeName(),
+                rho_.mesh()
+            ),
+            operator[](0).sigma()*operator[](0).rhoR()
+        )
+    );
+    for(label ip = 1; ip < size(); ip++)
+    {
+        trhoRt.ref() += operator[](ip).sigma()*operator[](ip).rhoR();
+    }
+    return trhoRt;
+}
+
+
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid() const
+{
+    tmp<volScalarField> tvol
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "volGas",
+                rho_.time().timeName(),
+                rho_.mesh()
+            ),
+            operator[](0).sigmaVolLiquid()
+        )
+    );
+    for(label ip = 1; ip < size(); ip++)
+    {
+        tvol.ref() += operator[](ip).sigmaVolLiquid();
+    }
+    return tvol;
+}
+
+
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::exnerFromState()
+    const
+{
+    const perfectGasPhase& air = operator[](0).operator[](0).gas();
+    const fvMesh& mesh = rho_.mesh();
+    const Time& time = rho_.time();
+    const scalar kappa = air.kappa();
+
+    // Initialise Exner
+    tmp<volScalarField> tExner
+    (
+        new volScalarField
+        (
+            IOobject("Exner", time.timeName(), mesh),
+            pow
+            (
+                rhoR()*theta()/(air.p0()*(1-volLiquid())),
+                kappa/(1-kappa)
+            )
+        )
+    );
+    
+    return tExner;
+}
+
+
 void Foam::partitionedAtmosphere::write()
 {
     for(label ip = 0; ip < size(); ip++)
@@ -252,14 +325,17 @@ void Foam::partitionedAtmosphere::write()
 }
 
 
-void Foam::partitionedAtmosphere::readUpdate(const volScalarField& Exner)
+void Foam::partitionedAtmosphere::readUpdate()
 {
     for(label ip = 0; ip < size(); ip++)
     {
         partition& part = operator[](ip);
-        part.readUpdate(Exner);
+        part.readUpdate();
     }
     sumDensity();
+    updateUf();
+    updateFlux();
+    updateTheta();
 }
 
 

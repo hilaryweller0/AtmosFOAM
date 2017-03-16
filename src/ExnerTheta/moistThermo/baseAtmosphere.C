@@ -146,6 +146,87 @@ Foam::tmp<Foam::volScalarField> Foam::baseAtmosphere::sumPressure
 }
 
 
+Foam::tmp<Foam::volScalarField> Foam::baseAtmosphere::rhoR() const
+{
+    const perfectGasPhase& air = operator[](0).gas();
+
+    tmp<volScalarField> trhoRt
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rhoRt",
+                air.rho().time().timeName(),
+                air.rho().mesh()
+            ),
+            air.rho()*air.R()
+        )
+    );
+    for(label ip = 1; ip < size(); ip++)
+    {
+        trhoRt.ref() += operator[](ip).gas().rho()*operator[](ip).gas().R();
+    }
+    return trhoRt;
+}
+
+Foam::tmp<Foam::volScalarField> Foam::baseAtmosphere::rhoCp() const
+{
+    const perfectGasPhase& air = operator[](0).gas();
+
+    tmp<volScalarField> trhoCp
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rhoCp",
+                air.rho().time().timeName(),
+                air.rho().mesh()
+            ),
+            air.rho()*air.Cp()
+          + operator[](0).liquid().rho()*operator[](0).liquid().v()
+            *operator[](0).liquid().Cp()
+        )
+    );
+    for(label ip = 1; ip < size(); ip++)
+    {
+        trhoCp.ref() += operator[](ip).gas().rho()*operator[](ip).gas().Cp()
+                    + operator[](ip).liquid().rho()*operator[](ip).liquid().v()
+                      *operator[](ip).liquid().Cp();
+    }
+    return trhoCp;
+}
+
+Foam::tmp<Foam::volScalarField> Foam::baseAtmosphere::rhoCv() const
+{
+    const perfectGasPhase& air = operator[](0).gas();
+
+    tmp<volScalarField> trhoCv
+    (
+        new volScalarField
+        (
+            IOobject
+            (
+                "rhoCv",
+                air.rho().time().timeName(),
+                air.rho().mesh()
+            ),
+            air.rho()*air.Cv()
+          + operator[](0).liquid().rho()*operator[](0).liquid().v()
+            *operator[](0).liquid().Cp()
+        )
+    );
+    for(label ip = 1; ip < size(); ip++)
+    {
+        trhoCv.ref() += operator[](ip).gas().rho()*operator[](ip).gas().Cv()
+                    + operator[](ip).liquid().rho()*operator[](ip).liquid().v()
+                      *operator[](ip).liquid().Cp();
+    }
+    return trhoCv;
+}
+
+
 void Foam::baseAtmosphere::write()
 {
     for(label ip = 0; ip < size(); ip++)

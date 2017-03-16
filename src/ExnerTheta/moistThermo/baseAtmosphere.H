@@ -90,6 +90,15 @@ public:
         //- Sum of partial pressures
         tmp<volScalarField> sumPressure(const volScalarField& T) const;
         
+        //- Density weighted total gas constant
+        tmp<volScalarField> rhoR() const;
+        
+        //- Density weighted total heat capacity (constant pressure)
+        tmp<volScalarField> rhoCp() const;
+        
+        //- Density weighted total heat capacity (constant volume)
+        tmp<volScalarField> rhoCv() const;
+        
         // Output
         void write();
 

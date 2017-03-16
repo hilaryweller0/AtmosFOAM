@@ -83,15 +83,6 @@ public:
         //- Volume fraction occupied by dry air
         tmp<volScalarField> volAir() const;
         
-        //- Density weighted total gas constant
-        tmp<volScalarField> rhoR() const;
-        
-        //- Density weighted total heat capacity (constant pressure)
-        tmp<volScalarField> rhoCp() const;
-        
-        //- Density weighted total heat capacity (constant volume)
-        tmp<volScalarField> rhoCv() const;
-        
         // Pressure from equation of state
         tmp<volScalarField> pFromT(const volScalarField& T) const;
         
