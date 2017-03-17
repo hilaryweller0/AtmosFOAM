@@ -38,7 +38,16 @@ theta.oldTime();
 
 Info << "Calculating, density, Exner, pressure and temperature from atmos and theta" << endl;
 
-volScalarField Exner("Exner", atmos.ExnerFromTheta(theta));
+volScalarField Exner
+(
+    IOobject
+    (
+        "Exner", runTime.timeName(), mesh,
+        IOobject::MUST_READ, IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+atmos.setExnerFromTheta(Exner, theta);
 Exner.oldTime();
 volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
@@ -147,8 +156,10 @@ surfaceScalarField Vu
 surfaceScalarField dVdt
 (
     IOobject("dVdt", runTime.timeName(), mesh),
-    -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
-    +rhof*(gd - H.magd()*gradPcoeff*fvc::snGrad(Exner)),
+    mesh,
+    dimensionedScalar("dVdt", dimensionSet(1,-1,-2,0,0), scalar(0)),
+//    -(H.delta() & (fvc::interpolate(fvc::div(U,u))+2*rhof*(Omega^(Uf-Ug))))
+//    +rhof*(gd - H.magd()*gradPcoeff*fvc::snGrad(Exner)),
      VuBCs
 );
 dVdt.oldTime();

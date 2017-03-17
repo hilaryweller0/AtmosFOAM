@@ -55,7 +55,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     ),
     Uf_
     (
-        IOobject("Uf", mesh.time().timeName(), mesh),
+        IOobject("Uf", mesh.time().timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
         mesh, dimensionedVector("Uf", dimVelocity, vector::zero)
     ),
     flux_

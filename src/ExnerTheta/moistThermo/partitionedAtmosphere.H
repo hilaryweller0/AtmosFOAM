@@ -104,8 +104,8 @@ public:
         const volScalarField& rho() const { return rho_;}
 
         //- Rate of change of density over all partitions
-        volScalarField dRhodt() { return dRhodt_;}
-        const volScalarField dRhodt() const { return dRhodt_;}
+        volScalarField& dRhodt() { return dRhodt_;}
+        const volScalarField& dRhodt() const { return dRhodt_;}
         
         //- Theta density averaged over all partitions
         volScalarField& theta() { return theta_; }

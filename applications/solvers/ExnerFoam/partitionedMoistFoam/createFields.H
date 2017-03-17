@@ -37,9 +37,11 @@ volScalarField Exner
         "Exner", runTime.timeName(), mesh,
         IOobject::NO_READ, IOobject::AUTO_WRITE
     ),
-    atmosParts.ExnerFromState(),
+    mesh,
+    dimensionedScalar("Exner", dimless, scalar(1)),
     "partitionedHydrostaticExner"
 );
+atmosParts.ExnerFromState(Exner);
 Exner.oldTime();
 Exner.write();
 

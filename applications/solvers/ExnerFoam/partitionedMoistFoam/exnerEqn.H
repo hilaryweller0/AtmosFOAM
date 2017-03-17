@@ -4,7 +4,7 @@
     
     for (int corr=0; corr<nCorr; corr++)
     {
-        Psi = atmosParts.rho()/Exner;
+        Psi == atmosParts.rho()/Exner;
 
         // Contributions from each partition
         
@@ -32,6 +32,7 @@
 
             atmosParts.flux() += fluxi;
         }
+
         rhog = fvc::interpolate(atmosParts.rho())*gSf;
         atmosParts.flux() += offCentre*dt*rhog;
     
@@ -43,7 +44,6 @@
           + offCentre*fvc::div(atmosParts.flux())
           - fvm::laplacian(sqr(offCentre)*dt*gradPcoeff, Exner)
         );
-        surfaceScalarField gradPcoeff2("gradPcoeff2",gradPcoeff*offCentre*dt);
 
         if(ucorr == nOuterCorr-1 && corr == nCorr-1)
         {
@@ -58,10 +58,23 @@
         atmosParts.flux() += ExnerEqn.flux()/offCentre;
         atmosParts.Uf() = fvc::interpolate
         (
-            fvc::reconstruct(atmosParts.flux())/atmosParts.rho()
+            fvc::reconstruct
+            (
+                atmosParts.flux()/fvc::interpolate(atmosParts.rho())
+            )
         );
-        atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
         
+        surfaceScalarField gradPcoeff2("gradPcoeff2", offCentre*dt*gradPcoeff);
+        gradPcoeff2.write();
+        volScalarField divU("divU", fvc::div(atmosParts.flux()));
+        divU.write();
+        atmosParts.flux().write();
+        Psi.write();
+        Exner.write();
+        volVectorField uTmp("uTmp", fvc::reconstruct(atmosParts.flux()));
+        uTmp.write();
+        FatalErrorIn("") << exit(FatalError);
+
         // Partition back-substitutions
         for(label ip = 0; ip < atmosParts.size(); ip++)
         {
@@ -69,17 +82,15 @@
             parti.flux() += -offCentre*dt*parti.gradPcoeff()
                                *fvc::snGrad(Exner)*mesh.magSf()
                         + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
-            parti.u() = fvc::reconstruct(parti.flux())/parti.sigmaRho();
+            parti.u() = fvc::reconstruct
+            (
+                parti.flux()/fvc::interpolate(parti.sigmaRho())
+            );
             parti.Uf() = fvc::interpolate(parti.u());
             parti.dFluxdt() += fvc::interpolate(parti.sigmaRho())*gSf
                           - parti.gradPcoeff()*fvc::snGrad(Exner)*mesh.magSf();
         }
-        atmosParts.write();
-        atmosParts.flux().write();
-        Exner.write();
-        Psi.write();
-        gradPcoeff2.write();
-        FatalErrorIn("") << exit(FatalError);
     }
+    atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
 }
 

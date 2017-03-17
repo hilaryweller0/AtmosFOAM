@@ -115,6 +115,19 @@ Foam::tmp<Foam::volScalarField> Foam::atmosphere::ExnerFromTheta
     return tE;
 }
 
+void Foam::atmosphere::setExnerFromTheta
+(
+    volScalarField& Exner,
+    const volScalarField& theta
+) const
+{
+    const perfectGasPhase& air = operator[](0).gas();
+    const scalar kappa = air.kappa();
+    const dimensionedScalar& p0 = air.p0();
+    
+    Exner = pow(theta*rhoR()/(p0*volGas()), kappa/(1-kappa));
+}
+
 Foam::tmp<Foam::volScalarField> Foam::atmosphere::rhoFromP
 (
     const volScalarField& p,

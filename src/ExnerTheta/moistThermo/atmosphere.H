@@ -89,6 +89,13 @@ public:
         // Exner from equation of state
         tmp<volScalarField> ExnerFromTheta(const volScalarField& theta) const;
         
+        // Exner from equation of state
+        void setExnerFromTheta
+        (
+            volScalarField& Exner,
+            const volScalarField& theta
+        ) const;
+        
         // rho from eqn of state
         tmp<volScalarField> rhoFromP
         (

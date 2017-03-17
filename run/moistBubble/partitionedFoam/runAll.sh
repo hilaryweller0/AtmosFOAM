@@ -18,7 +18,16 @@ initMoistFoam_HW
 partitionedMoistFoam >& log &
 tail -f log
 
-time=10
+time=2
+sumFields $time Udiff $time uTmp ../moistFoam_HW/$time uTmp -scale1 -1
+sumFields $time ExnerDiff $time Exner ../moistFoam_HW/$time Exner -scale1 -1
+sumFields $time divUdiff $time divU ../moistFoam_HW/$time divU -scale1 -1
+sumFields $time PsiDiff $time Psi ../moistFoam_HW/$time Psi -scale1 -1
+sumFields $time gradPcoeff2Diff $time gradPcoeff2 ../moistFoam_HW/$time gradPcoeff2 -scale1 -1
+gmtFoam -time $time Udiff
+gv $time/Udiff.pdf &
+
+time=100
 gmtFoam -time $time thetaU
 gv $time/thetaU.pdf &
 

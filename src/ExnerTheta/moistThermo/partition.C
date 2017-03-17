@@ -80,7 +80,8 @@ Foam::partition::partition
     u_
     (
         IOobject(partitionName_+"u", mesh.time().timeName(), mesh),
-        fvc::reconstruct(Uf_ & mesh.Sf())
+        fvc::reconstruct(Uf_ & mesh.Sf()),
+        "slip"
     ),
     flux_
     (
@@ -271,10 +272,8 @@ Foam::tmp<Foam::surfaceScalarField> Foam::partition::gradPcoeff() const
         new surfaceScalarField
         (
             IOobject("gradPcoeff", sigma().time().timeName(), sigma().mesh()),
-            air.Cp()/air.R()*fvc::interpolate
-            (
-                sigmaRho()*sigma()*rhoR()*theta() / (sigmaRho()*volGas())
-            )
+            air.Cp()/air.R()*fvc::interpolate(sigmaRho())
+          * fvc::interpolate(sigma()*rhoR()*theta()/(sigmaRho()*volGas()))
         )
     );
     

@@ -1,6 +1,6 @@
 {
     // Eqn of state
-    Exner = atmos.ExnerFromTheta(theta);
+    atmos.setExnerFromTheta(Exner,theta);
 
     // Implicit parts of momentum equation
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
@@ -21,7 +21,10 @@
             air.Cp()*theta*atmos.rhoR()
            /(atmos.sumDensity()*air.R()*atmos.volGas())
         );
-        surfaceScalarField gradPcoeff2("gradPcoeff2", gradPcoeff*G*offCentre*rhof*dt);
+        surfaceScalarField gradPcoeff2
+        (
+            "gradPcoeff2", gradPcoeff*G*offCentre*rhof*dt
+        );
         dVdt = -(H.delta() &
         (
             fvc::interpolate(fvc::div(U, u))
@@ -44,8 +47,11 @@
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
-            U = H.ddirToFlux(V)
-              - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
+            //U = H.ddirToFlux(V)
+            //  - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
+
+            U = -dt*(mesh.Sf() & fvc::interpolate(fvc::div(U,u)))
+                +dt*rhof*gSf;
 
             fvScalarMatrix ExnerEqn
             (
@@ -68,19 +74,22 @@
             {
                 U += ExnerEqn.flux()/offCentre;
                 V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
-                u = H.reconstructd(V/rhof);
+                //u = H.reconstructd(V/rhof);
+                u = fvc::reconstruct(U/rhof);
                 divu = fvc::div(U/rhof);
                 Uf = fvc::interpolate(u);
                 dVdt += rhof*gd
                      - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
                      - muSponge*V;
             }
-            Exner.write();
-            U.write();
-            atmos.write();
+            volScalarField divU("divU", fvc::div(U));
+            divU.write();
             gradPcoeff2.write();
             Psi.write();
-            theta.write();
+            Exner.write();
+            U.write();
+            volVectorField uTmp("uTmp", fvc::reconstruct(U));
+            uTmp.write();
             FatalErrorIn("") << exit(FatalError);
         }
     }
