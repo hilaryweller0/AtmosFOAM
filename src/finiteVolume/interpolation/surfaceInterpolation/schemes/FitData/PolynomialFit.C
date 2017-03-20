@@ -126,7 +126,7 @@ void PolynomialFit<Polynomial>::findFullRankCandidates
         if (singularValueRatio >= minSingularValueThreshold)
         {
             fullRankCandidates.append(candidate);
-            fullRankMinSingularValues.append(svd.minNonZeroS());
+            fullRankMinSingularValues.append(singularValueRatio);
         }
     }
 
