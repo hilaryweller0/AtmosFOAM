@@ -121,11 +121,11 @@ TEST_CASE("threeDownwindTwoUpwind")
     fitWeights weights(stencil.size());
 
     fitCoefficients expectedCoefficients(stencil.size(), false, 0);
-    expectedCoefficients[ 0] =  0.8697;
-    expectedCoefficients[ 1] =  0.1475;
-    expectedCoefficients[ 2] = -0.0366;
-    expectedCoefficients[ 3] = -0.0465;
-    expectedCoefficients[ 4] =  0.0659;
+    expectedCoefficients[ 0] =  0.9965459942;
+    expectedCoefficients[ 1] =  0.1344156036;
+    expectedCoefficients[ 2] = -0.1449563476;
+    expectedCoefficients[ 3] = -0.0004502506;
+    expectedCoefficients[ 4] =  0.0144450004;
 
     autoPtr<fitResult> actual = fitPolynomial(actualCoefficients, weights, stencil);
 
