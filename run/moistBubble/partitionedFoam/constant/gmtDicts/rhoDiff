@@ -19,7 +19,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [rhoDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [rhoCheck filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 annotate "minMax -1e3 -100";

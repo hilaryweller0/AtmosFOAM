@@ -21,7 +21,7 @@ FieldsToPlot
 (
 //    [thetaDiff filledContours -1.05 1.05 0.1 "$GMTU/colours/red_white_blue.cpt"]
     [thetaDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
-    [Uf vectors 500 17 "black"]
+    [stable.Uf vectors 500 17 "black"]
 );
 
 //separateLegend true;

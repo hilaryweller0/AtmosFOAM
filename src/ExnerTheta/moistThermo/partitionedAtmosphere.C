@@ -40,7 +40,7 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     PtrList<partition>(partitionNames.size()),
     rho_
     (
-        IOobject("rho", mesh.time().timeName(), mesh),
+        IOobject("rho", mesh.time().timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
         mesh, dimensionedScalar("rho", dimDensity, scalar(0))
     ),
     dRhodt_
@@ -82,7 +82,11 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     sumDensity();
     updateUf();
     updateFlux();
-    updateTheta();
+    updateTheta(); 
+    
+    rho_.oldTime();
+    dRhodt_.oldTime();
+    flux_.oldTime();
 }
 
 

@@ -20,7 +20,8 @@ projection2D XZ;
 FieldsToPlot
 (
     [ExnerDiff filledContours -5.25e-5 5.25e-5 5e-6 "$GMTU/colours/red_white_blue.cpt"]
-    [Udiff vectors 1e17 1 "black"]
+    [Udiff vectors 0 1 "black"]
+    //[fluxDiff rawValues 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;

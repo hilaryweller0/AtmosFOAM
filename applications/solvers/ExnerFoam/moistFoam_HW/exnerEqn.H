@@ -49,10 +49,7 @@
         {
             //U = H.ddirToFlux(V)
             //  - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
-
-            U = -dt*(mesh.Sf() & fvc::interpolate(fvc::div(U,u)))
-                +dt*rhof*gSf;
-
+            U = V*mesh.magSf()/H.magd();
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
@@ -82,15 +79,6 @@
                      - H.magd()*rhof*gradPcoeff*fvc::snGrad(Exner)
                      - muSponge*V;
             }
-            volScalarField divU("divU", fvc::div(U));
-            divU.write();
-            gradPcoeff2.write();
-            Psi.write();
-            Exner.write();
-            U.write();
-            volVectorField uTmp("uTmp", fvc::reconstruct(U));
-            uTmp.write();
-            FatalErrorIn("") << exit(FatalError);
         }
     }
 }

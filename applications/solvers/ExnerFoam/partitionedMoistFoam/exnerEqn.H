@@ -64,24 +64,30 @@
             )
         );
         
-        surfaceScalarField gradPcoeff2("gradPcoeff2", offCentre*dt*gradPcoeff);
-        gradPcoeff2.write();
-        volScalarField divU("divU", fvc::div(atmosParts.flux()));
-        divU.write();
-        atmosParts.flux().write();
-        Psi.write();
-        Exner.write();
-        volVectorField uTmp("uTmp", fvc::reconstruct(atmosParts.flux()));
-        uTmp.write();
-        FatalErrorIn("") << exit(FatalError);
-
         // Partition back-substitutions
-        for(label ip = 0; ip < atmosParts.size(); ip++)
+        atmosParts[0].flux() = atmosParts.flux();
+        for(label ip = 1; ip < atmosParts.size(); ip++)
         {
             partition& parti = atmosParts[ip];
             parti.flux() += -offCentre*dt*parti.gradPcoeff()
                                *fvc::snGrad(Exner)*mesh.magSf()
                         + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
+            atmosParts[0].flux() -= parti.flux();
+        }
+        /*
+        Info << "Checking that partition fluxes sum to the total flux" << endl;
+        surfaceScalarField sumFlux = atmosParts.flux();
+        for(label ip = 0; ip < atmosParts.size(); ip++)
+        {
+            sumFlux -= atmosParts[ip].flux();
+        }
+        Info << "Minimum discrepancy = " << min(sumFlux).value()
+             << " maximum discrepancy = " << max(sumFlux).value() << endl;
+        */
+        // Reconstruct full velocities and rates of change
+        for(label ip = 0; ip < atmosParts.size(); ip++)
+        {
+            partition& parti = atmosParts[ip];
             parti.u() = fvc::reconstruct
             (
                 parti.flux()/fvc::interpolate(parti.sigmaRho())
@@ -91,6 +97,5 @@
                           - parti.gradPcoeff()*fvc::snGrad(Exner)*mesh.magSf();
         }
     }
-    atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
 }
 

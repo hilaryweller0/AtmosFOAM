@@ -18,14 +18,27 @@ initMoistFoam_HW
 partitionedMoistFoam >& log &
 tail -f log
 
+# Differences from non-partitioned code
 time=2
-sumFields $time Udiff $time uTmp ../moistFoam_HW/$time uTmp -scale1 -1
+sumFields $time Udiff $time Uf ../moistFoam_HW/$time Uf -scale1 -1
 sumFields $time ExnerDiff $time Exner ../moistFoam_HW/$time Exner -scale1 -1
-sumFields $time divUdiff $time divU ../moistFoam_HW/$time divU -scale1 -1
-sumFields $time PsiDiff $time Psi ../moistFoam_HW/$time Psi -scale1 -1
-sumFields $time gradPcoeff2Diff $time gradPcoeff2 ../moistFoam_HW/$time gradPcoeff2 -scale1 -1
-gmtFoam -time $time Udiff
-gv $time/Udiff.pdf &
+
+sumFields $time rhoDiff $time rho ../moistFoam_HW/$time rho -scale1 -1
+sumFields $time thetaDiff $time stable.theta ../moistFoam_HW/$time theta -scale1 -1
+sumFields $time waterVapourRhoDiff $time stable.waterVapourRho ../moistFoam_HW/$time waterVapourRho -scale1 -1
+sumFields $time sigmaTmp $time stable.sigma $time stable.sigma -scale1 0
+
+# Differences from initial conditions
+time=10
+sumFields $time thetaDiff $time theta 0 stable.theta -scale1 -1
+sumFields $time thetaDiff $time stable.theta 0 stable.theta -scale1 -1
+sumFields $time thetaDiff $time buoyant.theta 0 buoyant.theta -scale1 -1
+gmtFoam -time $time thetaDiff
+gv $time/thetaDiff.pdf &
+sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
+gmtFoam -time $time ExnerDiff
+gv $time/ExnerDiff.pdf &
+
 
 time=100
 gmtFoam -time $time thetaU

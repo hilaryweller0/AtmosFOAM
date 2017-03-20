@@ -1,12 +1,19 @@
 // Advect densities of all phases of all partitions
 
-// Loop over all partitions and update partition density and species densities
-for(label ip = 0; ip < atmosParts.size(); ip++)
+// Update total density
+atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
+atmosParts.rho() = atmosParts.rho().oldTime() + dt*
+(
+    (1-offCentre)*atmosParts.dRhodt().oldTime()
+  + offCentre*atmosParts.dRhodt()
+);
+
+// Loop over all partitions >0 and update partition density
+for(label ip = 1; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
     volScalarField& sigmaRhoi = parti.sigmaRho();
     const surfaceScalarField& fluxi = parti.flux();
-    const volScalarField& sigmai = parti.sigma();
     
     // Advect density for this partition
     // (without partition transfer terms)
@@ -17,6 +24,59 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         (1-offCentre)*parti.dSigmaRhodt().oldTime()
       + offCentre*parti.dSigmaRhodt()
     );
+}
+// Update density for partition zero
+partition& part0 = atmosParts[0];
+part0.sigmaRho() = atmosParts.rho();
+for(label ip = 1; ip < atmosParts.size(); ip++)
+{
+    part0.sigmaRho() -= atmosParts[ip].sigmaRho();
+}
+
+/*Info << "Checking that partition zero density satisfies continuity" << endl;
+part0.dSigmaRhodt() = -fvc::div(part0.flux());
+volScalarField rhoCheck
+(
+    "rhoCheck",
+    part0.sigmaRho() - 
+    (
+        part0.sigmaRho().oldTime() + dt*
+        (
+            (1-offCentre)*part0.dSigmaRhodt().oldTime()
+          + offCentre*part0.dSigmaRhodt()
+        )
+    )
+);
+rhoCheck.write();
+Info << "Minimum discrepancy = " << min(rhoCheck).value()
+     << " maximum discrepancy = " << max(rhoCheck).value() << endl;
+
+Info << "Checking that all partition densities sum to the total density" <<endl;
+rhoCheck = atmosParts.rho();
+for(label ip = 0; ip < atmosParts.size(); ip++)
+{
+    rhoCheck -= atmosParts[ip].sigmaRho();
+}
+Info << "Minimum discrepancy = " << min(rhoCheck).value()
+     << " maximum discrepancy = " << max(rhoCheck).value() << endl;
+
+Info << "Checking that all partition dRhodt sum to total" << endl;
+volScalarField dRhodtCheck = atmosParts.dRhodt();
+for(label ip = 0; ip < atmosParts.size(); ip++)
+{
+    dRhodtCheck -= atmosParts[ip].dSigmaRhodt();
+}
+Info << "Minimum discrepancy = " << min(dRhodtCheck).value()
+     << " maximum discrepancy = " << max(dRhodtCheck).value() << endl;
+*/
+
+// Update and species densities for all partitions
+for(label ip = 1; ip < atmosParts.size(); ip++)
+{
+    partition& parti = atmosParts[ip];
+    volScalarField& sigmaRhoi = parti.sigmaRho();
+    const surfaceScalarField& fluxi = parti.flux();
+    const volScalarField& sigmai = parti.sigma();
 
     // Loop over all atmospheric constituents (species) except air (is=0)
     for(label is = 1; is < parti.size(); is++)
@@ -67,10 +127,17 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         }
     }
 
-    // Update air density for this partition
-    parti[0].gas().rho() += (sigmaRhoi - parti.sumDensity())/sigmai;
+    // Update air density for this partition from the total
+    parti[0].gas().rho() = sigmaRhoi
+                         - parti[0].liquid().rho()*parti[0].liquid().v();
+    for(label ip = 1; ip < parti.size(); ip++)
+    {
+        parti[0].gas().rho() -= sigmai*
+        (
+            parti[ip].gas().rho()
+         + parti[ip].liquid().rho()*parti[ip].liquid().v()
+        );
+    }
+    parti[0].gas().rho() /= sigmai;
 }
-
-// Update total density
-atmosParts.sumDensity();
 
