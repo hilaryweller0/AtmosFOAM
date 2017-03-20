@@ -28,6 +28,21 @@ sumFields $time thetaDiff $time stable.theta ../moistFoam_HW/$time theta -scale1
 sumFields $time waterVapourRhoDiff $time stable.waterVapourRho ../moistFoam_HW/$time waterVapourRho -scale1 -1
 sumFields $time sigmaTmp $time stable.sigma $time stable.sigma -scale1 0
 
+# Differences between partitions
+ss=0.9
+bs=0.1
+for time in 10 20 30 40 50; do
+    for var in waterLiquidFrac waterVapourRho airVapourRho theta T Uf; do
+        sumFields $time ${var}Diff $time stable.$var $time buoyant.$var -scale1 -1
+        read -p "Press enter to continue"
+    done
+    for var in sigma flux; do
+        sumFields $time ${var}Diff $time stable.$var $time buoyant.$var -scale0 $bs -scale1 -$ss
+        read -p "Press enter to continue"
+    done
+    read -p "Press enter to continue to next time-step"
+done
+
 # Differences from initial conditions
 time=10
 sumFields $time thetaDiff $time theta 0 stable.theta -scale1 -1

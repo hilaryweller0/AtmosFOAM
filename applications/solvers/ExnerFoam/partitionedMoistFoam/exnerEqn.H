@@ -55,36 +55,39 @@
         }
 
         // Global back-substitutions
-        atmosParts.flux() += ExnerEqn.flux()/offCentre;
-        atmosParts.Uf() = fvc::interpolate
+        surfaceScalarField totalFlux("totalFlux", atmosParts.flux() + ExnerEqn.flux()/offCentre);
+        surfaceVectorField totalUf
         (
-            fvc::reconstruct
+            "totalUf", 
+             fvc::interpolate
             (
-                atmosParts.flux()/fvc::interpolate(atmosParts.rho())
+                fvc::reconstruct
+                (
+                    atmosParts.flux()/fvc::interpolate(atmosParts.rho())
+                )
             )
         );
+        totalFlux.write();
+        totalUf.write();
         
         // Partition back-substitutions
-        atmosParts[0].flux() = atmosParts.flux();
-        for(label ip = 1; ip < atmosParts.size(); ip++)
-        {
-            partition& parti = atmosParts[ip];
-            parti.flux() += -offCentre*dt*parti.gradPcoeff()
-                               *fvc::snGrad(Exner)*mesh.magSf()
-                        + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
-            atmosParts[0].flux() -= parti.flux();
-        }
-        /*
-        Info << "Checking that partition fluxes sum to the total flux" << endl;
-        surfaceScalarField sumFlux = atmosParts.flux();
+        //atmosParts[0].flux() = atmosParts.flux();
+        atmosParts.flux()
+             == dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0));
         for(label ip = 0; ip < atmosParts.size(); ip++)
         {
-            sumFlux -= atmosParts[ip].flux();
+            partition& parti = atmosParts[ip];
+            parti.flux() += offCentre*dt*fvc::interpolate(parti.sigmaRho())*
+            (
+               - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
+               + gSf
+            );
+            
+            atmosParts.flux() += parti.flux();
         }
-        Info << "Minimum discrepancy = " << min(sumFlux).value()
-             << " maximum discrepancy = " << max(sumFlux).value() << endl;
-        */
+        
         // Reconstruct full velocities and rates of change
+        atmosParts.Uf() == dimensionedVector("Uf", dimVelocity, vector::zero);
         for(label ip = 0; ip < atmosParts.size(); ip++)
         {
             partition& parti = atmosParts[ip];
@@ -93,9 +96,22 @@
                 parti.flux()/fvc::interpolate(parti.sigmaRho())
             );
             parti.Uf() = fvc::interpolate(parti.u());
-            parti.dFluxdt() += fvc::interpolate(parti.sigmaRho())*gSf
-                          - parti.gradPcoeff()*fvc::snGrad(Exner)*mesh.magSf();
+            parti.dFluxdt() += fvc::interpolate(parti.sigmaRho())*
+            (
+               - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
+               + gSf
+            );
+            atmosParts.Uf() += parti.Uf();
         }
+
+        Info << "Checking that partition fluxes sum to the total flux" << endl;
+        surfaceScalarField fluxDiff("fluxDiff", totalFlux - atmosParts.flux());
+        fluxDiff.write();
+        surfaceVectorField UfDiff("UfDiff", totalUf - atmosParts.Uf());
+        UfDiff.write();
+        Info << "Minimum discrepancy = " << min(fluxDiff).value()
+             << " maximum discrepancy = " << max(fluxDiff).value() << endl;
+        
     }
 }
 

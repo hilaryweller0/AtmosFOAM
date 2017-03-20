@@ -152,7 +152,7 @@ public:
         volScalarField& ExnerFromState(volScalarField& Exner);
 
         //- The coefficient in from of grad(Exner) for the Helmholtz eqn
-        void setGradPcoeff(surfaceScalarField& gradPcoeff) const;
+        void setGradPcoeff(surfaceScalarField& gradPcoeff);
 
         // Output
         void write();

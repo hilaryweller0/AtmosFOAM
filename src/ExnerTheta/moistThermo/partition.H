@@ -92,6 +92,9 @@ class partition
         //- Rate of change of rhoTheta of the partition
         volScalarField dSigmaRhoThetadt_;
         
+        //- Density potential temperature
+        surfaceScalarField thetaRho_;
+        
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -169,6 +172,10 @@ public:
         const volScalarField& dSigmaRhoThetadt() const
              { return dSigmaRhoThetadt_;}
 
+        //- Density potential temperature
+        surfaceScalarField& thetaRho() { return thetaRho_;}
+        const surfaceScalarField&  thetaRho() const { return thetaRho_;}
+
     // Update functions
 
         //- Update rho from the phases
@@ -193,6 +200,9 @@ public:
         
         //- The coefficient in from of grad(Exner) for the Helmholtz eqn
         tmp<Foam::surfaceScalarField> gradPcoeff() const;
+        
+        //- Update the density potential temperature
+        surfaceScalarField& updateThetaRho();
         
         // Write
         void write();

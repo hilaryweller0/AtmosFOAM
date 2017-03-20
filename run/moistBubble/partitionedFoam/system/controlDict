@@ -31,19 +31,19 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         100; //1000;
+endTime         10; //1000;
 
 deltaT          2;
 
 writeControl    runTime;
 
-writeInterval   10; //100;
+writeInterval   2; //100;
 
 purgeWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
-writePrecision  6;
+writePrecision  12;
 
 writeCompression uncompressed;
 

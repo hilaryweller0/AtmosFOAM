@@ -115,10 +115,16 @@ Foam::partition::partition
     (
         IOobject(partitionName_+"dSigmaRhoThetadt", mesh.time().timeName(), mesh),
         -fvc::div(flux_, theta_)
+    ),
+    thetaRho_
+    (
+        IOobject(partitionName_+"thetaRho", mesh.time().timeName(), mesh),
+        fvc::interpolate(theta_)
     )
 {
     sumVolLiquid();
     T_ = theta_*ExnerFromState();
+    updateThetaRho();
 
     sigma_.oldTime();
     sigmaRho_.oldTime();
@@ -262,22 +268,14 @@ Foam::tmp<Foam::volScalarField> Foam::partition::thetaSource() const
     return tS;
 }
 
-
-Foam::tmp<Foam::surfaceScalarField> Foam::partition::gradPcoeff() const
+Foam::surfaceScalarField& Foam::partition::updateThetaRho()
 {
     const perfectGasPhase& air = operator[](0).gas();
-
-    tmp<surfaceScalarField> tg
+    thetaRho_ = fvc::interpolate
     (
-        new surfaceScalarField
-        (
-            IOobject("gradPcoeff", sigma().time().timeName(), sigma().mesh()),
-            air.Cp()/air.R()*fvc::interpolate(sigmaRho())
-          * fvc::interpolate(sigma()*rhoR()*theta()/(sigmaRho()*volGas()))
-        )
+        sigma()*rhoR()*theta()/(air.R()*sigmaRho()*volGas())
     );
-    
-    return tg;
+    return thetaRho_;
 }
 
 

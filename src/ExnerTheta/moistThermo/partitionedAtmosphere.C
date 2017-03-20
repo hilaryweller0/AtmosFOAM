@@ -87,6 +87,9 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     rho_.oldTime();
     dRhodt_.oldTime();
     flux_.oldTime();
+    rho_.write();
+    theta_.write();
+    Uf_.write();
 }
 
 
@@ -345,8 +348,10 @@ Foam::volScalarField& Foam::partitionedAtmosphere::ExnerFromState
 void Foam::partitionedAtmosphere::setGradPcoeff
 (
     surfaceScalarField& gradPcoeff
-) const
+)
 {
+    const perfectGasPhase& air = operator[](0).operator[](0).gas();
+
     gradPcoeff == dimensionedScalar
     (
         "gradPcoeff",
@@ -355,8 +360,9 @@ void Foam::partitionedAtmosphere::setGradPcoeff
     
     for (label ip = 0; ip < size(); ip++)
     {
-        const partition& parti = operator[](ip);
-        gradPcoeff += parti.gradPcoeff();
+        partition& parti = operator[](ip);
+        gradPcoeff += air.Cp()*parti.updateThetaRho()
+                      *fvc::interpolate(parti.sigmaRho());
     }
 }
 
