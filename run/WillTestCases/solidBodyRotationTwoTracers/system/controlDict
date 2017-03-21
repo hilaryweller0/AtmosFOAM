@@ -9,7 +9,7 @@ FoamFile {
 startFrom       startTime;
 startTime       0;
 stopAt          endTime;
-endTime         2000;
+endTime         100;
 deltaT          1;
 writeControl    runTime;
 writeInterval   100;
