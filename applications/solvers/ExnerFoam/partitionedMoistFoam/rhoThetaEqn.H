@@ -20,10 +20,14 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
 
     // Calculate and apply source term
     parti.T() = thetai*Exner;
-    volScalarField heatSource = sigmaRhoi*thetai*parti.thetaSource();
+    volScalarField heatSource
+    (
+        parti.partitionName()+"heatSource",
+        thetai*parti.thetaSource()
+    );
 
-    parti.dSigmaRhoThetadt() += heatSource;
-    thetai += dt*offCentre*heatSource/sigmaRhoi;
+    parti.dSigmaRhoThetadt() += sigmaRhoi*heatSource;
+    thetai += dt*offCentre*heatSource;
 
     // Update temperature
     parti.T() = thetai*Exner;

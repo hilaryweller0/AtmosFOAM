@@ -33,6 +33,11 @@
             atmosParts.flux() += fluxi;
         }
 
+        atmosParts.flux().write();
+        surfaceScalarField gradPcoeff2("gradPcoeff2", offCentre*dt*gradPcoeff);
+        gradPcoeff2.write();
+        FatalErrorIn("") << exit(FatalError);
+
         rhog = fvc::interpolate(atmosParts.rho())*gSf;
         atmosParts.flux() += offCentre*dt*rhog;
     
@@ -54,24 +59,7 @@
             ExnerEqn.solve(mesh.solver(Exner.name()));
         }
 
-        // Global back-substitutions
-        surfaceScalarField totalFlux("totalFlux", atmosParts.flux() + ExnerEqn.flux()/offCentre);
-        surfaceVectorField totalUf
-        (
-            "totalUf", 
-             fvc::interpolate
-            (
-                fvc::reconstruct
-                (
-                    atmosParts.flux()/fvc::interpolate(atmosParts.rho())
-                )
-            )
-        );
-        totalFlux.write();
-        totalUf.write();
-        
         // Partition back-substitutions
-        //atmosParts[0].flux() = atmosParts.flux();
         atmosParts.flux()
              == dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0));
         for(label ip = 0; ip < atmosParts.size(); ip++)
@@ -82,6 +70,8 @@
                - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
                + gSf
             );
+//            parti.flux() += fvc::interpolate(parti.sigma())*ExnerEqn.flux()/offCentre
+//                         + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
             
             atmosParts.flux() += parti.flux();
         }
@@ -101,17 +91,8 @@
                - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
                + gSf
             );
-            atmosParts.Uf() += parti.Uf();
+            atmosParts.Uf() += fvc::interpolate(parti.sigma())*parti.Uf();
         }
-
-        Info << "Checking that partition fluxes sum to the total flux" << endl;
-        surfaceScalarField fluxDiff("fluxDiff", totalFlux - atmosParts.flux());
-        fluxDiff.write();
-        surfaceVectorField UfDiff("UfDiff", totalUf - atmosParts.Uf());
-        UfDiff.write();
-        Info << "Minimum discrepancy = " << min(fluxDiff).value()
-             << " maximum discrepancy = " << max(fluxDiff).value() << endl;
-        
     }
 }
 

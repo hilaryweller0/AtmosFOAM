@@ -48,7 +48,15 @@ Foam::partition::partition
         ),
         mesh
     ),
-    sigmaRho_(partitionName_+"sigmaRho", sigma_*baseAtmosphere::sumDensity()),
+    sigmaRho_
+    (
+        IOobject
+        (
+            partitionName_+"sigmaRho", mesh.time().timeName(), mesh,
+            IOobject::NO_READ, IOobject::AUTO_WRITE
+        ),
+        sigma_*baseAtmosphere::sumDensity()
+    ),
     theta_
     (
         IOobject
@@ -125,6 +133,7 @@ Foam::partition::partition
     sumVolLiquid();
     T_ = theta_*ExnerFromState();
     updateThetaRho();
+    sigmaRho_.write();
 
     sigma_.oldTime();
     sigmaRho_.oldTime();
@@ -223,6 +232,8 @@ Foam::volScalarField& Foam::partition::ExnerFromState
 Foam::tmp<Foam::volScalarField> Foam::partition::thetaSource() const
 {
     const perfectGasPhase& air = operator[](0).gas();
+    const fvMesh& mesh = air.rho().mesh();
+    const Time& time = air.rho().time();
 
     // Initialise the source term as -divu
     tmp<volScalarField> tS
@@ -232,10 +243,10 @@ Foam::tmp<Foam::volScalarField> Foam::partition::thetaSource() const
             IOobject
             (
                 "Stheta",
-                air.rho().time().timeName(),
-                air.rho().mesh()
+                time.timeName(),
+                mesh
             ),
-            -fvc::div(Uf() & air.rho().mesh().Sf())
+            -fvc::div(Uf() & mesh.Sf())
         )
     );
     volScalarField& S = tS.ref();
@@ -244,7 +255,7 @@ Foam::tmp<Foam::volScalarField> Foam::partition::thetaSource() const
     const volScalarField rhoR_ = rhoR();
     const volScalarField rhoCp_ = rhoCp();
     const volScalarField rhoCv_ = rhoCv();
-    const dimensionedScalar& dt = S.mesh().time().deltaT();
+    const dimensionedScalar& dt = mesh.time().deltaT();
     
     // Scale the divergence term
     S *= rhoR_/rhoCv_ - air.kappa()*rhoCp_/rhoCv_;

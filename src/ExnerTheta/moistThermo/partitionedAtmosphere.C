@@ -104,16 +104,16 @@ Foam::partitionedAtmosphere::~partitionedAtmosphere()
 Foam::volScalarField& Foam::partitionedAtmosphere::sumDensity()
 {
     // The zero'th partition
-    partition& part = operator[](0);
+    const partition& part = operator[](0);
 
     // Initialise the density as density for partion 0
-    rho_ = part.sumDensity();
+    rho_ = part.sigmaRho();
 
     // Sum contributions from other partitions
     for (label ipart = 1; ipart < size(); ipart++)
     {
-        partition& part = operator[](ipart);
-        rho_ += part.sumDensity();
+        const partition& part = operator[](ipart);
+        rho_ += part.sigmaRho();
     }
     
     return rho_;
@@ -156,18 +156,18 @@ Foam::volScalarField& Foam::partitionedAtmosphere::sumDensity()
 Foam::surfaceVectorField& Foam::partitionedAtmosphere::updateUf()
 {
     // The zero'th partition
-    partition& part = operator[](0);
+    const partition& part = operator[](0);
 
     // Initialise the momentum from partion 0
-    surfaceScalarField rhof = linearInterpolate(part.sumDensity());
+    surfaceScalarField rhof = linearInterpolate(part.sigmaRho());
     surfaceVectorField rhoU = rhof*part.Uf();
     surfaceScalarField rhofSum = rhof;
 
     // Sum contributions from other partitions
     for (label ipart = 1; ipart < size(); ipart++)
     {
-        partition& part = operator[](ipart);
-        rhof = linearInterpolate(part.sumDensity());
+        const partition& part = operator[](ipart);
+        rhof = linearInterpolate(part.sigmaRho());
         rhoU += rhof*part.Uf();
         rhofSum += rhof;
     }
@@ -251,8 +251,8 @@ void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
     {
         partition& parti = operator[](ip);
         parti.sigma() /= sumSigma;
-        parti.sigmaRho() /= sumSigma;
-        parti.flux() /= linearInterpolate(sumSigma);
+//        parti.sigmaRho() /= sumSigma;
+//        parti.flux() /= linearInterpolate(sumSigma);
     }
 }
 

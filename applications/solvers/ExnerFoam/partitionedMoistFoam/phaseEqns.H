@@ -77,7 +77,7 @@ Info << "Minimum discrepancy = " << min(dRhodtCheck).value()
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
-    volScalarField& sigmaRhoi = parti.sigmaRho();
+    const volScalarField& sigmaRhoi = parti.sigmaRho();
     const surfaceScalarField& fluxi = parti.flux();
     const volScalarField& sigmai = parti.sigma();
 
@@ -120,7 +120,7 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         if (specie.pvs0() < specie.gas().p0())
         {
             specie.updateCondensation(parti.T());
-        
+
             specie.gas().rho()  -= offCentre*specie.condensation();
             specie.liquid().v() += offCentre*specie.condensation()
                                         /specie.liquid().rho();

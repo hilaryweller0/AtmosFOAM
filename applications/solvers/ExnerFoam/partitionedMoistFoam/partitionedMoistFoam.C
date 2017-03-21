@@ -74,9 +74,9 @@ int main(int argc, char *argv[])
             {
                 #include "rhoThetaEqn.H"
             }
-            //atmosParts.updateSigmas(p);
             #include "exnerEqn.H"
             p = air.pFromExner(Exner);
+            atmosParts.updateSigmas(p);
         }
 
 //        #include "compressibleContinuityErrs.H"

@@ -53,6 +53,7 @@ volScalarField T("T", Exner*theta);
 volScalarField p("p", air.pFromExner(Exner));
 volScalarField rho("rho", atmos.sumDensity());
 rho.oldTime();
+rho.write();
 volScalarField dRhodt("dRhodt", 0*rho/dt);
 dRhodt.oldTime();
 

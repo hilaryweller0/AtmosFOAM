@@ -39,6 +39,11 @@
           + offCentre*dt*dVdt
         );
 
+        U = Vu*mesh.magSf()/H.magd();
+        U.write();
+        gradPcoeff2.write();
+        FatalErrorIn("") << exit(FatalError);
+
         // add the gravity terms
         V = Vu + G*offCentre*dt*rhof*gd;
 
