@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import itertools
+import sys
 
 def each_degree_le_max(e):
     for i, max_e in enumerate(max_degrees):
@@ -29,7 +30,7 @@ def between_bounds(e, a, b):
     return True
 
 def format_polynomial(polynomial):
-    return " + ".join([format_term(t) for t in sorted(polynomial, key=lambda p: sum(p))])
+    return "candidates.append(" + " | ".join([format_term(t) for t in sorted(polynomial, key=lambda p: sum(p))]) + ");"
 
 def format_term(term):
     s = ""
@@ -38,14 +39,28 @@ def format_term(term):
         if t == 1:
             s += algebra[i]
         elif t > 1:
-            s += algebra[i] + "^" + str(t)
+            s += algebra[i] * t
 
     if s == "":
         s = "constant"
 
     return s
 
-max_degrees = (3, 2) # x^3, y^2, z^2
+if len(sys.argv) <= 1:
+    print("""Usage: ./genPolynomialCandidates.py <max_degree,...>
+  Generate OpenFOAM C++ source code of polynomial candidates.
+  max_degree is the maximum polynomial degree in a particular dimension.
+
+  Example:
+    ./genPolynomialCandidates.py 3 2
+  Generates the polynomial candidates for two-dimensional cubicFit""", file=sys.stderr)
+    sys.exit(2)
+
+if len(sys.argv) > 3+1:
+    print("More than three dimensions are not supported", file=sys.stderr)
+    sys.exit(2)
+
+max_degrees = tuple([int(arg) for arg in sys.argv[1:]])
 
 exponents = itertools.product(range(max(max_degrees)+1), repeat=len(max_degrees))
 exponents = [e for e in exponents if sum(e) <= max(max_degrees) and each_degree_le_max(e)]
