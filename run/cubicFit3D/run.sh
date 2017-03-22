@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 rm -rf [0-9]* processor*
+blockMesh
 setInitialTracerField
 setVelocityField
 decomposePar
