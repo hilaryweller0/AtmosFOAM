@@ -122,11 +122,10 @@ void PolynomialFit<Polynomial>::findFullRankCandidates
         populateMatrix(B, stencil, candidate);
 
         const SVD svd(B);
-        const scalar singularValueRatio = svd.S()[findMax(svd.S())] < VSMALL ? 0 : svd.S()[findMin(svd.S())] / svd.S()[findMax(svd.S())];
-        if (singularValueRatio >= minSingularValueThreshold)
+        if (svd.minNonZeroS() >= minSingularValueThreshold)
         {
             fullRankCandidates.append(candidate);
-            fullRankMinSingularValues.append(singularValueRatio);
+            fullRankMinSingularValues.append(svd.minNonZeroS());
         }
     }
 
