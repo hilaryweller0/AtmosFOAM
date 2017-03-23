@@ -81,7 +81,6 @@ int main(int argc, char *argv[])
 
         #include "compressibleContinuityErrs.H"
 
-        rho.write();
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

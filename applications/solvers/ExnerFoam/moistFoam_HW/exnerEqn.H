@@ -7,11 +7,11 @@
 
     for (int corr=0; corr<nCorr; corr++)
     {
-        // Compressibility and updated density
-        if (corr != 0)
-        {
-            #include "rhoEqn.H"
-        }
+//        // Compressibility and updated density
+//        if (corr != 0)
+//        {
+//            #include "rhoEqn.H"
+//        }
         Psi == rho/Exner;
         rhof = fvc::interpolate(rho);
 
@@ -39,13 +39,10 @@
           + offCentre*dt*dVdt
         );
 
-        U = Vu*mesh.magSf()/H.magd();
-        U.write();
-        gradPcoeff2.write();
-        FatalErrorIn("") << exit(FatalError);
-
         // add the gravity terms
-        V = Vu + G*offCentre*dt*rhof*gd;
+        //V = Vu + G*offCentre*dt*rhof*gd;
+        // (orthogonal versin for consistency with partitionedMoistFoam)
+        V = Vu + G*offCentre*dt*rhof*gSf*H.magd()/mesh.magSf();
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
@@ -55,6 +52,7 @@
             //U = H.ddirToFlux(V)
             //  - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
             U = V*mesh.magSf()/H.magd();
+
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
@@ -74,7 +72,8 @@
 
             if (nonOrth == nNonOrthCorr)
             {
-                U += ExnerEqn.flux()/offCentre;
+                //U += ExnerEqn.flux()/offCentre;
+                U -= gradPcoeff2*fvc::snGrad(Exner)*mesh.magSf();
                 V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
                 //u = H.reconstructd(V/rhof);
                 u = fvc::reconstruct(U/rhof);

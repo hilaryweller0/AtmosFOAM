@@ -19,37 +19,24 @@ partitionedMoistFoam >& log &
 tail -f log
 
 # Differences from non-partitioned code
-ss=0.5
-bs=0.5
+ss=0.9
+bs=0.1
 for time in 2; do
-    for var in waterLiquidFrac waterVapourRho airVapourRho theta Uf Exner rho ; do
-        sumFields $time ${var}Diff $time stable.$var ../moistFoam_HW/$time $var -scale1 -1
-        read -p "Press enter to continue"
-        sumFields $time ${var}Diff $time buoyant.$var ../moistFoam_HW/$time $var -scale1 -1
-        read -p "Press enter to continue"
+    for var in rho Exner theta Uf ; do
         sumFields $time ${var}Diff $time $var ../moistFoam_HW/$time $var -scale1 -1
         read -p "Press enter to continue"
     done
-    
-    sumFields $time rhoDiff $time stable.rhof ../moistFoam_HW/$time rhof -scale1 -$ss
-    sumFields $time rhoDiff $time buoyant.rhof ../moistFoam_HW/$time rhof -scale1 -$bs
-    
+    sumFields $time fluxDiff $time flux ../moistFoam_HW/$time U -scale1 -1
+    read -p "Press enter to continue"
     sumFields $time fluxDiff $time stable.flux ../moistFoam_HW/$time U -scale1 -$ss
     read -p "Press enter to continue"
     sumFields $time fluxDiff $time buoyant.flux ../moistFoam_HW/$time U -scale1 -$bs
-    read -p "Press enter to continue"
-    sumFields $time fluxDiff $time flux ../moistFoam_HW/$time U -scale1 -1
-    read -p "Press enter to continue"
-    sumFields $time fluxDiff $time totalFlux ../moistFoam_HW/$time U -scale1 -1
-    read -p "Press enter to continue"
-    sumFields $time UfDiff $time totalUf ../moistFoam_HW/$time Uf -scale1 -1
-    read -p "Press enter to continue to next time-step"
 done
 
 # Differences between partitions
 ss=0.9
 bs=0.1
-for time in 2 4; do
+for time in 2; do
     for var in waterLiquidFrac waterVapourRho airVapourRho theta T Uf; do
         sumFields $time ${var}Diff $time stable.$var $time buoyant.$var -scale1 -1
         read -p "Press enter to continue"

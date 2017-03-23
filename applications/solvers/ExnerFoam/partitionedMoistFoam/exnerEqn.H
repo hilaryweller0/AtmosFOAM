@@ -33,14 +33,9 @@
             atmosParts.flux() += fluxi;
         }
 
-        atmosParts.flux().write();
-        surfaceScalarField gradPcoeff2("gradPcoeff2", offCentre*dt*gradPcoeff);
-        gradPcoeff2.write();
-        FatalErrorIn("") << exit(FatalError);
-
         rhog = fvc::interpolate(atmosParts.rho())*gSf;
         atmosParts.flux() += offCentre*dt*rhog;
-    
+
         // The Helmholtz equation for the global Exner pressure 
         fvScalarMatrix ExnerEqn
         (
@@ -70,8 +65,6 @@
                - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
                + gSf
             );
-//            parti.flux() += fvc::interpolate(parti.sigma())*ExnerEqn.flux()/offCentre
-//                         + offCentre*dt*fvc::interpolate(parti.sigmaRho())*gSf;
             
             atmosParts.flux() += parti.flux();
         }
