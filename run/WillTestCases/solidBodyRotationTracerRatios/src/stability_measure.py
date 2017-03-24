@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 analysis = 1
 plots = 1
 
-dt = np.arange(4.7,5.4,0.05)
-#dt = np.array([0.9ls,1.0,1.1,1.2,1.3])
+dt = np.arange(3.1,3.2,0.1)
+dt = np.array([3.1])
 
 if analysis == 1:
 
@@ -101,7 +101,7 @@ if plots == 1:
         dist_center_x,dist_center_z = rotate(dist_center_x0,dist_center_z0,theta)
         for j in xrange(len(x)):
             for k in xrange(len(z)):        
-                profile[k][j] = schaerProfileVelocity(x[j],z[k],dist_center_x,dist_center_z,half_width,theta,w,t,L)
+                profile[k][j] = 0.5 + 0.5*schaerProfileVelocity(x[j],z[k],dist_center_x,dist_center_z,half_width,theta,w,t,L)
         data = readField(os.path.join("..","T_cubic_exp_{}".format(n)),length)
         errors[n] = l2ErrorNorm(data,profile)
         

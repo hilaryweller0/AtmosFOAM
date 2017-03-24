@@ -23,23 +23,23 @@ boundaryField
 {
     top
     {
-//        type            cyclic;
-        type            zeroGradient;
+        type            cyclic;
+//        type            zeroGradient;
     }
     inlet
     {
-//        type            cyclic;
-        type            zeroGradient;
+        type            cyclic;
+//        type            zeroGradient;
     }
     outlet
     {
-//        type            cyclic;
-        type            zeroGradient;
+        type            cyclic;
+//        type            zeroGradient;
     }
     ground
     {
-//        type            cyclic;
-        type            zeroGradient;
+        type            cyclic;
+//        type            zeroGradient;
     }
     front
     {

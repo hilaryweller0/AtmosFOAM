@@ -69,20 +69,19 @@ int main(int argc, char *argv[])
 
         for (int corr=0; corr < 3; corr++)
         {
-            const dimensionedScalar unitDamping("unitDamping", dimensionSet(0,0,0,0,0), 1);
-            //q2 = -q+1;
+            const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
+        
             fluxOld = fvc::interpolate(T.oldTime())*phi;
             flux = fvc::interpolate(T)*phi;
+            
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix qEqn
             (
-              //fvm::ddt(q)
               fvm::ddt(T,q)
               + 0.5*fvc::div(fluxOld,q.oldTime())
-              //+ 0.5*( U & fvc::grad(q.oldTime()) )
               + 0.5*T1damping*q.oldTime()*T.oldTime()
-              - 0.5*T2damping*(1-q.oldTime())*T.oldTime() + 0.25*T2damping
+              - 0.5*T2damping*( (1-q.oldTime())*T.oldTime() - rhoAir )
             );
             fvScalarMatrix TEqn
             (
@@ -99,22 +98,20 @@ int main(int argc, char *argv[])
             else
             {
                 qEqn += 0.5*fvc::div(flux,q);
-                //qEqn += 0.5*( U & fvc::grad(q) );
                 TEqn += 0.5*fvc::div(phi, T);
             }
             
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                qEqn += 0.5*fvm::Sp(T1damping, q)
-                      + 0.5*fvm::Sp(T2damping, q) - 0.5*T2damping;
-                //qEqn += 0.5*fvm::Sp(unitDamping, q*T1damping);
-                //qEqn += -0.5*fvm::Sp(unitDamping, q2*T2damping);
+                qEqn += 0.5*fvm::Sp(T1damping*T, q)
+                      + 0.5*fvm::Sp(T2damping*T, q)
+                      - 0.5*T2damping*( T - rhoAir );
             }
             else
             {
-                qEqn += 0.5*T1damping*q*T;
-                qEqn += -0.5*T2damping*(1 - q)*T + 0.25*T2damping;
+                qEqn += 0.5*T1damping*q*T
+                      - 0.5*T2damping*( (1 - q)*T - rhoAir );
             }
             
             // Solve the matrices for the equations
@@ -141,4 +138,4 @@ int main(int argc, char *argv[])
 }
 
 
-// ************************************************************************* //
+// ************************************************************************* //\

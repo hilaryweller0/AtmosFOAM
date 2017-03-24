@@ -41,29 +41,29 @@ boundary
 (
     top
     {
-        type            zeroGradient;
-//        type            cyclic;
+//        type            zeroGradient;
+        type            cyclic;
         neighbourPatch  ground;
         faces           ((4 5 6 7));
     }
     inlet
     {
-        type            zeroGradient;
-//        type            cyclic;
+//        type            zeroGradient;
+        type            cyclic;
         neighbourPatch  outlet;
         faces           ((0 4 7 3));
     }
     outlet
     {
-        type            zeroGradient;
-//        type            cyclic;
+//        type            zeroGradient;
+        type            cyclic;
         neighbourPatch  inlet;
         faces           ((2 6 5 1));
     }
     ground
     {
-        type            zeroGradient;
-//        type            cyclic;
+//        type            zeroGradient;
+        type            cyclic;
         neighbourPatch  top;
         faces           ((0 3 2 1));
     }

@@ -13,6 +13,7 @@ class schaerBlockField final : public tracerField
     private:
     scalar tracerAt(const point& p, const Time& t) const;
     const scalar rho0;
+    const scalar rhoAir;
     const point p0;
     const vector A;
 };
