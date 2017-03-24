@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
             }
             #include "exnerEqn.H"
             p = air.pFromExner(Exner);
-            //atmosParts.updateSigmas(p);
+            atmosParts.updateSigmas(p);
         }
 
 //        #include "compressibleContinuityErrs.H"

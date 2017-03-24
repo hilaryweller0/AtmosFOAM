@@ -2,21 +2,20 @@
 
 // Update total density
 atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
-/*atmosParts.rho() = atmosParts.rho().oldTime() + dt*
+atmosParts.rho() = atmosParts.rho().oldTime() + dt*
 (
     (1-offCentre)*atmosParts.dRhodt().oldTime()
   + offCentre*atmosParts.dRhodt()
 );
-*/
+
 // Loop over all partitions >0 and update partition density
-for(label ip = 0; ip < atmosParts.size(); ip++)
+for(label ip = 1; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
     volScalarField& sigmaRhoi = parti.sigmaRho();
     const surfaceScalarField& fluxi = parti.flux();
     
-    // Advect density for this partition
-    // (without partition transfer terms)
+    // Advect density for this partition (without partition transfer terms)
     parti.dSigmaRhodt() = -fvc::div(fluxi);
 
     sigmaRhoi = sigmaRhoi.oldTime() + dt*
@@ -25,53 +24,16 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
       + offCentre*parti.dSigmaRhodt()
     );
 }
-/*// Update density for partition zero
+// Update density for partition zero
 partition& part0 = atmosParts[0];
 part0.sigmaRho() = atmosParts.rho();
 for(label ip = 1; ip < atmosParts.size(); ip++)
 {
     part0.sigmaRho() -= atmosParts[ip].sigmaRho();
 }
-*/
-
-atmosParts.sumDensity();
-
-/*Info << "Checking that partition zero density satisfies continuity" << endl;
 part0.dSigmaRhodt() = -fvc::div(part0.flux());
-volScalarField rhoCheck
-(
-    "rhoCheck",
-    part0.sigmaRho() - 
-    (
-        part0.sigmaRho().oldTime() + dt*
-        (
-            (1-offCentre)*part0.dSigmaRhodt().oldTime()
-          + offCentre*part0.dSigmaRhodt()
-        )
-    )
-);
-rhoCheck.write();
-Info << "Minimum discrepancy = " << min(rhoCheck).value()
-     << " maximum discrepancy = " << max(rhoCheck).value() << endl;
 
-Info << "Checking that all partition densities sum to the total density" <<endl;
-rhoCheck = atmosParts.rho();
-for(label ip = 0; ip < atmosParts.size(); ip++)
-{
-    rhoCheck -= atmosParts[ip].sigmaRho();
-}
-Info << "Minimum discrepancy = " << min(rhoCheck).value()
-     << " maximum discrepancy = " << max(rhoCheck).value() << endl;
-
-Info << "Checking that all partition dRhodt sum to total" << endl;
-volScalarField dRhodtCheck = atmosParts.dRhodt();
-for(label ip = 0; ip < atmosParts.size(); ip++)
-{
-    dRhodtCheck -= atmosParts[ip].dSigmaRhodt();
-}
-Info << "Minimum discrepancy = " << min(dRhodtCheck).value()
-     << " maximum discrepancy = " << max(dRhodtCheck).value() << endl;
-*/
+// atmosParts.sumDensity();
 
 // Update and species densities for all partitions
 for(label ip = 0; ip < atmosParts.size(); ip++)

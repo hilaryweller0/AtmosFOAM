@@ -55,9 +55,10 @@
         }
 
         // Partition back-substitutions
-        atmosParts.flux()
-             == dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0));
-        for(label ip = 0; ip < atmosParts.size(); ip++)
+        atmosParts.flux() += ExnerEqn.flux()/offCentre;
+        // Remove partition fluxes from the total for partition zero
+        surfaceScalarField fluxResidual("fluxResidual", atmosParts.flux());
+        for(label ip = 1; ip < atmosParts.size(); ip++)
         {
             partition& parti = atmosParts[ip];
             parti.flux() += offCentre*dt*fvc::interpolate(parti.sigmaRho())*
@@ -66,8 +67,9 @@
                + gSf
             );
             
-            atmosParts.flux() += parti.flux();
+            fluxResidual -= parti.flux();
         }
+        atmosParts[0].flux() = fluxResidual;
         
         // Reconstruct full velocities and rates of change
         atmosParts.Uf() == dimensionedVector("Uf", dimVelocity, vector::zero);
