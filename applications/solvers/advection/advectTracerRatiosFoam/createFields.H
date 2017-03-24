@@ -29,19 +29,19 @@ volScalarField T
 );
 T.oldTime();
 
-volScalarField q2
+volScalarField rho1
 (
     IOobject
     (
-        "q2",
+        "rho1",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    -q+1
+    q*T.oldTime()
 );
-q2.oldTime();
+rho1.oldTime();
 
 surfaceScalarField phi
 (
