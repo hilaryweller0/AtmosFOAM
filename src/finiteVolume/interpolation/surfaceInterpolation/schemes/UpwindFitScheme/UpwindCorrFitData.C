@@ -107,11 +107,12 @@ void Foam::UpwindCorrFitData<Polynomial>::calcFit()
 }
 
 template<class Polynomial>
-void Foam::UpwindCorrFitData<Polynomial>::fit(
-        List<scalarList>& coeffs,
-        const List<List<point> >& stencilPoints,
-        stencilWeights& stencilWts,
-        bool owner
+void Foam::UpwindCorrFitData<Polynomial>::fit
+(
+    List<scalarList>& coeffs,
+    const List<List<point> >& stencilPoints,
+    stencilWeights& stencilWts,
+    bool owner
 )
 {
     const fvMesh& mesh = this->mesh();

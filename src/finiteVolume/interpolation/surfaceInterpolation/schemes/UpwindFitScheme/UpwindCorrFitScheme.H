@@ -68,6 +68,21 @@ class UpwindCorrFitScheme
 
         //- Disallow default bitwise assignment
         void operator=(const UpwindCorrFitScheme&);
+        
+        //- Read if this is for spherical geometry or not from istream
+        bool readIsSpherical(Istream& is)
+        {
+            word spherical(is);
+            if (spherical == "sphericalGeometry") return true;
+            else if (spherical == "Cartesian") return false;
+            else
+            {
+                FatalErrorIn("UpwindCorrFitScheme::readIsSpherical")
+                    << " expected sphericalGeometry or Cartesian in fvSchemes,"
+                    << " not " << spherical << exit(FatalError);
+            }
+            return false;
+        }
 
 
 public:
@@ -90,7 +105,7 @@ public:
             ),
             faceFlux_(upwind<Type>::faceFlux_),
             centralWeight_(1000),
-            sphericalGeometry_(readBool(is))
+            sphericalGeometry_(readIsSpherical(is))
         {}
 
 
@@ -105,7 +120,7 @@ public:
             upwind<Type>(mesh, faceFlux),
             faceFlux_(faceFlux),
             centralWeight_(1000),
-            sphericalGeometry_(readBool(is))
+            sphericalGeometry_(readIsSpherical(is))
         {}
 
 

@@ -1,4 +1,5 @@
-FoamFile {
+FoamFile
+{
     version     2.0;
     format      ascii;
     class       dictionary;
@@ -6,8 +7,10 @@ FoamFile {
     object      fvSolution;
 }
 
-solvers {
-    T {
+solvers
+{
+    T
+    {
         solver          PBiCG;
         preconditioner  DILU;
         tolerance       1e-08
@@ -15,10 +18,12 @@ solvers {
     }
 }
 
-SIMPLE {
+SIMPLE
+{
     nNonOrthogonalCorrectors 1;
 }
 
-debug {
+debug
+{
     interpolationWeightsFaceIndex 2000;
 }

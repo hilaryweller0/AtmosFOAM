@@ -90,7 +90,7 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
         vector jdirTmp;
         forAll(C, celli)
         {
-            jdirTmp = C[celli] - fC;
+            jdirTmp = (C[celli] - fC)/mag(C[celli] - fC);
             if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
             {
                 jdir = jdirTmp;

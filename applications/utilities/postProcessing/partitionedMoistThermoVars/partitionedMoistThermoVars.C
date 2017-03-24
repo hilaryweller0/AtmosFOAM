@@ -64,13 +64,13 @@ int main(int argc, char *argv[])
         // Update variables for all phases and Exner
         for(label ip = 1; ip < atmosParts.size(); ip++)
         {
-            atmosParts[ip].readUpdate(Exner);
+            atmosParts[ip].readUpdate();
         }
 
         volScalarField rho("rho", atmosParts.rho());
         rho.write();
-        volScalarField thetae("thetae", atmosParts.thetae());
-        thetae.write();
+        //volScalarField thetae("thetae", atmosParts.thetae());
+        //thetae.write();
     }
 
     Info << endl;

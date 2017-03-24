@@ -35,7 +35,7 @@ wordList partNames(2);
 partNames[0] = "stable.";
 partNames[1] = "buoyant.";
 
-partitionedAtmosphere atmosParts(partNames, phaseNames, mesh, thermoDict, Exner);
+partitionedAtmosphere atmosParts(partNames, phaseNames, mesh, thermoDict);
 
 // Select just the stable part
 //partition& atmos = atmosParts[0];
