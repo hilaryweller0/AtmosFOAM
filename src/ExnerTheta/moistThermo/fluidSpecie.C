@@ -58,6 +58,9 @@ const Foam::volScalarField& Foam::fluidSpecie::updateCondensation
     const volScalarField& T
 )
 {
+    volScalarField ppGas("ppGas", gas_.partialPressure(T));
+    volScalarField pSatGas("pSatGas", pSat(T));
+
     volScalarField Sf = (gas_.partialPressure(T) - pSat(T))/(gas_.R()*T);
     volScalarField Sl = liquid_.v() * liquid_.rho();
     condensation_ = 0.5*(Sf - Sl + sqrt(sqr(Sf) + sqr(Sl)));

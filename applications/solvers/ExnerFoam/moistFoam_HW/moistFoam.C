@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
 
         #include "compressibleContinuityErrs.H"
 
-       runTime.write();
+        runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

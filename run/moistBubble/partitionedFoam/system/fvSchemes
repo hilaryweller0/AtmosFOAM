@@ -32,17 +32,13 @@ SIgravityWaves false;
 gradSchemes
 {
     default         none;
-    grad(stable.theta)     Gauss linear;
-    grad(buoyant.theta)     Gauss linear;
+    linearUpwind    leastSquares;
+    grad(theta)     Gauss linear;
 }
 
 divSchemes
 {
-    default none;
-    div(U,(stable.waterVapourRho|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,(stable.waterLiquidFrac|rho))   Gauss cubicUpwindCPCFit 3;
-    div(U,stable.theta)   Gauss cubicUpwindCPCFit 3;
-    div(U,u)   Gauss cubicUpwindCPCFit 3; //linearUpwind linearUpwind;
+    default    Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes

@@ -1,6 +1,6 @@
 FoamFile
 {
-    version         1.4;
+    version         2.3;
     format          ascii;
 
     root            "";
@@ -19,7 +19,12 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [rhoCheck filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [stable.sigma filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
 );
 
+//separateLegend true;
+//region "-5000/5000/2500/12500";
+//annotate "minMax -5e3 1.7e3";
+//boundaryMarks "2500/2500";
 annotate "minMax -1e3 -100";
+

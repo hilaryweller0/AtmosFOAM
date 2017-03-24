@@ -20,7 +20,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [heatSource filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [buoyant.heatSource filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;

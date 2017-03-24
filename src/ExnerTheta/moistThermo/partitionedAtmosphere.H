@@ -52,6 +52,23 @@ class partitionedAtmosphere
 :
     public PtrList<partition>
 {
+    // Private data
+    
+        //- Total density over all partitions
+        volScalarField rho_;
+
+        //- Rate of change of density over all partitions
+        volScalarField dRhodt_;
+        
+        //- Theta density averaged over all partitions
+        volScalarField theta_;
+        
+        //- Velocity at faces
+        surfaceVectorField Uf_;
+        
+        //- Flux at faces
+        surfaceScalarField flux_;
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -74,15 +91,6 @@ public:
             const dictionary dict
         );
 
-        partitionedAtmosphere
-        (
-            const wordList& partitionNames,
-            const wordList& partNames,
-            const fvMesh& mesh,
-            const dictionary dict,
-            const volScalarField& Exner
-        );
-
 
     //- Destructor
     ~partitionedAtmosphere();
@@ -90,21 +98,67 @@ public:
 
     // Member Functions
 
-    //- Variables summed over partitions
-        //- Total density
-        tmp<volScalarField> rho() const;
-        
-        //- Equivalent potential temperature
-        tmp<volScalarField> thetae() const;
+    // Access
+        //- Total density over all partitions
+        volScalarField& rho() { return rho_;}
+        const volScalarField& rho() const { return rho_;}
 
-        //- Update theta and T from Exner in each partition
-        void updateThetaT(const volScalarField& Exner);
+        //- Rate of change of density over all partitions
+        volScalarField& dRhodt() { return dRhodt_;}
+        const volScalarField& dRhodt() const { return dRhodt_;}
+        
+        //- Theta density averaged over all partitions
+        volScalarField& theta() { return theta_; }
+        const volScalarField& theta() const { return theta_; }
+        
+        //- Velocity at faces
+        surfaceVectorField& Uf() { return Uf_;}
+        const surfaceVectorField& Uf() const { return Uf_;}
+        
+        //- Flux at faces
+        surfaceScalarField& flux() { return flux_;}
+        const surfaceScalarField& flux() const { return flux_;}
+
+
+    //- Update and return fields summed over partitions
+        //- Total density
+        volScalarField& sumDensity();
+        
+//        //- Equivalent potential temperature
+//        tmp<volScalarField> thetae() const;
+//        
+        //- Update theta from partitions
+        volScalarField& updateTheta();
+        
+        //- Update Uf from partitions
+        surfaceVectorField& updateUf();
+
+        //- Update flux from partitions
+        surfaceScalarField& updateFlux();
+        
+        //- Update volume fractions in all the partitions
+        void updateSigmas(const volScalarField& p);
+
+        //- Density weighted total gas constant
+        tmp<volScalarField> rhoR() const;
+        
+        //- Total volume fraction of liquid
+        tmp<volScalarField> volLiquid() const;
+
+        // Enxer from the equation of state
+        tmp<volScalarField> ExnerFromState();
+
+        // Enxer from the equation of state
+        volScalarField& ExnerFromState(volScalarField& Exner);
+
+        //- The coefficient in from of grad(Exner) for the Helmholtz eqn
+        void setGradPcoeff(surfaceScalarField& gradPcoeff);
 
         // Output
         void write();
 
         // Input (re-read all fields)
-        void readUpdate(const volScalarField& Exner);
+        void readUpdate();
 };
 
 

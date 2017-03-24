@@ -1,6 +1,6 @@
 FoamFile
 {
-    version         1.4;
+    version         2.3;
     format          ascii;
 
     root            "";
@@ -19,7 +19,12 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [rhoCheck filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [ExnerDiff filledContours -5.25e-5 5.25e-5 5e-6 "$GMTU/colours/red_white_blue.cpt"]
+    [Udiff vectors 0 1 "black"]
+    //[fluxDiff rawValues 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
 );
 
-annotate "minMax -1e3 -100";
+//separateLegend true;
+//region "-6000/6000/3000/15000";
+//annotate "minMax 0.01 -0.005";
+

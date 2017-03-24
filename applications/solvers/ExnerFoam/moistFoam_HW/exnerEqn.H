@@ -1,17 +1,17 @@
 {
     // Eqn of state
-    Exner = atmos.ExnerFromTheta(theta);
+    atmos.setExnerFromTheta(Exner,theta);
 
     // Implicit parts of momentum equation
     surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
 
     for (int corr=0; corr<nCorr; corr++)
     {
-        // Compressibility and updated density
-        if (corr != 0)
-        {
-            #include "rhoEqn.H"
-        }
+//        // Compressibility and updated density
+//        if (corr != 0)
+//        {
+//            #include "rhoEqn.H"
+//        }
         Psi == rho/Exner;
         rhof = fvc::interpolate(rho);
 
@@ -21,7 +21,10 @@
             air.Cp()*theta*atmos.rhoR()
            /(atmos.sumDensity()*air.R()*atmos.volGas())
         );
-        surfaceScalarField gradPcoeff2 = gradPcoeff*G*offCentre*rhof*dt;
+        surfaceScalarField gradPcoeff2
+        (
+            "gradPcoeff2", gradPcoeff*G*offCentre*rhof*dt
+        );
         dVdt = -(H.delta() &
         (
             fvc::interpolate(fvc::div(U, u))
@@ -37,15 +40,18 @@
         );
 
         // add the gravity terms
-        V = Vu + G*offCentre*dt*rhof*gd;
+        //V = Vu + G*offCentre*dt*rhof*gd;
+        // (orthogonal versin for consistency with partitionedMoistFoam)
+        V = Vu + G*offCentre*dt*rhof*gSf*H.magd()/mesh.magSf();
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
-            U = H.ddirToFlux(V)
-              - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
+            //U = H.ddirToFlux(V)
+            //  - H.ddirToFluxCorr(gradPcoeff2*fvc::snGrad(Exner)*H.magd());
+            U = V*mesh.magSf()/H.magd();
 
             fvScalarMatrix ExnerEqn
             (
@@ -66,9 +72,11 @@
 
             if (nonOrth == nNonOrthCorr)
             {
-                U += ExnerEqn.flux()/offCentre;
+                //U += ExnerEqn.flux()/offCentre;
+                U -= gradPcoeff2*fvc::snGrad(Exner)*mesh.magSf();
                 V -= gradPcoeff2*fvc::snGrad(Exner)*H.magd();
-                u = H.reconstructd(V/rhof);
+                //u = H.reconstructd(V/rhof);
+                u = fvc::reconstruct(U/rhof);
                 divu = fvc::div(U/rhof);
                 Uf = fvc::interpolate(u);
                 dVdt += rhof*gd

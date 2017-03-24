@@ -14,21 +14,17 @@ FoamFile
 
 // How to plot
 // Compulsory inputs
-projection "X12c/15c";
+projection "X15c/15c";
 projection2D XZ;
 
 FieldsToPlot
-4
 (
-    [theta filledContours 297.95 302.05 0.1 "$GMTU/colours/red_white_blue.cpt"]
-//    [Uf vectors 100 41 "black"]
-    [Uf vectors 25 13 "black"]
-    [Ufz contours 0 30 2 "1p,black"]
-    [Ufz contours -30 -2 2 "1p,black,15_15:0"]
+    [theta filledContours 290 330 2.5 "$GMTU/colours/red_white_blue.cpt"]
+    [Uf vectors 100 13 "black"]
 );
 
 separateLegend true;
-region "-5000/5000/0/12500";
+region "-5000/5000/0/10e3";
 annotate "minMax -5e3 -1e3";//1.7e3";
 boundaryMarks "2500/2500";
 

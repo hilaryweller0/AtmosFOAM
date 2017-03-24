@@ -24,7 +24,24 @@ FoamFile
 
 air
 {
-    gas air 1 28.9 1004 0 1.8e-05 0.7;
+    gas //1 28.9 1004 0 1.8e-05 0.7;
+    {
+        specie
+        {
+            molWeight       28.9;
+        }
+        thermodynamics
+        {
+            Cp              1004;
+            Hf              0;
+        }
+        transport
+        {
+            mu              1.8e-05;
+            Pr              0.7;
+        }
+    }
+    
     gasDict
     {
         T0 T0 [0 0  0 1 0 0 0] 273.15;
@@ -41,7 +58,23 @@ air
 
 water
 {
-    gas waterVapour 1 18 1885 0 1.2e-5 0.162946065;
+    gas
+    {
+        specie
+        {
+            molWeight       18;
+        }
+        thermodynamics
+        {
+            Cp              1885;
+            Hf              0;
+        }
+        transport
+        {
+            mu              1.2e-05;
+            Pr              0.162946065;
+        }
+    }
     gasDict
     {
         T0 T0 [0 0  0 1 0 0 0] 273.15;

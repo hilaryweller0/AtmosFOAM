@@ -30,7 +30,7 @@ for(label ip = 0; ip < atmos.size(); ip++)
     if (atmos[ip].pvs0() < atmos[ip].gas().p0())
     {
         atmos[ip].updateCondensation(T);
-    
+
         atmos[ip].gas().rho()  -= offCentre*atmos[ip].condensation();
         atmos[ip].liquid().v() += offCentre*atmos[ip].condensation()
                                     /atmos[ip].liquid().rho();
