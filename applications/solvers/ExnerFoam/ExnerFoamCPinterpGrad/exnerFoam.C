@@ -60,15 +60,10 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-<<<<<<< HEAD:applications/solvers/ExnerFoam/ExnerFoamCPinterpGrad/exnerFoam.C
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
 
     const dimensionedScalar radiativeTimescale("radiativeTimescale", dimTime, 60*60*24);
-=======
-    const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
->>>>>>> partitionedFoam:applications/solvers/ExnerFoam/partitionedMoistFoam/partitionedMoistFoam.C
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -82,7 +77,6 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-<<<<<<< HEAD:applications/solvers/ExnerFoam/ExnerFoamCPinterpGrad/exnerFoam.C
             #include "rhoEqn.H"
             #include "exnerEqn.H"
         }
@@ -96,19 +90,6 @@ int main(int argc, char *argv[])
             thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
         }
         #include "compressibleContinuityErrs.H"
-=======
-            #include "phaseEqns.H"
-            for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
-            {
-                #include "rhoThetaEqn.H"
-            }
-            #include "exnerEqn.H"
-            p = air.pFromExner(Exner);
-            //atmosParts.updateSigmas(p);
-        }
-
-//        #include "compressibleContinuityErrs.H"
->>>>>>> partitionedFoam:applications/solvers/ExnerFoam/partitionedMoistFoam/partitionedMoistFoam.C
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
                                         - initHeat;
