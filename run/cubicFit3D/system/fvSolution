@@ -25,5 +25,5 @@ SIMPLE
 
 debug
 {
-    interpolationWeightsFaceIndex 2400;
+    interpolationWeightsFaceIndex 150; //2400;
 }
