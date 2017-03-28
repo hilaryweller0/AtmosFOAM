@@ -5,7 +5,8 @@ Foam::localStencil::localStencil(const List<point> localPoints)
     localPoints(localPoints)
 {}
 
-Foam::localStencil::localStencil(
+Foam::localStencil::localStencil
+(
     const List<point>& stencilPoints,
     const point& origin,
     const Basis& basis
@@ -16,7 +17,8 @@ localPoints(stencilPoints.size(), point(0, 0, 0))
     scalar scale = scaleLocalCoordinates(origin, stencilPoints[0], basis);
     forAll(stencilPoints, i)
     {
-        localPoints[i] = toLocalCoordinates(origin, stencilPoints[i], basis) / scale;
+        localPoints[i] = toLocalCoordinates(origin, stencilPoints[i], basis)
+                       / scale;
     }
 }
 

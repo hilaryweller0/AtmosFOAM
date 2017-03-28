@@ -111,6 +111,7 @@ void geostrophicZeroFluxFvPatchScalarField::updateCoeffs()
 
     const dimensionedScalar g(environmentalProperties.lookup("g"));
     const dimensionedScalar beta(environmentalProperties.lookup("beta"));
+    const dimensionedScalar f0(environmentalProperties.lookup("f0"));
     const vector OmegaHat(environmentalProperties.lookup("OmegaHat"));
 
     const surfaceVectorField& Uf
@@ -122,7 +123,7 @@ void geostrophicZeroFluxFvPatchScalarField::updateCoeffs()
     fvsPatchField<vector> Cfp =
         patch().patchField<surfaceVectorField, vector>(Cf);
 
-    gradient() = -beta.value()*Cfp.component(vector::Y)*
+    gradient() = -(f0.value() + beta.value()*Cfp.component(vector::Y))*
                  ((OmegaHat ^ Ufp) & patch().nf())/g.value();
     
     fixedGradientFvPatchScalarField::updateCoeffs();

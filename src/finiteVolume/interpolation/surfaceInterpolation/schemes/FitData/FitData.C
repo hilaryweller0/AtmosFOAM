@@ -107,15 +107,15 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
     }
     else
     {
-        // For the jdir find the cell within the stencil that gives
-        // the direction most different to idir by finding the largest idir ^ jdir
+        // For the jdir find the cell within the stencil that gives the
+        // direction most different to idir by finding the smallest idir&jdir
         jdir = idir;
         vector jdirTmp;
 
         forAll(C, celli)
         {
             jdirTmp = (C[celli] - fC)/mag(C[celli] - fC);
-            if (magSqr(jdirTmp ^ idir) > magSqr(jdir ^ idir))
+            if (mag(jdirTmp & idir) < mag(jdir & idir))
             {
                 jdir = jdirTmp;
             }
@@ -145,9 +145,14 @@ autoPtr<fitResult> Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::calc
     
     point p0 = this->mesh().faceCentres()[facei];
 
-    scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[0]-p0);
-    scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei] & (C[1]-p0);
-    bool pureUpwind = (sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent));
+    scalar c0SurfaceNormalComponent = this->mesh().faceAreas()[facei]
+                                    & (C[0]-p0);
+    scalar c1SurfaceNormalComponent = this->mesh().faceAreas()[facei]
+                                    & (C[1]-p0);
+    bool pureUpwind = 
+    (
+        sign(c0SurfaceNormalComponent) == sign(c1SurfaceNormalComponent)
+    );
 
     fitWeights weights(C.size());
     weights.setCentralWeight(centralWeight_, pureUpwind);

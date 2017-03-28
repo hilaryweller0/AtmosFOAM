@@ -17,7 +17,9 @@ Foam::stencilWeights::stencilWeights(const fvMesh& mesh, const word prefix)
     std::ostringstream weightsFilename;
     weightsFilename << prefix << "Weights" << debugFaceI;
 
-    weights.reset(new volScalarField
+    weights.reset
+    (
+        new volScalarField
         (
             IOobject
             (
@@ -36,7 +38,9 @@ Foam::stencilWeights::stencilWeights(const fvMesh& mesh, const word prefix)
     std::ostringstream polynomialTermsFilename;
     polynomialTermsFilename << prefix << "PolynomialTerms";
 
-    polynomialTerms.reset(new surfaceScalarField
+    polynomialTerms.reset
+    (
+        new surfaceScalarField
         (
             IOobject
             (
@@ -53,10 +57,11 @@ Foam::stencilWeights::stencilWeights(const fvMesh& mesh, const word prefix)
     );
 }
 
-void Foam::stencilWeights::fitted(
-        const label faceI,
-        const autoPtr<fitResult>& fit,
-        const List<point>& stencil
+void Foam::stencilWeights::fitted
+(
+    const label faceI,
+    const autoPtr<fitResult>& fit,
+    const List<point>& stencil
 )
 {
     if (faceI == debugFaceI)
