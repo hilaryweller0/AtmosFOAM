@@ -82,12 +82,36 @@ void Foam::FitData<FitDataType, ExtendedStencil, Polynomial>::findFaceDirs
         kdir = fC/mag(fC);
         jdir = kdir ^ idir;
     }
+    else if (dim_ == 3)
+    {
+        List<vector> unitVectors(3);
+        unitVectors[0] = vector(0, 0, 1);
+        unitVectors[1] = vector(0, 1, 0);
+        unitVectors[2] = vector(1, 0, 0);
+
+        jdir = idir;
+        forAll(unitVectors, vi)
+        {
+            if (magSqr(unitVectors[vi] ^ idir) > magSqr(jdir ^ idir))
+            {
+                jdir = unitVectors[vi];
+            }
+        }
+        
+        // Remove the idir from jdir and then normalise jdir
+        jdir = jdir - (idir & jdir) * idir;
+        jdir /= mag(jdir);
+        
+        // kdir is normal to idir and jdir
+        kdir = idir ^ jdir;
+    }
     else
     {
         // For the jdir find the cell within the stencil that gives
         // the direction most different to idir by finding the largest idir ^ jdir
         jdir = idir;
         vector jdirTmp;
+
         forAll(C, celli)
         {
             jdirTmp = (C[celli] - fC)/mag(C[celli] - fC);
