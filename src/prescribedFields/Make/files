@@ -13,11 +13,12 @@ tracerField/tracerField.C
 velocityField/btfVelocityField.C
 velocityField/deformationalNonDivergentGeodesicVelocityField.C
 velocityField/divergentVelocityField.C
+velocityField/horizontalVelocityField.C
 velocityField/geodesicDeformationalDivergentVelocityField.C
 velocityField/geodesicSolidBodyVelocityField.C
-velocityField/horizontalVelocityField.C
 velocityField/nonDivergentVelocityField.C
-velocityField/velocityField.C
 velocityField/solidBodyRotationVelocityField.C
+velocityField/uniformVelocityField.C
+velocityField/velocityField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libprescribedFields
