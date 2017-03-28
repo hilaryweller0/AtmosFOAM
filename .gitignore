@@ -97,3 +97,4 @@ polyMesh
 *.ttt
 
 testcases/build
+*.OpenFOAM
