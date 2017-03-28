@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
     for(label iter = 0; iter < maxIters && !converged; iter++)
     {
         Info << "Iteration " << iter << endl;
-        
+        hf = fvc::interpolate(h);
         V = hf * (Uf & H.delta());
         U = H.ddirToFlux(V);
         
