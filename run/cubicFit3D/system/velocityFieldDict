@@ -6,4 +6,5 @@ FoamFile {
     object      velocityFieldDict;
 }
 
-type			horizontal;
+type			uniform;
+velocity        (1 1 0.5);

@@ -23,7 +23,3 @@ SIMPLE
     nNonOrthogonalCorrectors 1;
 }
 
-debug
-{
-    interpolationWeightsFaceIndex 2400;
-}

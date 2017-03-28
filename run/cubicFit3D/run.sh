@@ -2,6 +2,7 @@
 set -e
 rm -rf [0-9]* processor* *dat *png
 blockMesh
+terrainFollowingMesh
 setInitialTracerField
 setVelocityField
 decomposePar
