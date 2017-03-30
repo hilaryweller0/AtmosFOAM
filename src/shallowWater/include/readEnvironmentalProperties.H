@@ -34,6 +34,13 @@ const dimensionedVector Ug
     )
 );
 
+volVectorField twoOmega
+(
+    IOobject("twoOmega", runTime.timeName(), rMesh),
+    (f0 + beta * rMesh.C().component(1))*OmegaHat
+);
+twoOmega.write();
+
 surfaceVectorField twoOmegaf
 (
     IOobject("twoOmegaf", runTime.timeName(), rMesh),
