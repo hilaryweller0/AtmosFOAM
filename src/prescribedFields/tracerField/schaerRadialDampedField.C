@@ -28,7 +28,8 @@ scalar schaerRadialDampedField::tracerAt
 
     if (r <= 1)
     {
-        return rhoAir + rho0*sqr(Foam::cos(M_PI*r/2));
+        //return rhoAir + rho0*sqr(Foam::cos(M_PI*r/2));
+        return ( rho0*sqr(Foam::cos(M_PI*r/2))/(rhoAir + rho0*sqr(Foam::cos(M_PI*r/2))) ) * (rhoAir + rho0*sqr(Foam::cos(M_PI*r/2))) + rhoAir;
     }
     else
     {

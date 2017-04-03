@@ -78,15 +78,15 @@ int main(int argc, char *argv[])
             // of advection or source terms
             fvScalarMatrix qEqn
             (
-              fvm::ddt(T,q)
-              + 0.5*fvc::div(fluxOld,q.oldTime())
-              + 0.5*T1damping*q.oldTime()*T.oldTime()
-              - 0.5*T2damping*( (1-q.oldTime())*T.oldTime() - rhoAir )
+                fvm::ddt(T,q)
+                + 0.5*fvc::div(fluxOld,q.oldTime())
+                + 0.5*T1damping*q.oldTime()*T.oldTime()
+                - 0.5*T2damping*( (1-q.oldTime())*T.oldTime() - rhoAir )
             );
             fvScalarMatrix TEqn
             (
                 fvm::ddt(T)
-              + 0.5*fvc::div(phi, T.oldTime())
+                + 0.5*fvc::div(phi, T.oldTime())
             );
 
             // Add the advection terms either implicit or explicit
@@ -115,16 +115,18 @@ int main(int argc, char *argv[])
             }
             
             // Solve the matrices for the equations
+            
             TEqn.solve();
-            Info << "Writing T and q after T.solve" << endl;
             qEqn.solve();
+            Info << "Writing T and q after T.solve" << endl;
+            
             
         }
         Info << " T goes from " << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;
         Info << " q goes from " << min(q.internalField()).value() << " to "
              << max(q.internalField()).value() << endl;
-        Info << " Total T in system: " << sum(T.internalField()) << endl;
+        Info << " Total T in system: " << sum(T.internalField()-1) << endl;
         Info << " T1 fraction: " << sum(q.internalField()*T.internalField())/sum(T.internalField())
          << endl;
         runTime.write();
@@ -138,4 +140,4 @@ int main(int argc, char *argv[])
 }
 
 
-// ************************************************************************* //\
+// ************************************************************************* //
