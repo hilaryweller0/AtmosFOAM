@@ -29,7 +29,7 @@ scalar schaerBlockField::tracerAt
     if (r <= 1)
     {
         //return rho0;
-        return 0.5*rho0*sqr(Foam::cos(M_PI*r/2))/(rhoAir + rho0*sqr(Foam::cos(M_PI*r/2)));
+        return rho0*sqr(Foam::cos(M_PI*r/2))/(rhoAir + rho0*sqr(Foam::cos(M_PI*r/2)));
     }
     else
     {
