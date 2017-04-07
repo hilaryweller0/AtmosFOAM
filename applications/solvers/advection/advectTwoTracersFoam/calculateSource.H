@@ -16,14 +16,14 @@ const dimensionedScalar sourceLengthScale(dict.lookup("sourceLengthScale"));
 // The vertical velocity used for calculating the source terms
 const volScalarField w = U.component(vector::Z);
 
-const volScalarField T1damping
+const volScalarField rho1damping
 (
-    "T1damping",
+    "rho1damping",
     sourcePresent*0.5/sourceLengthScale*(mag(w)-w)
 );
-const volScalarField T2damping
+const volScalarField rho2damping
 (
-    "T2damping",
+    "rho2damping",
     sourcePresent*0.5/sourceLengthScale*(mag(w)+w)
 );
 

@@ -20,7 +20,7 @@ implicitSource false;
 
 solvers
 {
-    "(T|T1|T2)"
+    "(rho|rho1|rho2)"
     {
         solver          PBiCG;
         preconditioner  DILU;

@@ -41,24 +41,26 @@ boundary
 (
     top
     {
-        type  patch;
+        type            cyclic;
+        neighbourPatch  ground;
         faces ((4 5 6 7));
     }
     inlet
     {
-        type            patch;
-        //neighbourPatch  outlet;
+        type            cyclic;
+        neighbourPatch  outlet;
         faces           ((0 4 7 3));
     }
     outlet
     {
-        type            patch; //cyclic;
-        //neighbourPatch  inlet;
+        type            cyclic;
+        neighbourPatch  inlet;
         faces           ((2 6 5 1));
     }
     ground
     {
-        type patch;
+        type            cyclic;
+        neighbourPatch  top;
         faces ((0 3 2 1));
     }
     front

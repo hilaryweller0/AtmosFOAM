@@ -23,23 +23,20 @@ boundaryField
 {
     top
     {
-        type            inletOutlet;
-        inletValue           uniform 0;
+        //type            inletOutlet;
+        type            cyclic;
     }
     inlet
     {
-        type            inletOutlet;
-        inletValue           uniform 0;
+        type            cyclic;
     }
     outlet
     {
-        type            inletOutlet;
-        inletValue           uniform 0;
+        type            cyclic;
     }
     ground
     {
-        type            inletOutlet;
-        inletValue           uniform 0;
+        type            cyclic;
     }
     front
     {

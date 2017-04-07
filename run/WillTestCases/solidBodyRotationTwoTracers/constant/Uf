@@ -23,23 +23,21 @@ boundaryField
 {
     top
     {
-        type            calculated;
-        value           uniform (0 0 0);
+        //type            calculated;
+        //value           uniform (0 0 0);
+        type            cyclic;
     }
     inlet
     {
-        type            calculated;
-        value           uniform (0 0 0);
+        type            cyclic;
     }
     outlet
     {
-        type            calculated;
-        value           uniform (0 0 0);
+        type            cyclic;
     }
     ground
     {
-        type            calculated;
-        value           uniform (0 0 0);
+        type            cyclic;
     }
     front
     {

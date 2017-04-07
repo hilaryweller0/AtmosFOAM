@@ -81,10 +81,10 @@ int main(int argc, char *argv[])
             (
                 fvm::ddt(rho,q)
                 + 0.5*fvc::div(fluxOld,q.oldTime())
-                //+ 0.5*rho1Damping*q.oldTime()*rho.oldTime()
-                //- 0.5*rho2Damping*( (1-q.oldTime())*rho.oldTime() - rhoAir )
-                + 0.5*rho1Damping*0.5*( q.oldTime()*rho.oldTime() + mag(q.oldTime()*rho.oldTime()) )
-                - 0.5*rho2Damping*0.5*( (1 - q.oldTime())*rho.oldTime() - rhoAir + mag( (1 - q.oldTime())*rho.oldTime() - rhoAir ) )
+                + 0.5*rho1Damping*q.oldTime()*rho.oldTime()
+                - 0.5*rho2Damping*( (1-q.oldTime())*rho.oldTime() - rhoAir )
+                //+ 0.5*rho1Damping*0.5*( q.oldTime()*rho.oldTime() + mag(q.oldTime()*rho.oldTime()) )
+                //- 0.5*rho2Damping*0.5*( (1 - q.oldTime())*rho.oldTime() - rhoAir + mag( (1 - q.oldTime())*rho.oldTime() - rhoAir ) )
             );
             fvScalarMatrix rhoEqn
             (
@@ -113,8 +113,16 @@ int main(int argc, char *argv[])
             }
             else
             {
-                qEqn += 0.5*rho1Damping*0.5*( q*rho + mag(q*rho) )
-                      - 0.5*rho2Damping*0.5*( (1 - q)*rho - rhoAir + mag( (1 - q)*rho - rhoAir ) );
+                //qEqn += 0.5*rho1Damping*0.5*( q*rho + mag(q*rho) )
+                //      - 0.5*rho2Damping*0.5*( (1 - q)*rho - rhoAir + mag( (1 - q)*rho - rhoAir ) );
+                
+                
+                //qEqn += 0.5*rho1Damping*q*rho;
+                qEqn += - 0.5*rho2Damping*((1 - q)*rho - rhoAir);
+                
+                qEqn += 0.5*fvm::Sp(rho1Damping*rho, q);
+                //qEqn += 0.5*fvm::Sp(rho2Damping*rho, q)
+                //      - 0.5*rho2Damping*( rho - rhoAir );
             }
             
             // Solve the matrices for the equations

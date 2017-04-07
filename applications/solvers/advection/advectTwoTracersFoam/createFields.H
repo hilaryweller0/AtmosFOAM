@@ -1,10 +1,10 @@
 Info<< "Reading field T\n" << endl;
 
-volScalarField T1
+volScalarField rho1
 (
     IOobject
     (
-        "T1",
+        "rho1",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -12,14 +12,14 @@ volScalarField T1
     ),
     mesh
 );
-// Ensure that T.oldTime() is stored
-T1.oldTime();
+// Ensure that rho1.oldTime() is stored
+rho1.oldTime();
 
-volScalarField T2
+volScalarField rho2
 (
     IOobject
     (
-        "T2",
+        "rho2",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -27,37 +27,22 @@ volScalarField T2
     ),
     mesh
 );
-// Ensure that T.oldTime() is stored
-T2.oldTime();
+rho2.oldTime();
 
-volScalarField T
+volScalarField rho
 (
     IOobject
     (
-        "T",
+        "rho",
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    T1+T2,
-    T1.boundaryField()
+    rho1+rho2,
+    rho1.boundaryField()
 );
-T.oldTime();
-
-volScalarField q
-(
-    IOobject
-    (
-        "q",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::NO_WRITE
-    ),
-    T2
-);
-q.oldTime();
+rho.oldTime();
 
 surfaceScalarField phi
 (
