@@ -8,3 +8,4 @@ FoamFile
 }
 
 sourceLengthScale sourceLengthScale [0 1 0 0 0] 1000;
+angularVelocity angularVelocity [0 0 -1 0 0] -0.005236;

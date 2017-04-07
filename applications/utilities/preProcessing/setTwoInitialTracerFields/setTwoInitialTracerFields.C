@@ -8,6 +8,13 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
+    Info << "Reading r_init" << endl;
+    volScalarField r_init
+    (
+        IOobject("r_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+
     Info << "Reading rho_init" << endl;
     volScalarField rho_init
     (
@@ -20,6 +27,13 @@ int main(int argc, char *argv[])
     (
         IOobject("rhof_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
         linearInterpolate(rho_init)
+    );
+    
+    Info << "Creating r" << endl;
+    volScalarField r
+    (
+        IOobject("r", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
     );
     
     Info << "Creating rho" << endl;
@@ -61,9 +75,23 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
+    
+    IOdictionary rDict
+    (
+        IOobject
+        (
+            "rDict",
+            mesh.time().system(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
 
     const noAdvection velocityField;
     autoPtr<tracerField> tracer(tracerField::New(tracerDict, velocityField));
+    
+    autoPtr<tracerField> rVal(tracerField::New(rDict, velocityField));
     
     Info << "writing rho for time " << runTime.timeName() << endl;
     tracer->applyTo(rho);
@@ -79,6 +107,10 @@ int main(int argc, char *argv[])
     Info << "writing rhof for time " << runTime.timeName() << endl;
     tracer->applyTo(rhof);
     rhof.write();
+    
+    Info << "writing r" << endl;
+    rVal->applyTo(r);
+    r.write();
 
     return EXIT_SUCCESS;
 }
