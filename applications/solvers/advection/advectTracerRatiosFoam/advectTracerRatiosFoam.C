@@ -71,61 +71,75 @@ int main(int argc, char *argv[])
         {
             const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
         
-            fluxOld = fvc::interpolate(T.oldTime())*phi;
-            flux = fvc::interpolate(T)*phi;
+            //rho = rho12 + rhoAir;
+            fluxOld = fvc::interpolate(rho.oldTime())*phi;
+            flux = fvc::interpolate(rho)*phi;
             
-            // Setup the matrix without adding implicit/explicit parts
+            // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix qEqn
             (
-              fvm::ddt(T,q)
-              + 0.5*fvc::div(fluxOld,q.oldTime())
-              + 0.5*T1damping*q.oldTime()*T.oldTime()
-              - 0.5*T2damping*( (1-q.oldTime())*T.oldTime() - rhoAir )
+                fvm::ddt(rho,q)
+                + 0.5*fvc::div(fluxOld,q.oldTime())
+                + 0.5*rho1Damping*q.oldTime()*rho.oldTime()
+                - 0.5*rho2Damping*( (1-q.oldTime())*rho.oldTime() - rhoAir )
+                //+ 0.5*rho1Damping*0.5*( q.oldTime()*rho.oldTime() + mag(q.oldTime()*rho.oldTime()) )
+                //- 0.5*rho2Damping*0.5*( (1 - q.oldTime())*rho.oldTime() - rhoAir + mag( (1 - q.oldTime())*rho.oldTime() - rhoAir ) )
             );
-            fvScalarMatrix TEqn
+            fvScalarMatrix rhoEqn
             (
-                fvm::ddt(T)
-              + 0.5*fvc::div(phi, T.oldTime())
+                fvm::ddt(rho)
+                + 0.5*fvc::div(phi, rho.oldTime())
             );
 
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
                 qEqn += 0.5*fvm::div(flux,q);
-                TEqn += 0.5*fvm::div(phi, T);
+                rhoEqn += 0.5*fvm::div(phi, rho);
             }
             else
             {
                 qEqn += 0.5*fvc::div(flux,q);
-                TEqn += 0.5*fvc::div(phi, T);
+                rhoEqn += 0.5*fvc::div(phi, rho);
             }
             
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                qEqn += 0.5*fvm::Sp(T1damping*T, q)
-                      + 0.5*fvm::Sp(T2damping*T, q)
-                      - 0.5*T2damping*( T - rhoAir );
+                qEqn += 0.5*fvm::Sp(rho1Damping*rho, q)
+                      + 0.5*fvm::Sp(rho2Damping*rho, q)
+                      - 0.5*rho2Damping*( rho - rhoAir );
             }
             else
             {
-                qEqn += 0.5*T1damping*q*T
-                      - 0.5*T2damping*( (1 - q)*T - rhoAir );
+                //qEqn += 0.5*rho1Damping*0.5*( q*rho + mag(q*rho) )
+                //      - 0.5*rho2Damping*0.5*( (1 - q)*rho - rhoAir + mag( (1 - q)*rho - rhoAir ) );
+                
+                
+                //qEqn += 0.5*rho1Damping*q*rho;
+                qEqn += - 0.5*rho2Damping*((1 - q)*rho - rhoAir);
+                
+                qEqn += 0.5*fvm::Sp(rho1Damping*rho, q);
+                //qEqn += 0.5*fvm::Sp(rho2Damping*rho, q)
+                //      - 0.5*rho2Damping*( rho - rhoAir );
             }
             
             // Solve the matrices for the equations
-            TEqn.solve();
-            Info << "Writing T and q after T.solve" << endl;
+            
             qEqn.solve();
+            rhoEqn.solve();
+            
+            Info << "Writing rho and q after rho.solve" << endl;
+            
             
         }
-        Info << " T goes from " << min(T.internalField()).value() << " to "
-             << max(T.internalField()).value() << endl;
+        Info << " rho goes from " << min(rho.internalField()).value() << " to "
+             << max(rho.internalField()).value() << endl;
         Info << " q goes from " << min(q.internalField()).value() << " to "
              << max(q.internalField()).value() << endl;
-        Info << " Total T in system: " << sum(T.internalField()) << endl;
-        Info << " T1 fraction: " << sum(q.internalField()*T.internalField())/sum(T.internalField())
+        Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
+        Info << " rho1 fraction: " << sum(q.internalField()*rho.internalField())/sum(rho.internalField())
          << endl;
         runTime.write();
     }
@@ -138,4 +152,4 @@ int main(int argc, char *argv[])
 }
 
 
-// ************************************************************************* //\
+// ************************************************************************* //

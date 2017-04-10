@@ -12,6 +12,7 @@ IOdictionary dict
 
 const int sourcePresent = dict.lookupOrDefault<int>("sourcePresent", int(1));
 const dimensionedScalar sourceLengthScale(dict.lookup("sourceLengthScale"));
+const dimensionedScalar angularVelocity(dict.lookup("angularVelocity"));
 
 // The vertical velocity used for calculating the source terms
 const volScalarField w = U.component(vector::Z);

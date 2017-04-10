@@ -8,10 +8,10 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
 
-    Info << "Reading T_init" << endl;
-    volScalarField T_init
+    Info << "Reading rho_init" << endl;
+    volScalarField rho_init
     (
-        IOobject("T_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        IOobject("rho_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
     
@@ -22,11 +22,11 @@ int main(int argc, char *argv[])
         mesh
     );
 
-    Info << "Reading or creating tracer field Tf_init" << endl;
-    surfaceScalarField Tf_init
+    Info << "Reading or creating tracer field rhof_init" << endl;
+    surfaceScalarField rhof_init
     (
-        IOobject("Tf_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-        linearInterpolate(T_init)
+        IOobject("rhof_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        linearInterpolate(rho_init)
     );
 
     Info << "Creating q" << endl;
@@ -36,18 +36,18 @@ int main(int argc, char *argv[])
         q_init
     );
 
-    Info << "Creating T" << endl;
-    volScalarField T
+    Info << "Creating rho" << endl;
+    volScalarField rho
     (
-        IOobject("T", runTime.timeName(), mesh, IOobject::NO_READ),
-        T_init
+        IOobject("rho", runTime.timeName(), mesh, IOobject::NO_READ),
+        rho_init
     );
 
-    Info << "Creating Tf" << endl;
-    surfaceScalarField Tf
+    Info << "Creating rhof" << endl;
+    surfaceScalarField rhof
     (
-        IOobject("Tf", runTime.timeName(), mesh, IOobject::NO_READ),
-        Tf_init
+        IOobject("rhof", runTime.timeName(), mesh, IOobject::NO_READ),
+        rhof_init
     );
 
     IOdictionary tracerDict
@@ -82,13 +82,13 @@ int main(int argc, char *argv[])
     qtracer->applyTo(q);
     q.write();
 
-    Info << "writing T for time " << runTime.timeName() << endl;
-    tracer->applyTo(T);
-    T.write();
+    Info << "writing rho for time " << runTime.timeName() << endl;
+    tracer->applyTo(rho);
+    rho.write();
 
-    Info << "writing Tf for time " << runTime.timeName() << endl;
-    tracer->applyTo(Tf);
-    Tf.write();
+    Info << "writing rhof for time " << runTime.timeName() << endl;
+    tracer->applyTo(rhof);
+    rhof.write();
 
     return EXIT_SUCCESS;
 }

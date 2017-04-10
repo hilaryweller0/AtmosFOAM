@@ -8,7 +8,8 @@ runApplication blockMesh
 mkdir 0
 runApplication setVelocityField -time 0
 runApplication setTwoInitialTracerFields
-runApplication advectTwoTracersFoam
+#runApplication advectTwoTracersFoam
+runApplication advectWithEqOfStateFoam
 runApplication gmtFoam T1
 runApplication gmtFoam T2
 time=200

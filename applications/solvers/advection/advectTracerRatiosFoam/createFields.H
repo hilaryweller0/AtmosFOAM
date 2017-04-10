@@ -15,11 +15,11 @@ volScalarField q
 // Ensure that q.oldTime() is stored
 q.oldTime();
 
-volScalarField T
+volScalarField rho
 (
     IOobject
     (
-        "T",
+        "rho",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -27,21 +27,20 @@ volScalarField T
     ),
     mesh
 );
-T.oldTime();
+rho.oldTime();
 
-volScalarField rho1
+volScalarField rho12
 (
     IOobject
     (
-        "rho1",
+        "rho12",
         runTime.timeName(),
         mesh,
-        IOobject::READ_IF_PRESENT,
+        IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    q*T.oldTime()
+    rho
 );
-rho1.oldTime();
 
 surfaceScalarField phi
 (
@@ -66,7 +65,7 @@ surfaceScalarField flux
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    fvc::interpolate(T)*phi
+    fvc::interpolate(rho)*phi
 );
 
 surfaceScalarField fluxOld
@@ -79,7 +78,7 @@ surfaceScalarField fluxOld
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    fvc::interpolate(T)*phi
+    fvc::interpolate(rho)*phi
 );
 
 volVectorField U

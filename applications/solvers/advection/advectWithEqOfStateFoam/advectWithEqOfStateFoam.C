@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectTwoTracersFoam
+    advectWithEqOfStateFoam
 
 Description
     Solves a transport equation for two tracers T1 and T2.
@@ -48,11 +48,7 @@ int main(int argc, char *argv[])
     (
         "implicitAdvection", false
     );
-    const bool implicitSource = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "implicitSource", false
-    );
-
+    
     #include "calculateSource.H"
 
     Info<< "\nCalculating advection\n" << endl;
@@ -71,53 +67,43 @@ int main(int argc, char *argv[])
         {
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
-            fvScalarMatrix rho1Eqn
-            (
-                fvm::ddt(rho1)
-              + 0.5*fvc::div(phi, rho1.oldTime())
-              + 0.5*rho1damping*rho1.oldTime()
-              - 0.5*rho2damping*rho2.oldTime() - 0.5*rho2damping*rho2
-            );
-            fvScalarMatrix rho2Eqn
-            (
-                fvm::ddt(rho2)
-              + 0.5*fvc::div(phi, rho2.oldTime())
-              + 0.5*rho2damping*rho2.oldTime()
-              - 0.5*rho1damping*rho1.oldTime() - 0.5*rho1damping*rho1
-            );
             fvScalarMatrix rhoEqn(fvm::ddt(rho) + 0.5*fvc::div(phi, rho.oldTime()));
 
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
-                rho1Eqn += 0.5*fvm::div(phi, rho1);
-                rho2Eqn += 0.5*fvm::div(phi, rho2);
                 rhoEqn += 0.5*fvm::div(phi, rho);
             }
             else
             {
-                rho1Eqn += 0.5*fvc::div(phi, rho1);
-                rho2Eqn += 0.5*fvc::div(phi, rho2);
                 rhoEqn += 0.5*fvc::div(phi, rho);
             }
             
-            // Add the damping terms, either implicit or explicit
-            if (implicitSource)
-            {
-                rho1Eqn += fvm::Sp(0.5*rho1damping, rho1);
-                rho2Eqn += fvm::Sp(0.5*rho2damping, rho2);
-            }
-            else
-            {
-                rho1Eqn += 0.5*rho1damping*rho1;
-                rho2Eqn += 0.5*rho2damping*rho2;
-            }
             
             // Solve the matrices for the equations
-            rho1Eqn.solve();
-            rho2Eqn.solve();
             rhoEqn.solve();
         }
+        
+        double t_now = runTime.time().value();
+        double angVel = -0.005236;
+        Info << 1 << endl;
+        volScalarField q = 0*r/(r+sourceLengthScale);
+        Info << 2 << endl;
+        
+        if (t_now <= 300.)
+        {
+            q = Foam::exp(r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)-1) );
+        }        
+        else 
+        {
+            q = 1 - (1 - Foam::exp(-2*r/sourceLengthScale))*Foam::exp(-r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)+1) );
+        }
+        
+        //for (dimensionedScalar loop=0*runTime.timeName()*w; loop+1 < runTime.timeName()*w/(2*M_PI); loop = loop + 1)
+        //{}
+        
+        rho1 = q*rho;
+        
         Info << " rho goes from " << min(rho.internalField()).value() << " to "
              << max(rho.internalField()).value() << endl;
         Info << " rho1 goes from " << min(rho1.internalField()).value() << " to "
