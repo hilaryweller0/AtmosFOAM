@@ -24,10 +24,18 @@ const dimensionedScalar f0(envProperties.lookup("f0"));
 Info << "Reading in the variation of Coriolis with y, beta" << endl;
 const dimensionedScalar beta(envProperties.lookup("beta"));
 
-volVectorField twoOmega
+surfaceVectorField two_dxOmega
 (
-    IOobject("twoOmega", runTime.timeName(), mesh),
-    (f0 + beta * mesh.C().component(1))*OmegaHat
+    IOobject("two_dxOmega", runTime.timeName(), mesh),
+    (f0 + beta * mesh.Cf().component(1))*(H.delta() ^ OmegaHat)
 );
-twoOmega.write();
 
+// Geostrophic Velocity to maintain
+const dimensionedVector Ug
+(
+    envProperties.lookupOrDefault<dimensionedVector>
+    (
+        "Ug",
+        dimensionedVector("Ug", dimVelocity, vector::zero)
+    )
+);
