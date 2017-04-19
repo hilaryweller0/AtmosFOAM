@@ -79,15 +79,12 @@ int main(int argc, char *argv[])
         hf = fvc::interpolate(h);
         phi = hf*(Uf & mesh.Sf());
         
-        surfaceScalarField phiTmp = dt*fvc::flux
-        (
-          - fvc::div(phi,U)/h
-          - (twoOmega ^ U)
-        );
+        surfaceScalarField phiTmp = -dt*fvc::flux(fvc::div(phi,U))
+                                    -dt*hf*fvc::flux(twoOmega ^ U);
         
         fvScalarMatrix hEqn
         (
-            fvc::div(phiTmp) - fvm::laplacian(dt*g, h, "laplacian(h)")
+            fvc::div(phiTmp) - fvm::laplacian(dt*g*hf, h, "laplacian(h)")
         );
         hEqn.setReference(0, h[0]);
         converged = hEqn.solve(mesh.solver(h.name())).nIterations() == 0;
