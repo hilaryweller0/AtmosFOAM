@@ -1,0 +1,29 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X12c/12c";
+projection2D XZ;
+
+FieldsToPlot
+1
+(
+    [theta filledContours 297.95 302.05 0.1 "$GMTU/colours/red_white_blue.cpt"]
+);
+
+separateLegend true;
+region "-5000/5000/2500/12500";
+annotate "minMax -5e3 1.7e3";
+lastPlot false;

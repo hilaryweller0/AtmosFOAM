@@ -1,0 +1,31 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XZ;
+
+FieldsToPlot
+1
+(
+    [Uf vectors 30 5 "black"]
+//    [Ufz contours 0 30 2 "2pt,black"]
+//    [Ufz contours -30 -2 2 "2pt,black,15_15:0"]
+);
+
+//separateLegend true;
+//region "-6000/6000/3000/15000";
+//annotate "minMax 0.01 -0.005";
+

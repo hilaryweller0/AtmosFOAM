@@ -20,7 +20,7 @@ projection2D XZ;
 FieldsToPlot
 (
     [thetaDiff filledContours -3.1 3.1 0.2 "$GMTU/colours/red_white_blue.cpt"]
-//    [thetaDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+//    [thetaDiff filledContours -0.1 0.1 0.01 "$GMTU/colours/red_white_blue.cpt"]
     [Uf vectors 100 17 "black"]
 );
 
@@ -29,4 +29,4 @@ FieldsToPlot
 //annotate "minMax -5e3 1.7e3";
 //boundaryMarks "2500/2500";
 annotate "minMax -1e3 -100";
-
+plotBoundaryDots false;

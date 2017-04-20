@@ -20,11 +20,11 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [waterLiquidFracDiff filledContours 8e-6 1.2e-5 1e-7 "$GMTU/colours/red_white_blue.cpt"]
+    [waterLiquidFracDiff filledContours -1e-8 1e-8 5e-10 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;
 //region "-5000/5000/0/1.25e4";
 annotate "minMax -1e3 -100";
 //boundaryMarks "2500/2500";
-
+plotBoundaryDots false;
