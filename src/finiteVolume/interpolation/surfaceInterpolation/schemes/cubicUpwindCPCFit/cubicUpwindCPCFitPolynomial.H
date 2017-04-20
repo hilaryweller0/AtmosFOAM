@@ -48,7 +48,7 @@ namespace Foam
             return
             (
                 dim == 1 ? 4 :
-                dim == 2 ? 9 :
+                dim == 2 ? 12 :
                 dim == 3 ? 18 : 0
             );
         }
@@ -87,8 +87,15 @@ namespace Foam
                 candidates.append(constant | y | x | xx | xy | yy | xxy);
                 candidates.append(constant | y | x | xx | xy | yy | xyy | xxx);
                 candidates.append(constant | y | x | xx | xy | yy | xyy | xxy);
+                candidates.append(constant | y | x | xx | xy | xxx | xxy | xxxy);
                 candidates.append(constant | y | x | xx | xy | yy | xxx | xxy);
                 candidates.append(constant | y | x | xx | xy | yy | xyy | xxx | xxy);
+                candidates.append(constant | y | x | xx | xy | yy | xyy | xxy | xxyy);
+                candidates.append(constant | y | x | xx | xy | yy | xxx | xxy | xxxy);
+                candidates.append(constant | y | x | xx | xy | yy | xyy | xxx | xxy | xxxy);
+                candidates.append(constant | y | x | xx | xy | yy | xyy | xxx | xxy | xxyy);
+                candidates.append(constant | y | x | xx | xy | yy | xyy | xxx | xxy | xxxy | xxyy);
+                candidates.append(constant | y | x | xx | xy | yy | xyy | xxx | xxy | xxxy | xxyy | xxxyy);
             }
             else if (dim == 3)
             {
@@ -994,7 +1001,7 @@ namespace Foam
         static label rowOf(const label term, const uint32_t terms)
         {
             label index = 0;
-            for (label i=0; i<16; i++)
+            for (label i=0; i<=20; i++)
             {
                 if ((1 << i) == term && (term & terms)) return index;
                 if ((1 << i) && terms) index++;
@@ -1021,6 +1028,9 @@ namespace Foam
         static const label xzz      = 1 << 15;
         static const label yyz      = 1 << 16;
         static const label yzz      = 1 << 17;
+        static const label xxyy     = 1 << 18;
+        static const label xxxy     = 1 << 19;
+        static const label xxxyy    = 1 << 20;
     };
 }
 

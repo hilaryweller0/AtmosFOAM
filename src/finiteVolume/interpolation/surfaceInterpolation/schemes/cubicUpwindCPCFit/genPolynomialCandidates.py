@@ -63,7 +63,7 @@ if len(sys.argv) > 3+1:
 max_degrees = tuple([int(arg) for arg in sys.argv[1:]])
 
 exponents = itertools.product(range(max(max_degrees)+1), repeat=len(max_degrees))
-exponents = [e for e in exponents if sum(e) <= max(max_degrees) and each_degree_le_max(e)]
+exponents = [e for e in exponents if each_degree_le_max(e)]
 
 M = set(exponents)
 
@@ -72,5 +72,3 @@ for length in range(2,len(M)+1):
     dense_subsets = [s for s in subsets if dense(s)]
     print("\n".join([format_polynomial(s) for s in dense_subsets]))
 
-# TODO: stricter constraints for including xy/xz/yz?
-# TODO: remove yz^2 and y^2z?
