@@ -58,6 +58,10 @@ gv $time/thetaDiff.pdf &
 sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
 gmtFoam -time $time ExnerDiff
 gv $time/ExnerDiff.pdf &
+sumFields $time waterLiquidFracDiff $time stable.waterLiquidFrac \
+          0 stable.waterLiquidFrac -scale1 -1
+gmtFoam -time $time waterLiquidFracDiff
+gv $time/waterLiquidFracDiff.pdf &
 
 time=700
 for part in buoyant stable; do

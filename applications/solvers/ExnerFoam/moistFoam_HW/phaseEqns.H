@@ -40,13 +40,3 @@ for(label ip = 0; ip < atmos.size(); ip++)
     }
 }
 
-//Info << "After advection air.rho goes from "
-//     << min(air.rho().internalField()).value() << " to "
-//     << max(air.rho().internalField()).value() << nl
-//     << "Water vapour density goes from "
-//     << min(water.gas().rho().internalField()).value() << " to "
-//     << max(water.gas().rho().internalField()).value() << nl
-//     << "Water liquid fraction goes from "
-//     << min(water.liquid().v().internalField()).value() << " to "
-//     << max(water.liquid().v().internalField()).value() << endl;
-

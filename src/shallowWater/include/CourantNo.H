@@ -37,7 +37,7 @@ if (mesh.nInternalFaces())
 {
     scalarField sumPhi
     (
-        fvc::surfaceSum(mag(phi))().primitiveField()/h.primitiveField()
+        fvc::surfaceSum(mag(phi))().primitiveField()/h0.primitiveField()
     );
 
     CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();

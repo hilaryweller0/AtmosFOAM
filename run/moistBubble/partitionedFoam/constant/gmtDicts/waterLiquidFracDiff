@@ -20,7 +20,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [waterLiquidFracDiff filledContours -1e-8 1e-8 5e-10 "$GMTU/colours/red_white_blue.cpt"]
+    [waterLiquidFracDiff filledContours -1e-6 1e-6 5e-8 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;
