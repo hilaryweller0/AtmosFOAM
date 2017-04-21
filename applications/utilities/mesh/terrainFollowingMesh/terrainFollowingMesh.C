@@ -1,4 +1,7 @@
-#include "fvCFD.H"
+#include "Time.H"
+#include "polyMesh.H"
+#include "argList.H"
+
 #include "terrainFollowingTransform.H"
 
 int main(int argc, char *argv[])
@@ -19,7 +22,7 @@ int main(int argc, char *argv[])
     Info << "Create mesh for time = " << runTime.timeName() <<  " region "
          << meshRegion << endl;
 
-    fvMesh mesh
+    polyMesh mesh
     (
         Foam::IOobject
         (
