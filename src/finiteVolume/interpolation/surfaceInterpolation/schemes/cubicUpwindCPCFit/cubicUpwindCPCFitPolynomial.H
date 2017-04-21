@@ -973,6 +973,9 @@ namespace Foam
             coeffs[curIdx++] = weight*d.x();
             coeffs[curIdx++] = weight*sqr(d.x());
             coeffs[curIdx++] = weight*pow(d.x(),3);
+            coeffs[curIdx++] = weight*sqr(d.x())*sqr(d.y());
+            coeffs[curIdx++] = weight*pow(d.x(),3)*d.y();
+            coeffs[curIdx++] = weight*pow(d.x(),3)*sqr(d.y());
 
             if (dim >= 2)
             {
@@ -1019,18 +1022,18 @@ namespace Foam
         static const label yy       = 1 << 6;
         static const label xxy      = 1 << 7;
         static const label xyy      = 1 << 8;
-        static const label z        = 1 << 9;
-        static const label xz       = 1 << 10;
-        static const label yz       = 1 << 11;
-        static const label zz       = 1 << 12;
-        static const label xyz      = 1 << 13;
-        static const label xxz      = 1 << 14;
-        static const label xzz      = 1 << 15;
-        static const label yyz      = 1 << 16;
-        static const label yzz      = 1 << 17;
-        static const label xxyy     = 1 << 18;
-        static const label xxxy     = 1 << 19;
-        static const label xxxyy    = 1 << 20;
+        static const label xxyy     = 1 << 9;
+        static const label xxxy     = 1 << 10;
+        static const label xxxyy    = 1 << 11;
+        static const label z        = 1 << 12;
+        static const label xz       = 1 << 13;
+        static const label yz       = 1 << 14;
+        static const label zz       = 1 << 15;
+        static const label xyz      = 1 << 16;
+        static const label xxz      = 1 << 17;
+        static const label xzz      = 1 << 18;
+        static const label yyz      = 1 << 19;
+        static const label yzz      = 1 << 20;
     };
 }
 
