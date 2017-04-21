@@ -1,0 +1,33 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X9c/9c";
+projection2D XZ;
+
+FieldsToPlot
+4
+(
+    [theta filledContours 297.95 302.05 0.1 "$GMTU/colours/red_white_blue.cpt"]
+    [Uf vectors 100 41 "black"]
+    [Ufz contours 0 30 2 "black"]
+    [Ufz contours -30 -2 2 "black,5_5:0"]
+);
+
+separateLegend true;
+region "-5000/5000/2500/12500";
+annotate "minMax -5e3 1.7e3";
+boundaryMarks "2500/2500";
+

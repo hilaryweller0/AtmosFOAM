@@ -1,0 +1,31 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+//projection "X18c/22.5c";
+projection "X18c/18c";
+projection2D XZ;
+
+FieldsToPlot
+(
+//    [condForce filledContours -1.05e-5 1.05e-5 1e-6 "$GMTU/colours/red_white_blue.cpt"]
+    [condForce filledContours -3e-8 3e-8 5e-9 "$GMTU/colours/red_white_blue.cpt"]
+);
+
+//separateLegend true;
+//region "-5000/5000/0/1.25e4";
+annotate "minMax -1e3 -100";
+//boundaryMarks "2500/2500";
+

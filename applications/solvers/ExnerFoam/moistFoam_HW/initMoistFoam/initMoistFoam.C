@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
                 // Update liquid water
                 water.liquid().v() = (rt0*air.rho() - water.gas().rho())
                             /water.liquid().rho();
-                            
+                
                 // Update dry air density
                 air.rho() += rho - atmos.sumDensity();
             }
@@ -204,7 +204,11 @@ int main(int argc, char *argv[])
         rho = atmos.rhoFromP(p,T);
 
         // Set water vapour to be saturated
-        water.gas().rho() == water.pSat(T)/(T*water.gas().R());
+        water.gas().rho() == min
+        (
+            water.pSat(T)/(T*water.gas().R()),
+            rt0*air.rho()
+        );
 
         // Update liquid water
         water.liquid().v() = (rt0*air.rho() - water.gas().rho())
@@ -212,7 +216,7 @@ int main(int argc, char *argv[])
         
         air.rho() += rho - atmos.sumDensity();
     }
-    
+
     theta.write();
     atmos.write(); 
     

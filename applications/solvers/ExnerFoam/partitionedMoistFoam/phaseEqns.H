@@ -77,6 +77,25 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
               + offCentre*specie.liquid().dvdt()
             )
         )/sigmai;
+    }
+    
+    // Update air density for this partition from the total
+    parti[0].gas().rho() = sigmaRhoi
+                         - parti[0].liquid().rho()*parti[0].liquid().v();
+    for(label ip = 1; ip < parti.size(); ip++)
+    {
+        parti[0].gas().rho() -= sigmai*
+        (
+            parti[ip].gas().rho()
+         + parti[ip].liquid().rho()*parti[ip].liquid().v()
+        );
+    }
+    parti[0].gas().rho() /= sigmai;
+    
+    // Loop over all atmospheric constituents (species) except air (is=0)
+    for(label is = 1; is < parti.size(); is++)
+    {
+        fluidSpecie& specie = parti[is];
         
         // Apply condensation to volatile species (ie water, not air)
         if (specie.pvs0() < specie.gas().p0())
@@ -91,18 +110,5 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
                                         /specie.liquid().rho();
         }
     }
-
-    // Update air density for this partition from the total
-    parti[0].gas().rho() = sigmaRhoi
-                         - parti[0].liquid().rho()*parti[0].liquid().v();
-    for(label ip = 1; ip < parti.size(); ip++)
-    {
-        parti[0].gas().rho() -= sigmai*
-        (
-            parti[ip].gas().rho()
-         + parti[ip].liquid().rho()*parti[ip].liquid().v()
-        );
-    }
-    parti[0].gas().rho() /= sigmai;
 }
 

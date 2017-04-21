@@ -1,0 +1,24 @@
+FoamFile
+{
+    version         1.4.2;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/10c";
+projection2D XZ;
+
+FieldsToPlot
+1
+(
+    [Uz rawValues -2 2 0.1 "$GMTU/colours/red_white_blue.cpt"]
+);

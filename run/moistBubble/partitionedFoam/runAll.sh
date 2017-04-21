@@ -59,6 +59,22 @@ sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
 gmtFoam -time $time ExnerDiff
 gv $time/ExnerDiff.pdf &
 
+time=700
+for part in buoyant stable; do
+    for var in airLiquidFrac airVapourRho sigma sigmaRho T theta waterLiquidFrac waterVapourRho; do
+        sumFields $time varDiff $time $part.$var 0 $part.$var -scale1 -1
+        gmtFoam -time $time topCorner
+        echo $part $var
+        gv $time/topCorner.pdf
+    done
+done
+
+var=waterLiquidFrac
+for part in buoyant stable; do
+    sumFields $time ${var}Diff $time $part.$var 0 $part.$var -scale1 -1
+    gmtFoam -time $time ${var}Diff
+    gv $time/${var}Diff.pdf
+done
 
 time=100
 gmtFoam -time $time thetaU
