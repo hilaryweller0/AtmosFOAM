@@ -137,7 +137,7 @@ public:
         surfaceScalarField& updateFlux();
         
         //- Update volume fractions in all the partitions
-        void updateSigmas(const volScalarField& p);
+        void updateSigmas(volScalarField& Exner);
 
         //- Density weighted total gas constant
         tmp<volScalarField> rhoR() const;

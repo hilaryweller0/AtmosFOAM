@@ -119,10 +119,16 @@ public:
                 return rho_*R()*T;
             }
             
-            //- Calculate pressure from Exner pressurek
+            //- Calculate pressure from Exner
             inline volScalarField pFromExner(const volScalarField& Exner) const
             {
                 return p0()*pow(Exner, 1/kappa());
+            }
+            
+            //- Calculate Exner from pressure
+            inline volScalarField ExnerFromp(const volScalarField& p) const
+            {
+                return pow(p/p0(), kappa());
             }
 };
 

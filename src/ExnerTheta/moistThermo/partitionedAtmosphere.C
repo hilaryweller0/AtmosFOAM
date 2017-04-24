@@ -230,12 +230,21 @@ Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
     return theta_;
 }
 
-void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
+void Foam::partitionedAtmosphere::updateSigmas(volScalarField& Exner)
 {
+    const perfectGasPhase& air = operator[](0).operator[](0).gas();
+    volScalarField p = air.pFromExner(Exner);
+
     volScalarField sumSigma
     (
         IOobject("sumSigma", p.mesh().time().timeName(), p.mesh()),
         p.mesh(), dimensionedScalar("sum", dimless, scalar(0))
+    );
+
+    volScalarField sumPressure
+    (
+        IOobject("sumPressure", p.mesh().time().timeName(), p.mesh()),
+        p.mesh(), dimensionedScalar("sum", dimPressure, scalar(0))
     );
     
     // Re-calculate all the sigmas
@@ -244,9 +253,13 @@ void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
         partition& parti = operator[](ip);
         parti.updateSigma(p);
         sumSigma += parti.sigma();
+        sumPressure += parti.sigma()*parti.sumPressure(parti.T());
     }
     
-    // Scale fields so that sigmas sum to 1
+    Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
+         << 1-min(sumSigma).value() << endl;
+         
+    // Scale pressure so that sigmas sum to 1
     for(label ip = 0; ip < size(); ip++)
     {
         partition& parti = operator[](ip);
@@ -254,6 +267,26 @@ void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& p)
 //        parti.sigmaRho() /= sumSigma;
 //        parti.flux() /= linearInterpolate(sumSigma);
     }
+
+    Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
+         << 1-min(sumSigma).value() << endl;
+         
+//    // Scale pressure so that sigmas sum to 1
+//    p = sumPressure;
+////    Exner = air.ExnerFromp(p);
+//    
+//    // Check sums again
+//    sumSigma *= 0;
+//    for(label ip = 0; ip < size(); ip++)
+//    {
+//        partition& parti = operator[](ip);
+//        parti.updateSigma(p);
+//        sumSigma += parti.sigma();
+//        sumPressure += parti.sigma()*parti.sumPressure(parti.T());
+//    }
+//    
+//    Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
+//         << 1-min(sumSigma).value() << endl;
 }
 
 
@@ -335,7 +368,7 @@ Foam::volScalarField& Foam::partitionedAtmosphere::ExnerFromState
     const perfectGasPhase& air = operator[](0).operator[](0).gas();
     const scalar kappa = air.kappa();
 
-    Exner = pow
+    Exner == pow
     (
         rhoR()*updateTheta()/(air.p0()*(1-volLiquid())),
         kappa/(1-kappa)

@@ -75,11 +75,11 @@ int main(int argc, char *argv[])
                 #include "rhoThetaEqn.H"
             }
             #include "exnerEqn.H"
-            p = air.pFromExner(Exner);
-            atmosParts.updateSigmas(p);
+            //p = air.pFromExner(Exner);
+            atmosParts.updateSigmas(Exner);
         }
 
-//        #include "compressibleContinuityErrs.H"
+        #include "compressibleContinuityErrs.H"
 
        runTime.write();
 

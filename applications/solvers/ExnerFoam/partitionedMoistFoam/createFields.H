@@ -45,7 +45,7 @@ atmosParts.ExnerFromState(Exner);
 Exner.oldTime();
 Exner.write();
 
-volScalarField p("p", air.pFromExner(Exner));
+//volScalarField p("p", air.pFromExner(Exner));
 
 // Fields needed in the Helmholtz equation
 volScalarField Psi("Psi", atmosParts.rho()/Exner);

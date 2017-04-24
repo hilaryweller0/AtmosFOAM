@@ -15,8 +15,7 @@ cp -r init_0/* 0
 initMoistFoam_HW
 
 # run partitionedMoistFoam
-partitionedMoistFoam >& log &
-tail -f log
+partitionedMoistFoam >& log & sleep 0.01; tail -f log
 
 # Differences from non-partitioned code
 ss=0.9
@@ -63,9 +62,9 @@ sumFields $time waterLiquidFracDiff $time stable.waterLiquidFrac \
 gmtFoam -time $time waterLiquidFracDiff
 gv $time/waterLiquidFracDiff.pdf &
 
-time=700
+time=800
 for part in buoyant stable; do
-    for var in airLiquidFrac airVapourRho sigma sigmaRho T theta waterLiquidFrac waterVapourRho; do
+    for var in airVapourRho sigma sigmaRho T theta waterLiquidFrac waterVapourRho; do
         sumFields $time varDiff $time $part.$var 0 $part.$var -scale1 -1
         gmtFoam -time $time topCorner
         echo $part $var
@@ -73,12 +72,10 @@ for part in buoyant stable; do
     done
 done
 
-var=waterLiquidFrac
-for part in buoyant stable; do
-    sumFields $time ${var}Diff $time $part.$var 0 $part.$var -scale1 -1
-    gmtFoam -time $time ${var}Diff
-    gv $time/${var}Diff.pdf
-done
+# Differences from other code
+time=100
+
+sumFields $time thetaDiff $time stable.theta ../moistFoam_HW/$time
 
 time=100
 gmtFoam -time $time thetaU

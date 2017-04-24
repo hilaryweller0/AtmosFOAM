@@ -246,7 +246,7 @@ Foam::tmp<Foam::volScalarField> Foam::partition::thetaSource() const
                 time.timeName(),
                 mesh
             ),
-            -fvc::div(Uf() & mesh.Sf())
+            -fvc::div(flux()/fvc::interpolate(sigmaRho()))
         )
     );
     volScalarField& S = tS.ref();

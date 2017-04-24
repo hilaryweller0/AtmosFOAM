@@ -13,7 +13,6 @@ theta =
 // Calculate and apply source term
 T = theta*Exner;
 volScalarField heatSource("heatSource", theta*atmos.thetaSource(T, divu));
-heatSource.write();
 
 dRhoThetadt += rho*heatSource;
 theta += dt*offCentre*heatSource;

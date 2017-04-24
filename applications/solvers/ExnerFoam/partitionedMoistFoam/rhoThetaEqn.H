@@ -25,7 +25,6 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         parti.partitionName()+"heatSource",
         thetai*parti.thetaSource()
     );
-    heatSource.write();
 
     parti.dSigmaRhoThetadt() += sigmaRhoi*heatSource;
     thetai += dt*offCentre*heatSource;
