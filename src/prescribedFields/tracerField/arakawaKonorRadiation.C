@@ -21,7 +21,7 @@ scalar arakawaKonorRadiationTracerField::tracerAt
 {
     if (p.z() >= 3900 - SMALL && p.z() <= 4550 + SMALL)
     {
-        return 10;
+        return 10*Foam::sin(2*M_PI*p.x()/20e3);
     }
     else
     {
