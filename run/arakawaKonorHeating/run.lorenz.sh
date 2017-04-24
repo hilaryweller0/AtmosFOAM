@@ -5,6 +5,10 @@ blockMesh
 setTheta
 setExnerBalancedH
 createSpongeLayer
-thermoVars
+setInitialTracerField
+mv 0/T constant/radiation
+mv 0/Tf constant/radiationf
+#thermoVars
+gmtFoam -time constant radiation
 cp constant/Uf 0/Uf
 exnerFoamH
