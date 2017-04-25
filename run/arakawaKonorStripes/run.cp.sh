@@ -19,10 +19,10 @@ sumFields -scale0 1 -scale1 1 0 thetaf 0 thetaf.bg 0 thetaf.anom
 
 cp init_0/Uf 0/Uf
 set +e
-exnerFoamCP
+exnerFoamCPinterpGrad
 
-#for t in [0-9]*
-#do
-#	sumFields -scale0 1 -scale1 -1 $t theta_diff $t theta 0 theta.bg
-#	sumFields -scale0 1 -scale1 -1 $t thetaf_diff $t thetaf 0 thetaf.bg
-#done
+for t in [0-9]*
+do
+	sumFields -scale0 1 -scale1 -1 $t theta_diff $t theta 0 theta.bg
+	sumFields -scale0 1 -scale1 -1 $t thetaf_diff $t thetaf 0 thetaf.bg
+done

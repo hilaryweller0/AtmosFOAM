@@ -11,19 +11,16 @@ FoamFile {
         object          gmtDict;
 }
 
-projection "X5i/5i";
+projection "X10i/4i";
 projection2D XZ;
 separateLegend false;
 plotBoundaryDots false;
 //plotZeroValuePolys false;
 
 FieldsToPlot (
-        [theta rawValues 0 24 1 "$GMTU/colours/green_linear.cpt"]
-        [thetaf rawValues 0 24 1 "$GMTU/colours/green_linear.cpt"]
-        [thetaf rawBoundaryValues 0 24 1 "$GMTU/colours/green_linear.cpt"]
-//        [none mesh "gray"]
+        [none mesh "gray"]
         [none numbered 0]
 );
 
-region "-0.5/3.5/-0.5/3.5";
-boundaryMarks "1/1WSen";
+region "-10.5e3/10.5e3/48e3/52.5e3";
+boundaryMarks "5e3/10e3WSen";
