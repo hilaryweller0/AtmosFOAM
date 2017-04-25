@@ -18,9 +18,8 @@ plotBoundaryDots false;
 //plotZeroValuePolys false;
 
 FieldsToPlot (
-        [theta rawValues 0 10 1 "$GMTU/colours/green_linear.cpt"]
-        [theta rawValues 0 10 1 "$GMTU/colours/green_linear.cpt"]
-        [theta rawBoundaryValues 0 10 1 "$GMTU/colours/green_linear.cpt"]
+        [b rawValues 0 24 1 "$GMTU/colours/green_linear.cpt"]
+        [b rawBoundaryValues 0 24 1 "$GMTU/colours/green_linear.cpt"]
 //      [none mesh "gray"]
         [none numbered 0]
 );
