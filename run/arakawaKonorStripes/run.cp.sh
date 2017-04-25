@@ -19,6 +19,7 @@ sumFields -scale0 1 -scale1 1 0 thetaf 0 thetaf.bg 0 thetaf.anom
 
 cp init_0/Uf 0/Uf
 set +e
+createSpongeLayer
 exnerFoamCPinterpGrad
 
 for t in [0-9]*
