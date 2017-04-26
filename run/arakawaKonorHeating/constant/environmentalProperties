@@ -29,7 +29,7 @@ diffusionCoefficient diffusionCoeff [0 2 -1 0 0] 0;
 BruntVaisallaFreq  1(0.01962);
 zN  2(0 53.0001e3);
 
-spongeBase 42e3;
+spongeBase 30e3;
 spongeTop 52.0001e3;
 spongeMean 1.2;
 

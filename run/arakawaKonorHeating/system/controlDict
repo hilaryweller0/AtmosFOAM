@@ -12,7 +12,7 @@ stopAt          endTime;
 endTime         172800;
 deltaT          25;
 writeControl    runTime;
-writeInterval   400;
+writeInterval   800;
 purgeWrite      0;
 writeFormat     ascii;
 writePrecision  12;
