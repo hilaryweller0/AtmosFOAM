@@ -17,7 +17,10 @@ sumFields -scale0 1 -scale1 1 0 theta 0 theta.bg 0 theta.anom
 cp init_0/Uf 0/Uf
 set +e
 createSpongeLayer
-exnerFoamH
+
+decomposePar -force -constant
+mpirun --hostfile machines -np 2 exnerFoamH -parallel
+reconstructPar
 
 for t in [0-9]*
 do
