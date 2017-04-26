@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     scalar xSpongeLength = -1;
     if (mag(xSpongeCentre) > SMALL || mag(xSpongeEnd) > SMALL)
     {
-        mag(xSpongeCentre - xSpongeEnd);
+        xSpongeLength = mag(xSpongeCentre - xSpongeEnd);
     }
     const scalar x2SpongeCentre
     (
@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
             }
             
             // set the sponge value if x is between xMin and xMax
+            Info << "xDist " << xDist << " xSpongeLength " << xSpongeLength << endl;
             if (xDist <= xSpongeLength)
             {
                 muSponge[faceI] += muBar
