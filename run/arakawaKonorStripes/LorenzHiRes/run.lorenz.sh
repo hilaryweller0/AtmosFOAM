@@ -19,9 +19,8 @@ set +e
 createSpongeLayer
 
 decomposePar -force -constant
-#mpirun --hostfile machines -np 2 exnerFoamH -parallel >& log &
-#tail -f log
-#reconstructPar
+mpirun --hostfile machines -np 2 exnerFoamH -parallel
+reconstructPar
 
 for t in [0-9]*
 do
