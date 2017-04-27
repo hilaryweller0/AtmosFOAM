@@ -1,0 +1,26 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/10c";
+projection2D XZ;
+
+FieldsToPlot
+(
+    [muSponge rawValues 0 0 0 "$GMTU/colours/white_blue_red.cpt"]
+);
+
+region "-40e3/40e3/20e3/52e3";
+
