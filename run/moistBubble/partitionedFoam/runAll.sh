@@ -63,12 +63,12 @@ gmtFoam -time $time waterLiquidFracDiff
 gv $time/waterLiquidFracDiff.pdf &
 
 time=800
-for part in buoyant stable; do
-    for var in airVapourRho sigma sigmaRho T theta waterLiquidFrac waterVapourRho; do
+for var in sigma sigmaRho theta waterLiquidFrac waterVapourRho; do
+    for part in buoyant stable; do
         sumFields $time varDiff $time $part.$var 0 $part.$var -scale1 -1
-        gmtFoam -time $time topCorner
+        gmtFoam -time $time varDiff
         echo $part $var
-        gv $time/topCorner.pdf
+        gv $time/varDiff.pdf
     done
 done
 

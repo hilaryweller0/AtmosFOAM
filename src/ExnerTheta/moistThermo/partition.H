@@ -95,6 +95,9 @@ class partition
         //- Density potential temperature
         surfaceScalarField thetaRho_;
         
+        //- Compressibility
+        volScalarField Psi_;
+        
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -175,6 +178,10 @@ public:
         //- Density potential temperature
         surfaceScalarField& thetaRho() { return thetaRho_;}
         const surfaceScalarField&  thetaRho() const { return thetaRho_;}
+
+        //- Compressibility
+        volScalarField& Psi() { return Psi_;}
+        const volScalarField& Psi() const { return Psi_; }
 
     // Update functions
 

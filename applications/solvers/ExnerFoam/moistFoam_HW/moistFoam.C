@@ -61,22 +61,33 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
 
+    // Implicit parts of momentum equation
+    surfaceScalarField G("G", 1/(1+offCentre*dt*muSponge));
+
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "compressibleCourantNo.H"
 
+        #include "rhoEqn.H"
+        #include "phaseEqns.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "rhoEqn.H"
-            #include "phaseEqns.H"
             for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
             {
                 #include "rhoThetaEqn.H"
             }
-            #include "exnerEqn.H"
-            p = air.pFromExner(Exner);
+            // Eqn of state
+            atmos.setExnerFromTheta(Exner,theta);
+
+            for (int corr=0; corr<nCorr; corr++)
+            {
+                #include "exnerEqn.H"
+                p = air.pFromExner(Exner);
+                #include "rhoEqn.H"
+                #include "phaseEqns.H"
+            }
         }
 
         #include "compressibleContinuityErrs.H"

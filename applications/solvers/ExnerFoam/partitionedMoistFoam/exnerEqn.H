@@ -4,7 +4,7 @@
     
     for (int corr=0; corr<nCorr; corr++)
     {
-        Psi == atmosParts.rho()/Exner;
+        atmosParts.updateCompressibility(Exner);
 
         // Contributions from each partition
         
@@ -39,7 +39,7 @@
         // The Helmholtz equation for the global Exner pressure 
         fvScalarMatrix ExnerEqn
         (
-            fvm::ddt(Psi, Exner)
+            fvm::ddt(atmosParts.Psi(), Exner)
           - (1-offCentre)*atmosParts.dRhodt().oldTime()
           + offCentre*fvc::div(atmosParts.flux())
           - fvm::laplacian(sqr(offCentre)*dt*gradPcoeff, Exner)
@@ -93,6 +93,31 @@
             );
             atmosParts.Uf() += fvc::interpolate(parti.sigma())*parti.Uf();
         }
+        
+        // Update densities and sigmas
+        volScalarField sumSigma
+        (
+            IOobject("sumSigma", runTime.timeName(), mesh),
+            mesh,
+            dimensionedScalar("sum", dimless, scalar(0))
+        );
+        for(label ip = 0; ip < atmosParts.size(); ip++)
+        {
+            partition& parti = atmosParts[ip];
+            volScalarField rhoi = Exner*parti.Psi();
+            parti.dSigmaRhodt() = -fvc::div(parti.flux());
+            parti.sigma() =
+            (
+                parti.sigmaRho().oldTime()
+              - dt*(1-offCentre)*parti.dSigmaRhodt().oldTime()
+              - dt*offCentre*parti.dSigmaRhodt()
+            )/rhoi;
+            parti.sigmaRho() = parti.sigma()*rhoi;
+            sumSigma += parti.sigma();
+        }
+        atmosParts.sumDensity();
+        Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
+             << 1-min(sumSigma).value() << endl;
     }
 }
 

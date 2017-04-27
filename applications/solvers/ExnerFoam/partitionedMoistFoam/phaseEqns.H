@@ -34,9 +34,6 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
 //}
 //part0.dSigmaRhodt() = -fvc::div(part0.flux());
 
-atmosParts.sumDensity();
-atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
-
 // Update and species densities for all partitions
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {

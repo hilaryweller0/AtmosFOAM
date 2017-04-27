@@ -15,8 +15,7 @@ cp -r init_0/* 0
 initMoistFoam_HW
 
 # run moistFoam
-moistFoam_HW >& log &
-tail -f log
+moistFoam_HW >& log & sleep 0.01; tail -f log
 
 time=0
 for var in airVapourRho waterVapourRho waterLiquidFrac theta Exner

@@ -48,8 +48,8 @@ Exner.write();
 //volScalarField p("p", air.pFromExner(Exner));
 
 // Fields needed in the Helmholtz equation
-volScalarField Psi("Psi", atmosParts.rho()/Exner);
-Psi.oldTime();
+atmosParts.updateCompressibility(Exner);
+atmosParts.Psi().oldTime();
 
 surfaceScalarField gradPcoeff
 (

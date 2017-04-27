@@ -69,6 +69,9 @@ class partitionedAtmosphere
         //- Flux at faces
         surfaceScalarField flux_;
 
+        //- The compressibility
+        volScalarField Psi_;
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -119,6 +122,9 @@ public:
         surfaceScalarField& flux() { return flux_;}
         const surfaceScalarField& flux() const { return flux_;}
 
+        //- The compressibility
+        volScalarField& Psi() { return Psi_;}
+        const volScalarField& Psi() const { return Psi_;}
 
     //- Update and return fields summed over partitions
         //- Total density
@@ -137,7 +143,7 @@ public:
         surfaceScalarField& updateFlux();
         
         //- Update volume fractions in all the partitions
-        void updateSigmas(volScalarField& Exner);
+        void updateSigmas(const volScalarField& Exner);
 
         //- Density weighted total gas constant
         tmp<volScalarField> rhoR() const;
@@ -153,6 +159,9 @@ public:
 
         //- The coefficient in from of grad(Exner) for the Helmholtz eqn
         void setGradPcoeff(surfaceScalarField& gradPcoeff);
+
+        // Update the compressibility, total and for each phase
+        void updateCompressibility(const volScalarField& Exner);
 
         // Output
         void write();

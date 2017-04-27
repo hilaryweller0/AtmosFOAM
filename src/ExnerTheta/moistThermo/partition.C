@@ -128,6 +128,11 @@ Foam::partition::partition
     (
         IOobject(partitionName_+"thetaRho", mesh.time().timeName(), mesh),
         fvc::interpolate(theta_)
+    ),
+    Psi_
+    (
+        IOobject(partitionName_+"Psi", mesh.time().timeName(), mesh),
+        sigmaRho_
     )
 {
     sumVolLiquid();

@@ -62,6 +62,11 @@ Foam::partitionedAtmosphere::partitionedAtmosphere
     (
         IOobject("flux", mesh.time().timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
         mesh, dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0))
+    ),
+    Psi_
+    (
+        IOobject("Psi", mesh.time().timeName(), mesh),
+        mesh, dimensionedScalar("Psi", dimDensity, scalar(0))
     )
 {
     for(label ip = 0; ip < size(); ip++)
@@ -230,7 +235,7 @@ Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
     return theta_;
 }
 
-void Foam::partitionedAtmosphere::updateSigmas(volScalarField& Exner)
+void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& Exner)
 {
     const perfectGasPhase& air = operator[](0).operator[](0).gas();
     volScalarField p = air.pFromExner(Exner);
@@ -396,6 +401,22 @@ void Foam::partitionedAtmosphere::setGradPcoeff
         partition& parti = operator[](ip);
         gradPcoeff += air.Cp()*parti.updateThetaRho()
                       *fvc::interpolate(parti.sigmaRho());
+    }
+}
+
+
+void Foam::partitionedAtmosphere::updateCompressibility
+(
+    const volScalarField& Exner
+)
+{
+    sumDensity();
+    dRhodt() = -fvc::div(flux());
+    Psi_ == rho()/Exner;
+    for (label ip = 0; ip < size(); ip++)
+    {
+        partition& parti = operator[](ip);
+        parti.Psi() = parti.sigmaRho()/(parti.sigma()*Exner);
     }
 }
 
