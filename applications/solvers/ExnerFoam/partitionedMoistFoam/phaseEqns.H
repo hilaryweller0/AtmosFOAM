@@ -1,7 +1,7 @@
 // Advect densities of all phases of all partitions
 
 //// Update total density
-//atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
+atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
 //atmosParts.rho() = atmosParts.rho().oldTime() + dt*
 //(
 //    (1-offCentre)*atmosParts.dRhodt().oldTime()

@@ -22,5 +22,5 @@ FieldsToPlot
     [muSponge rawValues 0 0 0 "$GMTU/colours/white_blue_red.cpt"]
 );
 
-region "-40e3/40e3/20e3/52e3";
+//region "-40e3/40e3/20e3/52e3";
 

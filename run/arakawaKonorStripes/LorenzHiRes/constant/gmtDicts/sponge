@@ -14,15 +14,13 @@ FoamFile
 
 // How to plot
 // Compulsory inputs
-projection "X18c/18c";
+projection "X18c/10c";
 projection2D XZ;
 
 FieldsToPlot
 (
-    [varDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
-    [UfDiff vectors 0 1 "black"]
+    [muSponge rawValues 0 0 0 "$GMTU/colours/white_blue_red.cpt"]
 );
 
-annotate "minMax -1e3 -100";
-plotBoundaryDots false;
+//region "-40e3/40e3/20e3/52e3";
 

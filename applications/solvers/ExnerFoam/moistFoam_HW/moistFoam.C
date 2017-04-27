@@ -89,6 +89,8 @@ int main(int argc, char *argv[])
                 #include "phaseEqns.H"
             }
         }
+        Psi.write();
+        dRhodt.write();
 
         #include "compressibleContinuityErrs.H"
 

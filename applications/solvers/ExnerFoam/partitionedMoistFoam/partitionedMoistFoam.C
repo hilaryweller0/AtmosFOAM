@@ -67,17 +67,28 @@ int main(int argc, char *argv[])
 
         #include "compressibleCourantNo.H"
 
+        #include "phaseEqns.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "phaseEqns.H"
             for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
             {
                 #include "rhoThetaEqn.H"
             }
-            #include "exnerEqn.H"
-            //p = air.pFromExner(Exner);
-            //atmosParts.updateSigmas(Exner);
+            // Eqn of state
+            atmosParts.ExnerFromState(Exner);
+
+            for (int corr=0; corr<nCorr; corr++)
+            {
+                #include "exnerEqn.H"
+                p = air.pFromExner(Exner);
+                #include "phaseEqns.H"
+                atmosParts.sumDensity();
+                atmosParts.updateSigmas(Exner);
+            }
         }
+
+        atmosParts.Psi().write();
+        atmosParts.dRhodt().write();
 
         #include "compressibleContinuityErrs.H"
 

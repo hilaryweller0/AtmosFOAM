@@ -21,12 +21,12 @@ partitionedMoistFoam >& log & sleep 0.01; tail -f log
 ss=0.9
 bs=0.1
 for time in 2; do
-    for var in rho Exner theta Uf ; do
+    for var in Exner dRhodt Psi theta Uf ; do
         sumFields $time ${var}Diff $time $var ../moistFoam_HW/$time $var -scale1 -1
-        read -p "Press enter to continue"
+        read -p "That was $var, press enter to continue"
     done
     sumFields $time fluxDiff $time flux ../moistFoam_HW/$time U -scale1 -1
-    read -p "Press enter to continue"
+    read -p "That was the flux, Press enter to continue"
     sumFields $time fluxDiff $time stable.flux ../moistFoam_HW/$time U -scale1 -$ss
     read -p "Press enter to continue"
     sumFields $time fluxDiff $time buoyant.flux ../moistFoam_HW/$time U -scale1 -$bs

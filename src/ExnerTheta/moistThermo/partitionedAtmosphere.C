@@ -273,9 +273,6 @@ void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& Exner)
 //        parti.flux() /= linearInterpolate(sumSigma);
     }
 
-    Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
-         << 1-min(sumSigma).value() << endl;
-         
 //    // Scale pressure so that sigmas sum to 1
 //    p = sumPressure;
 ////    Exner = air.ExnerFromp(p);

@@ -10,7 +10,7 @@ startFrom       startTime;
 startTime       0;
 stopAt          endTime;
 endTime         172800;
-deltaT          5;
+deltaT          25;
 writeControl    runTime;
 writeInterval   800;
 //writeInterval   5;

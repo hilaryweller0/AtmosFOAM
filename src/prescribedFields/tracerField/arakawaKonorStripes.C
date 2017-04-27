@@ -19,15 +19,16 @@ scalar arakawaKonorStripesTracerField::tracerAt
         const Time& t
 ) const
 {
-    if (mag(p.x()) <= 10e3)
+    if (mag(p.x()) <= 100e3)
     {
-        if (p.z() >= 1300 - SMALL && p.z() <= 1950 + SMALL)
+        if (p.z() >= 900 - SMALL && p.z() <= 1900 + SMALL)
         {
-            return -0.5*Foam::sin(2*M_PI*p.x()/20e3);
+            return -0.5*Foam::sin(2*M_PI*p.x()/200e3);
         }
-        else if (p.z() >= 2600 - SMALL && p.z() <= 3250 + SMALL)
+        else if (p.z() >= 1900 - SMALL && p.z() <= 290
+        0 + SMALL)
         {
-            return 0.5*Foam::sin(2*M_PI*p.x()/20e3);
+            return 0.5*Foam::sin(2*M_PI*p.x()/200e3);
         }
         else
         {
