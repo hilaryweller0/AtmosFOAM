@@ -25,8 +25,7 @@ scalar arakawaKonorStripesTracerField::tracerAt
         {
             return -0.5*Foam::sin(2*M_PI*p.x()/200e3);
         }
-        else if (p.z() >= 1900 - SMALL && p.z() <= 290
-        0 + SMALL)
+        else if (p.z() >= 1900 - SMALL && p.z() <= 2900 + SMALL)
         {
             return 0.5*Foam::sin(2*M_PI*p.x()/200e3);
         }
