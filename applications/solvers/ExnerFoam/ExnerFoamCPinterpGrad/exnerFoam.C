@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
         
         #include "rhoEqn.H"
         {
-            thetaf += dt * (radiationf - thetaf)/radiativeTimescale;
             bf = thetaf * g.unitFaceNormal();
             b = fvc::reconstruct(bf * mesh.magSf());
             theta == (b & g.unit());
