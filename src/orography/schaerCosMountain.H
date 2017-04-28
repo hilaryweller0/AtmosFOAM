@@ -20,6 +20,7 @@ class schaerCosMountain final : public crossableMountain
     const dimensionedScalar h0;
     const scalar a;
     const scalar lambda;
+    const scalar xOffset;
 };
 
 }
