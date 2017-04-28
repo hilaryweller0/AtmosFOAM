@@ -10,7 +10,13 @@ arakawaKonorStripesTracerField::arakawaKonorStripesTracerField
     const advectable& velocityField
 )
 :
-tracerField(velocityField)
+tracerField(velocityField),
+rho0(dict.lookupOrDefault<scalar>("maxMagnitude", scalar(0.5))),
+wavelength(dict.lookupOrDefault<scalar>("wavelength", scalar(100e3))),
+z1Start(dict.lookupOrDefault<scalar>("lowerWaveStart", scalar(1000))),
+z1End(dict.lookupOrDefault<scalar>("lowerWaveEnd", scalar(2000))),
+z2Start(dict.lookupOrDefault<scalar>("upperWaveStart", scalar(2000))),
+z2End(dict.lookupOrDefault<scalar>("upperWaveEnd", scalar(3000)))
 {};
 
 scalar arakawaKonorStripesTracerField::tracerAt
@@ -19,16 +25,15 @@ scalar arakawaKonorStripesTracerField::tracerAt
         const Time& t
 ) const
 {
-    scalar wavelength = 100e3;
     if (mag(p.x()) <= wavelength / 2)
     {
-        if (p.z() >= 900 - SMALL && p.z() <= 1900 + SMALL)
+        if (p.z() >= z1Start - SMALL && p.z() <= z1End + SMALL)
         {
-            return -0.5*Foam::sin(2*M_PI*p.x()/wavelength);
+            return -rho0*Foam::sin(2*M_PI*p.x()/wavelength);
         }
-        else if (p.z() >= 1900 - SMALL && p.z() <= 2900 + SMALL)
+        else if (p.z() >= z2Start - SMALL && p.z() <= z2End + SMALL)
         {
-            return 0.5*Foam::sin(2*M_PI*p.x()/wavelength);
+            return rho0*Foam::sin(2*M_PI*p.x()/wavelength);
         }
         else
         {
