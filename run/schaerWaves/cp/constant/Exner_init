@@ -1,0 +1,37 @@
+FoamFile
+{
+    version     2.2;
+    format      ascii;
+    class       volScalarField;
+    location    "constant";
+    object      Exner_init;
+}
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 1;
+
+boundaryField
+{
+    ground
+    {
+        type            fixedFluxBuoyantExner;
+        gradient        uniform 0;
+    }
+    top
+    {
+        type            fixedValue;
+        value           uniform 0.119594;
+    }
+    inlet
+    {
+        type            fixedFluxBuoyantExner;
+        gradient        uniform 0;
+    }
+    outlet
+    {
+        type            fixedFluxBuoyantExner;
+        gradient        uniform 0;
+    }
+}
+
