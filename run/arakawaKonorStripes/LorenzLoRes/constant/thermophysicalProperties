@@ -17,24 +17,30 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          environmentalProperties;
+    object          thermophysicalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-g               g [0 1 -2 0 0 0 0] (0 0 -9.81);
-Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
-diffusionCoefficient diffusionCoeff [0 2 -1 0 0] 0;
+mixture
+{
+    specie
+    {
+        molWeight       28.9;
+    }
+    thermodynamics
+    {
+        Cp              1005;
+        Hf              0;
+    }
+    transport
+    {
+        mu              1.8e-05;
+        Pr              0.7;
+    }
+}
 
-BruntVaisallaFreq  1(0.01962);
-zN  2(0 31.0001e3);
-
-spongeBase 20e3;
-spongeTop 30.0001e3;
-spongeMean 1.2;
-//xSpongeCentre -400e3;
-//xSpongeEnd -200e3;
-//x2SpongeCentre 400e3;
-//x2SpongeEnd 200e3;
+pRef     pRef [1 -1 -2 0 0 0 0] 100000;
+T0       T0   [0  0  0 1 0 0 0] 250;
 
 // ************************************************************************* //
