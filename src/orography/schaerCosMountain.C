@@ -9,7 +9,7 @@ schaerCosMountain::schaerCosMountain(const dictionary& dict)
 h0("peakHeight", dimLength, readScalar(dict.lookup("peakHeight"))),
 a(readScalar(dict.lookup("halfWidth"))),
 lambda(readScalar(dict.lookup("wavelength"))),
-xOffset(readScalar(dict.lookup("xOffset")))
+xOffset(dict.lookupOrDefault("xOffset", 0))
 {};
 
 dimensionedScalar schaerCosMountain::heightAt(const point& p) const
