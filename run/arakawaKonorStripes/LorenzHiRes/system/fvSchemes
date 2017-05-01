@@ -12,13 +12,13 @@ SIgravityWaves false;
 
 interpolationSchemes {
     default         none;
-    interpolate(theta) linear;
-    interpolate(rho) linear;
-    interpolate(convection(U,u)) linear;
-    H linear;
-    interpolate(u) linear;
-    interpolate(grad(thetaf)) linear;
-    thetaFromb linear;
+    interpolate(theta) midPoint;
+    interpolate(rho) midPoint;
+    interpolate(convection(U,u)) midPoint;
+    H midPoint;
+    interpolate(u) midPoint;
+    interpolate(grad(thetaf)) midPoint;
+    thetaFromb midPoint;
 }
 
 divSchemes {
@@ -31,10 +31,10 @@ divSchemes {
 
 gradSchemes {
     default         none;
-    grad(theta)     Gauss linear;
-    grad(Exner)     Gauss linear;
-    grad(u)         Gauss linear;
-    grad(theta)     Gauss linear;
+    grad(theta)     Gauss midPoint;
+    grad(Exner)     Gauss midPoint;
+    grad(u)         Gauss midPoint;
+    grad(theta)     Gauss midPoint;
 }
 
 laplacianSchemes {
@@ -48,6 +48,13 @@ ddtSchemes {
     ddt(rho)        Euler;
     ddt(rho,theta)  Euler;
     ddt(Psi,Exner)  Euler;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(Exner)   uncorrected;
+    snGrad(theta)   uncorrected;
 }
 
 fluxRequired
