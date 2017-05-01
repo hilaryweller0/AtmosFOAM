@@ -1,0 +1,76 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+offCentre 0.5;
+SIgravityWaves false;
+
+interpolationSchemes
+{
+    default        none;
+    interpolate(theta) midPoint;
+    interpolate(rho) midPoint;
+    interpolate(convection(U,u)) midPoint;
+    H midPoint;
+    interpolate(u) midPoint;
+    interpolate(grad(thetaf)) midPoint;
+    thetaFromb linear;
+}
+
+divSchemes
+{
+    default         none;
+    div(U,u)        Gauss cubicUpwindCPCFit Cartesian;
+    div(U,theta)    Gauss cubicUpwindCPCFit Cartesian;
+//    div(U,u)        Gauss linearUpwind grad(u);
+//    div(U,theta)    Gauss linearUpwind grad(theta);
+}
+
+gradSchemes
+{
+    default         none;
+    grad(theta)     Gauss midPoint;
+    grad(Exner)     Gauss midPoint;
+    grad(u)         Gauss midPoint;
+}
+
+laplacianSchemes
+{
+    default         none;
+    laplacian(gradPcoeff,Exner) Gauss linear uncorrected;
+    laplacian((0.5*(((((G*0.5)*Cp)*deltaT)*rhof)*thetaf)),Exner) Gauss linear uncorrected;
+}
+
+ddtSchemes
+{
+    default         none;
+    ddt(rho)        Euler;
+    ddt(rho,theta)  Euler;
+    ddt(Psi,Exner)  Euler;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}

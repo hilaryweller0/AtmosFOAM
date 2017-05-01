@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
         
         // Updates for next time step
         {
-            theta += dt * (radiation - theta)/radiativeTimescale;
+//            theta += dt * (radiation - theta)/radiativeTimescale;
             thetaf = fvc::interpolate(theta);
         }
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)

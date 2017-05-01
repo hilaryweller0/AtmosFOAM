@@ -1,0 +1,42 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          environmentalProperties;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+g               g [0 1 -2 0 0 0 0] (0 0 -9.81);
+Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
+diffusioneCoefficient diffusionCoeff [0 2 -1 0 0] 0;
+
+// Settings for setTheta
+// Brunt Vailsalla frequency for different layers of atmosphere
+BruntVaisallaFreq  1(0.01);
+// Extents of the layers (array should be one longer)
+zN  2(0 30.0001e3);
+
+// Sponge layer coefficients
+spongeBase 20e3;
+spongeTop  30.0001e3;
+spongeMean 1.2;
+xSpongeCentre -150e3;
+xSpongeEnd -140e3;
+
+// ************************************************************************* //
