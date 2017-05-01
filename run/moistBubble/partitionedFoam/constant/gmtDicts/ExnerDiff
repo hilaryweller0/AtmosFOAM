@@ -19,8 +19,8 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [ExnerDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
-    [stable.Uf vectors 500 13 "black"]
+    [ExnerDiff filledContours -1.05e-4 1.05e-4 1e-5 "$GMTU/colours/red_white_blue.cpt"]
+    [Uf vectors 500 13 "black"]
 );
 
 annotate "minMax -1e3 -100";

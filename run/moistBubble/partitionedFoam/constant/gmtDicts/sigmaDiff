@@ -19,7 +19,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [buoyant.sigma filledContours 0.09895 0.10105 0.0001 "$GMTU/colours/red_white_blue.cpt"]
+    [sigmaDiff filledContours -1e-3 1e-3 1e-4 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;
@@ -27,4 +27,4 @@ FieldsToPlot
 //annotate "minMax -5e3 1.7e3";
 //boundaryMarks "2500/2500";
 annotate "minMax -1e3 -100";
-plotBoundaryDots false;
+

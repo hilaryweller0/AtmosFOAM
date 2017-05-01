@@ -149,7 +149,7 @@ public:
         tmp<volScalarField> rhoR() const;
         
         //- Total volume fraction of liquid
-        tmp<volScalarField> volLiquid() const;
+        tmp<volScalarField> volLiquid();
 
         // Enxer from the equation of state
         tmp<volScalarField> ExnerFromState();

@@ -33,7 +33,7 @@ Description
 {
     dimensionedScalar totalMass = fvc::domainIntegrate(atmosParts.sumDensity());
 
-    volScalarField rhoDiff("rhoDiff", atmosParts.rho() - atmosParts.Psi()*Exner);
+    rhoDiff = atmosParts.rho() - atmosParts.Psi()*Exner;
 
     scalar sumLocalContErr =
     (

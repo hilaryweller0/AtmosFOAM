@@ -192,7 +192,7 @@ public:
         volScalarField& sumVolLiquid();
         
         //- Calculate sigma from the total pressure
-        volScalarField& updateSigma(const volScalarField& p);
+        volScalarField& updateSigma(const volScalarField& Exner);
 
     // Constant member functions
 

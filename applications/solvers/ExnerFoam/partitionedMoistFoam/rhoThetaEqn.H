@@ -18,6 +18,9 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         )
     )/sigmaRhoi;
 
+    // Local pressure (for this partition)
+    volScalarField Exner(parti.ExnerFromState());
+    
     // Calculate and apply source term
     parti.T() = thetai*Exner;
     volScalarField heatSource
@@ -32,3 +35,4 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
     // Update temperature
     parti.T() = thetai*Exner;
 }
+atmosParts.updateTheta();

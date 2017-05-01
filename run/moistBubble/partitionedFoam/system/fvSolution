@@ -33,7 +33,7 @@ solvers
 
 iterations
 {
-    nOuterCorrectors 2;
+    nOuterCorrectors 3;
     nCorrectors      2;
     nNonOrthogonalCorrectors 0;
     nThetaCorr       2;

@@ -65,3 +65,13 @@ surfaceScalarField rhog
     fvc::interpolate(atmosParts.rho())*gSf
 );
 
+volScalarField rhoDiff
+(
+    IOobject
+    (
+        "rhoDiff", runTime.timeName(), mesh,
+        IOobject::NO_READ, IOobject::AUTO_WRITE
+    ),
+    atmosParts.rho() - atmosParts.Psi()*Exner
+);
+

@@ -30,6 +30,12 @@ for time in 2; do
     sumFields $time fluxDiff $time stable.flux ../moistFoam_HW/$time U -scale1 -$ss
     read -p "Press enter to continue"
     sumFields $time fluxDiff $time buoyant.flux ../moistFoam_HW/$time U -scale1 -$bs
+    
+    for var in airVapourRho theta Uf waterLiquidFrac waterVapourRho; do
+        sumFields $time ${var}Diff $time buoyant.$var ../moistFoam_HW/$time $var -scale1 -1
+        read -p "That was $var for partition buoyant, press enter to continue"
+    done
+
 done
 
 # Differences between partitions
@@ -49,9 +55,9 @@ done
 
 # Differences from initial conditions
 time=10
-sumFields $time thetaDiff $time theta 0 theta -scale1 -1
-sumFields $time thetaDiff $time stable.theta 0 theta -scale1 -1
-sumFields $time thetaDiff $time buoyant.theta 0 theta -scale1 -1
+sumFields $time thetaDiff $time theta constant thetaRef -scale1 -1
+sumFields $time thetaDiff $time stable.theta constant thetaRef -scale1 -1
+sumFields $time thetaDiff $time buoyant.theta constant thetaRef -scale1 -1
 gmtFoam -time $time thetaDiff
 gv $time/thetaDiff.pdf &
 sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
@@ -61,6 +67,28 @@ sumFields $time waterLiquidFracDiff $time stable.waterLiquidFrac \
           0 stable.waterLiquidFrac -scale1 -1
 gmtFoam -time $time waterLiquidFracDiff
 gv $time/waterLiquidFracDiff.pdf &
+sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale1 -1
+gmtFoam -time $time sigmaDiff
+gv $time/sigmaDiff.pdf &
+gmtFoam -time $time rhoDiff
+gv $time/rhoDiff.pdf &
+
+# Different stable and buoyant partitions
+for time in 0 ?? [1-3]??; do
+    sumFields $time thetaDiff $time stable.theta constant thetaRef -scale1 -1
+    gmtFoam -time $time stableThetaDiff
+    sumFields $time thetaDiff $time buoyant.theta constant thetaRef -scale1 -1
+    gmtFoam -time $time buoyantThetaDiff
+    sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
+    gmtFoam -time $time ExnerDiff
+    gmtFoam -time $time sigma
+done
+eps2gif buoyantThetaDiff.gif 0/buoyantThetaDiff.pdf \
+    ??/buoyantThetaDiff.pdf ???/buoyantThetaDiff.pdf
+eps2gif stableThetaDiff.gif 0/stableThetaDiff.pdf \
+    ??/stableThetaDiff.pdf ???/stableThetaDiff.pdf
+eps2gif ExnerDiff.gif 0/ExnerDiff.pdf ??/ExnerDiff.pdf ???/ExnerDiff.pdf
+eps2gif sigma.gif 0/sigma.pdf ??/sigma.pdf ???/sigma.pdf
 
 time=800
 for var in sigma sigmaRho theta waterLiquidFrac waterVapourRho; do

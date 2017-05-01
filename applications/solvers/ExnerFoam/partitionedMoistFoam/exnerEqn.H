@@ -32,7 +32,7 @@ rhog = fvc::interpolate(atmosParts.rho())*gSf;
 atmosParts.flux() += offCentre*dt*rhog;
 
 // The Helmholtz equation for the global Exner pressure 
-fvScalarMatrix ExnerEqn
+/*fvScalarMatrix ExnerEqn
 (
     fvm::ddt(atmosParts.Psi(), Exner)
   - (1-offCentre)*atmosParts.dRhodt().oldTime()
@@ -48,34 +48,31 @@ else
 {
     ExnerEqn.solve(mesh.solver(Exner.name()));
 }
+*/
 
-// Partition back-substitutions
-//        atmosParts.flux() += ExnerEqn.flux()/offCentre;
-//        // Remove partition fluxes from the total for partition zero
-//        surfaceScalarField fluxResidual("fluxResidual", atmosParts.flux());
+// Partition back-substitutions and calculation of velocity
 atmosParts.flux() == dimensionedScalar
 (
     "flux", dimensionSet(1,0,-1,0,0), scalar(0)
 );
+atmosParts.Uf() == dimensionedVector("Uf", dimVelocity, vector::zero);
+
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
+    
+    // Local pressure (for this partition)
+    volScalarField Exner(parti.ExnerFromState());
+    
     parti.flux() += offCentre*dt*fvc::interpolate(parti.sigmaRho())*
     (
        - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
        + gSf
     );
     
-//            fluxResidual -= parti.flux();
     atmosParts.flux() += parti.flux();
-}
-//        atmosParts[0].flux() = fluxResidual;
 
-// Reconstruct full velocities and rates of change
-atmosParts.Uf() == dimensionedVector("Uf", dimVelocity, vector::zero);
-for(label ip = 0; ip < atmosParts.size(); ip++)
-{
-    partition& parti = atmosParts[ip];
+    // Reconstruct full velocities and rates of change
     parti.u() = fvc::reconstruct
     (
         parti.flux()/fvc::interpolate(parti.sigmaRho())
@@ -88,30 +85,4 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
     );
     atmosParts.Uf() += fvc::interpolate(parti.sigma())*parti.Uf();
 }
-        
-/*        // Update densities and sigmas
-        volScalarField sumSigma
-        (
-            IOobject("sumSigma", runTime.timeName(), mesh),
-            mesh,
-            dimensionedScalar("sum", dimless, scalar(0))
-        );
-        for(label ip = 0; ip < atmosParts.size(); ip++)
-        {
-            partition& parti = atmosParts[ip];
-            volScalarField rhoi = Exner*parti.Psi();
-            parti.dSigmaRhodt() = -fvc::div(parti.flux());
-            parti.sigma() =
-            (
-                parti.sigmaRho().oldTime()
-              - dt*(1-offCentre)*parti.dSigmaRhodt().oldTime()
-              - dt*offCentre*parti.dSigmaRhodt()
-            )/rhoi;
-            parti.sigmaRho() = parti.sigma()*rhoi;
-            sumSigma += parti.sigma();
-        }
-        atmosParts.sumDensity();
-        Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
-             << 1-min(sumSigma).value() << endl;
-*/
 

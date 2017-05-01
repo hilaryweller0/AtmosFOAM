@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "compressibleCourantNo.H"
+        #include "partitionedCourantNo.H"
 
         #include "phaseEqns.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
@@ -83,12 +83,9 @@ int main(int argc, char *argv[])
                 p = air.pFromExner(Exner);
                 #include "phaseEqns.H"
                 atmosParts.sumDensity();
-                atmosParts.updateSigmas(Exner);
             }
+            //atmosParts.updateSigmas(Exner);
         }
-
-        atmosParts.Psi().write();
-        atmosParts.dRhodt().write();
 
         #include "compressibleContinuityErrs.H"
 

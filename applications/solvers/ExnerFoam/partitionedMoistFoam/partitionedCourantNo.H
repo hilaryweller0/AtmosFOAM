@@ -32,6 +32,7 @@ Description
 scalar CoNum = 0.0;
 scalar meanCoNum = 0.0;
 scalar maxNdt = 0.0;
+scalarList maxCoNums(atmosParts.size(), scalar(0));
 
 if (mesh.nInternalFaces())
 {
@@ -52,9 +53,22 @@ if (mesh.nInternalFaces())
         dt*Foam::sqrt(mag((g & fvc::grad(atmosParts.theta()))/atmosParts.theta()))
     );
     maxNdt = gMax(Ndt);
+
+    for(label ip = 0; ip < atmosParts.size(); ip++)
+    {
+        scalarField sumPhi
+        (
+            fvc::surfaceSum(mag(atmosParts[ip].flux()))().internalField()
+          / atmosParts[ip].sigmaRho().internalField()
+        );
+
+        maxCoNums[ip] = 0.5*gMax(sumPhi/(mesh.V().field()))
+                    *runTime.deltaTValue();
+    }
 }
 
 Info<< "Courant Number mean: " << meanCoNum
-    << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
+    << " max: " << CoNum << " max Ndt = " << maxNdt
+    << " partition maximums: " << maxCoNums << endl;
 
 // ************************************************************************* //

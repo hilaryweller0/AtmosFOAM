@@ -237,58 +237,31 @@ Foam::volScalarField& Foam::partitionedAtmosphere::updateTheta()
 
 void Foam::partitionedAtmosphere::updateSigmas(const volScalarField& Exner)
 {
-    const perfectGasPhase& air = operator[](0).operator[](0).gas();
-    volScalarField p = air.pFromExner(Exner);
+    //const volScalarField ExnerForRho = sumDensity()/Psi();
 
     volScalarField sumSigma
     (
-        IOobject("sumSigma", p.mesh().time().timeName(), p.mesh()),
-        p.mesh(), dimensionedScalar("sum", dimless, scalar(0))
+        IOobject("sumSigma", Exner.mesh().time().timeName(), Exner.mesh()),
+        Exner.mesh(), dimensionedScalar("sum", dimless, scalar(0))
     );
 
-    volScalarField sumPressure
-    (
-        IOobject("sumPressure", p.mesh().time().timeName(), p.mesh()),
-        p.mesh(), dimensionedScalar("sum", dimPressure, scalar(0))
-    );
-    
     // Re-calculate all the sigmas
     for(label ip = 0; ip < size(); ip++)
     {
         partition& parti = operator[](ip);
-        parti.updateSigma(p);
+        parti.updateSigma(Exner); //ForRho);
         sumSigma += parti.sigma();
-        sumPressure += parti.sigma()*parti.sumPressure(parti.T());
     }
     
     Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
          << 1-min(sumSigma).value() << endl;
          
-    // Scale pressure so that sigmas sum to 1
+    // Scale so that sigmas sum to 1
     for(label ip = 0; ip < size(); ip++)
     {
         partition& parti = operator[](ip);
         parti.sigma() /= sumSigma;
-//        parti.sigmaRho() /= sumSigma;
-//        parti.flux() /= linearInterpolate(sumSigma);
     }
-
-//    // Scale pressure so that sigmas sum to 1
-//    p = sumPressure;
-////    Exner = air.ExnerFromp(p);
-//    
-//    // Check sums again
-//    sumSigma *= 0;
-//    for(label ip = 0; ip < size(); ip++)
-//    {
-//        partition& parti = operator[](ip);
-//        parti.updateSigma(p);
-//        sumSigma += parti.sigma();
-//        sumPressure += parti.sigma()*parti.sumPressure(parti.T());
-//    }
-//    
-//    Info << "1-sumSigma goes from " << 1-max(sumSigma).value() << " to "
-//         << 1-min(sumSigma).value() << endl;
 }
 
 
@@ -315,8 +288,10 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::rhoR() const
 }
 
 
-Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid() const
+Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid()
 {
+    operator[](0).sumVolLiquid();
+
     tmp<volScalarField> tvol
     (
         new volScalarField
@@ -332,6 +307,7 @@ Foam::tmp<Foam::volScalarField> Foam::partitionedAtmosphere::volLiquid() const
     );
     for(label ip = 1; ip < size(); ip++)
     {
+        operator[](ip).sumVolLiquid();
         tvol.ref() += operator[](ip).sigmaVolLiquid();
     }
     return tvol;

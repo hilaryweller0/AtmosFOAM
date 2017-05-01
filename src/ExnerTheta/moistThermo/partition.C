@@ -187,9 +187,9 @@ Foam::volScalarField& Foam::partition::sumVolLiquid()
 }
 
 
-Foam::volScalarField& Foam::partition::updateSigma(const volScalarField& p)
+Foam::volScalarField& Foam::partition::updateSigma(const volScalarField& Exner)
 {
-    sigma_ *= sumPressure(T_)/p;
+    sigma_ = sigmaRho_/(Psi_*Exner);
     return sigma_;
 }
 

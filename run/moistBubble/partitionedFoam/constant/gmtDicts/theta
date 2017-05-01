@@ -21,7 +21,6 @@ projection2D XZ;
 FieldsToPlot
 (
     [theta filledContours 0 0 0 "$GMTU/colours/white_blue_red.cpt"]
-    [thetaRho filledContours 0 0 0 "$GMTU/colours/white_blue_red.cpt"]
     [Uf vectors 30.1 17 "black"]
 );
 
