@@ -18,8 +18,8 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
         )
     )/sigmaRhoi;
 
-    // Local pressure (for this partition)
-    volScalarField Exner(parti.ExnerFromState());
+//    // Local pressure (for this partition)
+//    volScalarField Exner(parti.ExnerFromState());
     
     // Calculate and apply source term
     parti.T() = thetai*Exner;

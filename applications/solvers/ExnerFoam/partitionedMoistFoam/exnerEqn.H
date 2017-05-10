@@ -32,7 +32,7 @@ rhog = fvc::interpolate(atmosParts.rho())*gSf;
 atmosParts.flux() += offCentre*dt*rhog;
 
 // The Helmholtz equation for the global Exner pressure 
-/*fvScalarMatrix ExnerEqn
+fvScalarMatrix ExnerEqn
 (
     fvm::ddt(atmosParts.Psi(), Exner)
   - (1-offCentre)*atmosParts.dRhodt().oldTime()
@@ -48,7 +48,7 @@ else
 {
     ExnerEqn.solve(mesh.solver(Exner.name()));
 }
-*/
+
 
 // Partition back-substitutions and calculation of velocity
 atmosParts.flux() == dimensionedScalar
@@ -61,8 +61,8 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
     
-    // Local pressure (for this partition)
-    volScalarField Exner(parti.ExnerFromState());
+//    // Local pressure (for this partition)
+//    volScalarField Exner(parti.ExnerFromState());
     
     parti.flux() += offCentre*dt*fvc::interpolate(parti.sigmaRho())*
     (

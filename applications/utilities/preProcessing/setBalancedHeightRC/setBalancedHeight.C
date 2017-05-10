@@ -72,6 +72,10 @@ int main(int argc, char *argv[])
    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    // Keep the domain averaged h fixed
+    const dimensionedScalar meshVol("meshVol", dimVol, gSum(mesh.V()));
+    const dimensionedScalar hMean = fvc::domainIntegrate(h)/meshVol;
+
     bool converged = false;
     for(label iter = 0; iter < maxIters && !converged; iter++)
     {
@@ -88,6 +92,13 @@ int main(int argc, char *argv[])
         );
         hEqn.setReference(0, h[0]);
         converged = hEqn.solve(mesh.solver(h.name())).nIterations() == 0;
+
+        // Ensure the domain contains the correct mean h
+        dimensionedScalar hMeanTmp = fvc::domainIntegrate(h)/meshVol;
+        h += hMean - hMeanTmp;
+        Info << "h goes from " << min(h).value() << " to " << max(h).value()
+             << " mean = " << fvc::domainIntegrate(h)/meshVol
+             << endl;
     }
 
     h.write();

@@ -1,0 +1,98 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          thermophysicalProperties;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+air
+{
+    gas //1 28.9 1004 0 1.8e-05 0.7;
+    {
+        specie
+        {
+            molWeight       28.9;
+        }
+        thermodynamics
+        {
+            Cp              1004;
+            Hf              0;
+        }
+        transport
+        {
+            mu              1.8e-05;
+            Pr              0.7;
+        }
+    }
+    
+    gasDict
+    {
+        T0 T0 [0 0  0 1 0 0 0] 273.15;
+        p0 p0 [1 -1 -2 0 0 0 0] 100000;
+    }
+    liquidDict
+    {
+        Cp Cp [0 2 -2 -1 0] 0;
+        rho rho [1 -3 0 0 0] 1;
+    }
+    Lv0 Lv0 [0 2 -2 0 0] 0;
+    pvs0 pvs0 [1 -1 -2 0 0] 3e8;
+}
+
+water
+{
+    gas
+    {
+        specie
+        {
+            molWeight       18;
+        }
+        thermodynamics
+        {
+            Cp              1885;
+            Hf              0;
+        }
+        transport
+        {
+            mu              1.2e-05;
+            Pr              0.162946065;
+        }
+    }
+    gasDict
+    {
+        T0 T0 [0 0  0 1 0 0 0] 273.15;
+        p0 p0 [1 -1 -2 0 0 0 0] 100000;
+    }
+    liquidDict
+    {
+        Cp Cp [0 2 -2 -1 0] 4186;
+        rho rho [1 -3 0 0 0] 1000;
+    }
+    Lv0 Lv0 [0 2 -2 0 0] 2.5e6;
+    pvs0 pvs0 [1 -1 -2 0 0] 611.3;
+}
+
+stable.air {$air;}
+buoyant.air {$air;}
+
+stable.water {$water;}
+buoyant.water {$water;}
+
+// ************************************************************************* //

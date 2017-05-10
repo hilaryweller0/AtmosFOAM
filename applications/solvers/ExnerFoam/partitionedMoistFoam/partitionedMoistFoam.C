@@ -80,11 +80,10 @@ int main(int argc, char *argv[])
             for (int corr=0; corr<nCorr; corr++)
             {
                 #include "exnerEqn.H"
-                p = air.pFromExner(Exner);
                 #include "phaseEqns.H"
                 atmosParts.sumDensity();
             }
-            //atmosParts.updateSigmas(Exner);
+            atmosParts.updateSigmas(Exner);
         }
 
         #include "compressibleContinuityErrs.H"
