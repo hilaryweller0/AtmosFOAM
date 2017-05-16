@@ -1,0 +1,30 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XZ;
+
+FieldsToPlot
+1
+(
+    [theta filledContours 299.801 302.001 0.1 "constant/gmtDicts/white_jet.cpt"]
+);
+
+separateLegend true;
+region "-5000/5000/2500/12500";
+annotate "minMax 0.01 -0.005";
+boundaryMarks "2000/2000";
+

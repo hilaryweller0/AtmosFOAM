@@ -1,0 +1,29 @@
+FoamFile
+{
+    version         2.3;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X12c/10c";
+projection2D XZ;
+
+FieldsToPlot
+(
+    [Ufz contours 0 30 2 "1pt,black"]
+    [Ufz contours -30 -2 2 "1pt,black,15_15:0"]
+    //[Uz contours 1 31 2 "2pt,black"]
+    //[Uz contours -31 -1 2 "2pt,black,15_15:0"]
+);
+
+region "-6000/6000/0/10000";
+boundaryMarks "2000/2000";
