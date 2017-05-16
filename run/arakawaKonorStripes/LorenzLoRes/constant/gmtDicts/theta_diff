@@ -11,9 +11,9 @@ FoamFile {
         object          gmtDict;
 }
 
-projection "X2i/5.2i";
+projection "X2i/2i";
 projection2D XZ;
-separateLegend false;
+separateLegend true;
 plotBoundaryDots false;
 //plotZeroValuePolys false;
 
@@ -23,5 +23,5 @@ FieldsToPlot (
         [none mesh "gray"]
 );
 
-region "-10e3/10e3/0/52e3";
-boundaryMarks "5e3/10e3WSen";
+region "-140e3/140e3/0/30e3";
+boundaryMarks "100e3/10e3WSen";

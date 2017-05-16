@@ -6,7 +6,7 @@ blockMesh
 setInitialTracerField
 mv 0/T 0/theta.anom
 
-terrainFollowingMesh
+#terrainFollowingMesh
 setTheta
 
 setExnerBalancedH
