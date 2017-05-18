@@ -39,7 +39,16 @@ Description
 
 int main(int argc, char *argv[])
 {
+
+    Foam::argList::validArgs.append("implicit|explicit");
     #include "setRootCase.H"
+    const Switch implicit = (args.args()[1] == "implicit");
+    if (!implicit && (args.args()[1] != "explicit"))
+    {
+        args.printUsage();
+        exit(0);
+    }
+    
     #include "createTime.H"
     #include "createMesh.H"
     // Read the number of iterations each time-step
@@ -89,12 +98,13 @@ int main(int argc, char *argv[])
         {
             fvScalarMatrix TEqn
             (
-                fvm::ddt(T)
-              + 0.5*fvm::div(phi, T)
-              - 0.5*fvc::div(phi, T)
-              + 0.5*divPhiT
-              + 0.5*divPhiT.oldTime()
+                fvm::ddt(T) + 0.5*divPhiT + 0.5*divPhiT.oldTime()
             );
+            
+            if (implicit)
+            {
+                TEqn += 0.5*fvm::div(phi, T) - 0.5*fvc::div(phi, T);
+            }
 
            TEqn.solve();
 

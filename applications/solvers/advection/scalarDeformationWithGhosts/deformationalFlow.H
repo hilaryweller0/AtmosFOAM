@@ -90,9 +90,9 @@ public:
         const scalar t = mesh.time().value();
 
         // Set internal values of phi
-        phi.ref() = 0;
         forAll(phi, faceI)
         {
+            phi[faceI] = 0;
             const face& f = mesh.faces()[faceI];
             point p0 = mesh.points()[f.last()];
             point p1 = p0;
