@@ -26,7 +26,7 @@ Application
 
 Description
     Solves a transport equation for a passive scalar using Implicit
-    time-stepping for the evolving velocity field on a plane 
+    time-stepping for the evolving velocity field on a plane
     for deformational flow using ghost cells to handle cyclic boundary conditions
 
 \*---------------------------------------------------------------------------*/
@@ -48,13 +48,13 @@ int main(int argc, char *argv[])
         args.printUsage();
         exit(0);
     }
-    
+
     #include "createTime.H"
     #include "createMesh.H"
     // Read the number of iterations each time-step
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
-    
+
     // Create the ghost mesh
     fvGhostMesh ghostMesh
     (
@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
         ),
         mesh
     );
-    
+
     // Create the class for the deformational flow
     deformationalFlow defFlow
     (
@@ -77,13 +77,13 @@ int main(int argc, char *argv[])
             )
         )
     );
-    
+
     #include "createFields.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nCalculating scalar transport\n" << endl;
-    
+
     #include "CourantNo.H"
 
     while (runTime.loop())
@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
             (
                 fvm::ddt(T) + 0.5*divPhiT + 0.5*divPhiT.oldTime()
             );
-            
+
             if (implicit)
             {
                 TEqn += 0.5*fvm::div(phi, T) - 0.5*fvc::div(phi, T);
@@ -117,6 +117,9 @@ int main(int argc, char *argv[])
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << nl << endl;
         runTime.write();
+        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+            << nl << endl;
     }
 
     Info<< "End\n" << endl;
