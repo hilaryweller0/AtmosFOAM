@@ -26,7 +26,7 @@ Application
 
 Description
     Solves a transport equation for a passive scalar using Implicit
-    time-stepping
+    time-stepping. Option -explicit runs everything explicitly
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,7 +37,9 @@ Description
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addBoolOption("explicit", "Run RK2 explicitly");
     #include "setRootCase.H"
+    const Switch implicit = !args.options().found("explicit");
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
@@ -59,12 +61,20 @@ int main(int argc, char *argv[])
         // Fixed number of iterations per time-step version
         for (int corr = 0; corr < nCorr; corr++)
         {
-            solve
+            fvScalarMatrix TEqn
             (
                 fvm::ddt(T)
-              + 0.5*fvm::div(phi, T)
               + 0.5*divPhiT.oldTime()
             );
+            if (implicit)
+            {
+                TEqn += 0.5*fvm::div(phi, T);
+            }
+            else
+            {
+                TEqn += 0.5*fvc::div(phi, T);
+            }
+            TEqn.solve();
         }
         
         Info << "Max T = " << max(T) << " min T = " << min(T) << endl;
