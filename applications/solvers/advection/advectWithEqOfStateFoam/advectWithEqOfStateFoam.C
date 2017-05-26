@@ -87,22 +87,22 @@ int main(int argc, char *argv[])
         double t_now = runTime.time().value();
         double angVel = -0.005236;
         Info << 1 << endl;
-        volScalarField q = 0*r/(r+sourceLengthScale);
+        //volScalarField q = 0*r/(r+sourceLengthScale);
         Info << 2 << endl;
         
         if (t_now <= 300.)
         {
-            q = Foam::exp(r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)-1) );
+            //q = Foam::exp(r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)-1) );
         }        
         else 
         {
-            q = 1 - (1 - Foam::exp(-2*r/sourceLengthScale))*Foam::exp(-r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)+1) );
+            //q = 1 - (1 - Foam::exp(-2*r/sourceLengthScale))*Foam::exp(-r/sourceLengthScale * (Foam::sin(angVel*t_now + 0.5*M_PI)+1) );
         }
         
         //for (dimensionedScalar loop=0*runTime.timeName()*w; loop+1 < runTime.timeName()*w/(2*M_PI); loop = loop + 1)
         //{}
         
-        rho1 = q*rho;
+        rho1 = rho;
         
         Info << " rho goes from " << min(rho.internalField()).value() << " to "
              << max(rho.internalField()).value() << endl;

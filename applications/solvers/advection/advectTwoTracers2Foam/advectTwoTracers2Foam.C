@@ -22,10 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectTwoTracersFoam
+    advectTwoTracers2Foam
 
 Description
-    Solves a transport equation for two tracers T1 and T2.
+    Solves a transport equation for two tracers rho1 and rho2 in a temperature field.
     CODE IS WORK IN PROGRESS
 
 \*---------------------------------------------------------------------------*/
@@ -66,6 +66,7 @@ int main(int argc, char *argv[])
         {
             // Setup the matrix without adding implicit/explicit parts
             // of advection or source terms
+            Info << "here1" << endl;
             fvScalarMatrix rho1Eqn
             (
                 fvm::ddt(rho1)
@@ -81,6 +82,7 @@ int main(int argc, char *argv[])
               - 0.5*rho1damping*rho1.oldTime() - 0.5*rho1damping*rho1
             );
             fvScalarMatrix rhoEqn(fvm::ddt(rho) + 0.5*fvc::div(phi, rho.oldTime()));
+            Info << "here2" << endl;
 
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
@@ -108,11 +110,13 @@ int main(int argc, char *argv[])
                 rho2Eqn += 0.5*rho2damping*rho2;
             }
             
+            
             // Solve the matrices for the equations
             rho1Eqn.solve();
             rho2Eqn.solve();
             rhoEqn.solve();
         }
+        
         Info << " rho goes from " << min(rho.internalField()).value() << " to "
              << max(rho.internalField()).value() << endl;
         Info << " rho1 goes from " << min(rho1.internalField()).value() << " to "

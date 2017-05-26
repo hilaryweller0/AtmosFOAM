@@ -10,6 +10,7 @@ tracerField/schaerRadial3DTracerField.C
 tracerField/schaerRadialDampedField.C
 tracerField/schaerBlockField.C
 tracerField/schaer1DTracerField.C
+tracerField/temperatureGradientField.C
 tracerField/polynomialTracerField.C
 tracerField/radialDistance.C
 tracerField/tracerField.C
