@@ -3,8 +3,8 @@ sudo: required
 language: cpp
 
 env:
-  - ATMOSFOAM_TOOLS_SRC=$HOME/AtmosFOAM-tools/src
-  - ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
+  - ATMOSFOAM_TOOLS_SRC=$HOME/AtmosFOAM-tools/src \
+    ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
 
 before_install:
   - sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
