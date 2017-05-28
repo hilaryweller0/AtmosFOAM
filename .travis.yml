@@ -13,7 +13,10 @@ before_install:
   - sudo apt-get install openfoam-dev libgdal-dev -y
 
 before_script:
-  - git clone https://github.com/AtmosFOAM/AtmosFOAM-tools.git $HOME/AtmosFOAM-tools
   - source /opt/openfoam-dev/etc/bashrc
+  - git clone https://github.com/AtmosFOAM/AtmosFOAM-tools.git $HOME/AtmosFOAM-tools
+  - cd $HOME/AtmosFOAM-tools
+  - ./Allwmake
+  - cd $TRAVIS_BUILD_DIR
 
 script: ./Allwmake
