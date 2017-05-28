@@ -3,7 +3,8 @@
 | \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
 |  \\    /   O peration     | Version:  1.4                                   |
 |   \\  /    A nd           | Web:      http://www.openfoam.org               |
-|    \\/     M anipulation  |                                                 |
+|    \\/     M anipulation  |             
+                                    |
 \*---------------------------------------------------------------------------*/
 
 FoamFile
@@ -17,45 +18,14 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          controlDict;
+    object          environmentalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application buoyantFoam;
-
-startFrom       startTime;
-//startFrom       latestTime;
-
-startTime       0;
-
-stopAt          endTime;
-
-endTime         1000;
-
-deltaT          0.01;
-
-writeControl    runTime;
-
-writeInterval   2; //10; //100;
-
-purgeWrite      0;
-
-writeFormat     binary;
-
-writePrecision  6;
-
-writeCompression uncompressed;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable no;
-
-adjustTimeStep no;
-maxCo          0.5;
-
-libs            ("libExnerTheta.so" "libfiniteVolumeAtmos.so" "libfiniteVolumeAtmosFOAMtools.so");
+// inputs for makeHotBubble
+thetaPrime thetaPrime [0 0  0 1 0 0 0] 2;
+bubbleCentre (0 500 4.5e3);
+bubbleRadii  (2000 1 2000);
 
 // ************************************************************************* //

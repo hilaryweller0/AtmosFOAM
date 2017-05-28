@@ -23,19 +23,17 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedMoistFoam
+    partitionedExnerFoam
 
 Description
-    Transient Solver for buoyant, inviscid, compressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and V (flux in d direction)
-    and moisture with all variables partitioned and solved using 
-    conditionally averaged equations
+    Transient Solver for dry,buoyant, inviscid, incompressible, non-hydrostatic
+    partitioned flow
 
 \*---------------------------------------------------------------------------*/
 
 #include "HodgeOps.H"
 #include "fvCFD.H"
-#include "partitionedAtmosphere.H"
+#include "ExnerTheta.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,6 +43,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
+    #include "readThermoProperties.H"
     HodgeOps H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
@@ -54,7 +53,8 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nThetaCorr = itsDict.lookupOrDefault<int>("nThetaCorr", 2);
+    const int nNonOrthCorr =
+        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -67,26 +67,19 @@ int main(int argc, char *argv[])
 
         #include "partitionedCourantNo.H"
 
-        #include "phaseEqns.H"
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            for(int thetaCorr = 0; thetaCorr < nThetaCorr; thetaCorr++)
-            {
-                #include "rhoThetaEqn.H"
-            }
-
-            for (int corr=0; corr<nCorr; corr++)
-            {
-                atmosParts.sumDensity();
-                #include "exnerEqn.H"
-                #include "sigmaEqn.H"
-                #include "phaseEqns.H"
-            }
+            #include "rhoSigmaEqn.H"
+            #include "rhoThetaEqn.H"
+            #include "exnerEqn.H"
+            //#include "sigmaEqn.H"
         }
-
+        
+        #include "rhoSigmaEqn.H"
+        #include "rhoThetaEqn.H"
+        
         #include "compressibleContinuityErrs.H"
-
-       runTime.write();
+        runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

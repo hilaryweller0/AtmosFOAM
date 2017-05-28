@@ -1,4 +1,5 @@
 // Global Eqn of state and from each partition
+atmosParts.ExnerFromState(Exner);
 atmosParts.updateCompressibility(Exner);
 
 // Contributions from each partition
@@ -60,10 +61,7 @@ atmosParts.Uf() == dimensionedVector("Uf", dimVelocity, vector::zero);
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
-    
-//    // Local pressure (for this partition)
-//    volScalarField Exner(parti.ExnerFromState());
-    
+
     parti.flux() += offCentre*dt*fvc::interpolate(parti.sigmaRho())*
     (
        - air.Cp()*parti.thetaRho()*fvc::snGrad(Exner)*mesh.magSf()
@@ -84,5 +82,8 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
        + gSf
     );
     atmosParts.Uf() += fvc::interpolate(parti.sigma())*parti.Uf();
+
+    // Update densities from new pressure
+    parti.sigmaRho() = parti.Psi()/(Exner*parti.sigma());
 }
 

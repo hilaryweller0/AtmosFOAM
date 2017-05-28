@@ -1,15 +1,9 @@
 // Advect densities of all phases of all partitions
 
-//// Update total density
+//// Update total density rate of change
 atmosParts.dRhodt() = -fvc::div(atmosParts.flux());
-//atmosParts.rho() = atmosParts.rho().oldTime() + dt*
-//(
-//    (1-offCentre)*atmosParts.dRhodt().oldTime()
-//  + offCentre*atmosParts.dRhodt()
-//);
 
 // Loop over all partitions >0 and update partition density
-//for(label ip = 1; ip < atmosParts.size(); ip++)
 for(label ip = 0; ip < atmosParts.size(); ip++)
 {
     partition& parti = atmosParts[ip];
@@ -25,14 +19,6 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
       + offCentre*parti.dSigmaRhodt()
     );
 }
-//// Update density for partition zero
-//partition& part0 = atmosParts[0];
-//part0.sigmaRho() = atmosParts.rho();
-//for(label ip = 1; ip < atmosParts.size(); ip++)
-//{
-//    part0.sigmaRho() -= atmosParts[ip].sigmaRho();
-//}
-//part0.dSigmaRhodt() = -fvc::div(part0.flux());
 
 // Update and species densities for all partitions
 for(label ip = 0; ip < atmosParts.size(); ip++)
@@ -92,6 +78,7 @@ for(label ip = 0; ip < atmosParts.size(); ip++)
     parti[0].gas().rho() /= sigmai;
     
     // Loop over all atmospheric constituents (species) except air (is=0)
+    // and apply phase changes
     for(label is = 1; is < parti.size(); is++)
     {
         fluidSpecie& specie = parti[is];

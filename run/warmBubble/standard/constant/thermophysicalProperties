@@ -17,45 +17,33 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          controlDict;
+    object          thermophysicalProperties;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-application buoyantFoam;
 
-startFrom       startTime;
-//startFrom       latestTime;
+T0       T0 [0 0  0 1 0 0 0] 300;
 
-startTime       0;
+mixture//  air 1 28.9 1000 0 1.8e-05 0.7;
+{
+    specie
+    {
+        molWeight       28.9;
+    }
+    thermodynamics
+    {
+        Cp              1005;
+        Hf              0;
+    }
+    transport
+    {
+        mu              1.8e-05;
+        Pr              0.7;
+    }
+}
 
-stopAt          endTime;
+pRef     pRef [1 -1 -2 0 0 0 0] 100000;
 
-endTime         1000;
-
-deltaT          0.01;
-
-writeControl    runTime;
-
-writeInterval   2; //10; //100;
-
-purgeWrite      0;
-
-writeFormat     binary;
-
-writePrecision  6;
-
-writeCompression uncompressed;
-
-timeFormat      general;
-
-timePrecision   6;
-
-runTimeModifiable no;
-
-adjustTimeStep no;
-maxCo          0.5;
-
-libs            ("libExnerTheta.so" "libfiniteVolumeAtmos.so" "libfiniteVolumeAtmosFOAMtools.so");
 
 // ************************************************************************* //
