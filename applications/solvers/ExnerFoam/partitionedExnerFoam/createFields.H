@@ -218,12 +218,16 @@ for(label ip = 1; ip < nParts; ip++)
         rho[ip]*R*theta[ip]/pRef, kappa/(1-kappa)
     );
 }
-volScalarField thetaMean = pRef/(rhoSum*R)*pow(thetaSum, (1-kappa)/kappa);
+volScalarField thetaMean
+(
+    "thetaMean",
+    pRef/(rhoSum*R)*pow(thetaSum, (1-kappa)/kappa)
+);
 
 volScalarField PsiSum = rhoSum/Exner;
 PsiSum.oldTime();
 
-surfaceScalarField fluxSum = flux[0];
+surfaceScalarField fluxSum("fluxSum", flux[0]);
 for(label ip = 1; ip < nParts; ip++){ fluxSum += flux[ip]; }
 
 surfaceScalarField gradPcoeffSum

@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
             #include "rhoSigmaEqn.H"
             #include "rhoThetaEqn.H"
             #include "exnerEqn.H"
-            //#include "sigmaEqn.H"
+            #include "sigmaEqn.H"
         }
         
         #include "rhoSigmaEqn.H"

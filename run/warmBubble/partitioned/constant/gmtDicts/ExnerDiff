@@ -19,11 +19,12 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [buoyant.sigma filledContours -5e-9 5e-9 1e-9 "$GMTU/colours/red_white_blue.cpt"]
+    [ExnerDiff filledContours -1e-12 1e-12 1e-13 "$GMTU/colours/red_white_blue.cpt"]
+    [UfDiff vectors 1e9 17 "black"]
 );
 
 //separateLegend true;
 //region "-5000/5000/0/1.25e4";
 annotate "minMax -1.2e3 400";
 boundaryMarks "2500/2500";
-
+plotBoundaryDots false;

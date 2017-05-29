@@ -21,7 +21,8 @@
     Exner = pow(rhoSum*R*thetaMean/pRef, kappa/(1-kappa));
     PsiSum = rhoSum/Exner;
 
-    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])*fvc::interpolate(theta[0]);
+    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])
+                    *fvc::interpolate(theta[0]);
     gradPcoeffSum = gradPcoeff[0];
     for(label ip = 1; ip < nParts; ip++)
     {
@@ -47,7 +48,7 @@
             // Flux with gravity
             flux[ip] = flux[ip].oldTime()
                      + dt*dFluxdt[ip]
-                     - dt*fvc::interpolate(sigmaRho[ip])*gSf;
+                     + dt*fvc::interpolate(sigmaRho[ip])*gSf;
 
             fluxSum += flux[ip];
         }

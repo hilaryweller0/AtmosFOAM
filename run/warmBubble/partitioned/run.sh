@@ -43,3 +43,20 @@ partitionedExnerFoam >& log & sleep 0.01; tail -f log
 gmtFoam theta
 animate 0/theta.pdf ???/theta.pdf 1000/theta.pdf
 
+# Differences between non-partitioned run
+sumFields 2 ExnerDiff 2 Exner ../standard/2 Exner -scale1 -1
+sumFields 2 thetaDiff 2 stable.theta ../standard/2 theta -scale1 -1
+sumFields 2 UfDiff 2 stable.Uf ../standard/2 Uf -scale1 -1
+gmtFoam -time 2 ExnerDiff
+gv 2/ExnerDiff.pdf &
+gmtFoam -time 2 thetaDiff
+gv 2/thetaDiff.pdf &
+
+sumFields 2 fluxDiff 2 fluxSum ../standard/2 U -scale1 -1
+sumFields 2 rhoDiff 2 stable.sigmaRho ../standard/2 rho -scale1 -1
+sumFields 2 uDiff 2 stable.u ../standard/2 u -scale1 -1
+
+sumFields 2 buoyant.sigma 2 stable.sigma init_0 stable.sigma -scale0 -1
+gmtFoam -time 2 sigma
+gv 2/sigma.pdf &
+

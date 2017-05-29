@@ -38,8 +38,7 @@
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
-        surfaceScalarField gradPcoeff = G*offCentre*Cp*dt
-                                        *rhof*thetaf;
+        surfaceScalarField gradPcoeff = rhof*thetaf*G*offCentre*Cp*dt;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
