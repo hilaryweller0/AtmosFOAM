@@ -39,24 +39,30 @@ gv 0/sigma.pdf &
 # Solve Euler equations
 partitionedExnerFoam >& log & sleep 0.01; tail -f log
 
+# Plot one value of theta
+time=100
+gmtFoam theta -time $time
+gv $time/theta.pdf &
+
 # animate the results
 gmtFoam theta
 animate 0/theta.pdf ???/theta.pdf 1000/theta.pdf
 
 # Differences between non-partitioned run
-sumFields 2 ExnerDiff 2 Exner ../standard/2 Exner -scale1 -1
-sumFields 2 thetaDiff 2 stable.theta ../standard/2 theta -scale1 -1
-sumFields 2 UfDiff 2 stable.Uf ../standard/2 Uf -scale1 -1
-gmtFoam -time 2 ExnerDiff
-gv 2/ExnerDiff.pdf &
-gmtFoam -time 2 thetaDiff
-gv 2/thetaDiff.pdf &
+time=2
+sumFields $time ExnerDiff $time Exner ../standard/$time Exner -scale1 -1
+sumFields $time thetaDiff $time stable.theta ../standard/$time theta -scale1 -1
+sumFields $time UfDiff $time stable.Uf ../standard/$time Uf -scale1 -1
+gmtFoam -time $time ExnerDiff
+gv $time/ExnerDiff.pdf &
+gmtFoam -time $time thetaDiff
+gv $time/thetaDiff.pdf &
 
-sumFields 2 fluxDiff 2 fluxSum ../standard/2 U -scale1 -1
-sumFields 2 rhoDiff 2 stable.sigmaRho ../standard/2 rho -scale1 -1
-sumFields 2 uDiff 2 stable.u ../standard/2 u -scale1 -1
+sumFields $time fluxDiff $time fluxSum ../standard/$time U -scale1 -1
+sumFields $time rhoDiff $time stable.sigmaRho ../standard/$time rho -scale1 -1
+sumFields $time uDiff $time stable.u ../standard/$time u -scale1 -1
 
-sumFields 2 buoyant.sigma 2 stable.sigma init_0 stable.sigma -scale0 -1
-gmtFoam -time 2 sigma
-gv 2/sigma.pdf &
+sumFields $time buoyant.sigma $time stable.sigma init_0 stable.sigma -scale0 -1
+gmtFoam -time $time sigma
+gv $time/sigma.pdf &
 

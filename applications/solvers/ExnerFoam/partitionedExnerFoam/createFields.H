@@ -28,7 +28,6 @@ PtrList<volScalarField> rho(nParts);
 PtrList<volScalarField> sigmaRho(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> flux(nParts);
-PtrList<volScalarField> Psi(nParts);    // Compressibility
 PtrList<surfaceScalarField> gradPcoeff(nParts);
 PtrList<surfaceScalarField> dFluxdt(nParts);
 
@@ -154,21 +153,6 @@ for (label ip = 0; ip < nParts; ip++)
     );
     flux[ip].oldTime();
     
-    Psi.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"Psi",
-                runTime.timeName(),
-                mesh
-            ),
-            rho[ip]/Exner
-        )
-    );
-    
     gradPcoeff.set
     (
         ip,
@@ -207,25 +191,14 @@ volScalarField rhoSum = rho[0];
 for(label ip = 1; ip < nParts; ip++){ rhoSum += rho[ip]; }
 surfaceScalarField rhof = fvc::interpolate(rhoSum);
 
-volScalarField thetaSum = sigma[0]*pow
-(
-    rho[0]*R*theta[0]/pRef, kappa/(1-kappa)
-);
+volScalarField rhoTheta("", sigma[0]*rho[0]*theta[0]);
 for(label ip = 1; ip < nParts; ip++)
 {
-    thetaSum += sigma[ip]*pow
-    (
-        rho[ip]*R*theta[ip]/pRef, kappa/(1-kappa)
-    );
-}
-volScalarField thetaMean
-(
-    "thetaMean",
-    pRef/(rhoSum*R)*pow(thetaSum, (1-kappa)/kappa)
-);
+    rhoTheta += sigma[ip]*rho[ip]*theta[ip];
+};
 
-volScalarField PsiSum = rhoSum/Exner;
-PsiSum.oldTime();
+volScalarField Psi = rhoSum/Exner;
+Psi.oldTime();
 
 surfaceScalarField fluxSum("fluxSum", flux[0]);
 for(label ip = 1; ip < nParts; ip++){ fluxSum += flux[ip]; }
