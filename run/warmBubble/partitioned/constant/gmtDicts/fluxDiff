@@ -19,10 +19,8 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [buoyant.theta filledContours 297.95 302.05 0.2 "$GMTU/colours/red_white_blue.cpt"]
-    [stable.theta contours 297.95 302.05 0.2 "black"]
-    [stable.Uf vectors 0 1 "black"]
-    [buoyant.Uf vectors 0 1 "red"]
+    [fluxDiff rawValues -1e6 1e6 1e5 "$GMTU/colours/red_white_blue.cpt"]
+    [UfDiff vectors 0 17 "black"]
 );
 
 //separateLegend true;
@@ -30,4 +28,3 @@ FieldsToPlot
 annotate "minMax -1.2e3 400";
 boundaryMarks "2500/2500";
 plotBoundaryDots false;
-

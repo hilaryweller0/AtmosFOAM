@@ -3,5 +3,3 @@ solve
 (
     fvm::ddt(rho) + (1-offCentre)*divU + offCentre*fvc::div(U)
 );
-
-

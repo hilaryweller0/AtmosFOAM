@@ -12,12 +12,13 @@ volScalarField Exner
     ),
     mesh
 );
+Exner.oldTime();
 
 // The partition names
-const label nParts = 1;
+const label nParts = 2;
 wordList partNames(nParts);
 partNames[0] = "stable.";
-//partNames[1] = "buoyant.";
+partNames[1] = "buoyant.";
 
 // Set pointer lists for variables in all partitions. Read in later
 PtrList<volScalarField> sigma(nParts);
@@ -86,7 +87,6 @@ for (label ip = 0; ip < nParts; ip++)
             mesh
         )
     );
-    Uf[ip].oldTime();
     
     rho.set
     (
@@ -102,7 +102,6 @@ for (label ip = 0; ip < nParts; ip++)
             pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa)
         )
     );
-    rho[ip].oldTime();
     
     sigmaRho.set
     (
@@ -135,7 +134,6 @@ for (label ip = 0; ip < nParts; ip++)
             Uf[ip].boundaryField().types()
         )
     );
-    u[ip].oldTime();
     
     flux.set
     (
@@ -146,9 +144,11 @@ for (label ip = 0; ip < nParts; ip++)
             (
                 partNames[ip]+"flux",
                 runTime.timeName(),
-                mesh
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
             ),
-            fvc::interpolate(rho[ip])*(Uf[ip] & mesh.Sf())
+            fvc::interpolate(sigmaRho[ip])*(Uf[ip] & mesh.Sf())
         )
     );
     flux[ip].oldTime();
@@ -184,20 +184,21 @@ for (label ip = 0; ip < nParts; ip++)
             "fixedValue"
         )
     );
+    dFluxdt[ip].oldTime();
 }
 
 // Summed variables
-volScalarField rhoSum = rho[0];
-for(label ip = 1; ip < nParts; ip++){ rhoSum += rho[ip]; }
+volScalarField rhoSum = sigmaRho[0];
+for(label ip = 1; ip < nParts; ip++){ rhoSum += sigmaRho[ip]; }
 surfaceScalarField rhof = fvc::interpolate(rhoSum);
 
-volScalarField rhoTheta("", sigma[0]*rho[0]*theta[0]);
+volScalarField rhoTheta("", sigmaRho[0]*theta[0]);
 for(label ip = 1; ip < nParts; ip++)
 {
-    rhoTheta += sigma[ip]*rho[ip]*theta[ip];
+    rhoTheta += sigmaRho[ip]*theta[ip];
 };
 
-volScalarField Psi = rhoSum/Exner;
+volScalarField Psi("Psi", rhoSum/Exner);
 Psi.oldTime();
 
 surfaceScalarField fluxSum("fluxSum", flux[0]);

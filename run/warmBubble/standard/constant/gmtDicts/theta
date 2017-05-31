@@ -18,13 +18,14 @@ projection "X18c/18c";
 projection2D XZ;
 
 FieldsToPlot
-1
 (
     [theta filledContours 297.95 302.05 0.2 "$GMTU/colours/red_white_blue.cpt"]
+    [Uf vectors 0 17 "black"]
 );
 
 //separateLegend true;
 //region "-5000/5000/0/1.25e4";
 annotate "minMax -1.2e3 400";
 boundaryMarks "2500/2500";
+plotBoundaryDots false;
 

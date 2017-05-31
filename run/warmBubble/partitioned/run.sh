@@ -52,17 +52,19 @@ animate 0/theta.pdf ???/theta.pdf 1000/theta.pdf
 time=2
 sumFields $time ExnerDiff $time Exner ../standard/$time Exner -scale1 -1
 sumFields $time thetaDiff $time stable.theta ../standard/$time theta -scale1 -1
+sumFields $time thetaDiff $time buoyant.theta ../standard/$time theta -scale1 -1
 sumFields $time UfDiff $time stable.Uf ../standard/$time Uf -scale1 -1
 gmtFoam -time $time ExnerDiff
-gv $time/ExnerDiff.pdf &
 gmtFoam -time $time thetaDiff
+gv $time/ExnerDiff.pdf &
 gv $time/thetaDiff.pdf &
 
-sumFields $time fluxDiff $time fluxSum ../standard/$time U -scale1 -1
-sumFields $time rhoDiff $time stable.sigmaRho ../standard/$time rho -scale1 -1
-sumFields $time uDiff $time stable.u ../standard/$time u -scale1 -1
-
-sumFields $time buoyant.sigma $time stable.sigma init_0 stable.sigma -scale0 -1
+sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale0 -1
 gmtFoam -time $time sigma
 gv $time/sigma.pdf &
+
+sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
+sumFields $time UfDiff $time stable.Uf 0 stable.Uf -scale1 -1
+gmtFoam -time $time ExnerDiff
+gv $time/ExnerDiff.pdf &
 

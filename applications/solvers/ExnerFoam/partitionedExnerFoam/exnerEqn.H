@@ -1,27 +1,27 @@
 {
-    volScalarField rhoSum = rho[0];
+    rhoTheta = sigmaRho[0]*theta[0];
     for(label ip = 1; ip < nParts; ip++)
     {
-        rhoSum += rho[ip];
+        rhoTheta += sigmaRho[ip]*theta[ip];
     }
+
+    Psi = pow(rhoSum,(2*kappa-1)/(kappa-1))
+         *pow(R/pRef*rhoTheta/rhoSum, kappa/(kappa-1));
     
-    rhoTheta = sigma[0]*rho[0]*theta[0];
-    for(label ip = 1; ip < nParts; ip++)
+//    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])
+//                    *fvc::interpolate(theta[0]);
+////    gradPcoeffSum = gradPcoeff[0];
+//    for(label ip = 1; ip < nParts; ip++)
+//    {
+//        gradPcoeff[ip] = Cp*fvc::interpolate(sigmaRho[ip])
+//                           *fvc::interpolate(theta[ip]);
+////        gradPcoeffSum += gradPcoeff[ip];
+//    }
+    gradPcoeffSum = Cp*fvc::interpolate(rhoSum)
+                   *fvc::interpolate(rhoTheta/rhoSum);
+    for (label ip = 0; ip < nParts; ip++)
     {
-        rhoTheta += sigma[ip]*rho[ip]*theta[ip];
-    }
-
-    Exner = pow(R*rhoTheta/pRef, kappa/(1-kappa));
-    Psi = rhoSum/Exner;
-
-    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])
-                    *fvc::interpolate(theta[0]);
-    gradPcoeffSum = gradPcoeff[0];
-    for(label ip = 1; ip < nParts; ip++)
-    {
-        gradPcoeff[ip] += Cp*fvc::interpolate(sigmaRho[ip])
-                            *fvc::interpolate(theta[ip]);
-        gradPcoeffSum += gradPcoeff[ip];
+        gradPcoeff[ip] = fvc::interpolate(sigma[ip])*gradPcoeffSum;
     }
 
     for (int corr=0; corr<nCorr; corr++)
@@ -70,6 +70,10 @@
             if (nonOrth == nNonOrthCorr) { for(label ip = 0; ip < nParts; ip++)
             {
                 flux[ip] -= dt*gradPcoeff[ip]*fvc::snGrad(Exner)*mesh.magSf();
+                u[ip] = fvc::reconstruct(flux[ip])/sigmaRho[ip];
+                Uf[ip] = fvc::interpolate(u[ip]);
+                dFluxdt[ip] += fvc::interpolate(sigmaRho[ip])*gSf
+                            - gradPcoeff[ip]*fvc::snGrad(Exner)*mesh.magSf();
             }}
         }
     }

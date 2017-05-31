@@ -1,6 +1,6 @@
 {
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
-    rho = Exner*Psi;
+    //rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
 
     surfaceScalarField G("G", 1+offCentre*dt*muSponge);
@@ -21,6 +21,8 @@
         G == 1/G;
     }
 
+    surfaceScalarField gradPcoeff = dt*Cp*rhof*thetaf*G*offCentre;
+
     for (int corr=0; corr<nCorr; corr++)
     {
         // Explicit part of rate of change of flux
@@ -38,8 +40,6 @@
 
         // Flux in the normal direction (including off diagonal part of pressure
         // gradient)
-        surfaceScalarField gradPcoeff = rhof*thetaf*G*offCentre*Cp*dt;
-
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
             U = H.ddirToFlux(V)
