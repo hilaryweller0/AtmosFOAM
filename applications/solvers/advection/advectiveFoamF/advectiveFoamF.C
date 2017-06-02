@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
         }
 
         T = cellCentreReconstruction.interpolate(Tf);
+
+        Tf = mag(Tf * g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
         
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
              << max(Tf.internalField()) << endl;
