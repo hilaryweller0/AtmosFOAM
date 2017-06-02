@@ -9,10 +9,10 @@ FoamFile {
 startFrom       startTime;
 startTime       0;
 stopAt          endTime;
-endTime         172800;
+endTime         60000;
 deltaT          25;
 writeControl    runTime;
-writeInterval   800;
+writeInterval   1000;
 //writeInterval   5;
 purgeWrite      0;
 writeFormat     ascii;

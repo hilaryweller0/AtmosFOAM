@@ -1,0 +1,12 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      velocityFieldDict;
+}
+
+type                horizontal;
+maxVelocity         10;
+zeroVelocityHeight -1e3;
+maxVelocityHeight   -1;
