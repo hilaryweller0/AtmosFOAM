@@ -25,6 +25,8 @@ vertices (
 blocks (
 	hex (0 1 2 3 4 5 6 7)   (60 1 30) edgeGrading (1 1 1 1 1 1 1 1 0.25 4 4 0.25)
 	hex (1 8 9 2 5 10 11 6) (60 1 30) edgeGrading (1 1 1 1 1 1 1 1 4 0.25 0.25 4)
+//	hex (0 1 2 3 4 5 6 7)   (60 1 30) simpleGrading (1 1 1)
+//    hex (1 8 9 2 5 10 11 6) (60 1 30) simpleGrading (1 1 1)
 );
 
 boundary (
