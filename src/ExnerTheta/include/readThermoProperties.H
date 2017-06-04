@@ -32,3 +32,7 @@ const dimensionedScalar speedSound("speedSound", sqrt(gamma*R*T0));
 
 Info << "Cp = " << Cp.value() << " speedSound = " << speedSound << " kappa = "
      << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv << endl;
+
+Info << "Maximum acousitic Courant number = "
+     << max(mesh.deltaCoeffs())*runTime.deltaT()*speedSound << endl;
+

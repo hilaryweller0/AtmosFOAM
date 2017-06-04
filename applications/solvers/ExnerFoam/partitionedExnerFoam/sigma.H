@@ -1,12 +1,5 @@
 // Updating sigma in each partition
 
-// Re-calculate rhoTheta (sigmaRho has been updated)
-rhoTheta = sigmaRho[0]*theta[0];
-for(label ip = 1; ip < nParts; ip++)
-{
-    rhoTheta += sigmaRho[ip]*theta[ip];
-}
-
 for(label ip = 0; ip < nParts; ip++)
 {
     // Update the density so that pressure matches in both partitions
@@ -18,3 +11,7 @@ for(label ip = 0; ip < nParts; ip++)
 
 Info << "buoyant.sigma goes from " << min(sigma[1]).value() << " to "
      << max(sigma[1]).value() << endl;
+Info << "buoyant.rho goes from " << min(rho[1]).value() << " to "
+     << max(rho[1]).value() << endl;
+Info << "buoyant.theta goes from " << min(theta[1]).value() << " to "
+     << max(theta[1]).value() << endl;

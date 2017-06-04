@@ -1,10 +1,4 @@
 {
-    rhoTheta = sigmaRho[0]*theta[0];
-    for(label ip = 1; ip < nParts; ip++)
-    {
-        rhoTheta += sigmaRho[ip]*theta[ip];
-    }
-
     Psi = pow(rhoSum,(2*kappa-1)/(kappa-1))
          *pow(R/pRef*rhoTheta/rhoSum, kappa/(kappa-1));
     
@@ -17,11 +11,10 @@
 //                           *fvc::interpolate(theta[ip]);
 ////        gradPcoeffSum += gradPcoeff[ip];
 //    }
-    gradPcoeffSum = Cp*fvc::interpolate(rhoSum)
-                   *fvc::interpolate(rhoTheta/rhoSum);
+    gradPcoeffSum = Cp*fvc::interpolate(rhoTheta);
     for (label ip = 0; ip < nParts; ip++)
     {
-        gradPcoeff[ip] = fvc::interpolate(sigma[ip])*gradPcoeffSum;
+        gradPcoeff[ip] = Cp*fvc::interpolate(sigmaRho[ip]*theta[ip]);
     }
 
     for (int corr=0; corr<nCorr; corr++)
@@ -32,11 +25,11 @@
         for(label ip = 0; ip < nParts; ip++)
         {
             // Rate of change of flux without gravity
-            dFluxdt[ip] = -mesh.Sf() &
+            dFluxdt[ip] = drag[ip] + (mesh.Sf() &
             (
-                fvc::interpolate(fvc::div(flux[ip], u[ip]))
-              + (2*fvc::interpolate(sigmaRho[ip])*(Omega ^ Uf[ip]))
-            );
+              - fvc::interpolate(fvc::div(flux[ip], u[ip]))
+              - (2*fvc::interpolate(sigmaRho[ip])*(Omega ^ Uf[ip]))
+            ));
             // Flux with gravity
             flux[ip] = flux[ip].oldTime()
                      + dt*dFluxdt[ip]
@@ -50,6 +43,9 @@
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
+            // Explicit version
+            //Exner = pow(R*rhoTheta/pRef, kappa/(1-kappa));
+            // Semi-implicit version
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)

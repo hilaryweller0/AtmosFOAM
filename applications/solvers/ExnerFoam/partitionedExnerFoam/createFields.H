@@ -31,6 +31,7 @@ PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> flux(nParts);
 PtrList<surfaceScalarField> gradPcoeff(nParts);
 PtrList<surfaceScalarField> dFluxdt(nParts);
+PtrList<surfaceScalarField> drag(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -97,11 +98,14 @@ for (label ip = 0; ip < nParts; ip++)
             (
                 partNames[ip]+"rho",
                 runTime.timeName(),
-                mesh
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
             ),
             pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa)
         )
     );
+    rho[ip].write();
     
     sigmaRho.set
     (
@@ -112,12 +116,15 @@ for (label ip = 0; ip < nParts; ip++)
             (
                 partNames[ip]+"sigmaRho",
                 runTime.timeName(),
-                mesh
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
             ),
             sigma[ip]*rho[ip]
         )
     );
     sigmaRho[ip].oldTime();
+    sigmaRho[ip].write();
     
     u.set
     (
@@ -128,7 +135,9 @@ for (label ip = 0; ip < nParts; ip++)
             (
                 partNames[ip]+"u",
                 runTime.timeName(),
-                mesh
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
             ),
             H.reconstruct(Uf[ip] & mesh.Sf()),
             Uf[ip].boundaryField().types()
@@ -164,7 +173,7 @@ for (label ip = 0; ip < nParts; ip++)
                 runTime.timeName(),
                 mesh
             ),
-            Cp*fvc::interpolate(sigmaRho[ip])*fvc::interpolate(theta[ip])
+            Cp*fvc::interpolate(sigmaRho[ip]*theta[ip])
         )
     );
     
@@ -185,14 +194,41 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     dFluxdt[ip].oldTime();
+    
+    drag.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"drag",
+                runTime.timeName(),
+                mesh
+            ),
+            mesh,
+            dimensionedScalar("drag", dimensionSet(1,0,-2,0,0), scalar(0))
+        )
+    );
 }
 
 // Summed variables
-volScalarField rhoSum = sigmaRho[0];
+volScalarField rhoSum
+(
+    IOobject
+    (
+        "rhoSum",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    sigmaRho[0]
+);
 for(label ip = 1; ip < nParts; ip++){ rhoSum += sigmaRho[ip]; }
-surfaceScalarField rhof = fvc::interpolate(rhoSum);
+rhoSum.write();
 
-volScalarField rhoTheta("", sigmaRho[0]*theta[0]);
+volScalarField rhoTheta("rhoSum", sigmaRho[0]*theta[0]);
 for(label ip = 1; ip < nParts; ip++)
 {
     rhoTheta += sigmaRho[ip]*theta[ip];
@@ -214,3 +250,4 @@ for(label ip = 1; ip < nParts; ip++)
     gradPcoeffSum += gradPcoeff[ip];
 }
 
+#include "calculateDrag.H"
