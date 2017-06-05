@@ -30,7 +30,7 @@ divSchemes
 
 interpolationSchemes
 {
-    default         none;
+    default         cubic;
 }
 
 gradSchemes

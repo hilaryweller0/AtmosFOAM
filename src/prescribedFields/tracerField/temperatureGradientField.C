@@ -27,6 +27,7 @@ scalar temperatureGradientField::tracerAt
     scalar g = 9.81;
     scalar c_p = 1004;
     
-    return theta0*Foam::exp(-g*d.z()/(c_p*theta0));
+    return rho0*Foam::exp(-g*d.z()/(c_p*theta0));
+    //return theta0*( 1 - g*d.z()/(c_p*theta0) );
 
 }

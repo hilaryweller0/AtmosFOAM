@@ -11,20 +11,34 @@ IOdictionary dict
 );
 
 const int sourcePresent = dict.lookupOrDefault<int>("sourcePresent", int(1));
-const dimensionedScalar sourceTemperatureScale(dict.lookup("sourceTemperatureScale"));
+const dimensionedScalar tempScale(dict.lookup("tempScale"));
 const dimensionedScalar velocityScale(dict.lookup("velocityScale"));
+const dimensionedScalar timeScale(dict.lookup("timeScale"));
+const dimensionedScalar es0(dict.lookup("es0"));
+const dimensionedScalar muv(dict.lookup("muv"));
+const dimensionedScalar mud(dict.lookup("mud"));
+const dimensionedScalar Lv(dict.lookup("Lv"));
+const dimensionedScalar cp(dict.lookup("cp"));
+const dimensionedScalar Rv(dict.lookup("Rv"));
 
 // The vertical velocity used for calculating the source terms
 const volScalarField w = U.component(vector::Z);
 
-const volScalarField rho1damping
+volScalarField es
 (
-    "rho1damping",
-    sourcePresent*0.5*T/sourceTemperatureScale * (mag(w)-w)/(mag(w)+velocityScale)
+    "es",
+    es0*Foam::exp( 17.67*(T-273.15*tempScale)/(T-29.65*tempScale) )
 );
-const volScalarField rho2damping
+
+const volScalarField rvs
 (
-    "rho2damping",
-    sourcePresent*0.5*T/sourceTemperatureScale * (mag(w)+w)/(mag(w)+velocityScale)
+    "rvs",
+    muv/mud * es/(P-es)
+);
+
+const volScalarField transferTerm
+(
+    "transferTerm",
+    timeScale/( 1 + Lv*Lv*rvs/(cp*Rv*T*T) )
 );
 
