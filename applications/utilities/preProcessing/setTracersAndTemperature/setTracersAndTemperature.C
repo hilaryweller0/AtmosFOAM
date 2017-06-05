@@ -14,11 +14,25 @@ int main(int argc, char *argv[])
         IOobject("T_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
+    
+    Info << "Reading P_init" << endl;
+    volScalarField P_init
+    (
+        IOobject("P_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        mesh
+    );
 
     Info << "Reading rho_init" << endl;
     volScalarField rho_init
     (
         IOobject("rho_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        mesh
+    );
+    
+    Info << "Reading q_init" << endl;
+    volScalarField q_init
+    (
+        IOobject("q_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
 
@@ -36,6 +50,13 @@ int main(int argc, char *argv[])
         T_init
     );
     
+    Info << "Creating P" << endl;
+    volScalarField P
+    (
+        IOobject("P", runTime.timeName(), mesh, IOobject::NO_READ),
+        P_init
+    );
+    
     Info << "Creating rho" << endl;
     volScalarField rho
     (
@@ -43,17 +64,17 @@ int main(int argc, char *argv[])
         rho_init
     );
 
-    Info << "Creating rho1" << endl;
-    volScalarField rho1
+    Info << "Creating q1" << endl;
+    volScalarField q1
     (
-        IOobject("rho1", runTime.timeName(), mesh, IOobject::NO_READ),
-        rho_init
+        IOobject("q1", runTime.timeName(), mesh, IOobject::NO_READ),
+        q_init
     );
 
-    Info << "Creating rho2" << endl;
-    volScalarField rho2
+    Info << "Creating q2" << endl;
+    volScalarField q2
     (
-        IOobject("rho2", runTime.timeName(), mesh, IOobject::NO_READ),
+        IOobject("q2", runTime.timeName(), mesh, IOobject::NO_READ),
         rho_init
     );
 
@@ -76,6 +97,18 @@ int main(int argc, char *argv[])
         )
     );
     
+    IOdictionary qFieldDict
+    (
+        IOobject
+        (
+            "qFieldDict",
+            mesh.time().system(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+    
     IOdictionary tempDict
     (
         IOobject
@@ -87,30 +120,50 @@ int main(int argc, char *argv[])
             IOobject::NO_WRITE
         )
     );
+    
+    IOdictionary PDict
+    (
+        IOobject
+        (
+            "PDict",
+            mesh.time().system(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
 
     const noAdvection velocityField;
     autoPtr<tracerField> tracer(tracerField::New(tracerDict, velocityField));
     
+    autoPtr<tracerField> qVal(tracerField::New(qFieldDict, velocityField));
+    
     autoPtr<tracerField> tempVal(tracerField::New(tempDict, velocityField));
+    
+    autoPtr<tracerField> PVal(tracerField::New(PDict, velocityField));
     
     Info << "writing rho for time " << runTime.timeName() << endl;
     tracer->applyTo(rho);
     rho.write();
 
-    Info << "writing rho1 for time " << runTime.timeName() << endl;
-    tracer->applyTo(rho1);
-    rho1.write();
+    Info << "writing q1 for time " << runTime.timeName() << endl;
+    q1.write();
 
-    Info << "writing rho2 for time " << runTime.timeName() << endl;
-    rho2.write();
+    Info << "writing q2 for time " << runTime.timeName() << endl;
+    qVal->applyTo(q2);
+    q2.write();
 
-    Info << "writing rhof for time " << runTime.timeName() << endl;
+    Info << "writing qf for time " << runTime.timeName() << endl;
     tracer->applyTo(rhof);
     rhof.write();
     
     Info << "writing T" << endl;
     tempVal->applyTo(T);
     T.write();
+    
+    Info << "writing P" << endl;
+    PVal->applyTo(P);
+    P.write();
 
     return EXIT_SUCCESS;
 }

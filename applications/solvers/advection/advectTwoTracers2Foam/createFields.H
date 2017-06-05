@@ -1,10 +1,10 @@
 Info<< "Reading field T\n" << endl;
 
-volScalarField rho1
+volScalarField q1
 (
     IOobject
     (
-        "rho1",
+        "q1",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -13,13 +13,13 @@ volScalarField rho1
     mesh
 );
 // Ensure that rho1.oldTime() is stored
-rho1.oldTime();
+q1.oldTime();
 
-volScalarField rho2
+volScalarField q2
 (
     IOobject
     (
-        "rho2",
+        "q2",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -27,7 +27,7 @@ volScalarField rho2
     ),
     mesh
 );
-rho2.oldTime();
+q2.oldTime();
 
 volScalarField rho
 (
@@ -36,11 +36,10 @@ volScalarField rho
         "rho",
         runTime.timeName(),
         mesh,
-        IOobject::NO_READ,
+        IOobject::MUST_READ,
         IOobject::AUTO_WRITE
     ),
-    rho1+rho2,
-    rho1.boundaryField()
+    mesh
 );
 rho.oldTime();
 
@@ -58,6 +57,20 @@ volScalarField T
 );
 T.oldTime();
 
+volScalarField P
+(
+    IOobject
+    (
+        "P",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+P.oldTime();
+
 surfaceScalarField phi
 (
     IOobject
@@ -70,6 +83,33 @@ surfaceScalarField phi
     ),
     mesh
 );
+
+surfaceScalarField flux
+(
+    IOobject
+    (
+        "flux",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    fvc::interpolate(rho)*phi
+);
+
+surfaceScalarField fluxOld
+(
+    IOobject
+    (
+        "fluxOld",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    fvc::interpolate(rho)*phi
+);
+
 
 volVectorField U
 (

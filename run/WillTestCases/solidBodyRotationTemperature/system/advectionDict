@@ -7,6 +7,13 @@ FoamFile
     object      advectionDict;
 }
 
+timeScale timeScale [0 0 -1 0 0] 1;
 velocityScale velocityScale [0 1 -1 0 0] 0.001;
-sourceTemperatureScale sourceTemperatureScale [0 0 1 1 0] 1000000;
+tempScale tempScale [0 0 0 1 0] 1;
 angularVelocity angularVelocity [0 0 -1 0 0] -0.005236;
+es0 es0 [1 -1 -2 0 0] 611.2;
+muv muv [0 0 0 0 0] 0.018;
+mud mud [0 0 0 0 0] 0.029;
+Lv Lv [0 2 -2 0 0] 2500000;
+cp cp [0 2 -2 -1 0] 1004;
+Rv Rv [0 2 -2 -1 0] 461;

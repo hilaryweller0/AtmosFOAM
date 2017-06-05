@@ -11,11 +11,11 @@ FoamFile
     format      ascii;
     class       volScalarField;
     location    "constant";
-    object      T;
+    object      P;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-dimensions      [0 0 0 1 0 0 0];
+dimensions      [1 -1 -2 0 0 0 0];
 
 internalField   uniform 0;
 

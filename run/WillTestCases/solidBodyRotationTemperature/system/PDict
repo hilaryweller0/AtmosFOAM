@@ -8,4 +8,4 @@ FoamFile {
 
 type		temperatureGradient;
 centre          (0 0 -1000);
-maxMagnitude    300;
+maxMagnitude    100000;
