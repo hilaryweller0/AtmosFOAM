@@ -35,6 +35,16 @@
                      + dt*dFluxdt[ip]
                      + dt*fvc::interpolate(sigmaRho[ip])*gSf;
 
+            // Momentum tranfer with mass tranfer
+            for(label jp=0; jp < nParts; jp++) {if (ip != jp)
+            {
+                flux[ip] += dt*
+                (
+                    flux[jp]*fvc::interpolate(massTransfer[jp][ip]/sigmaRho[jp])
+                  - flux[ip]*fvc::interpolate(massTransfer[ip][jp]/sigmaRho[ip])
+                );
+            }}
+            
             fluxSum += flux[ip];
         }
         // Needed for Exner boundary conditions

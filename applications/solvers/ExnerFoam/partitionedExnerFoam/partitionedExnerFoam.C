@@ -79,6 +79,7 @@ int main(int argc, char *argv[])
         
         #include "rhoSigmaEqn.H"
         #include "rhoThetaEqn.H"
+        #include "sigma.H"
 
         #include "compressibleContinuityErrs.H"
         runTime.write();

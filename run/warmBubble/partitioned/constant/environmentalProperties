@@ -26,9 +26,10 @@ g               g [0 1 -2 0 0 0 0] (0 0 -9.81);
 Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
 cloudRadius     cloudRadius [0 1 0 0 0] 0;
 dragCoeff       0;
-heatTransferCoeff 0.14;
-thermalConductivity thermalConductivity [1 1 -3 -1 0] 0.024;
-nu nu [0 2 -1 0 0] 15.11e-6;
-heatDist heatDist [0 1 0 0 0] 100;
+heatTransferCoeff 0; //0.14;
+//thermalConductivity thermalConductivity [1 1 -3 -1 0] 0.024;
+//nu nu [0 2 -1 0 0] 15.11e-6;
+//heatDist heatDist [0 1 0 0 0] 100;
+Ksigma Ksigma [0 2 -1 0 0] 100;
 
 // ************************************************************************* //

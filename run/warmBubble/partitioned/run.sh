@@ -48,10 +48,13 @@ sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale0 -1
 gmtFoam -time $time sigma
 gv $time/sigma.pdf &
 
-sumFields $time sigmaRhoDiff $time stable.sigmaRho 0 stable.sigmaRho -scale0 -1
 sumFields $time sigmaRhoDiff $time buoyant.sigmaRho 0 buoyant.sigmaRho -scale0 -1
 gmtFoam -time $time sigmaRho
 gv $time/sigmaRho.pdf &
+
+sumFields $time rhoDiff $time buoyant.rho 0 buoyant.rho -scale0 -1
+gmtFoam -time $time rho
+gv $time/rho.pdf &
 
 sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
 sumFields $time UfDiff $time stable.Uf 0 stable.Uf -scale1 -1
@@ -72,4 +75,10 @@ gmtFoam -time $time ExnerDiff
 gmtFoam -time $time thetaDiff
 gv $time/ExnerDiff.pdf &
 gv $time/thetaDiff.pdf &
+
+# Differences between partitions
+sumFields $time thetaDiff $time stable.theta $time buoyant.theta -scale1 -1
+gmtFoam -time $time thetaDiff
+gv $time/thetaDiff.pdf &
+
 

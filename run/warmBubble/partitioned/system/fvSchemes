@@ -61,6 +61,8 @@ interpolationSchemes
     interpolate(stable.u) linear;
     interpolate(buoyant.u) linear;
     interpolate(((stable.sigma*buoyant.sigma)*rhoSum)) linear;
+    interpolate((stable.buoyant.massTransfer|stable.sigmaRho)) linear;
+    interpolate((buoyant.stable.massTransfer|buoyant.sigmaRho)) linear;
 }
 
 snGradSchemes

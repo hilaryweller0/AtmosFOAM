@@ -32,6 +32,7 @@ PtrList<surfaceScalarField> flux(nParts);
 PtrList<surfaceScalarField> gradPcoeff(nParts);
 PtrList<surfaceScalarField> dFluxdt(nParts);
 PtrList<surfaceScalarField> drag(nParts);
+List<PtrList<volScalarField> > massTransfer(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -120,7 +121,8 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::NO_READ,
                 IOobject::AUTO_WRITE
             ),
-            sigma[ip]*rho[ip]
+            sigma[ip]*rho[ip],
+            "zeroGradient"
         )
     );
     sigmaRho[ip].oldTime();
@@ -210,6 +212,30 @@ for (label ip = 0; ip < nParts; ip++)
             dimensionedScalar("drag", dimensionSet(1,0,-2,0,0), scalar(0))
         )
     );
+    
+    massTransfer[ip].setSize(nParts);
+
+    for(label jp = 0; jp < nParts; jp++)
+    {
+        if (ip != jp)
+        {
+            massTransfer[ip].set
+            (
+                jp,
+                new volScalarField
+                (
+                    IOobject
+                    (
+                        partNames[ip]+partNames[jp]+"massTransfer",
+                        runTime.timeName(),
+                        mesh
+                    ),
+                    mesh,
+                    dimensionedScalar("", dimensionSet(1,-3,-1,0,0), scalar(0))
+                )
+            );
+        }
+    }
 }
 
 // Summed variables
