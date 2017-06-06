@@ -63,6 +63,20 @@ int main(int argc, char *argv[])
         IOobject("rho", runTime.timeName(), mesh, IOobject::NO_READ),
         rho_init
     );
+    
+    Info << "Creating rho_a" << endl;
+    volScalarField rho_a
+    (
+        IOobject("rho_a", runTime.timeName(), mesh, IOobject::NO_READ),
+        rho_init
+    );
+    
+    Info << "Creating rho_b" << endl;
+    volScalarField rho_b
+    (
+        IOobject("rho_b", runTime.timeName(), mesh, IOobject::NO_READ),
+        rho_init
+    );
 
     Info << "Creating q1" << endl;
     volScalarField q1
@@ -77,6 +91,13 @@ int main(int argc, char *argv[])
         IOobject("q2", runTime.timeName(), mesh, IOobject::NO_READ),
         rho_init
     );
+    
+    Info << "Creating S" << endl;
+    volScalarField S
+    (
+        IOobject("S", runTime.timeName(), mesh, IOobject::NO_READ),
+        q_init
+    );
 
     Info << "Creating rhof" << endl;
     surfaceScalarField rhof
@@ -85,11 +106,23 @@ int main(int argc, char *argv[])
         rhof_init
     );
 
-    IOdictionary tracerDict
+    IOdictionary rhoDict
     (
         IOobject
         (
-            "tracerFieldDict",
+            "rhoDict",
+            mesh.time().system(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+    
+    IOdictionary rhoaDict
+    (
+        IOobject
+        (
+            "rhoaDict",
             mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,
@@ -134,7 +167,9 @@ int main(int argc, char *argv[])
     );
 
     const noAdvection velocityField;
-    autoPtr<tracerField> tracer(tracerField::New(tracerDict, velocityField));
+    autoPtr<tracerField> rhoVal(tracerField::New(rhoDict, velocityField));
+    
+    autoPtr<tracerField> rhoaVal(tracerField::New(rhoaDict, velocityField));
     
     autoPtr<tracerField> qVal(tracerField::New(qFieldDict, velocityField));
     
@@ -143,8 +178,16 @@ int main(int argc, char *argv[])
     autoPtr<tracerField> PVal(tracerField::New(PDict, velocityField));
     
     Info << "writing rho for time " << runTime.timeName() << endl;
-    tracer->applyTo(rho);
+    rhoVal->applyTo(rho);
     rho.write();
+    
+    Info << "writing rho for time " << runTime.timeName() << endl;
+    rhoaVal->applyTo(rho_a);
+    rho_a.write();
+
+    Info << "writing rho for time " << runTime.timeName() << endl;
+    rhoVal->applyTo(rho_b);
+    rho_b.write();
 
     Info << "writing q1 for time " << runTime.timeName() << endl;
     q1.write();
@@ -153,8 +196,11 @@ int main(int argc, char *argv[])
     qVal->applyTo(q2);
     q2.write();
 
+    Info << "writing S for time " << runTime.timeName() << endl;
+    S.write();
+
     Info << "writing qf for time " << runTime.timeName() << endl;
-    tracer->applyTo(rhof);
+    rhoVal->applyTo(rhof);
     rhof.write();
     
     Info << "writing T" << endl;

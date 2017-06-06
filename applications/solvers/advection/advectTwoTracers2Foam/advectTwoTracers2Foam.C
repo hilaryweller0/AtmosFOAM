@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
             //rho = rho12 + rhoAir;
             fluxOld = fvc::interpolate(rho.oldTime())*phi;
             flux = fvc::interpolate(rho)*phi;
+            //S = mag(rvs - q1) + (rvs - q1)
+            S = min(q1.oldTime(),rvs);
             Info << "test1" << endl;
             // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
@@ -82,6 +84,7 @@ int main(int argc, char *argv[])
                 fvm::ddt(rho,q1)
                 + 0.5*fvc::div(fluxOld,q1.oldTime())
                 - 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                //- 0.5*transferTerm*(q2.oldTime()-q1.oldTime())
             );
             
             fvScalarMatrix q2Eqn
@@ -89,6 +92,7 @@ int main(int argc, char *argv[])
                 fvm::ddt(rho,q2)
                 + 0.5*fvc::div(fluxOld,q2.oldTime())
                 + 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                //+ 0.5*transferTerm*(q2.oldTime()-q1.oldTime())
             );
             
             fvScalarMatrix rhoEqn
@@ -121,10 +125,11 @@ int main(int argc, char *argv[])
             {
                 q1Eqn += -0.5*transferTerm*(q2-min(rvs,q1));
                 q2Eqn += +0.5*transferTerm*(q2-min(rvs,q1));
+                //q1Eqn += -0.5*transferTerm*(q2-q1);
+                //q2Eqn += +0.5*transferTerm*(q2-q1);
             }
             
             // Solve the matrices for the equations
-            Info << "test2" << endl;
             q1Eqn.solve();
             q2Eqn.solve();
             rhoEqn.solve();
@@ -140,7 +145,7 @@ int main(int argc, char *argv[])
         Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
         Info << " rho1 fraction: " << sum(q1.internalField()*rho.internalField())/sum(rho.internalField())
          << endl;
-        Info << "Transfer Term: " << max(rvs.internalField()).value() << max(q2.internalField()).value() << endl;
+        Info << "Transfer Term Min: " << min(rvs.internalField()).value() << "Transfer Term Max: " << max(rvs.internalField()).value() << max(q2.internalField()).value() << endl;
         runTime.write();
     }
     
