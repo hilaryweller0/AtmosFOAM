@@ -3,7 +3,7 @@ FoamFile {
     format      ascii;
     class       dictionary;
     location    "constant";
-    object	tracerFieldDict;
+    object	    rhoDict;
 }
 
 type		schaerDamped;
