@@ -2,19 +2,23 @@
     Psi = pow(rhoSum,(2*kappa-1)/(kappa-1))
          *pow(R/pRef*rhoTheta/rhoSum, kappa/(kappa-1));
     
-//    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])
-//                    *fvc::interpolate(theta[0]);
-////    gradPcoeffSum = gradPcoeff[0];
+//    gradPcoeff[0] = Cp*fvc::interpolate(sigmaRho[0])*fvc::interpolate(theta[0]);
+//    gradPcoeffSum = gradPcoeff[0];
 //    for(label ip = 1; ip < nParts; ip++)
 //    {
-//        gradPcoeff[ip] = Cp*fvc::interpolate(sigmaRho[ip])
-//                           *fvc::interpolate(theta[ip]);
-////        gradPcoeffSum += gradPcoeff[ip];
+//        gradPcoeff[ip] = Cp*fvc::interpolate(sigmaRho[ip])*fvc::interpolate(theta[ip]);
+//        gradPcoeffSum += gradPcoeff[ip];
 //    }
+
+    surfaceScalarField gradExner
+    (
+        IOobject("gradExner", runTime.timeName(), mesh), -fvc::snGrad(Exner)
+    );
+
     gradPcoeffSum = Cp*fvc::interpolate(rhoTheta);
     for (label ip = 0; ip < nParts; ip++)
     {
-        gradPcoeff[ip] = Cp*fvc::interpolate(sigmaRho[ip]*theta[ip]);
+        gradPcoeff[ip] = fvc::interpolate(sigma[ip])*gradPcoeffSum;
     }
 
     for (int corr=0; corr<nCorr; corr++)

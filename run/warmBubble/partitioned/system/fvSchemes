@@ -50,17 +50,18 @@ laplacianSchemes
 interpolationSchemes
 {
     default        none;
-    interpolate(stable.sigmaRho) linear;
-    interpolate(buoyant.sigmaRho) linear;
-    interpolate((stable.sigmaRho*stable.theta)) linear;
-    interpolate((buoyant.sigmaRho*buoyant.theta)) linear;
+    interpolate(stable.sigmaRho) linear; //Upwind stable.flux linearUpwind;
+    interpolate(buoyant.sigmaRho) linear; //Upwind buoyant.flux linearUpwind;
+    interpolate(stable.theta) linear; //Upwind stable.flux linearUpwind;
+    interpolate(buoyant.theta) linear; //Upwind buoyant.flux linearUpwind;
+    interpolate(stable.sigma) upwind gradExner; // linearUpwind;
+    interpolate(buoyant.sigma) upwind gradExner; // linearUpwind;
     interpolate(rhoSum) linear;
-    interpolate(rhoTheta) linear;
+    //interpolate(rhoTheta) linear;
     interpolate(convection(stable.flux,stable.u)) linear;
     interpolate(convection(buoyant.flux,buoyant.u)) linear;
     interpolate(stable.u) linear;
     interpolate(buoyant.u) linear;
-    interpolate(((stable.sigma*buoyant.sigma)*rhoSum)) linear;
     interpolate((stable.buoyant.massTransfer|stable.sigmaRho)) linear;
     interpolate((buoyant.stable.massTransfer|buoyant.sigmaRho)) linear;
 }

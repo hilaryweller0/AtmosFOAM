@@ -159,7 +159,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            fvc::interpolate(sigmaRho[ip])*(Uf[ip] & mesh.Sf())
+            linearInterpolate(sigmaRho[ip])*(Uf[ip] & mesh.Sf())
         )
     );
     flux[ip].oldTime();
@@ -175,7 +175,7 @@ for (label ip = 0; ip < nParts; ip++)
                 runTime.timeName(),
                 mesh
             ),
-            Cp*fvc::interpolate(sigmaRho[ip]*theta[ip])
+            Cp*linearInterpolate(sigmaRho[ip])*linearInterpolate(theta[ip])
         )
     );
     
@@ -263,7 +263,11 @@ for(label ip = 1; ip < nParts; ip++)
 volScalarField Psi("Psi", rhoSum/Exner);
 Psi.oldTime();
 
-surfaceScalarField fluxSum("fluxSum", flux[0]);
+surfaceScalarField fluxSum
+(
+    IOobject("fluxSum", runTime.timeName(), mesh),
+    flux[0]
+);
 for(label ip = 1; ip < nParts; ip++){ fluxSum += flux[ip]; }
 
 surfaceScalarField gradPcoeffSum
