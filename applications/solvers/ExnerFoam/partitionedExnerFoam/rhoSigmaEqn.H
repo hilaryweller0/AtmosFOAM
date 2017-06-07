@@ -2,6 +2,14 @@
 for(label ip = 0; ip < nParts; ip++)
 {
     sigmaRho[ip] = sigmaRho[ip].oldTime() - dt*fvc::div(flux[ip]);
+//    surfaceScalarField fluxDiff
+//    (
+//        "fluxDiff",
+//        flux[ip]/fvc::interpolate(sigma[ip])
+//      - (fluxSum - flux[ip])/fvc::interpolate(1-sigma[ip])
+//    );
+//    sigmaRho[ip] = sigmaRho[ip].oldTime() - dt*fvc::div(fluxSum,sigma[ip])
+//                 - dt*fvc::div(fluxDiff, sigma[ip]*(1-sigma[ip]));
 }
 
 rhoSum = sigmaRho[0];
