@@ -22,10 +22,10 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectTwoTracers2Foam
+    advectTracerRatiosFoam
 
 Description
-    Solves a transport equation for two tracers rho1 and rho2 in a temperature field.
+    Solves a transport equation for two tracers T1 and T2.
     CODE IS WORK IN PROGRESS
 
 \*---------------------------------------------------------------------------*/
@@ -61,76 +61,94 @@ int main(int argc, char *argv[])
     {
         Info<< "\nTime = " << runTime.timeName() << nl << endl;
         #include "CourantNo.H"
-        
+        //if (!implicitAdvection && CoNum > 1.0)
+        //{
+        //    FatalErrorInFunction << "Max Courant number > 1"
+        //        << exit(FatalError);
+        //}
+
         for (int corr=0; corr < 3; corr++)
         {
-            // Setup the matrix without adding implicit/explicit parts
+            //const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
+        
+            //rho = rho12 + rhoAir;
+            fluxOld = fvc::interpolate(rho.oldTime())*phi;
+            flux = fvc::interpolate(rho)*phi;
+            //S = mag(rvs - q1) + (rvs - q1)
+            S = q2.oldTime()-rvs;
+            S = 0.5*( S + mag(S) ) - min( ( mag(S) - S )/(mag(S)+0.00001),0*S+1 )*min(-S,q1.oldTime());
+            Info << "test1" << endl;
+            // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
-            Info << "here1" << endl;
-            fvScalarMatrix rho1Eqn
+            fvScalarMatrix q1Eqn
             (
-                fvm::ddt(rho1)
-              + 0.5*fvc::div(phi, rho1.oldTime())
-              + 0.5*rho1damping*rho1.oldTime()
-              - 0.5*rho2damping*rho2.oldTime() - 0.5*rho2damping*rho2
+                //fvm::ddt(rho,q1)
+                fvm::ddt(q1)
+                + 0.5*fvc::div(fluxOld,q1.oldTime())
+                //- 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                - 0.5*transferTerm*S.oldTime()
             );
-            fvScalarMatrix rho2Eqn
+            
+            fvScalarMatrix q2Eqn
             (
-                fvm::ddt(rho2)
-              + 0.5*fvc::div(phi, rho2.oldTime())
-              + 0.5*rho2damping*rho2.oldTime()
-              - 0.5*rho1damping*rho1.oldTime() - 0.5*rho1damping*rho1
+                //fvm::ddt(rho,q2)
+                fvm::ddt(q2)
+                + 0.5*fvc::div(fluxOld,q2.oldTime())
+                //+ 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                + 0.5*transferTerm*S.oldTime()
             );
-            fvScalarMatrix rhoEqn(fvm::ddt(rho) + 0.5*fvc::div(phi, rho.oldTime()));
-            Info << "here2" << endl;
+            
+            fvScalarMatrix rhoEqn
+            (
+                fvm::ddt(rho)
+                + 0.5*fvc::div(phi, rho.oldTime())
+            );
 
             // Add the advection terms either implicit or explicit
             if (implicitAdvection)
             {
-                rho1Eqn += 0.5*fvm::div(phi, rho1);
-                rho2Eqn += 0.5*fvm::div(phi, rho2);
+                q1Eqn += 0.5*fvm::div(flux,q1);
                 rhoEqn += 0.5*fvm::div(phi, rho);
             }
             else
             {
-                rho1Eqn += 0.5*fvc::div(phi, rho1);
-                rho2Eqn += 0.5*fvc::div(phi, rho2);
+                q1Eqn += 0.5*fvc::div(flux,q1);
+                q2Eqn += 0.5*fvc::div(flux,q2);
                 rhoEqn += 0.5*fvc::div(phi, rho);
             }
             
             // Add the damping terms, either implicit or explicit
             if (implicitSource)
             {
-                rho1Eqn += fvm::Sp(0.5*rho1damping, rho1);
-                rho2Eqn += fvm::Sp(0.5*rho2damping, rho2);
+            //    qEqn += 0.5*fvm::Sp(rho1Damping*rho, q)
+            //          + 0.5*fvm::Sp(rho2Damping*rho, q)
+            //          - 0.5*rho2Damping*( rho - rhoAir );
             }
             else
             {
-                rho1Eqn += 0.5*rho1damping*rho1;
-                rho2Eqn += 0.5*rho2damping*rho2;
+                //q1Eqn += -0.5*transferTerm*(q2-min(rvs,q1));
+                //q2Eqn += +0.5*transferTerm*(q2-min(rvs,q1));
+                q1Eqn += -0.5*transferTerm*S;
+                q2Eqn += +0.5*transferTerm*S;
             }
             
-            
             // Solve the matrices for the equations
-            rho1Eqn.solve();
-            rho2Eqn.solve();
+            q1Eqn.solve();
+            q2Eqn.solve();
             rhoEqn.solve();
+            
+            Info << "Writing rho and q after rho.solve" << endl;
+            
+            
         }
-        
         Info << " rho goes from " << min(rho.internalField()).value() << " to "
              << max(rho.internalField()).value() << endl;
-        Info << " rho1 goes from " << min(rho1.internalField()).value() << " to "
-             << max(rho1.internalField()).value() << endl;
-        Info << " rho2 goes from " << min(rho2.internalField()).value() << " to "
-             << max(rho2.internalField()).value() << endl;
-
-        Info << " Total rho in system: " << sum(rho.internalField()) << endl;
-        Info << " rho1 fraction: " << sum(rho1.internalField())/sum(rho.internalField())
+        Info << " q1 goes from " << min(q1.internalField()).value() << " to "
+             << max(q1.internalField()).value() << endl;
+        Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
+        Info << " rho1 fraction: " << sum(q1.internalField()*rho.internalField())/sum(rho.internalField())
          << endl;
-        Info << " rho2 fraction: " << sum(rho2.internalField())/sum(rho.internalField())
-         << endl;
-        Info << " Total fraction: " << (sum(rho1.internalField())+sum(rho2.internalField()))/sum(rho.internalField())
-         << endl;
+        Info << "Transfer Term Min: " << min(rvs.internalField()).value() << "Transfer Term Max: " << max(rvs.internalField()).value() << max(q2.internalField()).value() << endl;
         runTime.write();
     }
     

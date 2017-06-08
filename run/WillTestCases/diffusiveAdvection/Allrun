@@ -1,0 +1,17 @@
+#!/bin/sh -e
+cd ${0%/*} || exit 1    # Run from this directory
+
+# Source tutorial run functions
+. $WM_PROJECT_DIR/bin/tools/RunFunctions
+
+runApplication blockMesh
+mkdir 0
+runApplication setVelocityField -time 0
+runApplication setTracersAndTemperature
+runApplication advectTwoTracersBasicFoam
+#runApplication advectWithEqOfStateFoam
+runApplication gmtFoam rho_a -time 0
+runApplication gmtFoam rho_b -time 0
+runApplication gmtFoam rho_a -time 1800
+runApplication gmtFoam rho_b -time 1800
+# ------------------- end-of-file

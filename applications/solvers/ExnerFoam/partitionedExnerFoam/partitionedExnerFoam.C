@@ -44,6 +44,7 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
+    #include "readTransferCoeffs.H"
     HodgeOps H(mesh);
     surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
@@ -69,6 +70,7 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
+            #include "calculateDrag.H"
             #include "rhoSigmaEqn.H"
             #include "rhoThetaEqn.H"
             #include "sigma.H"
@@ -77,6 +79,7 @@ int main(int argc, char *argv[])
         
         #include "rhoSigmaEqn.H"
         #include "rhoThetaEqn.H"
+        #include "sigma.H"
 
         #include "compressibleContinuityErrs.H"
         runTime.write();

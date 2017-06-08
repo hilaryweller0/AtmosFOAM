@@ -38,6 +38,13 @@ solvers
         relTol           0;
     }
     
+    "stable.sigmaRho|buoyant.sigmaRho"
+    {
+        solver PCG;
+        preconditioner DIC;
+        tolerance 1e-10;
+    }
+    
     theta
     {
         solver PBiCG;
