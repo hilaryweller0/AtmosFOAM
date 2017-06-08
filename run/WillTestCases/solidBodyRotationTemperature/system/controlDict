@@ -15,10 +15,10 @@ FoamFile {
     writeInterval   18;
     purgeWrite      0;
     writeFormat     ascii;
-    writePrecision  6;
+    writePrecision  12;
     writeCompression uncompressed;
     timeFormat      general;
-    timePrecision   6;
+    timePrecision   12;
     runTimeModifiable no;
     adjustTimeStep no;
     maxCo          1;

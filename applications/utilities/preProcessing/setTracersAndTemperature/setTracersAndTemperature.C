@@ -142,6 +142,18 @@ int main(int argc, char *argv[])
         )
     );
     
+    IOdictionary qFieldDict2
+    (
+        IOobject
+        (
+            "qFieldDict2",
+            mesh.time().system(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        )
+    );
+    
     IOdictionary tempDict
     (
         IOobject
@@ -173,6 +185,8 @@ int main(int argc, char *argv[])
     
     autoPtr<tracerField> qVal(tracerField::New(qFieldDict, velocityField));
     
+    autoPtr<tracerField> qVal2(tracerField::New(qFieldDict2, velocityField));
+    
     autoPtr<tracerField> tempVal(tracerField::New(tempDict, velocityField));
     
     autoPtr<tracerField> PVal(tracerField::New(PDict, velocityField));
@@ -190,10 +204,11 @@ int main(int argc, char *argv[])
     rho_b.write();
 
     Info << "writing q1 for time " << runTime.timeName() << endl;
+    qVal->applyTo(q1);
     q1.write();
 
     Info << "writing q2 for time " << runTime.timeName() << endl;
-    qVal->applyTo(q2);
+    qVal2->applyTo(q2);
     q2.write();
 
     Info << "writing S for time " << runTime.timeName() << endl;

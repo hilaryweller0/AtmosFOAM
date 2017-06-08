@@ -75,24 +75,27 @@ int main(int argc, char *argv[])
             fluxOld = fvc::interpolate(rho.oldTime())*phi;
             flux = fvc::interpolate(rho)*phi;
             //S = mag(rvs - q1) + (rvs - q1)
-            S = min(q1.oldTime(),rvs);
+            S = q2.oldTime()-rvs;
+            S = 0.5*( S + mag(S) ) - min( ( mag(S) - S )/(mag(S)+0.00001),0*S+1 )*min(-S,q1.oldTime());
             Info << "test1" << endl;
             // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix q1Eqn
             (
-                fvm::ddt(rho,q1)
+                //fvm::ddt(rho,q1)
+                fvm::ddt(q1)
                 + 0.5*fvc::div(fluxOld,q1.oldTime())
-                - 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
-                //- 0.5*transferTerm*(q2.oldTime()-q1.oldTime())
+                //- 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                - 0.5*transferTerm*S.oldTime()
             );
             
             fvScalarMatrix q2Eqn
             (
-                fvm::ddt(rho,q2)
+                //fvm::ddt(rho,q2)
+                fvm::ddt(q2)
                 + 0.5*fvc::div(fluxOld,q2.oldTime())
-                + 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
-                //+ 0.5*transferTerm*(q2.oldTime()-q1.oldTime())
+                //+ 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
+                + 0.5*transferTerm*S.oldTime()
             );
             
             fvScalarMatrix rhoEqn
@@ -123,10 +126,10 @@ int main(int argc, char *argv[])
             }
             else
             {
-                q1Eqn += -0.5*transferTerm*(q2-min(rvs,q1));
-                q2Eqn += +0.5*transferTerm*(q2-min(rvs,q1));
-                //q1Eqn += -0.5*transferTerm*(q2-q1);
-                //q2Eqn += +0.5*transferTerm*(q2-q1);
+                //q1Eqn += -0.5*transferTerm*(q2-min(rvs,q1));
+                //q2Eqn += +0.5*transferTerm*(q2-min(rvs,q1));
+                q1Eqn += -0.5*transferTerm*S;
+                q2Eqn += +0.5*transferTerm*S;
             }
             
             // Solve the matrices for the equations

@@ -25,7 +25,7 @@ ddtSchemes
 divSchemes
 {
     //default         Gauss cubicUpwindCPCFit 3;
-    default         Gauss vanLeer01;
+    default         Gauss vanLeer;
 }
 
 interpolationSchemes
