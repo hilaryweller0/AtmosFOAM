@@ -10,4 +10,3 @@ do
 done
 
 globalSum T_diff
-
