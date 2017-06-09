@@ -11,6 +11,8 @@ interpolationSchemes {
     interpolate(T)          midPoint;
     interpolate(grad(Tf))   midPoint;
     interpolate(grad(Tf_0)) midPoint;
+    interpolate(div((Tf_0*phi_0))) midPoint; // advectionConservativeF
+    interpolate(div((Tf*phi))) midPoint;     // advectionConservativeF
 }
 
 divSchemes {
