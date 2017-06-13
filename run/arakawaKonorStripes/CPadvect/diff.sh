@@ -1,7 +1,11 @@
 #!/bin/bash
-reconstructPar
+set -e
+#reconstructPar
 
 setAnalyticTracerField
+
+zeroVerticalFaces Tf
+zeroVerticalFaces Tf_analytic
 
 for t in [0-9]*
 do
@@ -10,4 +14,5 @@ do
 done
 
 globalSum T_diff
+globalSum Tf_diff
 
