@@ -18,9 +18,8 @@ plotZeroValuePolys false;
 
 FieldsToPlot (
       [none mesh "gray"]
-      [Tf rawValues 0 10 1 "$GMTU/colours/white_red.cpt"]
-      [Tf rawBoundaryValues 0 10 1 "$GMTU/colours/white_red.cpt"]
-      [none numbered 0]
+      [TfRaw rawValues -1 1 0.1 "$GMTU/colours/red_white_blue.cpt"]
+//      [none numbered 0]
 );
 
-region "-1/4/-1/4";
+region "-16/1/-1/11";

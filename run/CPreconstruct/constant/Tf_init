@@ -17,16 +17,7 @@ FoamFile
 
 dimensions      [0 1 -1 0 0 0 0];
 
-internalField   nonuniform 
-(
-0
-1
-0
-5
-3
-0
-0
-);
+internalField   uniform 0;
 
 boundaryField
 {
@@ -43,12 +34,12 @@ boundaryField
     ground
     {
         type            calculated;
-        value           nonuniform (4 1 2);
+        value           uniform 0;
     }
     top
     {
         type            calculated;
-        value           nonuniform (4 3 7);
+        value           uniform 0;
     }
     frontAndBack
     {
