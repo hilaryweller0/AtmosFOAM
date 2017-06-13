@@ -15,6 +15,7 @@ class schaerRadialDampedField final : public tracerField
     const scalar rho0;
     const scalar rhoAir;
     const point p0;
+    const point p1;
     const vector A;
     const string profileType;
 };

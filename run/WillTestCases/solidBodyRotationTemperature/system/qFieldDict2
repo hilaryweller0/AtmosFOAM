@@ -7,8 +7,9 @@ FoamFile {
 }
 
 type		schaerDamped;
-maxMagnitude    0.01;
-rhoAir          1.;
-profileType     "r";
+maxMagnitude    1.;
+rhoAir          0.;
+profileType     "rvs";
 centre          (0 0 500);
+ground          (0 0 -1000);
 halfWidth       (300 0 300);
