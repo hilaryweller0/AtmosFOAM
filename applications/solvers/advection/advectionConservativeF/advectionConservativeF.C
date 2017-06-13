@@ -49,6 +49,8 @@ int main(int argc, char *argv[])
 
     #include "CourantNo.H"
 
+    Tf = Tf * mag(g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
+
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
@@ -64,8 +66,7 @@ int main(int argc, char *argv[])
 
         T = cellCentreReconstruction.interpolate(Tf);
 
-        // this loses conservation
-//        Tf = mag(Tf * g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
+        Tf = Tf * mag(g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
 
         Info << " Tf goes from " << min(Tf.internalField()) << " to "
              << max(Tf.internalField()) << endl;
