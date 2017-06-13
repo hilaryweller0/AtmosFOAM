@@ -39,7 +39,6 @@ boundary (
 	}
 
 	right {
-    type wall;
 		type cyclic;
         neighbourPatch left;
 		faces (
