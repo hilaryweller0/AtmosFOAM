@@ -18,6 +18,8 @@ plotZeroValuePolys false;
 
 FieldsToPlot (
       [none mesh "gray"]
+      [Tf rawValues 0 6 1 "$GMTU/colours/white_red.cpt"]
+      [Tf rawBoundaryValues 0 6 1 "$GMTU/colours/white_red.cpt"]
       [none numbered 0]
 );
 

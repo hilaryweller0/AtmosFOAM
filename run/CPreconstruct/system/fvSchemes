@@ -10,6 +10,7 @@ FoamFile {
 interpolationSchemes {
     default         none;
     interpolate(T)  midPoint;
+    interpolate(div((Tf_0*phi_0))) midPoint;
 }
 
 divSchemes {
