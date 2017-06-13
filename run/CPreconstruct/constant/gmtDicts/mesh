@@ -1,0 +1,24 @@
+FoamFile {
+        version         1.4;
+        format          ascii;
+
+        root            "";
+        case            "";
+        instance        "constant";
+        local           "";
+
+        class           dictionary;
+        object          gmtDict;
+}
+
+projection "X5i/5i";
+projection2D XZ;
+plotBoundaryDots false;
+plotZeroValuePolys false;
+
+FieldsToPlot (
+      [none mesh "gray"]
+      [none numbered 0]
+);
+
+region "-1/3/-1/3";

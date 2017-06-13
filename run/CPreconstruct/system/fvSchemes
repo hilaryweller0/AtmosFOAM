@@ -1,0 +1,39 @@
+// dummy file to placate paraView
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSchemes;
+}
+
+interpolationSchemes {
+    default         none;
+    interpolate(T)  midPoint;
+}
+
+divSchemes {
+    default         none;
+}
+
+gradSchemes {
+    default         none;
+}
+
+snGradSchemes {
+    default         none;
+}
+
+laplacianSchemes {
+    default         none;
+}
+
+ddtSchemes {
+    default         none;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}
