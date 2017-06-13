@@ -15,4 +15,5 @@ done
 
 globalSum T_diff
 globalSum Tf_diff
+globalSum Tf
 

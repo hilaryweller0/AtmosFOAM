@@ -18,7 +18,7 @@ plotBoundaryDots false;
 //plotZeroValuePolys false;
 
 FieldsToPlot (
-//        [T_diff rawValues -0.2 0.2 0.05 "$GMTU/colours/red_white_blue.cpt"]
+        [T_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
         [Tf_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
         [none mesh "gray"]
 );
