@@ -52,6 +52,10 @@ int main(int argc, char *argv[])
     (
         "implicitSource", false
     );
+    const bool BryanFritschSource = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "BryanFritschSource", true
+    );
 
     #include "calculateSource.H"
 
@@ -74,10 +78,18 @@ int main(int argc, char *argv[])
             //rho = rho12 + rhoAir;
             fluxOld = fvc::interpolate(rho.oldTime())*phi;
             flux = fvc::interpolate(rho)*phi;
-            //S = mag(rvs - q1) + (rvs - q1)
-            S = q2.oldTime()-rvs;
-            S = 0.5*( S + mag(S) ) - min( ( mag(S) - S )/(mag(S)+0.00001),0*S+1 )*min(-S,q1.oldTime());
-            Info << "test1" << endl;
+            
+            if (BryanFritschSource)
+            {
+                S = ( 0.5*( q2-rvs + mag(q2-rvs) ) - min( ( mag(q2-rvs) - (q2-rvs) )/(mag(q2-rvs)+0.000000000001),0*rvs+1 )*min(-(q2-rvs),q1) )*transferTerm;
+            }
+            else
+            {
+                //S = (q2-JahnScale*es*T/Rv)*(q2-JahnScale*es*T/Rv) + q1*q1;
+                S = (q2-JahnScale*es/(Rv*T)) - q1 + sqr((q2-JahnScale*es/(Rv*T))*(q2-JahnScale*es/(Rv*T)) + q1*q1);
+                Info << "Transfer Term Min: " << min(S.internalField()).value() << " Transfer Term Max: " << max(S.internalField()).value() << endl;
+            }
+
             // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
             fvScalarMatrix q1Eqn
@@ -86,7 +98,7 @@ int main(int argc, char *argv[])
                 fvm::ddt(q1)
                 + 0.5*fvc::div(fluxOld,q1.oldTime())
                 //- 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
-                - 0.5*transferTerm*S.oldTime()
+                - 0.5*timeScale*S.oldTime()
             );
             
             fvScalarMatrix q2Eqn
@@ -95,7 +107,7 @@ int main(int argc, char *argv[])
                 fvm::ddt(q2)
                 + 0.5*fvc::div(fluxOld,q2.oldTime())
                 //+ 0.5*transferTerm*(q2.oldTime()-min(q1.oldTime(),rvs))
-                + 0.5*transferTerm*S.oldTime()
+                + 0.5*timeScale*S.oldTime()
             );
             
             fvScalarMatrix rhoEqn
@@ -128,8 +140,8 @@ int main(int argc, char *argv[])
             {
                 //q1Eqn += -0.5*transferTerm*(q2-min(rvs,q1));
                 //q2Eqn += +0.5*transferTerm*(q2-min(rvs,q1));
-                q1Eqn += -0.5*transferTerm*S;
-                q2Eqn += +0.5*transferTerm*S;
+                q1Eqn += -0.5*timeScale*S;
+                q2Eqn += +0.5*timeScale*S;
             }
             
             // Solve the matrices for the equations
@@ -148,7 +160,7 @@ int main(int argc, char *argv[])
         Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
         Info << " rho1 fraction: " << sum(q1.internalField()*rho.internalField())/sum(rho.internalField())
          << endl;
-        Info << "Transfer Term Min: " << min(rvs.internalField()).value() << "Transfer Term Max: " << max(rvs.internalField()).value() << max(q2.internalField()).value() << endl;
+        Info << "Transfer Term Min: " << min(S.internalField()).value() << " Transfer Term Max: " << max(S.internalField()).value() << endl;
         runTime.write();
     }
     

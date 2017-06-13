@@ -17,6 +17,7 @@ FoamFile {
 
 implicitAdvection false;
 implicitSource false;
+BryanFritschSource true;
 
 solvers
 {
