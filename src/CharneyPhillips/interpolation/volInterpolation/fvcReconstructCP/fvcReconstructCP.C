@@ -49,8 +49,8 @@ Foam::tmp<
     > tInterpField = fvc::reconstruct(
             s
             * g.unitFaceNormal()
-            * volInterpolationScheme<Type>::mesh().magSf()) 
-            & g.unit();
+            * volInterpolationScheme<Type>::mesh().magSf()
+        ) & g.unit();
     Foam::GeometricField
     <
         Type,
