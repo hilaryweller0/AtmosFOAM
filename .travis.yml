@@ -3,20 +3,16 @@ sudo: required
 language: cpp
 
 env:
-  - ATMOSFOAM_TOOLS_SRC=$HOME/AtmosFOAM-tools/src \
-    ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
+ - ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
 
 before_install:
   - sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
   - sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev" -y
+  - sudo add-apt-repository 'deb http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com main dev' -y
   - sudo apt-get -qq update
-  - sudo apt-get install openfoam-dev libgdal-dev -y
+  - sudo apt-get install openfoam-dev libgdal-dev atmosfoam-tools -y
 
 before_script:
   - source /opt/openfoam-dev/etc/bashrc
-  - git clone https://github.com/AtmosFOAM/AtmosFOAM-tools.git $HOME/AtmosFOAM-tools
-  - cd $HOME/AtmosFOAM-tools
-  - ./Allwmake
-  - cd $TRAVIS_BUILD_DIR
 
 script: ./Allwmake
