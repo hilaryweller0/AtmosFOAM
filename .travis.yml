@@ -10,7 +10,7 @@ before_install:
   - sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev" -y
   - sudo add-apt-repository 'deb http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev main' -y
   - sudo apt-get -qq update
-  - sudo apt-get install openfoam-dev libgdal-dev atmosfoam-tools -y
+  - sudo apt-get install openfoam-dev libgdal-dev -y
   - sudo apt-get install atmosfoam-tools -y --allow-unauthenticated
 
 before_script:
