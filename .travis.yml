@@ -11,7 +11,7 @@ before_install:
   - sudo add-apt-repository "http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev" -y
   - sudo apt-get -qq update
   - sudo apt-get install openfoam-dev libgdal-dev -y --no-install-recommends
-  - sudo apt-get install openfoam-dev libgdal-dev atmosfoam-tools -y --allow-unauthenticated
+  - sudo apt-get install atmosfoam-tools -y --allow-unauthenticated
 
 before_script:
   - source /opt/openfoam-dev/etc/bashrc
