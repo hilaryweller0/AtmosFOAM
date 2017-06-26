@@ -3,17 +3,24 @@ sudo: required
 language: cpp
 
 env:
- - ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
+  global:
+    - secure: "nF8E37Z8mVUOYv/d6WxCyk+QwPHhOCzY6uFnaTuaDkMyYiqHaVZZc7zLxsa+aQKtyKH5TT2iWam7ugyaeqYeJHOmVVP72uIHm9En1RWj2aUt+dtQclztxuuWxfAd4GMJ6LB4Fizza1DtQmH4ln0Bm32J1GFxJ1ChfZbZEldOKJ5biodxB3Vl1EBaj45Km2EzsE85VSu8ySVGCbPlUBu1KY0Py602LmQ3PFS6IPbvhRb2Hv7dMv2Dy2yaBiQnC+jLlcHit6b1P/1fz/sbY1Ej9PbP7G1u51/8RfQRxyArcCnlgIPvRe6x2qqhNXaTQrNX2L2HtGZS58VyroTGT/2H65UJ1KsJ0aP+1pYzHyFhjhlSnNZCgDIOT/l1lRQXINX6HXY+MdApam9tg4bLRQ7QabDgXPNcW+vh6iFD5gt/ts6Bf+ZEalm2G9NbcXHoUgAJ1jOz3HFdUJc38B/hFlWGtsDktENKZmbZVkH5gFvAqWOW/t71m5tB9cdIBP6NQ8czbMwHu+KrNO3qd4tAelUHOPjRA2BIPr9leqYCuQHomqalgc88c8rH2UOMTC6G3qqhDOHEor196SNy/DNgykg1gQD9Tx7FwgnvJbLl9XpEb/gsdB7UcBbmUB85WaXpBsq9LcnNaz5iMmeheaKhIsQ2HgDO24JTiD1CpJNX22I3cH4="
+    - AWS_ACCESS_KEY_ID=AKIAIIVZ76HKTK7EJGAA
+    - ATMOSFOAM_TOOLS_SRC=$TRAVIS_BUILD_DIR/src
+    - DEBFULLNAME="James Shaw"
+    - DEBEMAIL=js102@zepler.net
+    - SINGULARITY_VERSION=2.3
 
-before_install:
-  - sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
-  - sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev" -y
-  - sudo add-apt-repository 'deb http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev main' -y
-  - sudo apt-get -qq update
-  - sudo apt-get install openfoam-dev libgdal-dev -y
-  - sudo apt-get install atmosfoam-tools -y --allow-unauthenticated
+install:
+  - cd /tmp
+  - wget https://github.com/singularityware/singularity/releases/download/$SINGULARITY_VERSION/singularity-$SINGULARITY_VERSION.tar.gz
+  - tar -xf singularity-$SINGULARITY_VERSION.tar.gz
+  - cd singularity-$SINGULARITY_VERSION
+  - ./configure --prefix=/usr/local
+  - make
+  - sudo make install
+  - sudo apt-get install ruby-dev -y
+  - sudo gem install deb-s3
+  - cd $TRAVIS_BUILD_DIR
 
-before_script:
-  - source /opt/openfoam-dev/etc/bashrc
-
-script: ./Allwmake
+script: ./singularity.dist.sh 17.04 zesty

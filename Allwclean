@@ -6,5 +6,4 @@ cd ${0%/*} || exit 1    # run from this directory
     exit 1
 }
 
-wclean all src
-wclean all applications
+debian/override_dh_auto_clean.sh

@@ -98,3 +98,12 @@ polyMesh
 
 testcases/build
 *.OpenFOAM
+Singularity.*
+*.img
+debian/build
+debian/changelog
+debian/debhelper-build-stamp
+debian/files
+debian/atmosfoam.debhelper.log
+debian/atmosfoam.substvars
+debian/atmosfoam
