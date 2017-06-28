@@ -3,16 +3,24 @@ sudo: required
 language: cpp
 
 env:
- - ATMOSFOAM_SRC=$TRAVIS_BUILD_DIR/src
+  global:
+    - secure: "n4/dpZfg50GsYc33ePZu3fPYS5XpuJHn+nCepxC9LILb9YkdQ4cnGXWSYU94cQZITX+/i/9/IsVl/IuYUt6ltCm6VLcRD4wGmbNwWChdwuMG1nN7ljhRUTE36qZxrqN3croYC3EDNgB09+c5MWmJxyr9Ov/53NCRmA71bvuZSXY="
+    - AWS_ACCESS_KEY_ID=AKIAIQMKGHXAJ5YFB2HQ
+    - ATMOSFOAM_TOOLS_SRC=$TRAVIS_BUILD_DIR/src
+    - DEBFULLNAME="James Shaw"
+    - DEBEMAIL=js102@zepler.net
+    - SINGULARITY_VERSION=2.3
 
-before_install:
-  - sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
-  - sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev" -y
-  - sudo add-apt-repository 'deb http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev main' -y
-  - sudo apt-get -qq update
-  - sudo apt-get install openfoam-dev libgdal-dev atmosfoam-tools -y --allow-unauthenticated
+install:
+  - cd /tmp
+  - wget https://github.com/singularityware/singularity/releases/download/$SINGULARITY_VERSION/singularity-$SINGULARITY_VERSION.tar.gz
+  - tar -xf singularity-$SINGULARITY_VERSION.tar.gz
+  - cd singularity-$SINGULARITY_VERSION
+  - ./configure --prefix=/usr/local
+  - make
+  - sudo make install
+  - sudo apt-get install ruby-dev -y
+  - sudo gem install deb-s3
+  - cd $TRAVIS_BUILD_DIR
 
-before_script:
-  - source /opt/openfoam-dev/etc/bashrc
-
-script: ./Allwmake
+script: ./singularity.dist.sh 17.04 zesty

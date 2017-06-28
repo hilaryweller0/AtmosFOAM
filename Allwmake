@@ -18,4 +18,4 @@ set -e
 src/Allwmake $*
 applications/Allwmake $*
 wmake unittest
-(cd unittest && testAtmosFOAM)
+testAtmosFOAM

@@ -10,6 +10,20 @@ def l2ErrorNorm(phi, phiExact):
 	phi_err = phi - phiExact
 	return np.sqrt(np.sum(phi_err**2)/np.sum(phiExact**2)) 
 
+def rvs(z):
+    theta0 = 300
+    P0 = 100000
+    g = 9.81
+    c_p = 1004
+    muv = 0.018
+    mud = 0.029
+    
+    z = z + 1000
+    T = theta0*np.exp(-g*z/(c_p*theta0))
+    P = P0*np.exp(-g*z/(c_p*theta0))
+    es = 611.2*np.exp(17.67*(T-273.15)/(T-29.65))
+    return muv/mud * es/(P-es)
+    
 execfile(os.path.join(sys.path[0],"core.py"))
 
 ####### SETTINGS
@@ -19,7 +33,7 @@ cmap = 0
 q = 1
 show_negative = 0
 
-length = 50
+length = 100
 x = np.linspace(-1000,1000,length)
 z = np.linspace(0,2000,length)
 x = np.linspace( (x[0] + x[1])/2., (x[-2] + x[-1])/2., length )
@@ -56,6 +70,7 @@ dir = os.path.join(dir,"solidBodyRotationTemperature")
 
 console = "magick convert -delay 20 "
 folders = range(0,1818,18)
+# folders = range(0,606,6)
 # folders = range(0,101,1)
 # folders = np.array([0])
 
@@ -71,6 +86,9 @@ total_rho1 = np.zeros(len(folders))
 total_rho2 = np.zeros(len(folders))
 total_rho12 = np.zeros(len(folders))
 
+total_sa_rho1 = np.zeros(len(folders))
+total_sa_rho2 = np.zeros(len(folders))
+total_sa_rho12 = np.zeros(len(folders))
 total_a_rho1 = np.zeros(len(folders))
 total_a_rho2 = np.zeros(len(folders))
 total_a_rho12 = np.zeros(len(folders))
@@ -98,30 +116,26 @@ for i2 in range(len(folders)):
     rho2_numeric = rho_numeric - rho1_numeric
     rho2_numeric = readField(os.path.join(directory,"q2"),length)
     S_numeric = readField(os.path.join(directory,"S"),length)
-            
+    
+    rho1_semi_analytic = readField(os.path.join(directory,"q1_analytic"),length)
+    rho2_semi_analytic = readField(os.path.join(directory,"q2_analytic"),length)
+    
     for j in xrange(len(x)):
         for k in xrange(len(z)):        
-            rho1_analytic[k][j] = rho0*schaerProfileTemperature(x[j],z[k],dist_center_x,dist_center_z,half_width,theta,w,t,L)
-            rho2_analytic[k][j] = rho0*schaerProfile(x[j],z[k],dist_center_x,dist_center_z,half_width) - rho0*schaerProfileTemperature(x[j],z[k],dist_center_x,dist_center_z,half_width,theta,w,t,L)
-            rho_analytic[k][j] = rhoAir + rho0*schaerProfileTemperature(x[j],z[k],dist_center_x,dist_center_z,half_width,theta,w,t,L)
-            
-
+            rho12_analytic[k][j] = rho0*schaerProfile(x[j],z[k],dist_center_x,dist_center_z,half_width)
+            rho2_analytic[k][j] = min(rho12_analytic[k][j],rvs(z[k]))
+            rho1_analytic[k][j] = rho12_analytic[k][j] - rho2_analytic[k][j]
+    
     total_rho1[i2] = np.sum(rho1_numeric)
     total_rho2[i2] = np.sum(rho2_numeric)
     # total_rho12[i2] = np.sum(rho_numeric-rhoAir)
     total_rho12[i2] = np.sum(rho1_numeric+rho2_numeric)
-    
+    total_sa_rho1[i2] = np.sum(rho1_semi_analytic)
+    total_sa_rho2[i2] = np.sum(rho2_semi_analytic)
+    total_sa_rho12[i2] = np.sum(rho_numeric-rhoAir)
     total_a_rho1[i2] = np.sum(rho1_analytic)
     total_a_rho2[i2] = np.sum(rho2_analytic)
-    total_a_rho12[i2] = np.sum(rho1_analytic + rho2_analytic)
-    
-    l2err_rho1[i2] = l2ErrorNorm(rho1_numeric,rho1_analytic)
-    l2err_rho2[i2] = l2ErrorNorm(rho2_numeric,rho2_analytic)
-    l2err_rho12[i2] = l2ErrorNorm(rho_numeric-rhoAir,rho1_analytic+rho2_analytic)
-    
-    abserr_rho1[i2] = np.mean(abs(rho1_analytic - rho1_numeric))
-    abserr_rho2[i2] = np.mean(abs(rho2_analytic - rho2_numeric))
-    abserr_rho12[i2] = np.mean(abs(rho1_analytic + rho2_analytic - rho_numeric + rhoAir))
+    total_a_rho12[i2] = np.sum(rho12_analytic)
     
     min_rho1[i2] = np.min(rho1_numeric)
     min_rho2[i2] = np.min(rho2_numeric)
@@ -143,6 +157,7 @@ for i2 in range(len(folders)):
                     rho2_numeric[k][j] = -rho0
     
     plt.figure(figsize=(16,14))
+    # plt.figure(figsize=(16,6))
 
     if cmap == 0:
         my_cmap = plt.cm.get_cmap('hot_r')
@@ -150,26 +165,30 @@ for i2 in range(len(folders)):
         my_cmap = plt.cm.get_cmap('seismic')
     
     plt.subplot(221)
-    data1 = rho_numeric
-    CS = plt.pcolor(x, z, data1, cmap=my_cmap, vmin=rhoAir, vmax=rhoAir+rho0)
+    data1 = rho1_analytic
+    # data1 = rho_numeric
+    CS = plt.pcolor(x, z, data1, cmap=my_cmap, vmin=0, vmax=rho0)
+    # CS = plt.pcolor(x, z, data1, cmap=my_cmap, vmin=rhoAir, vmax=rhoAir+rho0)
     # CS = plt.pcolor(x, z, data3, cmap=my_cmap)
     cbar = plt.colorbar(CS)
     cbar.ax.set_ylabel('Moisture Content')
     plt.axis([min(x),max(x),min(z),max(z)])
     plt.xlabel("$x$ (m)")
     plt.ylabel("$z$ (m)")
-    plt.title("$\\rho$, Min={:.4f}, Max={:.4f}".format(np.min(data1),np.max(data1)))
+    # plt.title("$\\rho$, Min={:.4f}, Max={:.4f}".format(np.min(data1),np.max(data1)))
+    plt.title("$r_l$ Analytic, Min={:.4f}, Max={:.4f}".format(np.min(data1),np.max(data1)))
 
     plt.subplot(222)
-    data2 = S_numeric
-    # CS = plt.pcolor(x, z, data4, cmap=my_cmap, vmin=-cmap*rho0, vmax=rho0)
-    CS = plt.pcolor(x, z, data2, cmap=plt.cm.get_cmap('seismic'), vmin=-0.001, vmax=0.001)
+    data2 = rho2_analytic
+    # data2 = S_numeric
+    CS = plt.pcolor(x, z, data2, cmap=my_cmap, vmin=0, vmax=rho0)
+    # CS = plt.pcolor(x, z, data2, cmap=plt.cm.get_cmap('seismic'), vmin=-0.001, vmax=0.001)
     cbar = plt.colorbar(CS)
     cbar.ax.set_ylabel('Moisture Content')
     plt.axis([min(x),max(x),min(z),max(z)])
     plt.xlabel("$x$ (m)")
     plt.ylabel("$z$ (m)")
-    plt.title("Transfer Term, Min={:.4f}, Max={:.4f}".format(np.min(data2),np.max(data2)))
+    plt.title("$r_v$ Analytic, Min={:.4f}, Max={:.4f}".format(np.min(data2),np.max(data2)))
     
     plt.subplot(223)
     data3 = rho1_numeric
@@ -180,19 +199,18 @@ for i2 in range(len(folders)):
     plt.axis([min(x),max(x),min(z),max(z)])
     plt.xlabel("$x$ (m)")
     plt.ylabel("$z$ (m)")
-    plt.title("$r_l$, Min={:.4f}, Max={:.4f}".format(np.min(data3),np.max(data3)))
+    plt.title("$r_l$ Numeric, Min={:.4f}, Max={:.4f}".format(np.min(data3),np.max(data3)))
 
     plt.subplot(224)
     data4 = rho2_numeric
     CS = plt.pcolor(x, z, data4, cmap=my_cmap, vmin=0., vmax=rho0)
-    # CS = plt.pcolor(x, z, data4, cmap=my_cmap, vmin=-cmap*rho0-cmap*rho0, vmax=rho0)
     # CS = plt.pcolor(x, z, data4, cmap=my_cmap)
     cbar = plt.colorbar(CS)
     cbar.ax.set_ylabel('Moisture Content')
     plt.axis([min(x),max(x),min(z),max(z)])
     plt.xlabel("$x$ (m)")
     plt.ylabel("$z$ (m)")
-    plt.title("$r_v$, Min={:.4f}, Max={:.4f}".format(np.min(data4),np.max(data4)))
+    plt.title("$r_v$ Numeric, Min={:.4f}, Max={:.4f}".format(np.min(data4),np.max(data4)))
 
     if q == 1:
         plt.suptitle("Schaer Profile: $t=${} s, L={}, Mean Error: {:.5f}, L2 Error: {:.5f}".format(t,L,abserr_rho1[i2],l2err_rho1[i2]),size=18)
@@ -220,9 +238,12 @@ for i2 in range(len(folders)):
 # plt.close()
 
 plt.figure()
-# plt.plot(folders,total_a_rho1,'b--')
-# plt.plot(folders,total_a_rho2,'r--')
-# plt.plot(folders,total_a_rho12,'k--')
+plt.plot(folders,total_a_rho1,'b:')
+plt.plot(folders,total_a_rho2,'r:')
+plt.plot(folders,total_a_rho12,'k:')
+plt.plot(folders,total_sa_rho1,'b--',linewidth=1.5)
+plt.plot(folders,total_sa_rho2,'r--',linewidth=1.5)
+plt.plot(folders,total_sa_rho12,'k--',linewidth=1.5)
 plt.plot(folders,total_rho1,'b',linewidth=2.5,label="Total $r_l$")
 plt.plot(folders,total_rho2,'r',linewidth=2.5,label="Total $r_v$")
 plt.plot(folders,total_rho12,'k',linewidth=2.5,label="Total $r_l+r_v$")
@@ -271,4 +292,4 @@ if show_negative == 0:
 elif show_negative == 1:
     console += "-loop 0 {}".format( os.path.join(sys.path[0],"output_q%s_enhanced.gif" % (q)) )
 # print console
-# os.system(console)
+os.system(console)

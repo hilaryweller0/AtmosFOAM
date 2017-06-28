@@ -51,6 +51,27 @@ scalar schaerRadialDampedField::tracerAt
             return rho0 * muv/mud * es/(P-es) + rhoAir;
             //return rho0/rhoAir*sqr(Foam::cos(M_PI*r/2));
         }
+        else if ((profileType == "rv") or (profileType == "rl"))
+        {
+            scalar theta0 = 300;
+            scalar g = 9.81;
+            scalar c_p = 1004;
+            scalar muv = 0.018;
+            scalar mud = 0.029;
+    
+            scalar T = 300*Foam::exp(-g*e.z()/(c_p*theta0));
+            scalar P = 100000*Foam::exp(-g*e.z()/(c_p*theta0));
+            scalar es = 611.2*Foam::exp( 17.67*(T-273.15)/(T-29.65) );
+            
+            if (profileType == "rv")
+            {
+                return min(muv/mud * es/(P-es), rho0/rhoAir*sqr(Foam::cos(M_PI*r/2)));
+            }
+            else if (profileType == "rl")
+            {
+                return rho0/rhoAir*sqr(Foam::cos(M_PI*r/2)) - min(muv/mud * es/(P-es), rho0/rhoAir*sqr(Foam::cos(M_PI*r/2))) ;
+            }
+        }
         else if (profileType == "q")
         {
             return rho0*sqr(Foam::cos(M_PI*r/2))/(rhoAir + rho0*sqr(Foam::cos(M_PI*r/2)));
@@ -66,6 +87,13 @@ scalar schaerRadialDampedField::tracerAt
     }
     else
     {
-        return rhoAir;
+        if ((profileType == "rv") or (profileType == "rl"))
+        {
+            return 0;
+        }
+        else
+        {
+            return rhoAir;
+        }
     }
 }

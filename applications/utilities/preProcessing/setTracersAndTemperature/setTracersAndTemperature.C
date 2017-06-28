@@ -89,7 +89,21 @@ int main(int argc, char *argv[])
     volScalarField q2
     (
         IOobject("q2", runTime.timeName(), mesh, IOobject::NO_READ),
-        rho_init
+        q_init
+    );
+    
+    Info << "Creating q1_analytic" << endl;
+    volScalarField q1_analytic
+    (
+        IOobject("q1_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        q_init
+    );
+
+    Info << "Creating q2_analytic" << endl;
+    volScalarField q2_analytic
+    (
+        IOobject("q2_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        q_init
     );
     
     Info << "Creating S" << endl;
@@ -210,6 +224,14 @@ int main(int argc, char *argv[])
     Info << "writing q2 for time " << runTime.timeName() << endl;
     qVal2->applyTo(q2);
     q2.write();
+    
+    Info << "writing q1_analytic for time " << runTime.timeName() << endl;
+    qVal->applyTo(q1_analytic);
+    q1_analytic.write();
+
+    Info << "writing q2_analytic for time " << runTime.timeName() << endl;
+    qVal2->applyTo(q2_analytic);
+    q2_analytic.write();
 
     Info << "writing S for time " << runTime.timeName() << endl;
     S.write();

@@ -9,5 +9,5 @@ set -e
     exit 1
 }
 
-wmake all utilities $*
-wmake all solvers $*
+wmake -j -a utilities
+wmake -j -a solvers
