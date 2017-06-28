@@ -149,6 +149,9 @@ int main(int argc, char *argv[])
             q2Eqn.solve();
             rhoEqn.solve();
             
+            q2_analytic = min((rho-rhoAir)/rhoAir,q2);
+            q1_analytic = (rho-rhoAir)/rhoAir - q2_analytic;
+            
             Info << "Writing rho and q after rho.solve" << endl;
             
             

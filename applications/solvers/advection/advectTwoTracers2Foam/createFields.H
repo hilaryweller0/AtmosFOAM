@@ -43,6 +43,32 @@ volScalarField rho
 );
 rho.oldTime();
 
+volScalarField q1_analytic
+(
+    IOobject
+    (
+        "q1_analytic",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+volScalarField q2_analytic
+(
+    IOobject
+    (
+        "q2_analytic",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 volScalarField rho_a
 (
     IOobject

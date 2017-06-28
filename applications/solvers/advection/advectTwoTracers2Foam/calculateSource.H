@@ -21,6 +21,7 @@ const dimensionedScalar mud(dict.lookup("mud"));
 const dimensionedScalar Lv(dict.lookup("Lv"));
 const dimensionedScalar cp(dict.lookup("cp"));
 const dimensionedScalar Rv(dict.lookup("Rv"));
+const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
 
 // The vertical velocity used for calculating the source terms
 const volScalarField w = U.component(vector::Z);
