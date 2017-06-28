@@ -38,4 +38,4 @@ override_dh_auto_install:
 	$(INSTALL_PROGRAM) -D $(FOAM_USER_APPBIN)/* $(DESTDIR)$(bindir)
 	$(INSTALL_PROGRAM) -D $(FOAM_USER_LIBBIN)/* $(DESTDIR)$(libdir)
 	$(RM) $(DESTDIR)$(bindir)/testAtmosFOAM
-	debian/install_lnInclude.sh $(DESTDIR)$(includedir)
+	debian/install_lnInclude.sh src $(DESTDIR)$(includedir)
