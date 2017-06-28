@@ -1,10 +1,8 @@
 #!/bin/bash -e
 
 # clear out old stuff
-rm -rf [0-9]* constant/polyMesh core log
-
-# create mesh
-blockMesh
+rm -rf [0-9]* core log
+ln -s ../../constant
 
 # hydrostatically balanced initial conditions
 rm -rf [0-9]* core
@@ -21,7 +19,7 @@ makeHotBubble
 
 # Partition into stable and buoyant fluids
 mv 0/theta 0/buoyant.theta
-mv 0/theta_init 0/stable.theta
+cp 0/buoyant.theta 0/stable.theta
 mv 0/Uf 0/stable.Uf
 cp 0/stable.Uf 0/buoyant.Uf
 rm 0/thetaf
@@ -43,6 +41,9 @@ partitionedExnerFoam >& log & sleep 0.01; tail -f log
 time=100
 gmtFoam theta -time $time
 gv $time/theta.pdf &
+
+gmtFoam -time $time sigma
+gv $time/sigma.pdf &
 
 sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale0 -1
 gmtFoam -time $time sigmaDiff

@@ -19,9 +19,7 @@ projection2D XZ;
 
 FieldsToPlot
 (
-    [buoyant.sigma filledContours 0 1 0.05 "$GMTU/colours/white_blue_red.cpt"]
-    [buoyant.sigma contours -1 -0.05 0.05 "black"]
-    [buoyant.sigma contours 1 2 0.05 "black"]
+    [sigmaDiff filledContours -3e-4 3e-4 2.5e-5 "$GMTU/colours/red_white_blue.cpt"]
 );
 
 //separateLegend true;

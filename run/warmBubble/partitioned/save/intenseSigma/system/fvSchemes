@@ -17,12 +17,48 @@ FoamFile
     local           "";
 
     class           dictionary;
-    object          environmentalProperties;
+    object          fvSchemes;
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-g               g [0 1 -2 0 0 0 0] (0 0 -9.81);
-Omega           Omega [0 0 -1 0 0 0 0] (0 0 0);
+ddtSchemes
+{
+    default Euler;
+}
+offCentre 1; //0.5;
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+divSchemes
+{
+    default         Gauss upwind;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear uncorrected;
+}
+
+interpolationSchemes
+{
+    default        linear;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(Exner)   uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}
+
 
 // ************************************************************************* //

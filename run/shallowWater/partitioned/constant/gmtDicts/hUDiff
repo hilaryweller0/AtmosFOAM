@@ -1,0 +1,49 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;    
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";          // see man psxy for details on -J options
+projection2D XY;                // either XY, XZ, YZ or latLon
+plotBoundaryDots false;
+
+
+// A list of the fields to plot with plotting details
+FieldsToPlot
+(
+    [hDiff filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+//    [UDiff vectors 1e4 4 "black"]
+    [UDiff vectors 0 4 "black"]
+//    [UzDiff contours 1e-4 1e-3 1e-4 "black"]
+//    [UzDiff contours -1e-3 -1e-4 1e-4 "black,-"]
+//    [UzDiff contours 0 1 1 "0.25p,black,1_4:0"]
+);
+
+// other options:
+
+annotate "minMax 0 -0.01";
+
+// non-global region (see man psxy for details on -R option)
+// region "0/12e6/0/12e6";
+
+// boundary ticks, annotation and grid
+//     (see man psbasemap for detail on -B option)
+//boundaryMarks "a3e6/a3e6";
+
+// should the legend be plotted separately on on the plot
+//separateLegend true;
+
+// For 3d plots, must give the patch to plot
+//patch front;
+

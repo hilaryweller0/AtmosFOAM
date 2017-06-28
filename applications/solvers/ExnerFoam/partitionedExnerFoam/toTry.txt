@@ -1,5 +1,0 @@
-run explicitly           - doesn't help
-re-calculate sigma before back subs for fluxes (so re-calc gradPcoeff)
-What is causing the oscillations in sigma. Is it sigmaRho or thetai or rho
-
-buoyant.sigmaRho develops oscillations 

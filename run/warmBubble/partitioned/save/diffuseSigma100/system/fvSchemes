@@ -1,0 +1,88 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default Euler;
+}
+offCentre 1; //0.5;
+
+gradSchemes
+{
+    default         Gauss linear;
+}
+
+divSchemes
+{
+    default none;
+    div(stable.flux,stable.theta)   Gauss linearUpwind linearUpwind;
+    div(buoyant.flux,buoyant.theta) Gauss linearUpwind linearUpwind;
+    div(stable.flux,stable.u)       Gauss linearUpwind linearUpwind;
+    div(buoyant.flux,buoyant.u)     Gauss linearUpwind linearUpwind;
+//    div(fluxDiff,(stable.sigma*(1-stable.sigma))) Gauss linear;
+//    div(fluxSum,stable.sigma)       Gauss upwind;
+//    div(fluxDiff,(buoyant.sigma*(1-buoyant.sigma))) Gauss linear;
+//    div(fluxSum,buoyant.sigma)       Gauss upwind;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear uncorrected;
+}
+
+interpolationSchemes
+{
+    default        none;
+    interpolate(stable.sigmaRho) linear; //Upwind stable.flux linearUpwind;
+    interpolate(buoyant.sigmaRho) linear; //Upwind buoyant.flux linearUpwind;
+    interpolate(stable.theta) linear; //Upwind stable.flux linearUpwind;
+    interpolate(buoyant.theta) linear; //Upwind buoyant.flux linearUpwind;
+    interpolate(stable.sigma) linear; //upwind gradExner; // linearUpwind;
+    interpolate(buoyant.sigma) linear; //upwind gradExner; // linearUpwind;
+//    interpolate((1-stable.sigma)) linear;
+//    interpolate((1-buoyant.sigma)) linear;
+    interpolate(rhoSum) linear;
+    //interpolate(rhoTheta) linear;
+    interpolate(convection(stable.flux,stable.u)) linear;
+    interpolate(convection(buoyant.flux,buoyant.u)) linear;
+    interpolate(stable.u) linear;
+    interpolate(buoyant.u) linear;
+    interpolate((stable.buoyant.massTransfer|stable.sigmaRho)) linear;
+    interpolate((buoyant.stable.massTransfer|buoyant.sigmaRho)) linear;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(Exner)   uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}
+
+
+// ************************************************************************* //

@@ -1,0 +1,84 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default Euler;
+}
+offCentre 1;
+
+gradSchemes
+{
+    default         none;
+    linearUpwind    leastSquares;
+    grad(streamFunction) Gauss linear;
+    curl((streamFunction*(0,0,1))) Gauss linear;
+    grad(h)         Gauss linear;
+    curl(U)         Gauss linear;
+    grad(divPhi)    Gauss linear;
+    grad(curl(Uf))  Gauss linear;
+    grad(p)  Gauss linear;
+}
+
+divSchemes
+{
+    default         none;
+    div(stable.flux,stable.u) Gauss linearUpwind linearUpwind;
+    div(buoyant.flux,buoyant.u) Gauss linearUpwind linearUpwind;
+}
+
+laplacianSchemes
+{
+    default         none;
+    laplacian(streamFunction) Gauss linear uncorrected;
+    laplacian(((deltaT*g)*h),h)  Gauss linear uncorrected;
+    laplacian((1|A(U)),p) Gauss linear uncorrected;
+}
+
+interpolationSchemes
+{
+    default            none;
+    interpolate((stable.sigma*h)) upwind stable.flux;
+    interpolate((buoyant.sigma*h)) upwind buoyant.flux;
+    interpolate(stable.sigma) linear;
+    interpolate(buoyant.sigma) linear;
+    interpolate((h*U)) linear;
+    interpolate(h)     linear;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(h)       uncorrected;
+    snGrad(p)       uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    h;
+}
+
+
+// ************************************************************************* //

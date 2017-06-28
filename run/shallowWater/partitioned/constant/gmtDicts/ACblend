@@ -1,0 +1,33 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XY;
+
+FieldsToPlot
+(
+    [ACblend filledContours 0 0.1 0.005 "$GMTU/colours/white_blue_red.cpt"]
+    [h contours 8000 10400 20 "black"]
+    [U vectors 1e4 1 "grey"]
+);
+
+// Options
+plotBoundaryDots false;
+//separateLegend true;
+//region "-25e3/25e3/0/25e3";
+annotate "minMax 0 -38000";
+//boundaryMarks "5e3/5e3";
+
