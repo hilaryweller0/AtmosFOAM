@@ -14,5 +14,4 @@ From:ubuntu:$VERSION
 
         DEBIAN_FRONTEND=noninteractive \
 	apt-get install atmosfoam-tools -y --allow-unauthenticated --no-install-recommends
-	rm -rf /var/lib/apt/lists/*
 
