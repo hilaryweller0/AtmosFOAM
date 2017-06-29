@@ -7,9 +7,10 @@ A collection of OpenFOAM computational fluid dynamics applications and libraries
 ## Installation
 
 ### From source
-First, `apt-get install libgdal-dev`
-Install [OpenFOAM dev](https://github.com/OpenFOAM/OpenFOAM-dev).
-Compile all AtmosFOAM applications and libraries using `./Allwmake`
+
+* First, `apt-get install libgdal-dev`
+* Install [OpenFOAM dev](https://github.com/OpenFOAM/OpenFOAM-dev).
+* Compile all AtmosFOAM applications and libraries using `./Allwmake`
 
 ### Ubuntu 17.10 binaries
 
