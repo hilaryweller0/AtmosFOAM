@@ -27,11 +27,11 @@ scalar arakawaKonorStripesTracerField::tracerAt
 {
     if (mag(p.x()) <= wavelength / 2)
     {
-        if (p.z() >= z1Start - SMALL && p.z() <= z1End + SMALL)
+        if (p.z() >= z1Start - 1 && p.z() <= z1End - 1)
         {
             return -rho0*Foam::sin(2*M_PI*p.x()/wavelength);
         }
-        else if (p.z() >= z2Start - SMALL && p.z() <= z2End + SMALL)
+        else if (p.z() >= z2Start - 1 && p.z() <= z2End - 1)
         {
             return rho0*Foam::sin(2*M_PI*p.x()/wavelength);
         }
