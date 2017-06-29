@@ -12,7 +12,7 @@ A collection of OpenFOAM computational fluid dynamics applications and libraries
 * Install [OpenFOAM dev](https://github.com/OpenFOAM/OpenFOAM-dev).
 * Compile all AtmosFOAM applications and libraries using `./Allwmake`
 
-### Ubuntu 17.10 binaries
+### Ubuntu 17.10 amd64 binaries
 
     sudo sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
     sudo add-apt-repository http://dl.openfoam.org/ubuntu
