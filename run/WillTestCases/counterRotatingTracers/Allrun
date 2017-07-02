@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+# Counter rotating tracer advection
+rm -r 0 constant/polyMesh
+blockMesh
+
+# Define velocity field and initial tracer
+mkdir 0
+setVelocityField -time 0 -dict velocityFieldDict0
+mv 0/Uf 0/stable.Uf
+setVelocityField -time 0 -dict velocityFieldDict1
+mv 0/Uf 0/buoyant.Uf
+rm 0/magU 0/U 0/phi
+gmtFoam -time 0 Uf
+gv 0/Uf.pdf &
+
+setInitialTracerField
+mv 0/T 0/buoyant.sigma
+rm 0/Tf
+sumFields 0 stable.sigma constant T_init 0 buoyant.sigma -scale1 -1
+gmtFoam -time 0 sigma
+gv 0/sigma.pdf &
+
+# Advect the two tracers separately
+partitionedAdvectionFoam >& log & sleep 0.01; tail -f log
+
+gmtFoam sigma
+eps2gif sigma.gif 0/sigma.pdf ??/sigma.pdf ???/sigma.pdf &
+

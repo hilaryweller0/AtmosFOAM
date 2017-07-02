@@ -37,7 +37,7 @@ scalarList maxCoNums(nParts, scalar(0));
 if (mesh.nInternalFaces())
 {
     fluxSum = flux[0];
-    for(label ip = 0; ip < nParts; ip++)
+    for(label ip = 1; ip < nParts; ip++)
     {
         fluxSum += flux[ip];
     }
