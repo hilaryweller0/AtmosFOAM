@@ -12,6 +12,7 @@ class arakawaKonorStripesTracerField final : public tracerField
     private:
     scalar tracerAt(const point& p, const Time& t) const;
     const scalar rho0;
+    const scalar xOffset;
     const scalar wavelength;
     const scalar z1Start;
     const scalar z1End;

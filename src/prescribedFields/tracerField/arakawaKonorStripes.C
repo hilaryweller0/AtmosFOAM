@@ -12,6 +12,7 @@ arakawaKonorStripesTracerField::arakawaKonorStripesTracerField
 :
 tracerField(velocityField),
 rho0(dict.lookupOrDefault<scalar>("maxMagnitude", scalar(0.5))),
+xOffset(dict.lookupOrDefault<scalar>("xOffset", scalar(0))),
 wavelength(dict.lookupOrDefault<scalar>("wavelength", scalar(100e3))),
 z1Start(dict.lookupOrDefault<scalar>("lowerWaveStart", scalar(1000))),
 z1End(dict.lookupOrDefault<scalar>("lowerWaveEnd", scalar(2000))),
@@ -25,15 +26,16 @@ scalar arakawaKonorStripesTracerField::tracerAt
         const Time& t
 ) const
 {
-    if (mag(p.x()) <= wavelength / 2)
+    scalar x = p.x() - xOffset;
+    if (mag(x) <= wavelength / 2)
     {
-        if (p.z() >= z1Start - SMALL && p.z() <= z1End + SMALL)
+        if (p.z() >= z1Start - 1 && p.z() <= z1End - 1)
         {
-            return -rho0*Foam::sin(2*M_PI*p.x()/wavelength);
+            return -rho0*Foam::sin(2*M_PI*x/wavelength);
         }
-        else if (p.z() >= z2Start - SMALL && p.z() <= z2End + SMALL)
+        else if (p.z() >= z2Start - 1 && p.z() <= z2End - 1)
         {
-            return rho0*Foam::sin(2*M_PI*p.x()/wavelength);
+            return rho0*Foam::sin(2*M_PI*x/wavelength);
         }
         else
         {
