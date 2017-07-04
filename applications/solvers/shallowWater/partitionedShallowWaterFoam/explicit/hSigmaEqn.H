@@ -1,5 +1,6 @@
 // update h and sigma according to the continuity equation
 h = h.oldTime() - dt*fvc::div(fluxSum);
+hf = fvc::interpolate(h);
 
 sumSigma == 0;
 sumSigmaf == 0;

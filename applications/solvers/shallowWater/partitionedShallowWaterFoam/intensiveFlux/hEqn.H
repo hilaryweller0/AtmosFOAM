@@ -21,9 +21,9 @@
         {
             fvScalarMatrix hEqn
             (
-                fvm::ddt(h)
+                fvm::ddt(sumSigma, h)
               + fvc::div(fluxSum)
-              - fvm::laplacian(dt*g*hf, h)
+              - fvm::laplacian(dt*g*hf*sumSigmaf, h)
             );
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
@@ -55,7 +55,6 @@
                      << min(fluxSumCheck-fluxSum).value() << " to "
                      << max(fluxSumCheck-fluxSum).value() << endl;
             }
-            h *= sumSigma;
         }
     }
 }

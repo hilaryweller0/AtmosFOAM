@@ -26,7 +26,6 @@ ddtSchemes
 {
     default Euler;
 }
-offCentre 1;
 
 gradSchemes
 {
@@ -51,22 +50,22 @@ laplacianSchemes
 
 interpolationSchemes
 {
-    default            linear;
+    default            none;
     interpolate(U)     linear;
     interpolate(h)     linear;
     flux((twoOmega^U)) linear;
     flux(convection(phi,U)) linear;
-    interpolate(stable.sigma) linear;
-    interpolate(buoyant.sigma) linear;
-    interpolate(convection(stable.flux,(stable.sigma*stable.u))) linear;
-    interpolate(convection(buoyant.flux,(buoyant.sigma*buoyant.u))) linear;
-    interpolate(stable.u) linear;
-    interpolate(buoyant.u) linear;
+    interpolate((stable.hSigma*stable.u)) linear;
+    interpolate((buoyant.hSigma*buoyant.u)) linear;
+    interpolate(stable.hSigma) linear;
+    interpolate(buoyant.hSigma) linear;
+    interpolate(convection(stable.flux,stable.u)) linear;
+    interpolate(convection(buoyant.flux,buoyant.u)) linear;
 }
 
 snGradSchemes
 {
-    default         none;
+    default         uncorrected;
     snGrad(h)       uncorrected;
     snGrad(p)       uncorrected;
 }
