@@ -10,11 +10,9 @@ runApplication setVelocityField -time 0
 runApplication setTwoInitialTracerFields
 runApplication advectTwoTracersFoam
 #runApplication advectWithEqOfStateFoam
-runApplication gmtFoam T1
-runApplication gmtFoam T2
+runApplication gmtFoam rho1
 time=200
 runApplication sumFields $time Tsum $time T1 $time T2
 runApplication sumFields $time Tdiff $time Tsum $time T -scale0 1 -scale1 -1
-runApplication gmtFoam -time $time Tdiff
 
 # ------------------- end-of-file

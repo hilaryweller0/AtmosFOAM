@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
             h == dimensionedScalar("h", dimLength, scalar(0));
             for(label ip = 0; ip < nParts; ip++)
             {
-                hSigma[ip] = hSigma[ip] - dt*fvc::div(flux[ip]);
+                hSigma[ip] = hSigma[ip].oldTime() - dt*fvc::div(flux[ip]);
                 h += hSigma[ip];
             }
             // Calculate sigma as a diagnostic
@@ -71,18 +71,26 @@ int main(int argc, char *argv[])
                 sigma[ip] = hSigma[ip]/h;
                 Info << "Minimim " << sigma[ip].name() << " = "
                      << min(sigma[ip]).value() << endl;
+                Info << "Maximum " << sigma[ip].name() << " = "
+                     << max(sigma[ip]).value() << endl;
             }
 
             // Solve the momentum equation for each partition to update the
             // flux and u in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
+                hc = fvc::interpolate(hSigma[ip]);
+                //hc = fvc::interpolate(h);
+            
                 flux[ip] = flux[ip].oldTime() - dt*
                 (
-                    (fvc::interpolate(fvc::div(flux[ip], u[ip])) & mesh.Sf())
+                    (fvc::interpolate(fvc::div(flux[ip], U[ip])) & mesh.Sf())
+                  //+ hc*((twoOmegaf^Uf[ip]) & mesh.Sf())
                   + g*fvc::interpolate(hSigma[ip])*fvc::snGrad(h)*mesh.magSf()
                 );
-                u[ip] = fvc::reconstruct(flux[ip])/hSigma[ip];
+                U[ip] = fvc::reconstruct(flux[ip])/hSigma[ip];
+                //Uf[ip] = fvc::interpolate(U[ip]);
+                //Uf[ip] -= ((Uf[ip] & mesh.Sf()) - flux[ip]/hc)*mesh.Sf()/sqr(mesh.magSf());
             }
         }
 

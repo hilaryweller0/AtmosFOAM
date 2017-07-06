@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
             {
                 rho1Eqn += 0.5*rho1damping*rho1;
                 rho2Eqn += 0.5*rho2damping*rho2;
+                //rho2Eqn += fvm::Sp(0.5*rho2damping, rho2);
             }
             
             // Solve the matrices for the equations
@@ -120,6 +121,7 @@ int main(int argc, char *argv[])
         Info << " rho2 goes from " << min(rho2.internalField()).value() << " to "
              << max(rho2.internalField()).value() << endl;
 
+        Info << " Total Moisture: " << sum(rho1.internalField())+sum(rho2.internalField()) << endl;
         Info << " Total rho in system: " << sum(rho.internalField()) << endl;
         Info << " rho1 fraction: " << sum(rho1.internalField())/sum(rho.internalField())
          << endl;

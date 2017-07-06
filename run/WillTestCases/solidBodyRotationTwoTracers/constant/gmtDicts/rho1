@@ -15,14 +15,15 @@ FoamFile
 // How to plot
 // Compulsory inputs
 projection "X18c/18c";
-projection2D XY;
+projection2D XZ;
 
 FieldsToPlot
 (
-    [buoyant.hSigma filledContours 8.6e3 10.1e3 100 "$GMTU/colours/white_colour_white.cpt"]
-    [buoyant.Uf vectors 1e4 1 "black"]
+    [rho1 filledContours -0.3 0.3 0.02 "$GMTU/colours/red_white_blue.cpt"]
+    [U vectors 0 3 "black"]
 );
 
-plotBoundaryDots false;
-annotate "minMax 0 -38000";
+//region "-80e3/80e3/0/20000";
+annotate "minMax -300 -1005";
+separateLegend false;
 

@@ -32,7 +32,7 @@ stopAt          endTime;
 
 endTime         2e6;
 
-deltaT          200;
+deltaT          100;
 
 writeControl    runTime;
 

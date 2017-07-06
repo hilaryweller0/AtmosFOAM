@@ -26,16 +26,16 @@ gmtFoam -time $time hUmesh
 gv $time/hUmesh.pdf &
 
 # create initial conditions for partitioned equations
-mv 0/U 0/stable.u
-cp 0/stable.u 0/buoyant.u
-rm 0/Uf 0/p 0/hU 0/p 0/streamFunction 0/twoOmega 0/velPot
+mv 0/U 0/stable.U
+cp 0/stable.U 0/buoyant.U
+rm 0/Uf 0/hU 0/p 0/streamFunction 0/twoOmega 0/velPot
 setFields
 sumFields 0 stable.sigma init_0 stable.sigma 0 buoyant.sigma -scale1 -1
 gmtFoam -time 0 sigma
 gv 0/sigma.pdf &
 
 # Solve the SWE
-partitionedShallowWaterFoamhSigmaFluxExplicit >& log & sleep 0.01; tail -f log
+partitionedShallowWaterFoamhSigmavolFluxExplicit >& log & sleep 0.01; tail -f log
 
 # Plots
 time=1000

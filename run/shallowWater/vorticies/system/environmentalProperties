@@ -23,11 +23,11 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 // Gravitational acceleration
-g g       [0 1 -2 0 0 0 0] 1; //10;
+g g       [0 1 -2 0 0 0 0] 10; //10;
 // The directin of the rotation vector
 OmegaHat (0 0 1);
 // The Coriolis at y=0
-f0 f0 [0 0 -1 0 0] 0;
+f0 f0 [0 0 -1 0 0] 1e-4;
 // The beta parameter where f = f0 + beta y
 beta beta [0 -1 -1 0 0] 0;
 

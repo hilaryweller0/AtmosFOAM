@@ -14,19 +14,6 @@ volScalarField h
 );
 h.oldTime();
 
-surfaceScalarField hc
-(
-    IOobject
-    (
-        "hc",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
-    ),
-    fvc::interpolate(h)
-);
-
 // The partition names
 const label nParts = 2;
 wordList partNames(nParts);
@@ -39,6 +26,9 @@ PtrList<volScalarField> hSigma(nParts);
 PtrList<volVectorField> U(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<surfaceScalarField> flux(nParts);
+PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<surfaceScalarField> hup(nParts);
+PtrList<surfaceScalarField> hc(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -113,7 +103,59 @@ for (label ip = 0; ip < nParts; ip++)
     );
     Uf[ip].oldTime();
 
-    flux.set
+    volFlux.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"volFlux",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            ),
+            Uf[ip] & mesh.Sf()
+        )
+    );
+    volFlux[ip].oldTime();
+
+    hup.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"hup",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            ),
+            fvc::interpolate(hSigma[ip],partNames[ip]+"hup")
+        )
+    );
+
+    hc.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"hc",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            ),
+            fvc::interpolate(hSigma[ip],partNames[ip]+"hc")
+        )
+    );
+
+   flux.set
     (
         ip,
         new surfaceScalarField
@@ -126,7 +168,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            fvc::interpolate(hSigma[ip]*U[ip]) & mesh.Sf()
+            hup[ip]*volFlux[ip]
         )
     );
     flux[ip].oldTime();

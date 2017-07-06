@@ -48,7 +48,7 @@ solvers
 
 "iterations|PISO|PIMPLE"
 {
-    nCorrectors     2;
+    nCorrectors     3;
     pRefCell        0;
     pRefValue       0;
 }

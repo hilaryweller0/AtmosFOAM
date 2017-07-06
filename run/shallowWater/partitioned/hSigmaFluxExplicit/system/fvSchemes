@@ -32,11 +32,15 @@ gradSchemes
     default         none;
     curl((streamFunction*(0,0,1))) Gauss linear;
     linearUpwind Gauss linear;
+    
+    grad(magSqr(stable.U))    Gauss linear;
+    grad(magSqr(buoyant.U))   Gauss linear;
 }
 
 divSchemes
 {
     default         Gauss upwind;
+    //default         Gauss vanLeer;
 }
 
 laplacianSchemes
@@ -53,14 +57,21 @@ interpolationSchemes
     default            none;
     interpolate(U)     linear;
     interpolate(h)     linear;
+    stable.hup         upwind stable.volFlux;
+    buoyant.hup        upwind buoyant.volFlux;
+    stable.hc          linear;
+    buoyant.hc         linear;
     flux((twoOmega^U)) linear;
     flux(convection(phi,U)) linear;
-    interpolate((stable.hSigma*stable.u)) linear;
-    interpolate((buoyant.hSigma*buoyant.u)) linear;
+    interpolate((stable.hSigma*stable.U)) linear;
+    interpolate((buoyant.hSigma*buoyant.U)) linear;
     interpolate(stable.hSigma) linear;
     interpolate(buoyant.hSigma) linear;
-    interpolate(convection(stable.flux,stable.u)) linear;
-    interpolate(convection(buoyant.flux,buoyant.u)) linear;
+    interpolate(convection(stable.flux,stable.U)) linear;
+    interpolate(convection(buoyant.flux,buoyant.U)) linear;
+    
+    interpolate(stable.U)       linear;
+    interpolate(buoyant.U)       linear;
 }
 
 snGradSchemes

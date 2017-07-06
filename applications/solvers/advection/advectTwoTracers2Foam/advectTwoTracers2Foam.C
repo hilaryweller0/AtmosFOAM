@@ -81,7 +81,19 @@ int main(int argc, char *argv[])
             
             if (BryanFritschSource)
             {
-                S = ( 0.5*( q2-rvs + mag(q2-rvs) ) - min( ( mag(q2-rvs) - (q2-rvs) )/(mag(q2-rvs)+0.000000000001),0*rvs+1 )*min(-(q2-rvs),q1) )*transferTerm;
+                //S = ( 0.5*( q2-rvs + mag(q2-rvs) ) - min( ( mag(q2-rvs) - (q2-rvs) )/(mag(q2-rvs)+0.000000000001),0*rvs+1 )*min(-(q2-rvs),q1) )*transferTerm;
+                forAll(S, celli)
+                {
+                    if (q2[celli] >= rvs[celli])
+                    {
+                        S[celli] = (q2[celli]-rvs[celli])*transferTerm[celli];
+                    }
+                    else
+                    {
+                        S[celli] = max(q2[celli]-rvs[celli],-q1[celli])*transferTerm[celli];
+                    }
+                }
+                S = ( 0.5*( q2-rvs + mag(q2-rvs) ) - ( mag(q2-rvs) - (q2-rvs) )/max(rvs-q2,0*rvs+0.000000000001)*min(-(q2-rvs),q1) )*transferTerm;
             }
             else
             {
@@ -161,8 +173,7 @@ int main(int argc, char *argv[])
         Info << " q1 goes from " << min(q1.internalField()).value() << " to "
              << max(q1.internalField()).value() << endl;
         Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
-        Info << " rho1 fraction: " << sum(q1.internalField()*rho.internalField())/sum(rho.internalField())
-         << endl;
+        Info << " Total Moisture: " << sum(q1.internalField())+sum(q2.internalField()) << endl;
         Info << "Transfer Term Min: " << min(S.internalField()).value() << " Transfer Term Max: " << max(S.internalField()).value() << endl;
         runTime.write();
     }

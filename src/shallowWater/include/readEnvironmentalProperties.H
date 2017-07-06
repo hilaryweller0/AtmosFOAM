@@ -29,5 +29,10 @@ volVectorField twoOmega
     IOobject("twoOmega", runTime.timeName(), mesh),
     (f0 + beta * mesh.C().component(1))*OmegaHat
 );
-twoOmega.write();
+
+surfaceVectorField twoOmegaf
+(
+    IOobject("twoOmegaf", runTime.timeName(), mesh),
+    (f0 + beta * mesh.Cf().component(1))*OmegaHat
+);
 

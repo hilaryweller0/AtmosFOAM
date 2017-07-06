@@ -26,6 +26,7 @@ divSchemes
 {
     //default         Gauss cubicUpwindCPCFit 3;
     default         Gauss vanLeer01;
+    //default         Gauss linearUpwind linearUpwind;
 }
 
 interpolationSchemes

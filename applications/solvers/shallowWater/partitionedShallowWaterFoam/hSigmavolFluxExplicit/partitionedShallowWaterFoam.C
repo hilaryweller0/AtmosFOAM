@@ -54,28 +54,45 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "courantNo.H"
+        #include "partitionedCourantNo.H"
 
         for (int icorr=0; icorr < nCorr; icorr++)
         {
-            // Solve the continuity equation
-            hup = fvc::interpolate(h, "hup");
-            flux = volFlux*hup;
-            h = h.oldTime() - dt*fvc::div(flux);
-            hc = fvc::interpolate(h, "hc");
+            // Solve the continuity equation for each partition and sum
+            h == dimensionedScalar("h", dimLength, scalar(0));
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                hup[ip] = fvc::interpolate(hSigma[ip], partNames[ip]+"hup");
+                flux[ip] = volFlux[ip]*hup[ip];
+                hSigma[ip] = hSigma[ip].oldTime() - dt*fvc::div(flux[ip]);
+                hc[ip] = fvc::interpolate(hSigma[ip], partNames[ip]+"hc");
+                h += hSigma[ip];
+            }
+            // Calculate sigma as a diagnostic
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                sigma[ip] = hSigma[ip]/h;
+                Info << "Minimim " << sigma[ip].name() << " = "
+                     << min(sigma[ip]).value() << endl;
+                Info << "Maximum " << sigma[ip].name() << " = "
+                     << max(sigma[ip]).value() << endl;
+            }
 
-            // Solve the momentum equation
-            flux = flux.oldTime() - dt*
-            (
-                (fvc::interpolate(fvc::div(flux, U)) & mesh.Sf())
-              + hc*((twoOmegaf^Uf) & mesh.Sf())
-              + g*hc*fvc::snGrad(h)*mesh.magSf()
-            );
-            volFlux = flux/hc;
-            
-            U = fvc::reconstruct(volFlux);
-            Uf = fvc::interpolate(U);
-            Uf -= ((Uf & mesh.Sf()) - volFlux)*mesh.Sf()/sqr(mesh.magSf());
+            // Solve the momentum equation for each partition to update the
+            // flux and u in each partition
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                flux[ip] = flux[ip].oldTime() - dt*
+                (
+                    (fvc::interpolate(fvc::div(flux[ip], U[ip])) & mesh.Sf())
+                  + hc[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                  + g*hc[ip]*fvc::snGrad(h)*mesh.magSf()
+                );
+                volFlux[ip] = flux[ip]/hc[ip];
+                U[ip] = fvc::reconstruct(volFlux[ip]);
+                Uf[ip] = fvc::interpolate(U[ip]);
+                Uf[ip] -= ((Uf[ip] & mesh.Sf()) - volFlux[ip])*mesh.Sf()/sqr(mesh.magSf());
+            }
         }
 
         runTime.write();
