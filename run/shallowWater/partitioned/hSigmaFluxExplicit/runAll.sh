@@ -35,7 +35,7 @@ gmtFoam -time 0 sigma
 gv 0/sigma.pdf &
 
 # Solve the SWE
-partitionedShallowWaterFoamhSigmavolFluxExplicit >& log & sleep 0.01; tail -f log
+partitionedShallowWaterFoamhSigmaFluxExplicit >& log & sleep 0.01; tail -f log
 
 # Plots
 time=1000

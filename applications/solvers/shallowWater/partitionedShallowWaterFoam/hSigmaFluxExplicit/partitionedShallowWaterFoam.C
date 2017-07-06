@@ -80,17 +80,18 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 hc = fvc::interpolate(hSigma[ip]);
-                //hc = fvc::interpolate(h);
             
                 flux[ip] = flux[ip].oldTime() - dt*
                 (
                     (fvc::interpolate(fvc::div(flux[ip], U[ip])) & mesh.Sf())
-                  //+ hc*((twoOmegaf^Uf[ip]) & mesh.Sf())
-                  + g*fvc::interpolate(hSigma[ip])*fvc::snGrad(h)*mesh.magSf()
+                  + hc*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                  + g*hc*fvc::snGrad(h)*mesh.magSf()
+()
                 );
                 U[ip] = fvc::reconstruct(flux[ip])/hSigma[ip];
-                //Uf[ip] = fvc::interpolate(U[ip]);
-                //Uf[ip] -= ((Uf[ip] & mesh.Sf()) - flux[ip]/hc)*mesh.Sf()/sqr(mesh.magSf());
+                Uf[ip] = fvc::interpolate(U[ip]);
+                Uf[ip] -= ((Uf[ip] & mesh.Sf()) - flux[ip]/hc)
+                            *mesh.Sf()/sqr(mesh.magSf());
             }
         }
 
