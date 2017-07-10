@@ -86,7 +86,6 @@ int main(int argc, char *argv[])
                     (fvc::interpolate(fvc::div(flux[ip], U[ip])) & mesh.Sf())
                   + hc*((twoOmegaf^Uf[ip]) & mesh.Sf())
                   + g*hc*fvc::snGrad(h)*mesh.magSf()
-()
                 );
                 U[ip] = fvc::reconstruct(flux[ip])/hSigma[ip];
                 Uf[ip] = fvc::interpolate(U[ip]);
