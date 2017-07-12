@@ -9,5 +9,5 @@ cp init_0/Uf 0/Uf
 
 #decomposePar -force -constant
 #mpirun --hostfile machines -np 2 advectiveFoamF -parallel
-advectionConservativeF
+advectiveFoamF
 ./diff.sh

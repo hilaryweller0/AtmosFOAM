@@ -19,12 +19,12 @@ boundaryField
     }
     left
     {
-        type            cyclic;
+        type            calculated;
         value           uniform (10 0 0);
     }
     right
     {
-        type            cyclic;
+        type            calculated;
         value           uniform (10 0 0);
     }
     ground

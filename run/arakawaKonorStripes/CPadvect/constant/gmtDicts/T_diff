@@ -11,17 +11,17 @@ FoamFile {
         object          gmtDict;
 }
 
-projection "X5i/1.6i";
+projection "X5i/3i";
 projection2D XZ;
 separateLegend false;
 plotBoundaryDots false;
-//plotZeroValuePolys false;
+plotZeroValuePolys false;
 
 FieldsToPlot (
-        [T_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
+//        [none mesh "gray"]
+//        [T_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
         [Tf_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
-        [none mesh "gray"]
 );
 
-region "-400e3/400e3/0/30e3";
+region "200e3/400e3/0/30e3";
 boundaryMarks "100e3/10e3WSen";
