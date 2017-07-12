@@ -87,7 +87,7 @@ volScalarField theta
 theta.oldTime();
 theta.write();
 
-thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
+thetaf = mag(g.unitFaceNormal())*thetaf + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
 radiationf += thetaf;
 
 // Reading in the sponge layer coefficients (if present)
