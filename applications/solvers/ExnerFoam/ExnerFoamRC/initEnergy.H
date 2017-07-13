@@ -9,7 +9,7 @@ dimensionedScalar Vtot = sum(mesh.V());
 volScalarField KE
 (
     IOobject("KE", runTime.timeName(), mesh),
-    0.25*fvc::surfaceSum(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))/dimensionedScalar("V", dimVol, scalar(1))
+    0.25*fvc::surfaceSum(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))
 );
 KE.ref() /= mesh.V();
 volScalarField internalEnergy

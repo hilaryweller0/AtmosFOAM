@@ -34,7 +34,7 @@ Description
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
-#include "pisoControl.H"
+#include "pimpleControl.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #include "createControl.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
     #define dt runTime.deltaT()
@@ -52,8 +53,6 @@ int main(int argc, char *argv[])
     #include "initEnergy.H"
     #include "energy.H"
     
-    pisoControl piso(mesh);
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -65,7 +64,7 @@ int main(int argc, char *argv[])
         #include "compressibleCourantNo.H"
 	#include "UEqn.H"
 
-	while (piso.correct())
+	while (pimple.loop())
         {
             #include "rhoThetaEqn.H"
 

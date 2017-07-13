@@ -1,4 +1,4 @@
-while (piso.correct())
+while (pimple.correct())
 {
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
     rho = Exner*Psi;
@@ -17,25 +17,25 @@ while (piso.correct())
       + rhorAUf*fvc::ddtCorr(rho, U, phi)
     );
 
-    while (piso.correctNonOrthogonal())
+    while (pimple.correctNonOrthogonal())
     {
 	fvScalarMatrix ExnerEqn
 	(
 	    fvm::ddt(Psi, Exner)
 	  + fvc::div(phiHbyA)
-	  - fvm::laplacian(rhorAUf*Cp*thetaf, Exner)
-	  + fvc::div(rhorAUf*gSf)
+	  - fvm::laplacian(rhof*rhorAUf*Cp*thetaf, Exner)
+	  + fvc::div(rhof*rhorAUf*gSf)
 	);
 
-	ExnerEqn.solve(mesh.solver(Exner.select(piso.finalInnerIter())));
+	ExnerEqn.solve(mesh.solver(Exner.select(pimple.finalInnerIter())));
 
-	if (piso.finalNonOrthogonalIter())
+	if (pimple.finalNonOrthogonalIter())
 	{
-            phi = phiHbyA - rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
-                + rhorAUf*gSf;
-            U = HbyA + rAU*fvc::reconstruct
+            phi = phiHbyA - rhof*rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                + rhof*rhorAUf*gSf;
+            U = HbyA + fvc::reconstruct
             (
-                - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf() + gSf
+                (- Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf() + gSf)*rhorAUf
             );
 	    Uf = fvc::interpolate(U);
 	}

@@ -6,7 +6,7 @@ fvVectorMatrix UEqn
   + (2*rho*(Omega^(U-Ug)))
 );
 
-if (piso.momentumPredictor())
+if (pimple.momentumPredictor())
 {
     solve(UEqn == - Cp*rho*theta*fvc::grad(Exner) + rho*g);
 }
