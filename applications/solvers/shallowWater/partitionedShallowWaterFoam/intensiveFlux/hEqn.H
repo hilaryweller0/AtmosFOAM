@@ -17,6 +17,8 @@
         }
 
         // Helmholtz equation
+//        sumSigma.oldTime() = sumSigma;
+//        sumSigma == 1;
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
             fvScalarMatrix hEqn

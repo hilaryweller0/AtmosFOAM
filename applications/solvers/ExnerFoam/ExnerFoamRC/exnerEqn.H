@@ -14,7 +14,7 @@ while (pimple.correct())
     (
         "phiHbyA",
         fvc::interpolate(rho)*fvc::flux(HbyA)
-      + rhorAUf*fvc::ddtCorr(rho, U, phi)
+//      + rhorAUf*fvc::ddtCorr(rho, U, phi)
     );
 
     while (pimple.correctNonOrthogonal())
