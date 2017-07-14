@@ -23,11 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoamExp
+    partitionedShallowWaterFoamAdvExp
 
 Description
     Transient Solver for shallow water partitioned flow - fully explicit with
-    solution for velocity and h in each partition
+    momentum equations in advective form
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,8 +64,7 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
-                //dimensionedScalar H("H", dimLength, scalar(1e4));
-                //h[ip] = h[ip].oldTime() - dt*H*fvc::div(volFlux[ip]);
+                //h[ip] = h[ip].oldTime() - dt*h[ip]*fvc::div(volFlux[ip]);
             
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
@@ -81,8 +80,8 @@ int main(int argc, char *argv[])
             {
                 volFlux[ip] = volFlux[ip].oldTime() - dt*
                 (
-                    0.5*fvc::flux(fvc::div(volFlux[ip], u[ip]))
-                  //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
+                    ((Uf[ip] & fvc::interpolate(fvc::grad(Uf[ip]))) & mesh.Sf())
+                  + ((twoOmegaf^Uf[ip]) & mesh.Sf())
                   + g*fvc::snGrad(hSum)*mesh.magSf()
                 );
                 
