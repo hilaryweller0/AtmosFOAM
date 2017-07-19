@@ -12,7 +12,10 @@ volScalarField hSum
     ),
     mesh
 );
-hSum.oldTime();
+
+// hH the total h from the Helmholtz eqn
+volScalarField hH("hH", hSum);
+hH.oldTime();
 
 // The partition names
 const label nParts = 2;
@@ -26,6 +29,7 @@ PtrList<volScalarField> h(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<surfaceScalarField> hf(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -63,6 +67,22 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     h[ip].oldTime();
+
+    hf.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"hf",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ
+            ),
+            linearInterpolate(h[ip])
+        )
+    );
 
     Uf.set
     (
@@ -117,3 +137,18 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
 }
+
+// Sum of all of the fluxes in all partitions
+surfaceScalarField fluxSum("fluxSum", hf[0]*volFlux[0]);
+for(label ip = 1; ip < nParts; ip++)
+{
+    fluxSum += hf[ip]*volFlux[ip];
+}
+
+// Sum hf in all partitions
+surfaceScalarField hfSum("hfSum", hf[0]);
+for(label ip = 1; ip < nParts; ip++)
+{
+    hfSum += hf[ip];
+}
+

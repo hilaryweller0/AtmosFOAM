@@ -1,0 +1,85 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default Euler;
+}
+
+gradSchemes
+{
+    default         none;
+    curl((streamFunction*(0,0,1))) Gauss linear;
+    linearUpwind Gauss linear;
+    grad(stable.h) Gauss linear;
+    grad(buoyant.h) Gauss linear;
+}
+
+divSchemes
+{
+    default         none;
+    div(phi,U)      Gauss linear;
+    div(stable.volFlux,stable.h)   Gauss upwind; //Gauss vanLeer;
+    div(buoyant.volFlux,buoyant.h) Gauss upwind; //Gauss vanLeer;
+    div(stable.volFlux,stable.u)   Gauss linear;
+    div(buoyant.volFlux,buoyant.u) Gauss linear;
+}
+
+laplacianSchemes
+{
+    default         none;
+    laplacian(streamFunction) Gauss linear uncorrected;
+    laplacian(h)              Gauss linear uncorrected;
+}
+
+interpolationSchemes
+{
+    default            none;
+    interpolate(U)     linear;
+    flux((twoOmega^U)) linear;
+    flux(convection(phi,U)) linear;
+    interpolate(grad(stable.Uf))  linear;
+    interpolate(grad(buoyant.Uf)) linear;
+    interpolate(stable.u)         linear;
+    interpolate(buoyant.u)        linear;
+    interpolate(h)                linear;
+    flux(convection(stable.volFlux,stable.u)) linear;
+    flux(convection(buoyant.volFlux,buoyant.u)) linear;
+}
+
+snGradSchemes
+{
+    default         uncorrected;
+    snGrad(h)       uncorrected;
+    snGrad(p)       uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    h;
+}
+
+
+// ************************************************************************* //

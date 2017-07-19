@@ -23,15 +23,18 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoamExp
+    exnerFoam
 
 Description
-    Transient Solver for shallow water partitioned flow - fully explicit with
-    solution for velocity and h in each partition
+    Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
+    using a simultaneous solution of Exner, theta and phi
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
+#include "ExnerTheta.H"
+#include "OFstream.H"
+#include "pimpleControl.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -40,62 +43,43 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #include "createControl.H"
     #include "readEnvironmentalProperties.H"
+    #include "readThermoProperties.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    #include "initContinuityErrs.H"
+    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
+    #include "initEnergy.H"
+    #include "energy.H"
     
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
-    #include "energyInit.H"
 
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "partitionedCourantNo.H"
+        #include "compressibleCourantNo.H"
+	#include "UEqn.H"
 
-        for (int icorr=0; icorr < nCorr; icorr++)
+	while (pimple.loop())
         {
-            // Advect h in each partition
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
-                //dimensionedScalar H("H", dimLength, scalar(1e4));
-                //h[ip] = h[ip].oldTime() - dt*H*fvc::div(volFlux[ip]);
-            
-                if (ip == 0) hSum = h[ip];
-                else hSum += h[ip];
-            }
-            // Update sigma
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                sigma[ip] = h[ip]/hSum;
-            }
-            
-            // Update the velocity in each partition
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                volFlux[ip] = volFlux[ip].oldTime() - dt*
-                (
-                    0.5*fvc::flux(fvc::div(volFlux[ip], u[ip]))
-                  //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
-                  + g*fvc::snGrad(hSum)*mesh.magSf()
-                );
-                
-                u[ip] = fvc::reconstruct(volFlux[ip]);
-                Uf[ip] = fvc::interpolate(u[ip]);
-                Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                        *mesh.Sf()/sqr(mesh.magSf());
-            }
-        }
+            #include "rhoThetaEqn.H"
 
+            // Exner and momentum equations
+            #include "exnerEqn.H"
+        }
+        
+        #include "rhoThetaEqn.H"
+        
+        #include "compressibleContinuityErrs.H"
+
+        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
+                                        - initHeat;
+        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
         #include "energy.H"
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
 
         runTime.write();
 

@@ -1,0 +1,60 @@
+/*---------------------------------------------------------------------------*\
+1;4205;0c| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          controlDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     shallowWaterOTFoam;
+
+startFrom       startTime;
+
+startTime       0;
+
+stopAt          endTime;
+
+endTime         2000; //1e5; //2e6;
+
+deltaT          100;
+
+writeControl    runTime;
+
+writeInterval   1000; //1e4; //1e5;
+
+purgeWrite      0;
+
+writeFormat     binary;
+
+writePrecision  6;
+
+writeCompression off;
+
+timeFormat      general;
+
+timePrecision   8;
+
+runTimeModifiable no;
+
+adjustTimeStep no;
+maxCo          0.5;
+
+libs            ("libfiniteVolumeAtmos.so" "libshallowWater.so" "libfiniteVolumeAtmosFOAMtools.so");
+
+// ************************************************************************* //

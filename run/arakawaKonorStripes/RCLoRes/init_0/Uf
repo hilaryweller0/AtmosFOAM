@@ -1,0 +1,38 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       surfaceVectorField;
+    object      Uf;
+}
+
+dimensions      [0 1 -1 0 0 0 0];
+
+internalField   uniform (0 0 0);
+
+boundaryField
+{
+    top
+    {
+        type            calculated;
+        value           uniform (0 0 0);
+    }
+    left
+    {
+        type            cyclic;
+        value           uniform (0 0 0);
+    }
+    right
+    {
+        type            cyclic;
+        value           uniform (0 0 0);
+    }
+    ground
+    {
+        type            calculated;
+        value           uniform (0 0 0);
+    }
+    frontAndBack {
+        type            empty;
+    }
+}
