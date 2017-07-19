@@ -11,14 +11,28 @@ int main(int argc, char *argv[])
     Info << "Reading T_init" << endl;
     volScalarField T_init
     (
-        IOobject("T_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        IOobject
+        (
+            "T_init",
+            runTime.constant(),
+            mesh,
+            IOobject::MUST_READ,
+            IOobject::NO_WRITE
+        ),
         mesh
     );
 
     Info << "Reading or creating tracer field Tf_init" << endl;
     surfaceScalarField Tf_init
     (
-        IOobject("Tf_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        IOobject
+        (
+            "Tf_init",
+            runTime.constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT,
+            IOobject::NO_WRITE
+        ),
         linearInterpolate(T_init)
     );
 
