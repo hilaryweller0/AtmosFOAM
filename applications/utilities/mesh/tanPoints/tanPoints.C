@@ -61,4 +61,5 @@ int main(int argc, char *argv[])
             Foam::tan(piOn4*newPoints[ip].z())
         );
     }
+    newPoints.write();
 }
