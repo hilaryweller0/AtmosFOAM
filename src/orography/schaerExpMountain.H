@@ -1,17 +1,18 @@
 #ifndef SCHAER_EXP_MOUNTAIN_H
 #define SCHAER_EXP_MOUNTAIN_H
 
-#include "mountain.H"
+#include "dualGradeMountain.H"
 
 namespace Foam
 {
 
-class schaerExpMountain final : public mountain
+class schaerExpMountain final : public dualGradeMountain
 {
     public:
     TypeName("schaerExp");
     schaerExpMountain(const dictionary& dict);
-    dimensionedScalar heightAt(const point& p) const;
+    dimensionedScalar coarseHeightAt(const point& p) const;
+    dimensionedScalar fineHeightAt(const point& p) const;
     dimensionedScalar start() const;
     dimensionedScalar end() const;
 
