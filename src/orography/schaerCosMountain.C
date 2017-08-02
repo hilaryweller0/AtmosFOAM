@@ -18,7 +18,7 @@ dimensionedScalar schaerCosMountain::heightAt(const point& p) const
     if (p.x() >= xOffset - a && p.x() <= xOffset + a)
     {
         scalar x = p.x() - xOffset;
-        h = h0 * sqr(Foam::cos(M_PI * x / lambda)) * sqr(Foam::cos(0.5*M_PI*x/a));
+        h = h0 * sqr(Foam::cos(0.5*M_PI*x/a));
     }
     return h;
 }
@@ -43,9 +43,11 @@ dimensionedScalar schaerCosMountain::timeToCross
     const scalar alpha = M_PI/lambda;
     const scalar beta = M_PI/(2.0 * a);
 
-    const dimensionedScalar a("a", dimLength, 0.25*(Foam::sin(2.0 * (alpha + beta) * x.value()) / (alpha + beta) +
-         Foam::sin(2.0 * (alpha - beta) * x.value()) / (alpha - beta)));
-    const dimensionedScalar b("b", dimLength, 0.5 * (Foam::sin(2.0*alpha*x.value())/alpha + Foam::sin(2.0*beta*x.value())/beta));
+//    const dimensionedScalar a("a", dimLength, 0.25*(Foam::sin(2.0 * (alpha + beta) * x.value()) / (alpha + beta) +
+//         Foam::sin(2.0 * (alpha - beta) * x.value()) / (alpha - beta)));
+//    const dimensionedScalar b("b", dimLength, 0.5 * (Foam::sin(2.0*alpha*x.value())/alpha + Foam::sin(2.0*beta*x.value())/beta));
 
-    return x / u0 - h0/(4.0 * u0 * H) * (x + a + b);
+//    return x / u0 - h0/(4.0 * u0 * H) * (x + a + b);
+    const dimensionedScalar a("a", dimLength, (2.0*beta*x.value() + Foam::sin(2.0*beta*x.value())));
+    return x / u0 - h0/(4.0 * u0 * H * beta) * a;
 }
