@@ -1,0 +1,20 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      controlDict;
+}
+
+startFrom           startTime;
+startTime           0;
+stopAt              endTime;
+endTime             500;
+deltaT              25;
+writeControl        runTime;
+writeInterval       100;
+writeFormat         binary;
+writePrecision      12;
+writeCompression    uncompressed;
+timeFormat          fixed;
+timePrecision       0;

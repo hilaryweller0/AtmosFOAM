@@ -1,0 +1,27 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      transportProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+g         g      [0 1 -2 0 0 0 0] (0 0 -9.81);
+Omega     Omega  [0 0 -1 0 0 0 0] (0 0 0);
+diffusionCoefficient diffusionCoeff [0 2 -1 0 0] 0;
+
+// Brunt Vailsalla frequency for different layers of atmosphere
+BruntVaisallaFreq  3(0.01 0.02 0.01);
+// Extents of the layers (array should be one longer)
+zN  4(0 2e3 3e3 6e6);
+
+// ************************************************************************* //

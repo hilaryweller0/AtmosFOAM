@@ -1,0 +1,84 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          fvSchemes;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+ddtSchemes
+{
+    default Euler;
+}
+
+offCentre 0.5;
+
+SIgravityWaves true;
+
+gradSchemes
+{
+    default         none;
+    grad(theta)     Gauss midPoint;
+    grad((volIntegrate((bf*magSf))&(g|mag(g)))) Gauss midPoint;
+    linearUpwind    Gauss linear;
+}
+
+divSchemes
+{
+    default         none;
+//    div(U,theta)    Gauss cubicUpwindCPCFit Cartesian;
+//    div(U,u)        Gauss cubicUpwindCPCFit Cartesian;
+    div(U,theta)    Gauss linearUpwind linearUpwind;
+    div(U,u)        Gauss linearUpwind linearUpwind;
+}
+
+laplacianSchemes
+{
+    default         Gauss linear uncorrected;
+}
+
+interpolationSchemes
+{
+    default        none; 
+    interpolate(theta)    linearUpwind phi linearUpwind;
+    interpolate(rho)    midPoint;
+    interpolate(convection(U,u)) midPoint;
+    interpolate(u) midPoint;
+    interpolate(grad(theta)) midPoint;
+    interpolate(grad((volIntegrate((bf*magSf))&(g|mag(g))))) midPoint;
+    interpolate((volIntegrate((bf*magSf))_0&(g|mag(g)))) midPoint;
+    H                        midPoint;
+}
+
+snGradSchemes
+{
+    default         none;
+    snGrad(Exner)   uncorrected;
+    snGrad(theta)   uncorrected;
+    snGrad((volIntegrate((bf*magSf))&(g|mag(g)))) uncorrected;
+}
+
+fluxRequired
+{
+    default         no;
+    Exner;
+}
+
+
+// ************************************************************************* //
