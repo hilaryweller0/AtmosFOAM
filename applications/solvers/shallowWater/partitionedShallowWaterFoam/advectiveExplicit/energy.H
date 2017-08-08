@@ -1,12 +1,14 @@
 {
+    // Potential energy
     volScalarField energyField("energyField", 0.5*g*sqr(hSum));
     
     PE = fvc::domainIntegrate(energyField)/Vtot;
     
-    energyField = 0.5*hSum*magSqr(u[0]);
+    // Kinetic energy
+    energyField = 0.5*h[0]*magSqr(u[0]);
     for(label ip = 1; ip < nParts; ip++)
     {
-        energyField += 0.5*hSum*magSqr(u[ip]);
+        energyField += 0.5*h[ip]*magSqr(u[ip]);
     }
 
     KE = fvc::domainIntegrate(energyField)/Vtot;

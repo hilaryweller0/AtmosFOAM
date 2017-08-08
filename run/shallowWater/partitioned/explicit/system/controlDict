@@ -30,13 +30,13 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         2000; //1e5; //2e6;
+endTime         1e5; //2e6;
 
 deltaT          100;
 
 writeControl    runTime;
 
-writeInterval   1000; //1e4; //1e5;
+writeInterval   1e4; //1e5;
 
 purgeWrite      0;
 

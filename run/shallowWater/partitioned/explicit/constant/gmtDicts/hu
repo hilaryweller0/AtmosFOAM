@@ -19,7 +19,7 @@ projection2D XY;
 
 FieldsToPlot
 (
-    [h filledContours 0 0 0 "$GMTU/colours/red_white_blue.cpt"]
+    [h filledContours 8e3 11e3 200 "$GMTU/colours/red_white_blue.cpt"]
     [stable.Uf vectors 1e4 5 "black"]
     [buoyant.Uf vectors 1e4 5 "grey"]
 );

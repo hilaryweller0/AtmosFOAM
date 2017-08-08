@@ -46,6 +46,7 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -64,31 +65,34 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
-                //h[ip] = h[ip].oldTime() - dt*h[ip]*fvc::div(volFlux[ip]);
             
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
-            // Update sigma
+            // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
                 sigma[ip] = h[ip]/hSum;
             }
             
             // Update the velocity in each partition
-            for(label ip = 0; ip < nParts; ip++)
+            surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+            for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
-                volFlux[ip] = volFlux[ip].oldTime() - dt*
-                (
-                    ((Uf[ip] & fvc::interpolate(fvc::grad(Uf[ip]))) & mesh.Sf())
-                  + ((twoOmegaf^Uf[ip]) & mesh.Sf())
-                  + g*fvc::snGrad(hSum)*mesh.magSf()
-                );
+                for(label ip = 0; ip < nParts; ip++)
+                {
+                    volFlux[ip] = volFlux[ip].oldTime() - dt*
+                    (
+                        ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
+                      + ((twoOmegaf^Uf[ip]) & mesh.Sf())
+                      + ggradh
+                    );
                 
-                u[ip] = fvc::reconstruct(volFlux[ip]);
-                Uf[ip] = fvc::interpolate(u[ip]);
-                Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                        *mesh.Sf()/sqr(mesh.magSf());
+                    u[ip] = fvc::reconstruct(volFlux[ip]);
+                    Uf[ip] = fvc::interpolate(u[ip]);
+                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                            *mesh.Sf()/sqr(mesh.magSf());
+                }
             }
         }
 
