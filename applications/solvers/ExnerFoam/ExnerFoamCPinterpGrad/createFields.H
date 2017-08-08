@@ -42,17 +42,6 @@ surfaceScalarField thetaf
 );
 thetaf.oldTime();
 
-Info<< "Reading field radiationf if present\n" << endl;
-surfaceScalarField radiationf
-(
-    surfaceScalarField
-    (
-        IOobject("radiationf", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-        mesh,
-        dimensionedScalar("radiation", dimTemperature, scalar(0))
-    )
-);
-
 surfaceScalarField bf
 (
     IOobject
@@ -87,8 +76,7 @@ volScalarField theta
 theta.oldTime();
 theta.write();
 
-thetaf = mag(bf) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
-radiationf += thetaf;
+thetaf = mag(g.unitFaceNormal())*thetaf + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
 
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge

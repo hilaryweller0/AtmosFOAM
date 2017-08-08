@@ -23,5 +23,9 @@ createSpongeLayer
 set +e
 
 decomposePar -force -constant
-mpirun --hostfile machines -np 2 exnerFoamCPinterpGrad -parallel
+for CASE in processor*; do
+	fixProcessorFaceVelocities -case $CASE
+done
+#mpirun --hostfile machines -np 2 exnerFoamCPinterpGrad -parallel
+exnerFoamCPinterpGrad
 ./diff.sh

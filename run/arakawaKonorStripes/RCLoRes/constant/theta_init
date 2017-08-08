@@ -1,0 +1,48 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.2;
+    format      ascii;
+    class       volScalarField;
+    location    "constant";
+    object      theta_init;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 1 0 0 0];
+
+// all values are placeholders that are overwritten by setTheta
+// _init files are used to establish the type of boundary conditions
+
+internalField   uniform 250;
+
+boundaryField
+{
+    ground
+    {
+        type            fixedValue;
+        value           uniform 250; // placeholder
+    }
+    top
+    {
+        type            fixedValue;
+        value           uniform 288;
+    }
+    left
+    {
+        type            cyclic;
+    }
+    right
+    {
+        type            cyclic;
+    }
+}
+
+
+// ************************************************************************* //

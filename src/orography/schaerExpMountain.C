@@ -3,6 +3,7 @@
 
 defineTypeNameAndDebug(schaerExpMountain, 0);
 addToRunTimeSelectionTable(mountain, schaerExpMountain, dict);
+addToRunTimeSelectionTable(dualGradeMountain, schaerExpMountain, dict);
 
 schaerExpMountain::schaerExpMountain(const dictionary& dict)
 :
@@ -11,11 +12,16 @@ a(readScalar(dict.lookup("halfWidth"))),
 lambda(readScalar(dict.lookup("wavelength")))
 {};
 
-dimensionedScalar schaerExpMountain::heightAt(const point& p) const
+dimensionedScalar schaerExpMountain::coarseHeightAt(const point& p) const
 {
-    dimensionedScalar h("height", dimLength, scalar(0));
+    return 0.5 * h0 * exp(-sqr(p.x() / a));
+}
+
+dimensionedScalar schaerExpMountain::fineHeightAt(const point& p) const
+{
     // eqn 46 in dx.doi.org/10.1175/1520-0493(2002)130<2459:ANTFVC>2.0.CO;2
-    return h0 * exp(-sqr(p.x() / a)) * sqr(Foam::cos(M_PI*p.x()/lambda));
+    dimensionedScalar h =  h0 * exp(-sqr(p.x() / a)) * sqr(Foam::cos(M_PI*p.x()/lambda));
+    return h - coarseHeightAt(p);
 }
 
 dimensionedScalar schaerExpMountain::start() const

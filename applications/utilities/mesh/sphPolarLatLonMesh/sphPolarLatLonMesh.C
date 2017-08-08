@@ -28,6 +28,7 @@ AUTHOR
 #include "extrudedMesh.H"
 #include "linearRadial.H"
 #include "OFstream.H"
+#include "IOdictionary.H"
 
 using namespace Foam;
 

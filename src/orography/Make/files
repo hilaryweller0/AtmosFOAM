@@ -1,9 +1,12 @@
 btfTransform.C
+dualGradeMountain.C
 earthMountain.C
 mountain.C
 schaerCosMountain.C
 schaerExpMountain.C
+sleveTransform.C
 coneMountain.C
+gaussianMountain.C
 terrainFollowingTransform.C
 
 LIB = $(FOAM_USER_LIBBIN)/liborography

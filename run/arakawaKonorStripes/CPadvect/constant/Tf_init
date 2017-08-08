@@ -23,12 +23,12 @@ boundaryField
 {
     left
     {
-        type            cyclic;
+        type            fixedValue;
 	value		0;
     }
     right
     {
-        type		cyclic;
+        type            fixedValue;
 	value		0;
     }
     ground

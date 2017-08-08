@@ -25,7 +25,7 @@ Info<< "Reading/creating thetaf\n" << endl;
 surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
-    fvc::interpolate(theta)
+    mesh
 );
 
 if (!args.options().found("noInterpolate"))

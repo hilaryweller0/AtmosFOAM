@@ -27,6 +27,7 @@ AUTHOR
 
 #include "extrudedMesh.H"
 #include "linearNormal.H"
+#include "IOdictionary.H"
 
 using namespace Foam;
 

@@ -1,0 +1,53 @@
+// dummy file to placate paraView
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      fvSolution;
+}
+
+solvers {
+    "U|rho|rhoFinal"
+    {
+        solver PCG;
+        preconditioner   DIC;
+        tolerance        0;
+        relTol           0;
+    };
+    Exner
+    {
+        solver PCG;
+        preconditioner DIC;
+        tolerance        1e-10;
+        relTol           1e-4;
+    }
+    ExnerFinal
+    {
+        $Exner;
+        tolerance        1e-10;
+        relTol           0;
+    }
+    "theta|thetaFinal"
+    {
+        solver PBiCG;
+        preconditioner   DILU;
+        tolerance        1e-8;
+        relTol           0;
+    }
+}
+
+PIMPLE
+{
+    nOuterCorrectors 2;
+    nCorrectors      1;
+    nNonOrthogonalCorrectors 0;
+}
+
+initialisation
+{
+    maxIters 50;
+    BCiters  3;
+    BCtol    1e-6;
+    boundaryRelaxation 4;
+}

@@ -12,7 +12,7 @@ stopAt          endTime;
 endTime         172800;
 deltaT          25;
 writeControl    runTime;
-writeInterval   800;
+writeInterval   1600;
 //writeInterval   5;
 purgeWrite      0;
 writeFormat     ascii;

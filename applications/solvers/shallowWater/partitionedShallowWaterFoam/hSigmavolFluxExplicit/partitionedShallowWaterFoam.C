@@ -23,10 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoam
+    partitionedShallowWaterFoamExp
 
 Description
-    Transient Solver for shallow water partitioned flow
+    Transient Solver for shallow water partitioned flow - fully explicit with
+    solution for velocity and h in each partition
 
 \*---------------------------------------------------------------------------*/
 
@@ -45,10 +46,12 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+    #include "energyInit.H"
 
     while (runTime.loop())
     {
@@ -58,42 +61,44 @@ int main(int argc, char *argv[])
 
         for (int icorr=0; icorr < nCorr; icorr++)
         {
-            // Solve the continuity equation for each partition and sum
-            h == dimensionedScalar("h", dimLength, scalar(0));
+            // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                hup[ip] = fvc::interpolate(hSigma[ip], partNames[ip]+"hup");
-                flux[ip] = volFlux[ip]*hup[ip];
-                hSigma[ip] = hSigma[ip].oldTime() - dt*fvc::div(flux[ip]);
-                hc[ip] = fvc::interpolate(hSigma[ip], partNames[ip]+"hc");
-                h += hSigma[ip];
+                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
+            
+                if (ip == 0) hSum = h[ip];
+                else hSum += h[ip];
             }
-            // Calculate sigma as a diagnostic
+            // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
-                sigma[ip] = hSigma[ip]/h;
-                Info << "Minimim " << sigma[ip].name() << " = "
-                     << min(sigma[ip]).value() << endl;
-                Info << "Maximum " << sigma[ip].name() << " = "
-                     << max(sigma[ip]).value() << endl;
+                sigma[ip] = h[ip]/hSum;
             }
-
-            // Solve the momentum equation for each partition to update the
-            // flux and u in each partition
-            for(label ip = 0; ip < nParts; ip++)
+            
+            // Update the velocity in each partition
+            surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+            for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
-                flux[ip] = flux[ip].oldTime() - dt*
-                (
-                    (fvc::interpolate(fvc::div(flux[ip], U[ip])) & mesh.Sf())
-                  + hc[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
-                  + g*hc[ip]*fvc::snGrad(h)*mesh.magSf()
-                );
-                volFlux[ip] = flux[ip]/hc[ip];
-                U[ip] = fvc::reconstruct(volFlux[ip]);
-                Uf[ip] = fvc::interpolate(U[ip]);
-                Uf[ip] -= ((Uf[ip] & mesh.Sf()) - volFlux[ip])*mesh.Sf()/sqr(mesh.magSf());
+                for(label ip = 0; ip < nParts; ip++)
+                {
+                    volFlux[ip] = volFlux[ip].oldTime() - dt*
+                    (
+                        fvc::flux(fvc::div(volFlux[ip], u[ip]))
+                      + ((twoOmegaf^Uf[ip]) & mesh.Sf())
+                      + ggradh
+                    );
+                
+                    u[ip] = fvc::reconstruct(volFlux[ip]);
+                    Uf[ip] = fvc::interpolate(u[ip]);
+                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                            *mesh.Sf()/sqr(mesh.magSf());
+                }
             }
         }
+
+        #include "energy.H"
+        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
+             << max(sigma[0]).value() << endl;
 
         runTime.write();
 
