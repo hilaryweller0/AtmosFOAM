@@ -67,9 +67,6 @@ int main(int argc, char *argv[])
         Info<< "\nTime = " << runTime.timeName() << nl << endl;
         #include "CourantNo.H"
         
-        q1_temp = q1;
-        q2_temp = q2;
-        
         for (int corr=0; corr < 3; corr++)
         {
             //const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
@@ -119,32 +116,75 @@ int main(int argc, char *argv[])
 
             // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
-            q1 = q1.oldTime() - dt/(0.5*transferTerm*S1*S3+1) * (
-                  0.5*fvc::div(phi,q1.oldTime())
-                + 0.5*fvc::div(phi,q1_temp)
-                + 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
+            fvScalarMatrix q1Eqn
+            (
+                fvm::ddt(q1)
+                //+ 0.5*fvc::div(fluxOld,q1.oldTime())
+                + 0.5*fvc::div(phi,q1)
                 - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-rvs)
-                - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-rvs)
+                + 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
+                
             );
             
-            q2 = q2.oldTime() - dt/(0.5*transferTerm*(S2+S1*S4)+1) * (
-                  0.5*fvc::div(phi,q2.oldTime())
-                + 0.5*fvc::div(phi,q2_temp)
+            fvScalarMatrix q2Eqn
+            (
+                fvm::ddt(q2)
+                //+ 0.5*fvc::div(fluxOld,q2.oldTime())
+                + 0.5*fvc::div(phi,q2)
+                + 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-rvs)
                 - 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
-                - 0.5*timeScale*transferTerm*S1*S3*q1_temp
-                + 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-2*rvs)
             );
-            
-            q1 -= 0.5*dt*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-q2);
-            q1_temp = q1;
-            q2_temp = q2;
             
             fvScalarMatrix rhoEqn
             (
                 fvm::ddt(rho)
-                + fvc::div(phi, rho)
+                + 0.5*fvc::div(phi, rho)
             );
 
+            // Add the advection terms either implicit or explicit
+            if (implicitAdvection)
+            {
+                //q1Eqn += 0.5*fvm::div(flux,q1);
+                //q2Eqn += 0.5*fvm::div(flux,q2);
+                q1Eqn += 0.5*fvm::div(phi,q1);
+                q2Eqn += 0.5*fvm::div(phi,q2);
+                rhoEqn += 0.5*fvm::div(phi, rho);
+                //q1Eqn += fvm::div(phi,q1);
+                //q2Eqn += fvm::div(phi,q2);
+                //rhoEqn += fvm::div(phi, rho);
+            }
+            else
+            {
+                //q1Eqn += 0.5*fvc::div(flux,q1);
+                //q2Eqn += 0.5*fvc::div(flux,q2);
+                q1Eqn += 0.5*fvc::div(phi,q1);
+                q2Eqn += 0.5*fvc::div(phi,q2);
+                rhoEqn += 0.5*fvc::div(phi, rho);
+                //q1Eqn += fvc::div(phi,q1);
+                //q2Eqn += fvc::div(phi,q2);
+                //rhoEqn += fvc::div(phi, rho);
+            }
+            
+            // Add the damping terms, either implicit or explicit
+            if (implicitSource)
+            {
+                q1Eqn += - timeScale*transferTerm*(S2+S1*S4)*(q2-rvs)
+                         + fvm::Sp(timeScale*transferTerm*S1*S3,q1);
+                q2Eqn += - timeScale*transferTerm*(S2+S1*S4)*rvs
+                         - timeScale*transferTerm*S1*S3*q1
+                         + fvm::Sp(timeScale*transferTerm*(S2+S1*S4),q2);
+            }
+            else
+            {
+                q1Eqn += - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2-rvs)
+                         + 0.5*timeScale*transferTerm*S1*S3*q1;
+                q2Eqn += 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2-rvs)
+                       - 0.5*timeScale*transferTerm*S1*S3*q1;
+            }
+            
+            // Solve the matrices for the equations
+            q1Eqn.solve();
+            q2Eqn.solve();
             rhoEqn.solve();
             
             q2_analytic = min((rho-rhoAir)/rhoAir,rvs);

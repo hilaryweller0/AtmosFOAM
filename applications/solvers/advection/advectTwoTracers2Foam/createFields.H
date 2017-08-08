@@ -15,6 +15,21 @@ volScalarField q1
 // Ensure that rho1.oldTime() is stored
 q1.oldTime();
 
+volScalarField q1_temp
+(
+    IOobject
+    (
+        "q1_temp",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q1
+);
+// Ensure that rho1.oldTime() is stored
+q1_temp.oldTime();
+
 volScalarField q2
 (
     IOobject
@@ -28,6 +43,21 @@ volScalarField q2
     mesh
 );
 q2.oldTime();
+
+volScalarField q2_temp
+(
+    IOobject
+    (
+        "q2_temp",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q2
+);
+// Ensure that rho1.oldTime() is stored
+q2_temp.oldTime();
 
 volScalarField rho
 (
@@ -69,34 +99,6 @@ volScalarField q2_analytic
     mesh
 );
 
-volScalarField rho_a
-(
-    IOobject
-    (
-        "rho_a",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-rho_a.oldTime();
-
-volScalarField rho_b
-(
-    IOobject
-    (
-        "rho_b",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-rho_b.oldTime();
-
 volScalarField T
 (
     IOobject
@@ -105,11 +107,10 @@ volScalarField T
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
+        IOobject::NO_WRITE
     ),
     mesh
 );
-T.oldTime();
 
 volScalarField S
 (
@@ -119,11 +120,62 @@ volScalarField S
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
-        IOobject::AUTO_WRITE
+        IOobject::NO_WRITE
     ),
     q1
 );
-S.oldTime();
+
+volScalarField S1
+(
+    IOobject
+    (
+        "S1",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q1
+);
+
+volScalarField S2
+(
+    IOobject
+    (
+        "S2",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q1
+);
+
+volScalarField S3
+(
+    IOobject
+    (
+        "S3",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q1
+);
+
+volScalarField S4
+(
+    IOobject
+    (
+        "S4",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    q1
+);
 
 volScalarField P
 (
@@ -133,11 +185,10 @@ volScalarField P
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
+        IOobject::NO_WRITE
     ),
     mesh
 );
-P.oldTime();
 
 surfaceScalarField phi
 (

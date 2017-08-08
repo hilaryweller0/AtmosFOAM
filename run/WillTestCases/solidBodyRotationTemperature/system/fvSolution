@@ -16,7 +16,7 @@ FoamFile {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 implicitAdvection false;
-implicitSource false;
+implicitSource true;
 BryanFritschSource true;
 
 solvers
