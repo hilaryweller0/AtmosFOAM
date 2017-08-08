@@ -1,3 +1,23 @@
+Info<< "Reading 0/Uf if present\n" << endl;
+surfaceVectorField Uf
+(
+    IOobject("Uf", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    mesh
+);
+
+surfaceScalarField phi
+(
+    IOobject
+    (
+        "phi",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    Uf & mesh.Sf()
+);
+
 // Read in prognostic variables
 
 Info<< "Creating Exner_init\n" << endl;

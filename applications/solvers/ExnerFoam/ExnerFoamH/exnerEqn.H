@@ -17,6 +17,7 @@
     }
     else
     {
+        phi = Uf & mesh.Sf();
         thetaf = fvc::interpolate(theta);
         G == 1/G;
     }

@@ -13,6 +13,19 @@ surfaceVectorField Uf
     mesh
 );
 
+surfaceScalarField phi
+(
+    IOobject
+    (
+        "phi",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    Uf & mesh.Sf()
+);
+
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
 (
@@ -39,17 +52,6 @@ volScalarField theta
         IOobject::AUTO_WRITE
     ),
     mesh
-);
-
-Info<< "Reading field radiation if present\n" << endl;
-volScalarField radiation
-(
-    volScalarField
-    (
-        IOobject("radiation", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-        mesh,
-        dimensionedScalar("radiation", dimTemperature, scalar(0))
-    )+theta
 );
 
 // Old part of theta change (and theta on the face)

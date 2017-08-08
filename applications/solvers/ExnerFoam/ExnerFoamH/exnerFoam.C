@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
         // Old part of theta change (before any variables are updated)
         if (SIgravityWaves)
         {
+            phi = Uf & mesh.Sf();
             thetaf.oldTime() = fvc::interpolate
             (
                 (
@@ -139,7 +140,7 @@ int main(int argc, char *argv[])
         
         // Updates for next time step
         {
-//            theta += dt * (radiation - theta)/radiativeTimescale;
+            phi = Uf & mesh.Sf();
             thetaf = fvc::interpolate(theta);
         }
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
