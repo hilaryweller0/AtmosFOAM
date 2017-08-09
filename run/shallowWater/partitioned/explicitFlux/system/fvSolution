@@ -5,28 +5,57 @@
 |   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
 |    \\/     M anipulation  |                                                 |
 \*---------------------------------------------------------------------------*/
-FoamFile {
+FoamFile
+{
     version     2.0;
     format      ascii;
     class       dictionary;
-    location    "system";
     object      fvSolution;
 }
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-implicitAdvection false;
-implicitSource true;
-BryanFritschSource true;
 
 solvers
 {
-    "(rho|q1|q2)"
+    "h|p"
     {
-        solver          PBiCG;
-        preconditioner  DILU;
-        tolerance       1e-08
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-8;
+        relTol          0.01;
+    }
+
+    "hFinal|pFinal"
+    {
+        $p;
         relTol          0;
+    }
+
+    "U|UFinal|hU|hUFinal"
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-05;
+        relTol          0;
+    }
+    "streamFunction|velPot"
+    {
+        solver         PCG;
+        preconditioner DIC;
+        tolerance      1e-7;
+        relTol         0;
     }
 }
 
+"iterations|PISO|PIMPLE"
+{
+    nCorrectors     3;
+    pRefCell        0;
+    pRefValue       0;
+}
+
+initialisation
+{
+    maxIters 20;
+}
+
+// ************************************************************************* //

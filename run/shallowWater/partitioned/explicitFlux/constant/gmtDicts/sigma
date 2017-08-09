@@ -1,0 +1,34 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/18c";
+projection2D XY;
+
+FieldsToPlot
+(
+    [buoyant.sigma filledContours -1.025 1.025 0.05 "$GMTU/colours/red_white_blue.cpt"]
+    [buoyant.sigma contours 0.99 1 0.001 "black"]
+    [buoyant.sigma contours 0 0.01 0.001 "green"]
+//    [stable.sigma contours 0 1 0.05 "black"]
+);
+
+// Options
+plotBoundaryDots false;
+//separateLegend true;
+//region "-25e3/25e3/0/25e3";
+annotate "minMax 0 -38000";
+//boundaryMarks "5e3/5e3";
+

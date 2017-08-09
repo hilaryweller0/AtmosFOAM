@@ -23,9 +23,10 @@ partNames[1] = "buoyant.";
 // Set pointer lists for variables in all partitions. Read in later
 PtrList<volScalarField> sigma(nParts);
 PtrList<volScalarField> h(nParts);
+PtrList<surfaceScalarField> hf(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<volVectorField> u(nParts);
-PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<surfaceScalarField> flux(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -64,6 +65,22 @@ for (label ip = 0; ip < nParts; ip++)
     );
     h[ip].oldTime();
 
+    hf.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"hf",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ
+            ),
+            linearInterpolate(h[ip])
+        )
+    );
+
     Uf.set
     (
         ip,
@@ -81,23 +98,23 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
 
-    volFlux.set
+    flux.set
     (
         ip,
         new surfaceScalarField
         (
             IOobject
             (
-                partNames[ip]+"volFlux",
+                partNames[ip]+"flux",
                 runTime.timeName(),
                 mesh,
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            Uf[ip] & mesh.Sf()
+            (Uf[ip] & mesh.Sf())*hf[ip]
         )
     );
-    volFlux[ip].oldTime();
+    flux[ip].oldTime();
 
     u.set
     (
@@ -112,7 +129,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::NO_READ,
                 IOobject::AUTO_WRITE
             ),
-            fvc::reconstruct(volFlux[ip]),
+            fvc::reconstruct(flux[ip]/hf[ip]),
             Uf[ip].boundaryField().types()
         )
     );

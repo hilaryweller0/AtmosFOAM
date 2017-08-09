@@ -23,11 +23,11 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoamExp
+    partitionedShallowWaterFoamFluxExp
 
 Description
     Transient Solver for shallow water partitioned flow - fully explicit with
-    solution for velocity and h in each partition
+    solution for velocity and h in each partition using flux form.
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,8 +64,14 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
-            
+                h[ip] = h[ip].oldTime() - dt*fvc::div(flux[ip]);
+                hf[ip] = fvc::interpolate(h[ip]);
+                
+                Info << "h[" << ip << "] goes from " 
+                     << min(h[ip].internalField()).value() 
+                     << " to " 
+                     << max(h[ip].internalField()).value() << endl;
+
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
@@ -81,16 +87,16 @@ int main(int argc, char *argv[])
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    volFlux[ip] = volFlux[ip].oldTime() - dt*
+                    flux[ip] = flux[ip].oldTime() - dt*
                     (
-                        fvc::flux(fvc::div(volFlux[ip], u[ip]))
-                      + ((twoOmegaf^Uf[ip]) & mesh.Sf())
-                      + ggradh
+                        fvc::flux(fvc::div(flux[ip], u[ip]))
+                      + hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                      + hf[ip]*ggradh
                     );
-                
-                    u[ip] = fvc::reconstruct(volFlux[ip]);
+
+                    u[ip] = fvc::reconstruct(flux[ip]/hf[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
-                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                    Uf[ip] += (flux[ip]/hf[ip] - (Uf[ip] & mesh.Sf()))
                             *mesh.Sf()/sqr(mesh.magSf());
                 }
             }
@@ -99,7 +105,14 @@ int main(int argc, char *argv[])
         #include "energy.H"
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
-
+        Info << "sigma[1] goes from " << min(sigma[1]).value() << " to "
+             << max(sigma[1]).value() << endl;
+        Info << "h goes from " 
+             << min(h[0].internalField()+h[1].internalField()).value() 
+             << " to " 
+             << max(h[0].internalField()+h[1].internalField()).value() 
+             << endl;
+        
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
