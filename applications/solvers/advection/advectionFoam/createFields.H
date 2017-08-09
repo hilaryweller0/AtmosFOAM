@@ -108,3 +108,7 @@ volScalarField k4
     ),
     -fvc::div(phi,T)
 );
+
+// Calculate divU for checking divergence free
+volScalarField divU("divU", fvc::div(phi));
+divU.write();
