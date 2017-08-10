@@ -7,17 +7,18 @@ addToRunTimeSelectionTable(mountain, schaerCosMountain, dict);
 schaerCosMountain::schaerCosMountain(const dictionary& dict)
 :
 h0("peakHeight", dimLength, readScalar(dict.lookup("peakHeight"))),
-a(readScalar(dict.lookup("halfWidth"))),
-lambda(readScalar(dict.lookup("wavelength"))),
-xOffset(dict.lookupOrDefault("xOffset", 0))
+a("a", dimLength, readScalar(dict.lookup("halfWidth"))),
+lambda("lambda", dimLength, readScalar(dict.lookup("wavelength"))),
+xOffset("xOffset", dimLength, dict.lookupOrDefault("xOffset", 0))
 {};
 
 dimensionedScalar schaerCosMountain::heightAt(const point& p) const
 {
     dimensionedScalar h("height", dimLength, scalar(0));
-    if (p.x() >= xOffset - a && p.x() <= xOffset + a)
+    dimensionedScalar X("X", dimLength, scalar(p.x()));
+    if (p.x() >= (xOffset - a).value() && p.x() <= (xOffset + a).value())
     {
-        scalar x = p.x() - xOffset;
+        dimensionedScalar x = X - xOffset;
         h = h0 * sqr(Foam::cos(M_PI * x / lambda)) * sqr(Foam::cos(0.5*M_PI*x/a));
     }
     return h;
@@ -25,12 +26,12 @@ dimensionedScalar schaerCosMountain::heightAt(const point& p) const
 
 dimensionedScalar schaerCosMountain::start() const
 {
-    return dimensionedScalar("start", dimLength, -a);
+    return -a;
 }
 
 dimensionedScalar schaerCosMountain::end() const
 {
-    return dimensionedScalar("end", dimLength, a);
+    return a;
 }
 
 dimensionedScalar schaerCosMountain::timeToCross
@@ -39,13 +40,29 @@ dimensionedScalar schaerCosMountain::timeToCross
     const dimensionedScalar H
 ) const
 {
-	const dimensionedScalar x("x", dimLength, scalar(2.0 * a));
-    const scalar alpha = M_PI/lambda;
-    const scalar beta = M_PI/(2.0 * a);
+    return timeToCrossIntegralAt(u0, H, end()) - timeToCrossIntegralAt(u0, H, start());
+}
 
-    const dimensionedScalar a("a", dimLength, 0.25*(Foam::sin(2.0 * (alpha + beta) * x.value()) / (alpha + beta) +
-         Foam::sin(2.0 * (alpha - beta) * x.value()) / (alpha - beta)));
-    const dimensionedScalar b("b", dimLength, 0.5 * (Foam::sin(2.0*alpha*x.value())/alpha + Foam::sin(2.0*beta*x.value())/beta));
+dimensionedScalar schaerCosMountain::timeToCrossIntegralAt
+(
+    const dimensionedScalar u0,
+    const dimensionedScalar H,
+    const dimensionedScalar x
+) const
+{
+    const dimensionedScalar alpha = M_PI/lambda;
+    const dimensionedScalar beta = M_PI/(2*a);
 
-    return x / u0 - h0/(4.0 * u0 * H) * (x + a + b);
+    const dimensionedScalar A = 0.25*
+    (
+        Foam::sin(2.0 * (alpha + beta) * x) / (alpha + beta) +
+        Foam::sin(2.0 * (alpha - beta) * x) / (alpha - beta)
+    );
+    const dimensionedScalar B = 0.5 *
+    (
+        Foam::sin(2.0*alpha*x)/alpha +
+        Foam::sin(2.0*beta*x)/beta
+    );
+
+    return x / u0 - h0/(4.0 * u0 * H) * (x + A + B);
 }

@@ -18,9 +18,16 @@ class schaerCosMountain final : public crossableMountain
 
     private:
     const dimensionedScalar h0;
-    const scalar a;
-    const scalar lambda;
-    const scalar xOffset;
+    const dimensionedScalar a;
+    const dimensionedScalar lambda;
+    const dimensionedScalar xOffset;
+
+    dimensionedScalar timeToCrossIntegralAt
+    (
+        const dimensionedScalar u0,
+        const dimensionedScalar H,
+        const dimensionedScalar x
+    ) const;
 };
 
 }
