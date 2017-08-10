@@ -1,5 +1,5 @@
-#ifndef SCHAER_COS_MOUNTAIN_H
-#define SCHAER_COS_MOUNTAIN_H
+#ifndef CONE_MOUNTAIN_H
+#define CONE_MOUNTAIN_H
 
 #include "mountain.H"
 

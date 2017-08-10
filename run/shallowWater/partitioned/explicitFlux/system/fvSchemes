@@ -30,20 +30,15 @@ ddtSchemes
 gradSchemes
 {
     default         none;
-    curl((streamFunction*(0,0,1))) Gauss linear;
-    linearUpwind Gauss linear;
+    //curl((streamFunction*(0,0,1))) Gauss linear;
+    //linearUpwind Gauss linear;
 }
 
 divSchemes
 {
     default         none;
-    div(phi,U)      Gauss linear;
-    div(stable.volFlux,stable.h)   Gauss upwind; //Gauss vanLeer;
-    div(buoyant.volFlux,buoyant.h) Gauss upwind; //Gauss vanLeer;
     div(stable.flux,stable.u)      Gauss upwind;
-    div(stable.flux,stable.h)      Gauss upwind;
     div(buoyant.flux,buoyant.u)    Gauss upwind;
-    div(buoyant.flux,buoyant.h)    Gauss upwind;
 }
 
 laplacianSchemes
@@ -56,16 +51,11 @@ laplacianSchemes
 interpolationSchemes
 {
     default            none;
-    interpolate(U)     linear;
-    flux((twoOmega^U)) linear;
-    flux(convection(phi,U)) linear;
-    //interpolate(grad(stable.Uf))  upwind stable.volFlux;
-    //interpolate(grad(buoyant.Uf)) upwind buoyant.volFlux;
-    interpolate(stable.u)         linear;//stable.flux;
-    interpolate(buoyant.u)        linear;//buoyant.flux;
     interpolate(h)                linear;
     interpolate(stable.h)         upwind stable.flux;
     interpolate(buoyant.h)        upwind buoyant.flux;
+    interpolate(stable.u)         linear;//upwind stable.flux;
+    interpolate(buoyant.u)        linear;//upwind buoyant.flux;
     flux(convection(stable.flux,stable.u))        upwind stable.flux;
     flux(convection(buoyant.flux,buoyant.u))      upwind buoyant.flux;
 }
