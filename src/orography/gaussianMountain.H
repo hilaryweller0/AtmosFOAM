@@ -1,5 +1,5 @@
-#ifndef SCHAER_COS_MOUNTAIN_H
-#define SCHAER_COS_MOUNTAIN_H
+#ifndef GAUSSIAN_MOUNTAIN_H
+#define GAUSSIAN_MOUNTAIN_H
 
 #include "mountain.H"
 
