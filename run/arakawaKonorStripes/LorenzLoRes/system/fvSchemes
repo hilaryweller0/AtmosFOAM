@@ -12,7 +12,8 @@ SIgravityWaves false;
 
 interpolationSchemes {
     default         none;
-    interpolate(theta) midPoint;
+    interpolate(theta) APVM Uf; //midPoint;
+    interpolate(volIntegrate((snGrad(theta)*magSf))) midPoint;
     interpolate(rho) midPoint;
     interpolate(convection(U,u)) midPoint;
     H midPoint;
@@ -26,7 +27,7 @@ divSchemes {
 //    div(U,u)        Gauss cubicUpwindCPCFit false;
 //    div(U,theta)    Gauss cubicUpwindCPCFit false;
     div(U,u)        Gauss linearUpwind grad(u);
-    div(U,theta)    Gauss linearUpwind grad(theta);
+    div(U,theta)    Gauss APVM Uf; //linearUpwind grad(theta);
 }
 
 gradSchemes {
@@ -38,9 +39,7 @@ gradSchemes {
 }
 
 laplacianSchemes {
-    default         none;
-    laplacian(gradPcoeff,Exner) Gauss linear uncorrected;
-    laplacian((0.5*(((((G*0.5)*Cp)*deltaT)*rhof)*thetaf)),Exner) Gauss linear uncorrected;
+    default         Gauss linear uncorrected;
 }
 
 ddtSchemes {

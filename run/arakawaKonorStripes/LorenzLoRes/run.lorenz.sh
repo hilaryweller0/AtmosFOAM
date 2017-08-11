@@ -8,14 +8,13 @@ mv 0/T 0/theta.anom
 
 #terrainFollowingMesh
 setTheta
-
+cp init_0/Uf 0
 setExnerBalancedH
 
 mv 0/theta 0/theta.bg
 
 sumFields -scale0 1 -scale1 1 0 theta 0 theta.bg 0 theta.anom
 
-cp init_0/Uf 0/Uf
 createSpongeLayer
 set +e
 

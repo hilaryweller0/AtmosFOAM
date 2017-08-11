@@ -38,7 +38,7 @@ gradSchemes {
 }
 
 laplacianSchemes {
-    default         none;
+    default         Gauss linear uncorrected;
     laplacian(gradPcoeff,Exner) Gauss linear uncorrected;
     laplacian((0.5*(((((G*0.5)*Cp)*deltaT)*rhof)*thetaf)),Exner) Gauss linear uncorrected;
 }

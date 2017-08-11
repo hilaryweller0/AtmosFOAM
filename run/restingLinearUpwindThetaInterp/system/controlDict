@@ -18,3 +18,4 @@ writePrecision      12;
 writeCompression    uncompressed;
 timeFormat          fixed;
 timePrecision       0;
+libs ("libfiniteVolumeAtmos.so");

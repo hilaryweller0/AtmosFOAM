@@ -44,7 +44,7 @@ divSchemes
     default         none;
 //    div(U,theta)    Gauss cubicUpwindCPCFit Cartesian;
 //    div(U,u)        Gauss cubicUpwindCPCFit Cartesian;
-    div(U,theta)    Gauss linearUpwind linearUpwind;
+    div(U,theta)    Gauss APVM Uf;
     div(U,u)        Gauss linearUpwind linearUpwind;
 }
 
@@ -56,7 +56,9 @@ laplacianSchemes
 interpolationSchemes
 {
     default        none; 
-    interpolate(theta)    linearUpwind phi linearUpwind;
+    interpolate(theta)    APVM Uf; //linearUpwind phi linearUpwind;
+    interpolate(volIntegrate((snGrad(theta)*magSf))) linear;
+    interpolate(volIntegrate((snGrad((((rho_0*theta_0)-((0.5*deltaT)*divUtheta_0))|(rho_0-((0.5*deltaT)*divU_0))))*magSf))) linear;
     interpolate(rho)    midPoint;
     interpolate(convection(U,u)) midPoint;
     interpolate(u) midPoint;
@@ -72,6 +74,7 @@ snGradSchemes
     snGrad(Exner)   uncorrected;
     snGrad(theta)   uncorrected;
     snGrad((volIntegrate((bf*magSf))&(g|mag(g)))) uncorrected;
+    snGrad((((rho_0*theta_0)-((0.5*deltaT)*divUtheta_0))|(rho_0-((0.5*deltaT)*divU_0)))) uncorrected;
 }
 
 fluxRequired

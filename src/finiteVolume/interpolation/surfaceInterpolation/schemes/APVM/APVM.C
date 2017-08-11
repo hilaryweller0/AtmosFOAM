@@ -55,7 +55,7 @@ Foam::APVM<Type>::correction
         )
     );
 
-    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr();
+    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr.ref();
 
     const dimensionedScalar& dt = mesh.time().deltaT();
 
