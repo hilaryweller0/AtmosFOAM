@@ -37,8 +37,10 @@ gradSchemes
 divSchemes
 {
     default         none;
-    div(stable.flux,stable.u)      Gauss upwind;
-    div(buoyant.flux,buoyant.u)    Gauss upwind;
+    div(stable.flux,stable.u)        Gauss upwind;
+    div(buoyant.flux,buoyant.u)      Gauss upwind;
+    div(stable.volFlux,stable.h)     Gauss upwind;
+    div(buoyant.volFlux,buoyant.h)   Gauss upwind;
 }
 
 laplacianSchemes

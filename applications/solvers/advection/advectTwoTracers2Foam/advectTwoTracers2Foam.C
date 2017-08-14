@@ -119,20 +119,22 @@ int main(int argc, char *argv[])
 
             // Set up the matrix without adding implicit/explicit parts
             // of advection or source terms
-            q1 = q1.oldTime() - dt/(0.5*transferTerm*S1*S3+1) * (
-                  0.5*fvc::div(phi,q1.oldTime())
-                + 0.5*fvc::div(phi,q1_temp)
-                + 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
-                - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-rvs)
-                - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-rvs)
+            q1 = q1.oldTime() - dt/(0.5*transferTerm*S1*S3+1) *
+            (
+                0.5*fvc::div(phi,q1.oldTime())
+              + 0.5*fvc::div(phi,q1_temp)
+              + 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
+              - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-rvs)
+              - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-rvs)
             );
             
-            q2 = q2.oldTime() - dt/(0.5*transferTerm*(S2+S1*S4)+1) * (
-                  0.5*fvc::div(phi,q2.oldTime())
-                + 0.5*fvc::div(phi,q2_temp)
-                - 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
-                - 0.5*timeScale*transferTerm*S1*S3*q1_temp
-                + 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-2*rvs)
+            q2 = q2.oldTime() - dt/(0.5*transferTerm*(S2+S1*S4)+1) * 
+            (
+                0.5*fvc::div(phi,q2.oldTime())
+              + 0.5*fvc::div(phi,q2_temp)
+              - 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
+              - 0.5*timeScale*transferTerm*S1*S3*q1
+              + 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-2*rvs)
             );
             
             q1 -= 0.5*dt*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-q2);

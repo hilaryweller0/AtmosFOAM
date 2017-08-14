@@ -1,0 +1,114 @@
+/*---------------------------------------------------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.4                                   |
+|   \\  /    A nd           | Web:      http://www.openfoam.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+
+FoamFile
+{
+    version         2.0;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "";
+    local           "";
+
+    class           dictionary;
+    object          blockMeshDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1000;
+
+a 18000;
+twoa 18000;
+am 18000;
+ap 18000;
+
+nx 100;
+ny 100;
+
+vertices
+(
+    (0 0 0)
+    ($a 0 0)
+    ($twoa 0 0)
+    (0 $ap 0)
+    ($a $am 0)
+    ($twoa $ap 0)
+    (0 $twoa 0)
+    ($a $twoa 0)
+    ($twoa $twoa 0)
+    (0 0 1)
+    ($a 0 1)
+    ($twoa 0 1)
+    (0 $ap 1)
+    ($a $am 1)
+    ($twoa $ap 1)
+    (0 $twoa 1)
+    ($a $twoa 1)
+    ($twoa $twoa 1)
+);
+
+blocks
+(
+	hex (0 1 4 3 9 10 13 12)  ($nx $ny 1) simpleGrading (1 1 1)
+//	hex (1 2 5 4 10 11 14 13) ($nx $ny 1) simpleGrading (1 1 1)
+//	hex (3 4 7 6 12 13 16 15) ($nx $ny 1) simpleGrading (1 1 1)
+//	hex (4 5 8 7 13 14 17 16) ($nx $ny 1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+boundary
+(
+    equator
+    {
+        type            cyclic;
+        neighbourPatch  pole;
+        faces           ((0 1 10 9) /*(1 2 11 10)*/);
+    }
+    pole
+    {
+        type            cyclic;
+        neighbourPatch  equator;
+        faces           ((12 13 3 4));
+        //faces           ((15 16 7 6) (16 17 8 7));
+    }
+    inlet
+    {
+        type            cyclic;
+        neighbourPatch  outlet;
+        faces           ((9 12 3 0) /*(12 15 6 3)*/);
+    }
+    outlet
+    {
+        type            cyclic;
+        neighbourPatch  inlet;
+        faces           ((1 4 13 10));
+        //faces           ((2 5 14 11) (5 8 17 14));
+    }
+    front
+    {
+        type            empty;
+        faces           ((9 10 13 12) /*(10 11 14 13)
+                         (12 13 16 15) (13 14 17 16)*/);
+    }
+    back
+    {
+        type            empty;
+        faces           ((0 3 4 1) /*(1 4 5 2) (3 6 7 4) (4 7 8 5)*/);
+    }
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
