@@ -21,7 +21,9 @@ FieldsToPlot (
 //        [none mesh "gray"]
 //        [T_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
         [Tf_diff rawValues -0.7 0.7 0.05 "$GMTU/colours/red_white_blue.cpt"]
+	[T contours 0.1 1 0.1 "black"]
+	[T_analytic contours 0.1 1 0.1 "black,1_1:0"]
 );
 
-region "200e3/400e3/0/30e3";
+region "0e3/450e3/0/30e3";
 boundaryMarks "100e3/10e3WSen";
