@@ -46,12 +46,14 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 4);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    
+    const dimensionedScalar K("K",dimensionSet(0,2,-1,0,0),scalar(10000000));
 
     while (runTime.loop())
     {
@@ -64,8 +66,15 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip]);
-                hc[ip] = linearInterpolate(h[ip]);
+                h[ip] = h[ip].oldTime() - dt*
+                (
+                    fvc::div(flux[ip])
+                );
+                for(label ip2 = 0; ip2 < nParts; ip2++)
+                {
+                    h[ip] -= (2*(ip2 != ip)-1)*dt*K*hSum*fvc::laplacian(sigma[ip2]);
+                }
+                
                 hf[ip] = fvc::interpolate(h[ip]);
                 
                 Info << "h[" << ip << "] goes from " 
@@ -95,8 +104,11 @@ int main(int argc, char *argv[])
                       + hf[ip]*ggradh
                     );
                     
-                    volFlux[ip] = flux[ip]/hc[ip];
-
+                    for(label ip2 = 0; ip2 < nParts; ip2++)
+                    {
+                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hSum*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
+                    }
+                    
                     u[ip] = fvc::reconstruct(flux[ip]/hf[ip]);
                     //u[ip] = fvc::reconstruct(flux[ip])/h[ip];
                     Uf[ip] = fvc::interpolate(u[ip]);
