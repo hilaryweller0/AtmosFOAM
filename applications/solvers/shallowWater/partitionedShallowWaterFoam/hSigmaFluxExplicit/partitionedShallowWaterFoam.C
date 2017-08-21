@@ -65,14 +65,8 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip]);
-                hc[ip] = linearInterpolate(h[ip]);
                 hf[ip] = fvc::interpolate(h[ip]);
                 
-                Info << "h[" << ip << "] goes from " 
-                     << min(h[ip].internalField()).value() 
-                     << " to " 
-                     << max(h[ip].internalField()).value() << endl;
-
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
@@ -95,12 +89,11 @@ int main(int argc, char *argv[])
                       + hf[ip]*ggradh
                     );
                     
-                    volFlux[ip] = flux[ip]/hc[ip];
+                    volFlux[ip] = flux[ip]/hf[ip];
 
-                    u[ip] = fvc::reconstruct(flux[ip]/hf[ip]);
-                    //u[ip] = fvc::reconstruct(flux[ip])/h[ip];
+                    u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
-                    Uf[ip] += (flux[ip]/hf[ip] - (Uf[ip] & mesh.Sf()))
+                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                             *mesh.Sf()/sqr(mesh.magSf());
                 }
             }
@@ -111,11 +104,6 @@ int main(int argc, char *argv[])
              << max(sigma[0]).value() << endl;
         Info << "sigma[1] goes from " << min(sigma[1]).value() << " to "
              << max(sigma[1]).value() << endl;
-        Info << "h goes from " 
-             << min(h[0].internalField()+h[1].internalField()).value() 
-             << " to " 
-             << max(h[0].internalField()+h[1].internalField()).value() 
-             << endl;
         
         runTime.write();
 

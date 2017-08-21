@@ -66,11 +66,6 @@ int main(int argc, char *argv[])
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
             
-                Info << "h[" << ip << "] goes from " 
-                     << min(h[ip].internalField()).value() 
-                     << " to " 
-                     << max(h[ip].internalField()).value() << endl;
-                     
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }

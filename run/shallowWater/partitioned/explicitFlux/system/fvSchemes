@@ -64,12 +64,12 @@ interpolationSchemes
     flux(convection(phi,U))       linear;
     
     //Needed for governing equations.
-    interpolate(stable.h)         upwind stable.flux;
-    interpolate(buoyant.h)        upwind buoyant.flux;
+    interpolate(stable.h)         linear; //upwind stable.flux;
+    interpolate(buoyant.h)        linear; //upwind buoyant.flux;
     interpolate(stable.u)         linear;
     interpolate(buoyant.u)        linear;
-    flux(convection(stable.flux,stable.u))        upwind stable.flux;
-    flux(convection(buoyant.flux,buoyant.u))      upwind buoyant.flux;
+    flux(convection(stable.flux,stable.u))        linear;
+    flux(convection(buoyant.flux,buoyant.u))      linear;
 }
 
 snGradSchemes

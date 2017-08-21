@@ -24,7 +24,6 @@ partNames[1] = "buoyant.";
 PtrList<volScalarField> sigma(nParts);
 PtrList<volScalarField> h(nParts);
 PtrList<surfaceScalarField> hf(nParts);
-PtrList<surfaceScalarField> hc(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> flux(nParts);
@@ -83,22 +82,6 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     
-    hc.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"hc",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ
-            ),
-            linearInterpolate(h[ip])
-        )
-    );
-
     Uf.set
     (
         ip,
@@ -147,7 +130,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            flux[ip]/hc[ip]
+            flux[ip]/hf[ip]
         )
     );
 
