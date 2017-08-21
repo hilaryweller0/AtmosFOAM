@@ -11,7 +11,7 @@ FoamFile
     format      ascii;
     class       volScalarField;
     location    "0";
-    object      rho;
+    object      r;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -23,20 +23,23 @@ boundaryField
 {
     top
     {
-        //type            inletOutlet;
         type            cyclic;
+//        type            zeroGradient;
     }
     inlet
     {
         type            cyclic;
+//        type            zeroGradient;
     }
     outlet
     {
         type            cyclic;
+//        type            zeroGradient;
     }
     ground
     {
         type            cyclic;
+//        type            zeroGradient;
     }
     front
     {
@@ -47,6 +50,7 @@ boundaryField
         type            empty;
     }
 }
+
 
 
 // ************************************************************************* //

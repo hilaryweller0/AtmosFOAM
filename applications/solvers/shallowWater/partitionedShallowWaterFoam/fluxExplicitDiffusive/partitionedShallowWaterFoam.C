@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
     
-    const dimensionedScalar K("K",dimensionSet(0,2,-1,0,0),scalar(10000000));
+    const dimensionedScalar K("K",dimensionSet(0,2,-1,0,0),scalar(5000000));
 
     while (runTime.loop())
     {
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
                 );
                 for(label ip2 = 0; ip2 < nParts; ip2++)
                 {
-                    h[ip] -= (2*(ip2 != ip)-1)*dt*K*hSum*fvc::laplacian(sigma[ip2]);
+                    h[ip] -= (2*(ip2 != ip)-1)*dt*K*hOld[ip2]*fvc::laplacian(sigma[ip2]);
                 }
                 
                 hf[ip] = fvc::interpolate(h[ip]);
@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 sigma[ip] = h[ip]/hSum;
+                hOld[ip] = h[ip];
             }
             
             // Update the velocity in each partition
@@ -106,7 +107,7 @@ int main(int argc, char *argv[])
                     
                     for(label ip2 = 0; ip2 < nParts; ip2++)
                     {
-                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hSum*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
+                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hOld[ip2]*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
                     }
                     
                     u[ip] = fvc::reconstruct(flux[ip]/hf[ip]);

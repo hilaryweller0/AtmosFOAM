@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 4);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

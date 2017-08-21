@@ -21,7 +21,7 @@ BryanFritschSource true;
 
 solvers
 {
-    "(rho|q1|q2)"
+    "(rt|rl|rv)"
     {
         solver          PBiCG;
         preconditioner  DILU;

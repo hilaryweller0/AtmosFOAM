@@ -3,13 +3,12 @@ FoamFile {
     format      ascii;
     class       dictionary;
     location    "constant";
-    object	    qFieldDict2;
+    object	    rtDict;
 }
 
 type		schaerDamped;
 maxMagnitude    0.05;
-rhoAir          1.;
-profileType     "rv";
+rhoAir          1;
+profileType     "default";
 centre          (0 0 500);
-ground          (0 0 -1000);
 halfWidth       (300 0 300);
