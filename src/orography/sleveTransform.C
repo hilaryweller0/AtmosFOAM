@@ -45,6 +45,8 @@ m(dualGradeMountain::New(dict.subDict("mountain")))
 
 point sleveTransform::physicalToComputational(const point& p) const
 {
+    FatalErrorIn("sleveTransform::physicalToComputational(const point& p)")
+        << " not implemented" << exit(FatalError);
     return p;
 }
 
