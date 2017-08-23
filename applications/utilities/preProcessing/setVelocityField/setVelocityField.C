@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
-        linearInterpolate(fvc::reconstruct(phi))
+        linearInterpolate(U)
     );
 
     const word dictName = args.optionFound("dict") ?
