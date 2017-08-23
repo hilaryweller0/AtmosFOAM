@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
     (
         "implicitSource", false
     );
-    const bool BryanFritschSource = mesh.solutionDict().lookupOrDefault<bool>
+    const double a = mesh.solutionDict().lookupOrDefault<double>
     (
-        "BryanFritschSource", true
+        "CrankNicolsonAlpha", 0.5
     );
 
     #include "calculateSource.H"
@@ -78,86 +78,88 @@ int main(int argc, char *argv[])
             fluxOld = fvc::interpolate(rt.oldTime())*phi;
             flux = fvc::interpolate(rt)*phi;
             
-            
-            if (BryanFritschSource)
+            //S1: Is there evaporation?
+            //S2: Is there condensation?
+            //S3: Is the evaporation limited by the liquid?
+            //S4: Is there enough liquid to reach equilibrium?
+            forAll(S1, celli)
             {
-                //S1: Is there evaporation?
-                //S2: Is there condensation?
-                //S3: Is the evaporation limited by the liquid?
-                //S4: Is there enough liquid to reach equilibrium?
-                forAll(S1, celli)
+                if (rv[celli] >= rvs[celli])
                 {
-                    if (rv[celli] >= rvs[celli])
+                    S1[celli] = 0;
+                    S2[celli] = 1;
+                    S3[celli] = 0;
+                    S4[celli] = 0;
+                }
+                else
+                {
+                    S1[celli] = 1;
+                    S2[celli] = 0;
+                    
+                    if ( (rvs[celli]-rv[celli]) <= rl[celli] )
                     {
-                        S1[celli] = 0;
-                        S2[celli] = 1;
                         S3[celli] = 0;
-                        S4[celli] = 0;
+                        S4[celli] = 1;
                     }
                     else
                     {
-                        S1[celli] = 1;
-                        S2[celli] = 0;
-                        
-                        if ( (rvs[celli]-rv[celli]) <= rl[celli] )
-                        {
-                            S3[celli] = 0;
-                            S4[celli] = 1;
-                        }
-                        else
-                        {
-                            S3[celli] = 1;
-                            S4[celli] = 0;
-                        }
+                        S3[celli] = 1;
+                        S4[celli] = 0;
                     }
                 }
-                Sl = timeScale*transferTerm*S1*S3;
-                Sv = timeScale*transferTerm*(S2+S1*S4);
             }
-            else
-            {
-                S = (rv-JahnScale*es/(Rv*T)) - rl + sqr((rv-JahnScale*es/(Rv*T))*(rv-JahnScale*es/(Rv*T)) + rl*rl);
-            }
+            Sl = timeScale*transferTerm*S1*S3;
+            Sv = timeScale*transferTerm*(S2+S1*S4);
+            
 
-            // Set up the matrix without adding implicit/explicit parts
-            // of advection or source terms
+            //Prognostic Method.
             rl = rl.oldTime() - dt*
             (
-                0.5*fvc::div(phi,rl.oldTime())
-              + 0.5*fvc::div(phi,rl_temp)
-              + 0.5*Sl*rl.oldTime()
-              - 0.5*Sv*(rv.oldTime()-rvs)
-              - 0.5*Sv*(rv_temp-rvs)
+                (1-a)*fvc::div(phi,rl.oldTime())
+              +     a*fvc::div(phi,rl_temp)
+              + (1-a)*Sl*rl.oldTime()
+              - (1-a)*Sv*(rv.oldTime()-rvs)
+              -     a*Sv*(rv_temp-rvs)
             );
-            rl = rl/(0.5*dt*Sl+1);
+            if (implicitSource) rl = rl/(dt*a*Sl+1);
+            else                rl -= dt*a*Sl*rl_temp;
             
             rv = rv.oldTime() - dt* 
             (
-                0.5*fvc::div(phi,rv.oldTime())
-              + 0.5*fvc::div(phi,rv_temp)
-              - 0.5*Sl*rl.oldTime()
-              - 0.5*Sl*rl
-              + 0.5*Sv*(rv.oldTime()-2*rvs)
+                (1-a)*fvc::div(phi,rv.oldTime())
+              +     a*fvc::div(phi,rv_temp)
+              - (1-a)*Sl*rl.oldTime()
+              + (1-a)*Sv*(rv.oldTime()-rvs)
+              -     a*Sv*rvs
             );
-            rv = rv/(0.5*dt*Sv+1);
+            if (implicitSource)
+            {
+                rv += dt*a*Sl*rl;
+                rv =  rv/(dt*a*Sv+1);
+                rl -= dt*a*Sv*(rv_temp-rv);
+            }
+            else                
+            {
+                rv += dt*a*(Sl*rl_temp - Sv*rv_temp);
+            }
             
-            rl -= 0.5*dt*Sv*(rv_temp-rv);
             rl_temp = rl;
             rv_temp = rv;
             
+            
+            //Diagnostic Method
             fvScalarMatrix rtEqn
             (
                 fvm::ddt(rt)
-                + fvc::div(phi, rt)
+                + (1-a)*fvc::div(phi, rt.oldTime())
+                +     a*fvc::div(phi, rt)
             );
-
             rtEqn.solve();
             
             rv_diag = min((rt-rhoAir)/rhoAir,rvs);
             rl_diag = (rt-rhoAir)/rhoAir - rv_diag;
-            
-            Info << "Writing r rt.solve" << endl;
         }
+        
         Info << " rt goes from " 
              << min(rt.internalField()).value() << " to "
              << max(rt.internalField()).value() << endl;

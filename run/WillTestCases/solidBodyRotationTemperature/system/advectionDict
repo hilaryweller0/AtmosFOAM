@@ -8,7 +8,7 @@ FoamFile
 }
 
 rhoAir rhoAir [0 0 0 0 0] 1;
-timeScale timeScale [0 0 -1 0 0] 4;
+timeScale timeScale [0 0 -1 0 0] 1;
 velocityScale velocityScale [0 1 -1 0 0] 0.001;
 JahnScale JahnScale [-1 3 0 0 0] 1;
 tempScale tempScale [0 0 0 1 0] 1;

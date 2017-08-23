@@ -16,8 +16,8 @@ FoamFile {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 implicitAdvection false;
-implicitSource true;
-BryanFritschSource true;
+implicitSource false;
+CrankNicolsonAlpha 0.5;
 
 solvers
 {

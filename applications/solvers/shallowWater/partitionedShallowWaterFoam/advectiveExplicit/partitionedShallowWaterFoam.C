@@ -99,6 +99,8 @@ int main(int argc, char *argv[])
         #include "energy.H"
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
+        Info << "Energy change: " 
+             << normalEnergyChange << endl;
 
         runTime.write();
 
