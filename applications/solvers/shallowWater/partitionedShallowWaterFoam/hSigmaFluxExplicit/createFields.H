@@ -23,6 +23,7 @@ partNames[1] = "buoyant.";
 // Set pointer lists for variables in all partitions. Read in later
 PtrList<volScalarField> sigma(nParts);
 PtrList<volScalarField> h(nParts);
+PtrList<volScalarField> hOld(nParts);
 PtrList<surfaceScalarField> hf(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<volVectorField> u(nParts);
@@ -65,6 +66,22 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     h[ip].oldTime();
+
+    hOld.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"hOld",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ
+            ),
+            h[ip]
+        )
+    );
 
     hf.set
     (

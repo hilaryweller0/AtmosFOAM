@@ -18,12 +18,12 @@ setGaussians initDict
 invertVorticity -time $time initDict
 
 gmtFoam -time $time vorticityMesh
-ev $time/vorticityMesh.pdf
+#ev $time/vorticityMesh.pdf
 
 # Calculate the height in balance and plot
 setBalancedHeightRC
 gmtFoam -time $time hUmesh
-gv $time/hUmesh.pdf &
+#gv $time/hUmesh.pdf &
 
 # create initial conditions for partitioned equations
 mv 0/Uf 0/buoyant.Uf
@@ -32,7 +32,7 @@ rm 0/U 0/hU 0/p 0/streamFunction 0/velPot
 setFields
 sumFields 0 stable.sigma init_0 stable.sigma 0 buoyant.sigma -scale1 -1
 gmtFoam -time 0 sigma
-gv 0/sigma.pdf &
+#gv 0/sigma.pdf &
 
 # Solve the SWE
 partitionedShallowWaterFoamAdvExp >& log & sleep 0.01; tail -f log

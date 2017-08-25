@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    #include "writeDiagnosticsInit.H"
 
     while (runTime.loop())
     {
@@ -97,6 +98,7 @@ int main(int argc, char *argv[])
         }
 
         #include "energy.H"
+        #include "writeDiagnostics.H"
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
         Info << "Energy change: " 

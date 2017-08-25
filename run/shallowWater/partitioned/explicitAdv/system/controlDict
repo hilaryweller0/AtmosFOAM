@@ -30,7 +30,7 @@ startTime       0;
 
 stopAt          endTime;
 
-endTime         1e3; //2e6;
+endTime         1e5; //2e6;
 
 deltaT          100;
 
