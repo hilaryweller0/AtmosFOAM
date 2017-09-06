@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -65,7 +65,6 @@ int main(int argc, char *argv[])
                      << min(flux[0]).value() 
                      << " to " 
                      << max(flux[0]).value() << endl;
-
 
         for (int icorr=0; icorr < nCorr; icorr++)
         {
@@ -86,10 +85,6 @@ int main(int argc, char *argv[])
                 else hSum += h[ip];
             }
             
-            Info << "FLUX[0] goes from " 
-                     << min(flux[0]).value() 
-                     << " to " 
-                     << max(flux[0]).value() << endl;
             
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
@@ -99,10 +94,6 @@ int main(int argc, char *argv[])
             
             // Update the velocity in each partition
             surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
-            Info << "grad h goes from " 
-                     << min(ggradh).value() 
-                     << " to " 
-                     << max(ggradh).value() << endl;
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
@@ -115,6 +106,11 @@ int main(int argc, char *argv[])
                     );
                     
                     volFlux[ip] = flux[ip]/hf[ip];
+                    
+                    Info << "VOLFLUX[0] goes from " 
+                     << min(volFlux[0]).value() 
+                     << " to " 
+                     << max(volFlux[0]).value() << endl;
 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);

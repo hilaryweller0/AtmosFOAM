@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
                     flux[ip] = flux[ip].oldTime() - dt*
                     (
                         fvc::flux(fvc::div(flux[ip], u[ip]))
-                      + hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                      //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
                     
