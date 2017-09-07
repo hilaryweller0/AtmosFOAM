@@ -106,6 +106,27 @@ int main(int argc, char *argv[])
         r_init
     );
     
+    Info << "Creating rl_analytic" << endl;
+    volScalarField rl_analytic
+    (
+        IOobject("rl_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
+    );
+    
+    Info << "Creating rv_analytic" << endl;
+    volScalarField rv_analytic
+    (
+        IOobject("rv_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
+    );
+    
+    Info << "Creating rt_analytic" << endl;
+    volScalarField rt_analytic
+    (
+        IOobject("rt_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
+    );
+    
     Info << "Creating S" << endl;
     volScalarField S
     (
@@ -232,6 +253,18 @@ int main(int argc, char *argv[])
     Info << "writing rv_diag for time " << runTime.timeName() << endl;
     rvVal->applyTo(rv_diag);
     rv_diag.write();
+
+    Info << "writing rl_analytic for time " << runTime.timeName() << endl;
+    rlVal->applyTo(rl_analytic);
+    rl_analytic.write();
+    
+    Info << "writing rv_analytic for time " << runTime.timeName() << endl;
+    rvVal->applyTo(rv_analytic);
+    rv_analytic.write();
+
+    Info << "writing rt_analytic for time " << runTime.timeName() << endl;
+    rtVal->applyTo(rt_analytic);
+    rt_analytic.write();
 
     Info << "writing S for time " << runTime.timeName() << endl;
     S.write();

@@ -96,6 +96,45 @@ volScalarField rv_diag
     mesh
 );
 
+volScalarField rl_analytic
+(
+    IOobject
+    (
+        "rl_analytic",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+volScalarField rv_analytic
+(
+    IOobject
+    (
+        "rv_analytic",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+volScalarField rt_analytic
+(
+    IOobject
+    (
+        "rt_analytic",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 volScalarField T
 (
     IOobject

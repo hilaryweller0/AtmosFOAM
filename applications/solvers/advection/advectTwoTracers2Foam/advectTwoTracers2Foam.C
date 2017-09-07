@@ -59,6 +59,7 @@ int main(int argc, char *argv[])
     );
 
     #include "calculateSource.H"
+    #include "writeDiagnosticsInit.H"
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -108,8 +109,8 @@ int main(int argc, char *argv[])
                     }
                 }
             }
-            Sl = timeScale*transferTerm*S1*S3;
-            Sv = timeScale*transferTerm*(S2+S1*S4);
+            Sl = timeScale*S1*S3;
+            Sv = timeScale*(S2+S1*S4);
             
 
             //Prognostic Method.
@@ -158,7 +159,11 @@ int main(int argc, char *argv[])
             
             rv_diag = min((rt-rhoAir)/rhoAir,rvs);
             rl_diag = (rt-rhoAir)/rhoAir - rv_diag;
+        
+            #include "analyticSolution.H" 
         }
+        
+        #include "writeDiagnostics.H"
         
         Info << " rt goes from " 
              << min(rt.internalField()).value() << " to "

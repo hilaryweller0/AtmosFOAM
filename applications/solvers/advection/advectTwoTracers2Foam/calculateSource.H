@@ -1,3 +1,27 @@
+IOdictionary rtDict
+(
+    IOobject
+    (
+        "rtDict",
+        mesh.time().system(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    )
+);
+
+IOdictionary velocityFieldDict
+(
+    IOobject
+    (
+        "velocityFieldDict",
+        mesh.time().system(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    )
+);
+
 IOdictionary dict
 (
     IOobject
@@ -10,6 +34,16 @@ IOdictionary dict
     )
 );
 
+vector d;
+vector d0;
+scalar r;
+scalar rotationAngle;
+const vector angularVelocity(velocityFieldDict.lookup("solidBodyRotation"));
+const vector rotationCentre(velocityFieldDict.lookup("centreOfRotation"));
+const vector halfWidth(rtDict.lookup("halfWidth"));
+const vector distributionCentre(rtDict.lookup("centre"));
+const scalar distributionMax(dict.lookupOrDefault<scalar>("maxMagnitude", scalar(0.05)));
+
 const dimensionedScalar tempScale(dict.lookup("tempScale"));
 const dimensionedScalar velocityScale(dict.lookup("velocityScale"));
 const dimensionedScalar timeScale(dict.lookup("timeScale"));
@@ -21,9 +55,6 @@ const dimensionedScalar cp(dict.lookup("cp"));
 const dimensionedScalar Rv(dict.lookup("Rv"));
 const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
 
-// The vertical velocity used for calculating the source terms
-const volScalarField w = U.component(vector::Z);
-
 volScalarField es
 (
     "es",
@@ -34,11 +65,5 @@ const volScalarField rvs
 (
     "rvs",
     muv/mud * es/(P-es)
-);
-
-const volScalarField transferTerm
-(
-    "transferTerm",
-    1./( 1 + Lv*Lv*rvs/(cp*Rv*T*T) )
 );
 
