@@ -60,12 +60,7 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "partitionedCourantNo.H"
-
-        Info << "FLUX[0] goes from " 
-                     << min(flux[0]).value() 
-                     << " to " 
-                     << max(flux[0]).value() << endl;
-
+        
         for (int icorr=0; icorr < nCorr; icorr++)
         {
             // Advect h in each partition
@@ -90,6 +85,7 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 sigma[ip] = h[ip]/hSum;
+                hOld[ip] = h[ip];
             }
             
             // Update the velocity in each partition
@@ -104,6 +100,11 @@ int main(int argc, char *argv[])
                       //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
+                    
+                    for(label ip2 = 0; ip2 < nParts; ip2++)
+                    {
+                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hOld[ip2]*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
+                    }
                     
                     volFlux[ip] = flux[ip]/hf[ip];
                     
@@ -123,10 +124,6 @@ int main(int argc, char *argv[])
         #include "energy.H"
         #include "writeDiagnostics.H"
         
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
-        Info << "sigma[1] goes from " << min(sigma[1]).value() << " to "
-             << max(sigma[1]).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
         
