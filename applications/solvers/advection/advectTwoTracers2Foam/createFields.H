@@ -135,84 +135,6 @@ volScalarField rt_analytic
     mesh
 );
 
-volScalarField T
-(
-    IOobject
-    (
-        "T",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::NO_WRITE
-    ),
-    mesh
-);
-
-volScalarField S
-(
-    IOobject
-    (
-        "S",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    rl
-);
-
-volScalarField S1
-(
-    IOobject
-    (
-        "S1",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    rl
-);
-
-volScalarField S2
-(
-    IOobject
-    (
-        "S2",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    rl
-);
-
-volScalarField S3
-(
-    IOobject
-    (
-        "S3",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    rl
-);
-
-volScalarField S4
-(
-    IOobject
-    (
-        "S4",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    rl
-);
-
 volScalarField Sl
 (
     IOobject
@@ -252,6 +174,19 @@ volScalarField P
     mesh
 );
 
+volScalarField T
+(
+    IOobject
+    (
+        "T",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    ),
+    mesh
+);
+
 surfaceScalarField phi
 (
     IOobject
@@ -264,33 +199,6 @@ surfaceScalarField phi
     ),
     mesh
 );
-
-surfaceScalarField flux
-(
-    IOobject
-    (
-        "flux",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    fvc::interpolate(rt)*phi
-);
-
-surfaceScalarField fluxOld
-(
-    IOobject
-    (
-        "fluxOld",
-        runTime.timeName(),
-        mesh,
-        IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
-    ),
-    fvc::interpolate(rt)*phi
-);
-
 
 volVectorField U
 (
