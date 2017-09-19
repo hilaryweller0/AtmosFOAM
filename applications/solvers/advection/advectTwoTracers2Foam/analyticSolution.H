@@ -1,6 +1,6 @@
 forAll(rt_analytic,celli)
 {
-    rotationAngle = -runTime.time().value()*angularVelocity.y();
+    rotationAngle = 2*runTime.time().value()*angularVelocity.y();
     d0 = mesh.C()[celli] - rotationCentre;
     d[0] = d0.x()*Foam::cos(rotationAngle) - d0.z()*Foam::sin(rotationAngle);
     d[1] = 0;
@@ -19,6 +19,6 @@ forAll(rt_analytic,celli)
         rt_analytic[celli] = 0;
     }
     
-    rv_analytic = min(rt_analytic/rhoAir,rvs);
-    rl_analytic = rt_analytic/rhoAir - rv_analytic;
+    rv_analytic = min(rt_analytic,rvs);
+    rl_analytic = rt_analytic - rv_analytic;
 }

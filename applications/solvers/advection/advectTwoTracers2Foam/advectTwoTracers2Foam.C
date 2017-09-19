@@ -45,17 +45,21 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
 
-    const bool implicitAdvection = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "implicitAdvection", false
-    );
     const bool implicitSource = mesh.solutionDict().lookupOrDefault<bool>
     (
         "implicitSource", false
     );
-    const double a = mesh.solutionDict().lookupOrDefault<double>
+    const bool implicitConservation = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "implicitConservation", false
+    );
+    const double offCentre = mesh.solutionDict().lookupOrDefault<double>
     (
         "CrankNicolsonAlpha", 0.5
+    );
+    const int numberOfCorrectors = mesh.solutionDict().lookupOrDefault<double>
+    (
+        "numberOfCorrectors", 3
     );
 
     #include "calculateSource.H"
@@ -71,77 +75,64 @@ int main(int argc, char *argv[])
         rl_temp = rl;
         rv_temp = rv;
         
-        for (int corr=0; corr < 3; corr++)
+        for (int corr=0; corr < numberOfCorrectors; corr++)
         {
-            //const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
-        
-            //rho = rho12 + rhoAir;
-            fluxOld = fvc::interpolate(rt.oldTime())*phi;
-            flux = fvc::interpolate(rt)*phi;
-            
-            //S1: Is there evaporation?
-            //S2: Is there condensation?
-            //S3: Is the evaporation limited by the liquid?
-            //S4: Is there enough liquid to reach equilibrium?
-            forAll(S1, celli)
+            forAll(Sv, celli)
             {
-                if (rv[celli] >= rvs[celli])
-                {
-                    S1[celli] = 0;
-                    S2[celli] = 1;
-                    S3[celli] = 0;
-                    S4[celli] = 0;
+                //Condense vapour into liquid.
+                if (rv[celli] >= rvs[celli])      
+                { 
+                    Sl[celli] = 0;
+                    Sv[celli] = timeScale.value();
                 }
+                //Evaporate liquid into vapour.
                 else
                 {
-                    S1[celli] = 1;
-                    S2[celli] = 0;
-                    
-                    if ( (rvs[celli]-rv[celli]) <= rl[celli] )
+                    //If there is surplus liquid, evaporate to equilibrium.
+                    if ( (rvs[celli]-rv[celli]) <= rl[celli] )    
                     {
-                        S3[celli] = 0;
-                        S4[celli] = 1;
+                        Sl[celli] = 0;
+                        Sv[celli] = timeScale.value();
                     }
-                    else
+                    //Evaporate all the liquid available.
+                    else                                          
                     {
-                        S3[celli] = 1;
-                        S4[celli] = 0;
+                        Sl[celli] = timeScale.value();
+                        Sv[celli] = 0;
                     }
                 }
             }
-            Sl = timeScale*S1*S3;
-            Sv = timeScale*(S2+S1*S4);
-            
 
             //Prognostic Method.
             rl = rl.oldTime() - dt*
             (
-                (1-a)*fvc::div(phi,rl.oldTime())
-              +     a*fvc::div(phi,rl_temp)
-              + (1-a)*Sl*rl.oldTime()
-              - (1-a)*Sv*(rv.oldTime()-rvs)
-              -     a*Sv*(rv_temp-rvs)
+                (1-offCentre)*fvc::div(phi,rl.oldTime())
+              +     offCentre*fvc::div(phi,rl_temp)
+              + (1-offCentre)*Sl*rl.oldTime()
+              - (1-offCentre)*Sv*(rv.oldTime()-rvs)
+              -     offCentre*Sv*(rv_temp-rvs)
             );
-            if (implicitSource) rl = rl/(dt*a*Sl+1);
-            else                rl -= dt*a*Sl*rl_temp;
+            if (implicitSource) rl =  rl/(dt*offCentre*Sl+1);
+            else                rl -= dt*offCentre*Sl*rl_temp;
             
             rv = rv.oldTime() - dt* 
             (
-                (1-a)*fvc::div(phi,rv.oldTime())
-              +     a*fvc::div(phi,rv_temp)
-              - (1-a)*Sl*rl.oldTime()
-              + (1-a)*Sv*(rv.oldTime()-rvs)
-              -     a*Sv*rvs
+                (1-offCentre)*fvc::div(phi,rv.oldTime())
+              +     offCentre*fvc::div(phi,rv_temp)
+              - (1-offCentre)*Sl*rl.oldTime()
+              + (1-offCentre)*Sv*(rv.oldTime()-rvs)
+              -     offCentre*Sv*rvs
             );
             if (implicitSource)
             {
-                rv += dt*a*Sl*rl;
-                rv =  rv/(dt*a*Sv+1);
-                rl -= dt*a*Sv*(rv_temp-rv);
+                rv += dt*offCentre*Sl*rl;
+                rv =  rv/(dt*offCentre*Sv+1);
+                if (implicitConservation)
+                    rl -= dt*offCentre*Sv*(rv_temp-rv);
             }
             else                
             {
-                rv += dt*a*(Sl*rl_temp - Sv*rv_temp);
+                rv += dt*offCentre*(Sl*rl_temp - Sv*rv_temp);
             }
             
             rl_temp = rl;
@@ -152,13 +143,13 @@ int main(int argc, char *argv[])
             fvScalarMatrix rtEqn
             (
                 fvm::ddt(rt)
-                + (1-a)*fvc::div(phi, rt.oldTime())
-                +     a*fvc::div(phi, rt)
+                + (1-offCentre)*fvc::div(phi, rt.oldTime())
+                +     offCentre*fvc::div(phi, rt)
             );
             rtEqn.solve();
             
-            rv_diag = min((rt-rhoAir)/rhoAir,rvs);
-            rl_diag = (rt-rhoAir)/rhoAir - rv_diag;
+            rv_diag = min(rt,rvs);
+            rl_diag = rt - rv_diag;
         
             #include "analyticSolution.H" 
         }
@@ -175,9 +166,6 @@ int main(int argc, char *argv[])
              << sum(rt.internalField()-1) << endl;
         Info << " Total Moisture: " 
              << sum(rl.internalField())+sum(rv.internalField()) << endl;
-        Info << "Transfer Term Min: " 
-             << min(S.internalField()).value() << " Transfer Term Max: "
-             << max(S.internalField()).value() << endl;
         runTime.write();
     }
     
