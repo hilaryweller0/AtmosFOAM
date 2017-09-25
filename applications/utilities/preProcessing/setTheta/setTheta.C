@@ -72,14 +72,18 @@ int main(int argc, char *argv[])
     );
     forAll(thetaf, faceI)
     {
-        thetaf[faceI] = profile.thetaAt(mesh.Cf()[faceI]);
+        thetaf[faceI] = profile.tracerAt(mesh.Cf()[faceI], runTime);
     }
     forAll(thetaf.boundaryField(), patchI)
     {
         fvsPatchField<scalar>& thetap = thetaf.boundaryFieldRef()[patchI];
         forAll(thetap, faceI)
         {
-            thetap[faceI] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][faceI]);
+            thetap[faceI] = profile.tracerAt
+            (
+                    mesh.Cf().boundaryField()[patchI][faceI],
+                    runTime
+            );
         }
     }
 
@@ -109,7 +113,7 @@ int main(int argc, char *argv[])
     {
         forAll(theta, cellI)
         {
-            theta[cellI] = profile.thetaAt(mesh.C()[cellI]);
+            theta[cellI] = profile.tracerAt(mesh.C()[cellI], runTime);
         }
         forAll(theta.boundaryField(), patchI)
         {
@@ -120,14 +124,22 @@ int main(int argc, char *argv[])
                 forAll(thetag.gradient(), facei)
                 {
                     const vectorField nf = thetap.patch().nf();
-                    thetag.gradient()[facei] = nf[facei] & profile.thetaGradAt(thetap.patch().Cf()[facei]);
+                    thetag.gradient()[facei] = nf[facei] & profile.gradAt
+                    (
+                            thetap.patch().Cf()[facei],
+                            runTime
+                    );
                 }
             }
             else
             {
                 forAll(thetap, facei)
                 {
-                    thetap[facei] = profile.thetaAt(mesh.Cf().boundaryField()[patchI][facei]);
+                    thetap[facei] = profile.tracerAt
+                    (
+                            mesh.Cf().boundaryField()[patchI][facei],
+                            runTime
+                    );
                 }
             }
         }

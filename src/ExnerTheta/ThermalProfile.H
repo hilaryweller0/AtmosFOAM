@@ -10,8 +10,8 @@ class ThermalProfile
             const IOdictionary& environmentalProperties,
             const dimensionedVector g,
             const dimensionedScalar T0);
-    scalar thetaAt(const point& p) const;
-    vector thetaGradAt(const point& p) const;
+    scalar tracerAt(const point& p, const Time& t) const;
+    vector gradAt(const point& p, const Time& t) const;
 
     private:
     const dimensionedVector g;

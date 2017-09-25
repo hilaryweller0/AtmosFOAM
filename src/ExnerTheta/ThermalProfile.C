@@ -19,7 +19,7 @@ ThermalProfile::ThermalProfile(
     }
 }
 
-scalar ThermalProfile::thetaAt(const point& p) const
+scalar ThermalProfile::tracerAt(const point& p, const Time& t) const
 {
     const scalar z = p.z();
 
@@ -41,7 +41,7 @@ scalar ThermalProfile::thetaAt(const point& p) const
     return -1;
 }
 
-vector ThermalProfile::thetaGradAt(const point& p) const
+vector ThermalProfile::gradAt(const point& p, const Time& t) const
 {
     const scalar z = p.z();
     const scalar theta0 = T0.value();
