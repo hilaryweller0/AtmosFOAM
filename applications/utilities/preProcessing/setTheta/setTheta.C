@@ -33,7 +33,7 @@ Description
 
 #include "fvCFD.H"
 #include "ExnerTheta.H"
-#include "ThermalProfile.H"
+#include "stratifiedThermalField.H"
 #include "fixedGradientFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
 
-    ThermalProfile profile(envProperties, g, T0);
+    stratifiedThermalField profile(envProperties, g, T0);
         
     Info<< "Reading theta_init\n" << endl;
     volScalarField theta_init
