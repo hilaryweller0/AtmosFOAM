@@ -1,10 +1,10 @@
 Info<< "Reading field T\n" << endl;
 
-volScalarField q1
+volScalarField rl
 (
     IOobject
     (
-        "q1",
+        "rl",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -12,29 +12,27 @@ volScalarField q1
     ),
     mesh
 );
-// Ensure that rho1.oldTime() is stored
-q1.oldTime();
+rl.oldTime();
 
-volScalarField q1_temp
+volScalarField rl_temp
 (
     IOobject
     (
-        "q1_temp",
+        "rl_temp",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
 );
-// Ensure that rho1.oldTime() is stored
-q1_temp.oldTime();
+rl_temp.oldTime();
 
-volScalarField q2
+volScalarField rv
 (
     IOobject
     (
-        "q2",
+        "rv",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -42,28 +40,27 @@ volScalarField q2
     ),
     mesh
 );
-q2.oldTime();
+rv.oldTime();
 
-volScalarField q2_temp
+volScalarField rv_temp
 (
     IOobject
     (
-        "q2_temp",
+        "rv_temp",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q2
+    rv
 );
-// Ensure that rho1.oldTime() is stored
-q2_temp.oldTime();
+rv_temp.oldTime();
 
-volScalarField rho
+volScalarField rt
 (
     IOobject
     (
-        "rho",
+        "rt",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -71,13 +68,13 @@ volScalarField rho
     ),
     mesh
 );
-rho.oldTime();
+rt.oldTime();
 
-volScalarField q1_analytic
+volScalarField rl_diag
 (
     IOobject
     (
-        "q1_analytic",
+        "rl_diag",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -86,11 +83,11 @@ volScalarField q1_analytic
     mesh
 );
 
-volScalarField q2_analytic
+volScalarField rv_diag
 (
     IOobject
     (
-        "q2_analytic",
+        "rv_diag",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -122,7 +119,7 @@ volScalarField S
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
 );
 
 volScalarField S1
@@ -135,7 +132,7 @@ volScalarField S1
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
 );
 
 volScalarField S2
@@ -148,7 +145,7 @@ volScalarField S2
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
 );
 
 volScalarField S3
@@ -161,7 +158,7 @@ volScalarField S3
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
 );
 
 volScalarField S4
@@ -174,7 +171,33 @@ volScalarField S4
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    q1
+    rl
+);
+
+volScalarField Sl
+(
+    IOobject
+    (
+        "Sl",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    rl*0/dt
+);
+
+volScalarField Sv
+(
+    IOobject
+    (
+        "Sv",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    rv*0/dt
 );
 
 volScalarField P
@@ -213,7 +236,7 @@ surfaceScalarField flux
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    fvc::interpolate(rho)*phi
+    fvc::interpolate(rt)*phi
 );
 
 surfaceScalarField fluxOld
@@ -226,7 +249,7 @@ surfaceScalarField fluxOld
         IOobject::READ_IF_PRESENT,
         IOobject::NO_WRITE
     ),
-    fvc::interpolate(rho)*phi
+    fvc::interpolate(rt)*phi
 );
 
 

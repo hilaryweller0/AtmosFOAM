@@ -38,8 +38,8 @@ divSchemes
 {
     default         none;
     div(phi,U)      Gauss linear;
-    div(stable.volFlux,stable.h)   Gauss upwind; //Gauss vanLeer;
-    div(buoyant.volFlux,buoyant.h) Gauss upwind; //Gauss vanLeer;
+    div(stable.volFlux,stable.h)     Gauss upwind; //Gauss vanLeer;
+    div(buoyant.volFlux,buoyant.h)   Gauss upwind; //Gauss vanLeer;
 }
 
 laplacianSchemes

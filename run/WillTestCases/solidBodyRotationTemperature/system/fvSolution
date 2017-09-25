@@ -17,11 +17,11 @@ FoamFile {
 
 implicitAdvection false;
 implicitSource true;
-BryanFritschSource true;
+CrankNicolsonAlpha 1;
 
 solvers
 {
-    "(rho|q1|q2)"
+    "(rt|rl|rv)"
     {
         solver          PBiCG;
         preconditioner  DILU;

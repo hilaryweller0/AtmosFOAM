@@ -30,15 +30,21 @@ ddtSchemes
 gradSchemes
 {
     default         none;
-    //curl((streamFunction*(0,0,1))) Gauss linear;
+    curl((streamFunction*(0,0,1))) Gauss linear;
     //linearUpwind Gauss linear;
 }
 
 divSchemes
 {
     default         none;
-    div(stable.flux,stable.u)      Gauss upwind;
-    div(buoyant.flux,buoyant.u)    Gauss upwind;
+    //Needed for initial setup.
+    div(phi,U)      Gauss linear;
+    
+    //Needed for governing equations.
+    div(stable.flux,stable.u)        Gauss upwind;
+    div(buoyant.flux,buoyant.u)      Gauss upwind;
+    div(stable.volFlux,stable.h)     Gauss upwind;
+    div(buoyant.volFlux,buoyant.h)   Gauss upwind;
 }
 
 laplacianSchemes
@@ -46,18 +52,29 @@ laplacianSchemes
     default         none;
     laplacian(streamFunction) Gauss linear uncorrected;
     laplacian(h)              Gauss linear uncorrected;
+    laplacian(stable.sigma)   Gauss linear uncorrected;
+    laplacian(buoyant.sigma)   Gauss linear uncorrected;
 }
 
 interpolationSchemes
 {
     default            none;
+    //Needed for initial setup.
     interpolate(h)                linear;
-    interpolate(stable.h)         upwind stable.flux;
-    interpolate(buoyant.h)        upwind buoyant.flux;
-    interpolate(stable.u)         linear;//upwind stable.flux;
-    interpolate(buoyant.u)        linear;//upwind buoyant.flux;
-    flux(convection(stable.flux,stable.u))        upwind stable.flux;
-    flux(convection(buoyant.flux,buoyant.u))      upwind buoyant.flux;
+    interpolate(U)                linear;
+    flux((twoOmega^U))            linear;
+    flux(convection(phi,U))       linear;
+    
+    //Needed for governing equations.
+    interpolate(stable.h)         linear; //upwind stable.flux;
+    interpolate(buoyant.h)        linear; //upwind buoyant.flux;
+    interpolate(stable.u)         linear;
+    interpolate(buoyant.u)        linear;
+    flux(convection(stable.flux,stable.u))        linear;
+    flux(convection(buoyant.flux,buoyant.u))      linear;
+    
+    interpolate(((K*stable.hOld)*laplacian(stable.sigma)))  linear;
+    interpolate(((K*buoyant.hOld)*laplacian(buoyant.sigma)))  linear;
 }
 
 snGradSchemes

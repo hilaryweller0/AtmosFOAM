@@ -144,8 +144,8 @@ int main(int argc, char *argv[])
         }
         dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
               - muSponge*V;
-        divU = fvc::div(U);
-        divUtheta = fvc::div(U, theta);
+        divU == fvc::div(U);
+        divUtheta == fvc::div(U, theta);
         
         #include "compressibleContinuityErrs.H"
 

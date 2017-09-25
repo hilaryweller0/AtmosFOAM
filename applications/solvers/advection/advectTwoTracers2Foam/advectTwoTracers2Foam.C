@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
     (
         "implicitSource", false
     );
-    const bool BryanFritschSource = mesh.solutionDict().lookupOrDefault<bool>
+    const double a = mesh.solutionDict().lookupOrDefault<double>
     (
-        "BryanFritschSource", true
+        "CrankNicolsonAlpha", 0.5
     );
 
     #include "calculateSource.H"
@@ -67,100 +67,112 @@ int main(int argc, char *argv[])
         Info<< "\nTime = " << runTime.timeName() << nl << endl;
         #include "CourantNo.H"
         
-        q1_temp = q1;
-        q2_temp = q2;
+        rl_temp = rl;
+        rv_temp = rv;
         
         for (int corr=0; corr < 3; corr++)
         {
             //const dimensionedScalar rhoAir(dict.lookup("rhoAir"));
         
             //rho = rho12 + rhoAir;
-            fluxOld = fvc::interpolate(rho.oldTime())*phi;
-            flux = fvc::interpolate(rho)*phi;
+            fluxOld = fvc::interpolate(rt.oldTime())*phi;
+            flux = fvc::interpolate(rt)*phi;
             
-            
-            if (BryanFritschSource)
+            //S1: Is there evaporation?
+            //S2: Is there condensation?
+            //S3: Is the evaporation limited by the liquid?
+            //S4: Is there enough liquid to reach equilibrium?
+            forAll(S1, celli)
             {
-                //S1: Is there evaporation?
-                //S2: Is there condensation?
-                //S3: Is the evaporation limited by the liquid?
-                //S4: Is there enough liquid to reach equilibrium?
-                forAll(S1, celli)
+                if (rv[celli] >= rvs[celli])
                 {
-                    if (q2[celli] >= rvs[celli])
+                    S1[celli] = 0;
+                    S2[celli] = 1;
+                    S3[celli] = 0;
+                    S4[celli] = 0;
+                }
+                else
+                {
+                    S1[celli] = 1;
+                    S2[celli] = 0;
+                    
+                    if ( (rvs[celli]-rv[celli]) <= rl[celli] )
                     {
-                        S1[celli] = 0;
-                        S2[celli] = 1;
                         S3[celli] = 0;
-                        S4[celli] = 0;
+                        S4[celli] = 1;
                     }
                     else
                     {
-                        S1[celli] = 1;
-                        S2[celli] = 0;
-                        
-                        if ( (rvs[celli]-q2[celli]) <= q1[celli] )
-                        {
-                            S3[celli] = 0;
-                            S4[celli] = 1;
-                        }
-                        else
-                        {
-                            S3[celli] = 1;
-                            S4[celli] = 0;
-                        }
+                        S3[celli] = 1;
+                        S4[celli] = 0;
                     }
                 }
             }
-            else
-            {
-                S = (q2-JahnScale*es/(Rv*T)) - q1 + sqr((q2-JahnScale*es/(Rv*T))*(q2-JahnScale*es/(Rv*T)) + q1*q1);
-            }
+            Sl = timeScale*transferTerm*S1*S3;
+            Sv = timeScale*transferTerm*(S2+S1*S4);
+            
 
-            // Set up the matrix without adding implicit/explicit parts
-            // of advection or source terms
-            q1 = q1.oldTime() - dt/(0.5*transferTerm*S1*S3+1) * (
-                  0.5*fvc::div(phi,q1.oldTime())
-                + 0.5*fvc::div(phi,q1_temp)
-                + 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
-                - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-rvs)
-                - 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-rvs)
-            );
-            
-            q2 = q2.oldTime() - dt/(0.5*transferTerm*(S2+S1*S4)+1) * (
-                  0.5*fvc::div(phi,q2.oldTime())
-                + 0.5*fvc::div(phi,q2_temp)
-                - 0.5*timeScale*transferTerm*S1*S3*q1.oldTime()
-                - 0.5*timeScale*transferTerm*S1*S3*q1_temp
-                + 0.5*timeScale*transferTerm*(S2+S1*S4)*(q2.oldTime()-2*rvs)
-            );
-            
-            q1 -= 0.5*dt*timeScale*transferTerm*(S2+S1*S4)*(q2_temp-q2);
-            q1_temp = q1;
-            q2_temp = q2;
-            
-            fvScalarMatrix rhoEqn
+            //Prognostic Method.
+            rl = rl.oldTime() - dt*
             (
-                fvm::ddt(rho)
-                + fvc::div(phi, rho)
+                (1-a)*fvc::div(phi,rl.oldTime())
+              +     a*fvc::div(phi,rl_temp)
+              + (1-a)*Sl*rl.oldTime()
+              - (1-a)*Sv*(rv.oldTime()-rvs)
+              -     a*Sv*(rv_temp-rvs)
             );
-
-            rhoEqn.solve();
+            if (implicitSource) rl = rl/(dt*a*Sl+1);
+            else                rl -= dt*a*Sl*rl_temp;
             
-            q2_analytic = min((rho-rhoAir)/rhoAir,rvs);
-            q1_analytic = (rho-rhoAir)/rhoAir - q2_analytic;
+            rv = rv.oldTime() - dt* 
+            (
+                (1-a)*fvc::div(phi,rv.oldTime())
+              +     a*fvc::div(phi,rv_temp)
+              - (1-a)*Sl*rl.oldTime()
+              + (1-a)*Sv*(rv.oldTime()-rvs)
+              -     a*Sv*rvs
+            );
+            if (implicitSource)
+            {
+                rv += dt*a*Sl*rl;
+                rv =  rv/(dt*a*Sv+1);
+                rl -= dt*a*Sv*(rv_temp-rv);
+            }
+            else                
+            {
+                rv += dt*a*(Sl*rl_temp - Sv*rv_temp);
+            }
             
-            Info << "Writing rho and q after rho.solve" << endl;
+            rl_temp = rl;
+            rv_temp = rv;
             
             
+            //Diagnostic Method
+            fvScalarMatrix rtEqn
+            (
+                fvm::ddt(rt)
+                + (1-a)*fvc::div(phi, rt.oldTime())
+                +     a*fvc::div(phi, rt)
+            );
+            rtEqn.solve();
+            
+            rv_diag = min((rt-rhoAir)/rhoAir,rvs);
+            rl_diag = (rt-rhoAir)/rhoAir - rv_diag;
         }
-        Info << " rho goes from " << min(rho.internalField()).value() << " to "
-             << max(rho.internalField()).value() << endl;
-        Info << " q1 goes from " << min(q1.internalField()).value() << " to "
-             << max(q1.internalField()).value() << endl;
-        Info << " Total rho in system: " << sum(rho.internalField()-1) << endl;
-        Info << " Total Moisture: " << sum(q1.internalField())+sum(q2.internalField()) << endl;
-        Info << "Transfer Term Min: " << min(S.internalField()).value() << " Transfer Term Max: " << max(S.internalField()).value() << endl;
+        
+        Info << " rt goes from " 
+             << min(rt.internalField()).value() << " to "
+             << max(rt.internalField()).value() << endl;
+        Info << " rl goes from " 
+             << min(rl.internalField()).value() << " to "
+             << max(rl.internalField()).value() << endl;
+        Info << " Total rt in system: " 
+             << sum(rt.internalField()-1) << endl;
+        Info << " Total Moisture: " 
+             << sum(rl.internalField())+sum(rv.internalField()) << endl;
+        Info << "Transfer Term Min: " 
+             << min(S.internalField()).value() << " Transfer Term Max: "
+             << max(S.internalField()).value() << endl;
         runTime.write();
     }
     

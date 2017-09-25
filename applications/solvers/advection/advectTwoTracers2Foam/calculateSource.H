@@ -10,10 +10,8 @@ IOdictionary dict
     )
 );
 
-const int sourcePresent = dict.lookupOrDefault<int>("sourcePresent", int(1));
 const dimensionedScalar tempScale(dict.lookup("tempScale"));
 const dimensionedScalar velocityScale(dict.lookup("velocityScale"));
-const dimensionedScalar JahnScale(dict.lookup("JahnScale"));
 const dimensionedScalar timeScale(dict.lookup("timeScale"));
 const dimensionedScalar es0(dict.lookup("es0"));
 const dimensionedScalar muv(dict.lookup("muv"));

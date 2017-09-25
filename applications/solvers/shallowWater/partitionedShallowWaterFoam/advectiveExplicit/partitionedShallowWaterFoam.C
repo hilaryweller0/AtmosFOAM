@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    #include "writeDiagnosticsInit.H"
 
     while (runTime.loop())
     {
@@ -66,11 +67,6 @@ int main(int argc, char *argv[])
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
             
-                Info << "h[" << ip << "] goes from " 
-                     << min(h[ip].internalField()).value() 
-                     << " to " 
-                     << max(h[ip].internalField()).value() << endl;
-                     
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
@@ -102,8 +98,11 @@ int main(int argc, char *argv[])
         }
 
         #include "energy.H"
+        #include "writeDiagnostics.H"
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
+        Info << "Energy change: " 
+             << normalEnergyChange << endl;
 
         runTime.write();
 

@@ -22,17 +22,17 @@ int main(int argc, char *argv[])
         mesh
     );
 
-    Info << "Reading rho_init" << endl;
-    volScalarField rho_init
+    Info << "Reading rt_init" << endl;
+    volScalarField rt_init
     (
-        IOobject("rho_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        IOobject("rt_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
     
-    Info << "Reading q_init" << endl;
-    volScalarField q_init
+    Info << "Reading r_init" << endl;
+    volScalarField r_init
     (
-        IOobject("q_init", runTime.constant(), mesh, IOobject::MUST_READ),
+        IOobject("r_init", runTime.constant(), mesh, IOobject::MUST_READ),
         mesh
     );
 
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     surfaceScalarField rhof_init
     (
         IOobject("rhof_init", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-        linearInterpolate(rho_init)
+        linearInterpolate(rt_init)
     );
     
     Info << "Creating T" << endl;
@@ -57,60 +57,60 @@ int main(int argc, char *argv[])
         P_init
     );
     
-    Info << "Creating rho" << endl;
-    volScalarField rho
+    Info << "Creating rt" << endl;
+    volScalarField rt
     (
-        IOobject("rho", runTime.timeName(), mesh, IOobject::NO_READ),
-        rho_init
+        IOobject("rt", runTime.timeName(), mesh, IOobject::NO_READ),
+        rt_init
     );
     
     Info << "Creating rho_a" << endl;
     volScalarField rho_a
     (
         IOobject("rho_a", runTime.timeName(), mesh, IOobject::NO_READ),
-        rho_init
+        rt_init
     );
     
     Info << "Creating rho_b" << endl;
     volScalarField rho_b
     (
         IOobject("rho_b", runTime.timeName(), mesh, IOobject::NO_READ),
-        rho_init
+        rt_init
     );
 
-    Info << "Creating q1" << endl;
-    volScalarField q1
+    Info << "Creating rl" << endl;
+    volScalarField rl
     (
-        IOobject("q1", runTime.timeName(), mesh, IOobject::NO_READ),
-        q_init
+        IOobject("rl", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
     );
 
-    Info << "Creating q2" << endl;
-    volScalarField q2
+    Info << "Creating rv" << endl;
+    volScalarField rv
     (
-        IOobject("q2", runTime.timeName(), mesh, IOobject::NO_READ),
-        q_init
+        IOobject("rv", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
     );
     
-    Info << "Creating q1_analytic" << endl;
-    volScalarField q1_analytic
+    Info << "Creating rl_diag" << endl;
+    volScalarField rl_diag
     (
-        IOobject("q1_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
-        q_init
+        IOobject("rl_diag", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
     );
 
-    Info << "Creating q2_analytic" << endl;
-    volScalarField q2_analytic
+    Info << "Creating rv_diag" << endl;
+    volScalarField rv_diag
     (
-        IOobject("q2_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
-        q_init
+        IOobject("rv_diag", runTime.timeName(), mesh, IOobject::NO_READ),
+        r_init
     );
     
     Info << "Creating S" << endl;
     volScalarField S
     (
         IOobject("S", runTime.timeName(), mesh, IOobject::NO_READ),
-        q_init
+        r_init
     );
 
     Info << "Creating rhof" << endl;
@@ -120,11 +120,11 @@ int main(int argc, char *argv[])
         rhof_init
     );
 
-    IOdictionary rhoDict
+    IOdictionary rtDict
     (
         IOobject
         (
-            "rhoDict",
+            "rtDict",
             mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,
@@ -144,11 +144,11 @@ int main(int argc, char *argv[])
         )
     );
     
-    IOdictionary qFieldDict
+    IOdictionary rlDict
     (
         IOobject
         (
-            "qFieldDict",
+            "rlDict",
             mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,
@@ -156,11 +156,11 @@ int main(int argc, char *argv[])
         )
     );
     
-    IOdictionary qFieldDict2
+    IOdictionary rvDict
     (
         IOobject
         (
-            "qFieldDict2",
+            "rvDict",
             mesh.time().system(),
             mesh,
             IOobject::READ_IF_PRESENT,
@@ -193,51 +193,51 @@ int main(int argc, char *argv[])
     );
 
     const noAdvection velocityField;
-    autoPtr<tracerField> rhoVal(tracerField::New(rhoDict, velocityField));
+    autoPtr<tracerField> rtVal(tracerField::New(rtDict, velocityField));
     
     autoPtr<tracerField> rhoaVal(tracerField::New(rhoaDict, velocityField));
     
-    autoPtr<tracerField> qVal(tracerField::New(qFieldDict, velocityField));
+    autoPtr<tracerField> rlVal(tracerField::New(rlDict, velocityField));
     
-    autoPtr<tracerField> qVal2(tracerField::New(qFieldDict2, velocityField));
+    autoPtr<tracerField> rvVal(tracerField::New(rvDict, velocityField));
     
     autoPtr<tracerField> tempVal(tracerField::New(tempDict, velocityField));
     
     autoPtr<tracerField> PVal(tracerField::New(PDict, velocityField));
     
-    Info << "writing rho for time " << runTime.timeName() << endl;
-    rhoVal->applyTo(rho);
-    rho.write();
+    Info << "writing rt for time " << runTime.timeName() << endl;
+    rtVal->applyTo(rt);
+    rt.write();
     
     Info << "writing rho for time " << runTime.timeName() << endl;
     rhoaVal->applyTo(rho_a);
     rho_a.write();
 
     Info << "writing rho for time " << runTime.timeName() << endl;
-    rhoVal->applyTo(rho_b);
+    rtVal->applyTo(rho_b);
     rho_b.write();
 
-    Info << "writing q1 for time " << runTime.timeName() << endl;
-    qVal->applyTo(q1);
-    q1.write();
+    Info << "writing rl for time " << runTime.timeName() << endl;
+    rlVal->applyTo(rl);
+    rl.write();
 
-    Info << "writing q2 for time " << runTime.timeName() << endl;
-    qVal2->applyTo(q2);
-    q2.write();
+    Info << "writing rv for time " << runTime.timeName() << endl;
+    rvVal->applyTo(rv);
+    rv.write();
     
-    Info << "writing q1_analytic for time " << runTime.timeName() << endl;
-    qVal->applyTo(q1_analytic);
-    q1_analytic.write();
+    Info << "writing rl_diag for time " << runTime.timeName() << endl;
+    rlVal->applyTo(rl_diag);
+    rl_diag.write();
 
-    Info << "writing q2_analytic for time " << runTime.timeName() << endl;
-    qVal2->applyTo(q2_analytic);
-    q2_analytic.write();
+    Info << "writing rv_diag for time " << runTime.timeName() << endl;
+    rvVal->applyTo(rv_diag);
+    rv_diag.write();
 
     Info << "writing S for time " << runTime.timeName() << endl;
     S.write();
 
     Info << "writing qf for time " << runTime.timeName() << endl;
-    rhoVal->applyTo(rhof);
+    rtVal->applyTo(rhof);
     rhof.write();
     
     Info << "writing T" << endl;
