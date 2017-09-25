@@ -10,7 +10,7 @@ env:
     - ATMOSFOAM_TOOLS_SRC=$TRAVIS_BUILD_DIR/src
     - DEBFULLNAME="James Shaw"
     - DEBEMAIL=js102@zepler.net
-    - SINGULARITY_VERSION=2.3
+    - SINGULARITY_VERSION=2.3.1
 
 install:
   - cd /tmp
