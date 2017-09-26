@@ -27,8 +27,7 @@ Class
 Description
     A stratified potential temperature field defined as a tracerField
     implementation.  The stratification is defined by the Brunt–Väisälä
-    frequency configured in environmentalProperties and the surface
-    temperature configured in thermophysicalProperties.
+    frequency and temperature T0 at z=0.
 
 SourceFiles
     stratifiedThermalField.C
@@ -40,7 +39,8 @@ SourceFiles
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-#include "fvCFD.H"
+#include "advectable.H"
+#include "tracerField.H"
 
 namespace Foam
 {
@@ -52,6 +52,8 @@ class stratifiedThermalField;
 \*---------------------------------------------------------------------------*/
 
 class stratifiedThermalField
+:
+public tracerField
 {
     // Private data
 
@@ -60,8 +62,9 @@ class stratifiedThermalField
         const scalarList nLayers;
         const scalarList zLayers;
 
-
     // Private Member Functions
+    
+        void checkLayerSizes();
 
         //- Disallow default bitwise copy construct
         stratifiedThermalField(const stratifiedThermalField&);
@@ -72,18 +75,29 @@ class stratifiedThermalField
 
 public:
 
+    TypeName("stratifiedThermal");
+
     // Constructors
 
-        stratifiedThermalField(
-                const IOdictionary& environmentalProperties,
-                const dimensionedVector g,
-                const dimensionedScalar T0);
+        stratifiedThermalField
+        (
+                const dimensionedVector& g,
+                const dimensionedScalar& T0,
+                const scalarList& bruntVaisalaFrequencies,
+                const scalarList& verticalLayers,
+                const advectable& velocityField
+        );
 
-    // Selectors
+        stratifiedThermalField
+        (
+                const dictionary& dict,
+                const advectable& velocityField
+        );
 
     // Member Functions
 
         scalar tracerAt(const point& p, const Time& t) const;
+
         vector gradAt(const point& p, const Time& t) const;
 
 };

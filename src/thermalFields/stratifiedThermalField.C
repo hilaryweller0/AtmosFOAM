@@ -24,34 +24,58 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "stratifiedThermalField.H"
+#include "addToRunTimeSelectionTable.H"
+
+defineTypeNameAndDebug(stratifiedThermalField, 0);
+addToRunTimeSelectionTable(tracerField, stratifiedThermalField, dict);
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
+
+void Foam::stratifiedThermalField::checkLayerSizes()
+{
+    if (nLayers.size()+1 != zLayers.size())
+    {
+        FatalErrorIn("stratifiedThermalField")
+            << " size of BruntVaisalaFrequencies should be"
+            << " one smaller than the size of verticalLayers"
+            << exit(FatalError);
+    }
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::stratifiedThermalField::stratifiedThermalField
 (
-        const IOdictionary& environmentalProperties,
-        const dimensionedVector g,
-        const dimensionedScalar T0
+        const dictionary& dict,
+        const advectable& velocityField
 )
 :
-    g(g),
-    T0(T0),
-    nLayers(environmentalProperties.lookup("BruntVaisallaFreq")),
-    zLayers(environmentalProperties.lookup("zN"))
+    tracerField(velocityField),
+    g(dict.lookup("gravity")),
+    T0(dict.lookup("T0")),
+    nLayers(dict.lookup("BruntVaisalaFrequencies")),
+    zLayers(dict.lookup("verticalLayers"))
 {
-    if (nLayers.size()+1 != zLayers.size())
-    {
-        FatalErrorIn("stratifiedThermalField")
-            << " size of BruntVaisallaFreq in environmentalProperties should be"
-            << " one smaller than the size of zN"
-            << exit(FatalError);
-    }
+    checkLayerSizes();
 }
 
-// * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
-
+Foam::stratifiedThermalField::stratifiedThermalField
+(
+        const dimensionedVector& g,
+        const dimensionedScalar& T0,
+        const scalarList& bruntVaisalaFrequencies,
+        const scalarList& verticalLayers,
+        const advectable& velocityField
+)
+:
+    tracerField(velocityField),
+    g(g),
+    T0(T0),
+    nLayers(bruntVaisalaFrequencies),
+    zLayers(verticalLayers)
+{
+    checkLayerSizes();
+}
 
 // * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * * //
 

@@ -33,6 +33,7 @@ Description
 
 #include "fvCFD.H"
 #include "ExnerTheta.H"
+#include "noAdvection.H"
 #include "stratifiedThermalField.H"
 #include "fixedGradientFvPatchFields.H"
 
@@ -47,7 +48,15 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
 
-    stratifiedThermalField profile(envProperties, g, T0);
+    const noAdvection velocityField;
+    stratifiedThermalField profile
+    (
+            g,
+            T0,
+            envProperties.lookup("BruntVaisallaFreq"),
+            envProperties.lookup("zN"),
+            velocityField
+    );
         
     Info<< "Reading theta_init\n" << endl;
     volScalarField theta_init
@@ -70,10 +79,7 @@ int main(int argc, char *argv[])
         IOobject("thetaf", runTime.timeName(), mesh, IOobject::NO_READ),
 	thetaf_init
     );
-    forAll(thetaf, faceI)
-    {
-        thetaf[faceI] = profile.tracerAt(mesh.Cf()[faceI], runTime);
-    }
+    profile.applyTo(thetaf);
     forAll(thetaf.boundaryField(), patchI)
     {
         fvsPatchField<scalar>& thetap = thetaf.boundaryFieldRef()[patchI];
@@ -111,10 +117,7 @@ int main(int argc, char *argv[])
     }
     else // Lorenz staggering so calculate theta from analytic profile
     {
-        forAll(theta, cellI)
-        {
-            theta[cellI] = profile.tracerAt(mesh.C()[cellI], runTime);
-        }
+        profile.applyTo(theta);
         forAll(theta.boundaryField(), patchI)
         {
             fvPatchField<scalar>& thetap = theta.boundaryFieldRef()[patchI];

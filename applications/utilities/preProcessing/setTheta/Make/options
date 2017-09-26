@@ -3,6 +3,7 @@ EXE_INC = \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(ATMOSFOAM_SRC)/prescribedFields/lnInclude \
     -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
     -I$(ATMOSFOAM_SRC)/thermalFields/lnInclude
 
@@ -11,4 +12,9 @@ EXE_LIBS = \
     -lspecie \
     -lmeshTools \
     -lfiniteVolume \
-    -lthermalFields
+    -lExnerTheta \
+    -lprescribedFields \
+    -lthermalFields \
+    -lgeometry \
+    -lorography \
+    -lgdal
