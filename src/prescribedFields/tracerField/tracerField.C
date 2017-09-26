@@ -1,4 +1,5 @@
 #include "tracerField.H"
+#include "fixedValueFvPatchField.H"
 
 defineRunTimeSelectionTable(tracerField, dict);
 
@@ -42,9 +43,9 @@ void tracerField::applyTo(volScalarField& T) const
     
     forAll(T.boundaryField(), patchI)
     {
-        if (!isA<emptyPolyPatch>(T.mesh().boundaryMesh()[patchI]))
+        if (T.boundaryField()[patchI].type() == "fixedValue")
         {
-//            applyToBoundary(T, patchI);
+            applyToBoundary(T, patchI);
         }
     }
 }
@@ -66,5 +67,15 @@ void tracerField::applyToInternalField(volScalarField& T) const
     {
         const point& p = mesh.C()[cellI];
         T[cellI] = tracerAt(velocityField.initialPositionOf(p, T.time()), T.time());
+    }
+}
+
+void tracerField::applyToBoundary(volScalarField& T, const label patchI) const
+{
+    scalarField& bf = T.boundaryFieldRef()[patchI];
+    forAll(bf, faceI)
+    {
+        const point& p = T.mesh().Cf().boundaryField()[patchI][faceI];
+        bf[faceI] = tracerAt(velocityField.initialPositionOf(p, T.time()), T.time());
     }
 }

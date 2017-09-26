@@ -32,6 +32,7 @@ class tracerField
     
     private:
     void applyToInternalField(volScalarField& T) const;
+    void applyToBoundary(volScalarField& T, const label patchI) const;
     virtual scalar tracerAt(const point& p, const Time& t) const = 0;
     const advectable& velocityField;
 };
