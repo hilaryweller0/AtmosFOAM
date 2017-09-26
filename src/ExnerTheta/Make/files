@@ -1,4 +1,3 @@
-ThermalProfile.C
 BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerMoistFvPatchScalarField.C
 BCs/hydrostaticExnerFvPatchScalarField.C
