@@ -16,7 +16,7 @@ class btfVelocityField final : public nonDivergentVelocityField, public advectab
     point initialPositionOf(const point& p, const Time& t) const;
     const dimensionedScalar u0;
     const dimensionedScalar H;
-    const autoPtr<crossableMountain> m;
+    const autoPtr<mountain> m;
 };
 
 #endif
