@@ -67,22 +67,6 @@ for (label ip = 0; ip < nParts; ip++)
     );
     h[ip].oldTime();
 
-    hOld.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"hOld",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ
-            ),
-            h[ip]
-        )
-    );
-
     hf.set
     (
         ip,

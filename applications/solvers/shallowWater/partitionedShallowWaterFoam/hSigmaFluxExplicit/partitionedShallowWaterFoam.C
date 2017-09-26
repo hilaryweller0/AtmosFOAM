@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 sigma[ip] = h[ip]/hSum;
-                hOld[ip] = h[ip];
             }
             
             // Update the velocity in each partition
@@ -100,11 +99,6 @@ int main(int argc, char *argv[])
                       //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
-                    
-                    for(label ip2 = 0; ip2 < nParts; ip2++)
-                    {
-                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hOld[ip2]*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
-                    }
                     
                     volFlux[ip] = flux[ip]/hf[ip];
                     
