@@ -15,6 +15,4 @@ EXE_LIBS = \
     -lExnerTheta \
     -lprescribedFields \
     -lthermalFields \
-    -lgeometry \
-    -lorography \
-    -lgdal
+    -lgeometry

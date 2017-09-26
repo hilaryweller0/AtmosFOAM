@@ -14,7 +14,6 @@ tracerField/temperatureGradientField.C
 tracerField/polynomialTracerField.C
 tracerField/radialDistance.C
 tracerField/tracerField.C
-velocityField/btfVelocityField.C
 velocityField/deformationalNonDivergentGeodesicVelocityField.C
 velocityField/divergentVelocityField.C
 velocityField/horizontalVelocityField.C
