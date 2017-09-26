@@ -1,4 +1,5 @@
 #include "btfVelocityField.H"
+#include "btfTransform.H"
 #include "addToRunTimeSelectionTable.H"
 
 defineTypeNameAndDebug(btfVelocityField, 0);
@@ -8,7 +9,11 @@ btfVelocityField::btfVelocityField(const dictionary& dict)
 :
 u0("speed", dimVelocity, dict.lookupOrDefault<scalar>("speed", scalar(10))),
 H("domainHeight", dimLength, readScalar(dict.lookup("domainHeight"))),
-m(mountain::New(dict.subDict("mountain")))
+m(mountain::New(dict.subDict("mountain"))),
+mode(dict.lookup("analyticSolution") == "horizontalOnly"
+        ? analyticSolution::HORIZONTAL_ONLY
+        : analyticSolution::VERTICAL_ONLY),
+transform(btfTransform(dict))
 {};
 
 vector btfVelocityField::streamfunctionAt
@@ -30,6 +35,22 @@ vector btfVelocityField::streamfunctionAt
 }
 
 point btfVelocityField::initialPositionOf
+(
+    const point& p,
+    const Time& t
+) const
+{
+    if (mode == analyticSolution::HORIZONTAL_ONLY)
+    {
+        return initialHorizontalPositionOf(p, t);
+    }
+    else
+    {
+        return transform.physicalToComputational(p);
+    }
+}
+
+point btfVelocityField::initialHorizontalPositionOf
 (
     const point& p,
     const Time& t
