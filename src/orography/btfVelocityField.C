@@ -46,7 +46,14 @@ point btfVelocityField::initialPositionOf
     }
     else
     {
-        return transform.physicalToComputational(p);
+        if (t.value() > 0.0)
+        {
+            return transform.physicalToComputational(p);
+        }
+        else
+        {
+            return p;
+        }
     }
 }
 
