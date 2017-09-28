@@ -35,7 +35,6 @@ Description
 #include "ExnerTheta.H"
 #include "noAdvection.H"
 #include "stratifiedThermalField.H"
-#include "fixedGradientFvPatchFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -118,34 +117,6 @@ int main(int argc, char *argv[])
     else // Lorenz staggering so calculate theta from analytic profile
     {
         profile.applyTo(theta);
-        forAll(theta.boundaryField(), patchI)
-        {
-            fvPatchField<scalar>& thetap = theta.boundaryFieldRef()[patchI];
-            if (thetap.type() == "fixedGradient")
-            {
-                fixedGradientFvPatchField<scalar>& thetag = dynamic_cast<fixedGradientFvPatchField<scalar>& >(thetap);
-                forAll(thetag.gradient(), facei)
-                {
-                    const vectorField nf = thetap.patch().nf();
-                    thetag.gradient()[facei] = nf[facei] & profile.gradAt
-                    (
-                            thetap.patch().Cf()[facei],
-                            runTime
-                    );
-                }
-            }
-            else
-            {
-                forAll(thetap, facei)
-                {
-                    thetap[facei] = profile.tracerAt
-                    (
-                            mesh.Cf().boundaryField()[patchI][facei],
-                            runTime
-                    );
-                }
-            }
-        }
     }
 
     theta.write();

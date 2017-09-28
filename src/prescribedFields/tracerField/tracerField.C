@@ -1,5 +1,6 @@
 #include "tracerField.H"
 #include "fixedValueFvPatchField.H"
+#include "fixedGradientFvPatchFields.H"
 
 defineRunTimeSelectionTable(tracerField, dict);
 
@@ -43,10 +44,7 @@ void tracerField::applyTo(volScalarField& T) const
     
     forAll(T.boundaryField(), patchI)
     {
-        if (T.boundaryField()[patchI].type() == "fixedValue")
-        {
-            applyToBoundary(T, patchI);
-        }
+        applyToBoundary(T, patchI);
     }
 }
 
@@ -72,10 +70,48 @@ void tracerField::applyToInternalField(volScalarField& T) const
 
 void tracerField::applyToBoundary(volScalarField& T, const label patchI) const
 {
-    scalarField& bf = T.boundaryFieldRef()[patchI];
-    forAll(bf, faceI)
+    fvPatchField<scalar>& patch = T.boundaryFieldRef()[patchI];
+    if (patch.type() == "fixedValue")
     {
-        const point& p = T.mesh().Cf().boundaryField()[patchI][faceI];
-        bf[faceI] = tracerAt(velocityField.initialPositionOf(p, T.time()), T.time());
+        forAll(patch, faceI)
+        {
+            const point& p = T.mesh().Cf().boundaryField()[patchI][faceI];
+            patch[faceI] = tracerAt
+            (
+                p,
+                T.time()
+            );
+        }
     }
+    else if (patch.type() == "fixedGradient" && hasGradient())
+    {
+        fixedGradientFvPatchField<scalar>& gradPatch = dynamic_cast<fixedGradientFvPatchField<scalar>& >(patch);
+        forAll(gradPatch.gradient(), faceI)
+        {
+            const vectorField nf = gradPatch.patch().nf();
+            gradPatch.gradient()[faceI] = nf[faceI] & gradientAt
+            (
+                    gradPatch.patch().Cf()[faceI],
+                    T.time()
+            );
+        }
+    }
+}
+
+bool tracerField::hasGradient() const
+{
+    return false;
+}
+
+vector tracerField::gradientAt
+(
+        const point& p,
+        const Time& t
+) const
+{
+    notImplemented
+    (
+        "tracerField::gradientAt(const point& p, const Time& t)"
+    );
+    return vector(0,0,0);
 }
