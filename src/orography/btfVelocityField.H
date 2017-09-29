@@ -4,6 +4,9 @@
 #include "advectable.H"
 #include "crossableMountain.H"
 #include "nonDivergentVelocityField.H"
+#include "btfTransform.H"
+
+enum class analyticSolution { HORIZONTAL_ONLY, VERTICAL_ONLY };
 
 class btfVelocityField final : public nonDivergentVelocityField, public advectable
 {
@@ -14,9 +17,13 @@ class btfVelocityField final : public nonDivergentVelocityField, public advectab
     private:
     vector streamfunctionAt(const point& p, const Time& t) const;
     point initialPositionOf(const point& p, const Time& t) const;
+    point initialHorizontalPositionOf(const point& p, const Time& t) const;
+
     const dimensionedScalar u0;
     const dimensionedScalar H;
-    const autoPtr<crossableMountain> m;
+    const autoPtr<mountain> m;
+    const analyticSolution mode;
+    const btfTransform transform; 
 };
 
 #endif

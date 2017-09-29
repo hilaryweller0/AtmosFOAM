@@ -10,6 +10,4 @@ EXE_LIBS = \
     -lfiniteVolumeAtmos \
     -lfiniteVolume \
     -lprescribedFields \
-    -lgeometry \
-    -lorography \
-    -lgdal
+    -lgeometry

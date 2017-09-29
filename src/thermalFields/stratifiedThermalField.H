@@ -66,6 +66,10 @@ public tracerField
     
         void checkLayerSizes();
 
+        bool hasGradient() const;
+
+        vector gradientAt(const point& p, const Time& t) const;
+
         //- Disallow default bitwise copy construct
         stratifiedThermalField(const stratifiedThermalField&);
 
@@ -97,8 +101,6 @@ public:
     // Member Functions
 
         scalar tracerAt(const point& p, const Time& t) const;
-
-        vector gradAt(const point& p, const Time& t) const;
 
 };
 

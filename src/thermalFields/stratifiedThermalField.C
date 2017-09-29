@@ -42,6 +42,36 @@ void Foam::stratifiedThermalField::checkLayerSizes()
     }
 }
 
+bool Foam::stratifiedThermalField::hasGradient() const
+{
+    return true;
+}
+
+vector Foam::stratifiedThermalField::gradientAt
+(
+        const Foam::point& p,
+        const Foam::Time& t
+) const
+{
+    const scalar z = p.z();
+    const scalar theta0 = T0.value();
+
+    for (label il = 0; il < nLayers.size(); il++)
+    {
+        if (z >= zLayers[il] && z < zLayers[il+1])
+        {
+            const scalar N2 = sqr(nLayers[il]);
+            const scalar gmag = mag(g).value();
+            const scalar dtheta_dz = theta0 * N2 / gmag * Foam::exp(N2 / gmag * z);
+            return vector(0, 0, dtheta_dz);
+        }
+    }
+    FatalErrorIn("stratifiedThermalField")
+        << "height " << z << " not found in levels "
+        << zLayers << exit(FatalError);
+    return vector(-1,-1,-1);
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::stratifiedThermalField::stratifiedThermalField
@@ -104,31 +134,6 @@ scalar Foam::stratifiedThermalField::tracerAt
         << "height " << z << " not found in levels "
         << zLayers << " at point " << p << exit(FatalError);
     return -1;
-}
-
-vector Foam::stratifiedThermalField::gradAt
-(
-        const Foam::point& p,
-        const Foam::Time& t
-) const
-{
-    const scalar z = p.z();
-    const scalar theta0 = T0.value();
-
-    for (label il = 0; il < nLayers.size(); il++)
-    {
-        if (z >= zLayers[il] && z < zLayers[il+1])
-        {
-            const scalar N2 = sqr(nLayers[il]);
-            const scalar gmag = mag(g).value();
-            const scalar dtheta_dz = theta0 * N2 / gmag * Foam::exp(N2 / gmag * z);
-            return vector(0, 0, dtheta_dz);
-        }
-    }
-    FatalErrorIn("stratifiedThermalField")
-        << "height " << z << " not found in levels "
-        << zLayers << exit(FatalError);
-    return vector(-1,-1,-1);
 }
 
 // ************************************************************************* //
