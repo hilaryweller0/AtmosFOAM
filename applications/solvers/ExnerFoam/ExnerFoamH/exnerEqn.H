@@ -1,6 +1,6 @@
 {
     Psi == pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
-    //rho = Exner*Psi;
+    rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
 
     surfaceScalarField G("G", 1+offCentre*dt*muSponge);
