@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
                 else hSum += h[ip];
             }
             
-            
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
@@ -95,17 +94,12 @@ int main(int argc, char *argv[])
                 {
                     flux[ip] = flux[ip].oldTime() - dt*
                     (
-                        fvc::flux(fvc::div(flux[ip], u[ip]))
+                        fvc::flux(fvc::div(flux[ip]*Uf[ip]))
                       //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
-                    
+
                     volFlux[ip] = flux[ip]/hf[ip];
-                    
-                    Info << "VOLFLUX[0] goes from " 
-                     << min(volFlux[0]).value() 
-                     << " to " 
-                     << max(volFlux[0]).value() << endl;
 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
