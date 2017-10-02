@@ -1,4 +1,5 @@
 #include "velocityField.H"
+#include "wallPolyPatch.H"
 
 defineRunTimeSelectionTable(velocityField, dict);
 
@@ -33,7 +34,11 @@ void velocityField::applyTo(surfaceScalarField& phi) const
     
     forAll(phi.boundaryField(), patchI)
     {
-        if (!isA<emptyPolyPatch>(phi.mesh().boundaryMesh()[patchI]))
+        if
+        (
+            !isA<emptyPolyPatch>(phi.mesh().boundaryMesh()[patchI])
+         && !isA<wallPolyPatch>(phi.mesh().boundaryMesh()[patchI])
+        )
         {
             applyToBoundary(phi, patchI);
         }
