@@ -12,9 +12,12 @@ class temperatureGradientField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
-    const scalar rho0;
+    const scalar T0;
+    const scalar g;
+    const scalar cp;
+    const scalar theta0;
     const point p0;
-    const vector A;
+    const string gradientType;
 };
 
 #endif

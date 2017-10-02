@@ -1,0 +1,12 @@
+FoamFile {
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object	    pressureDict;
+}
+
+type		        temperatureGradient;
+gradientType        "exponential";
+centre              (0 0 0);
+centralValue        100000;

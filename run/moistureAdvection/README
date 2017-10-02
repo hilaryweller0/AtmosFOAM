@@ -1,0 +1,2 @@
+Test case advects moisture (liquid water rl, water vapour rv and total moisture rt) via advectMoistureFoam.
+Use ./Allrun to run this test case.
