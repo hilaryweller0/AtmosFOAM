@@ -2,8 +2,9 @@
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
     rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
-
-    thetaf = thetaf.oldTime() - dt*(Uf & fvc::interpolate(fvc::grad(thetaf)));
+    interpGradThetaf = fvc::interpolate(fvc::grad(thetaf));
+    #include "setZeroGradientOutletBC.H"
+    thetaf = thetaf.oldTime() - dt*(Uf & interpGradThetaf);
     bf = thetaf * g.unitFaceNormal();
     b = fvc::reconstruct(bf * mesh.magSf());
     theta == (b & g.unit());
