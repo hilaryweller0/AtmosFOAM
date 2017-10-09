@@ -12,7 +12,9 @@ cp init_0/Uf 0/Uf
 createSpongeLayer
 
 decomposePar -force -constant
-$ATMOSTESTS_DIR/bin/correctMPIinitialUf.sh .
+for CASE in processor*; do
+	fixProcessorFaceVelocities -case $CASE
+done
 set +e
 mpirun --hostfile machines -np 2 exnerFoamCPinterpGrad -parallel
 ./diff.sh

@@ -78,6 +78,19 @@ theta.write();
 
 thetaf = mag(g.unitFaceNormal())*thetaf + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(theta, "thetaFromb");
 
+surfaceVectorField interpGradThetaf
+(
+    IOobject
+    (
+        "interpGradThetaf",
+        runTime.timeName(), 
+        mesh,
+        IOobject::NO_READ,
+        IOobject::NO_WRITE
+    ),
+    fvc::interpolate(fvc::grad(thetaf))
+);
+
 // Reading in the sponge layer coefficients (if present)
 surfaceScalarField muSponge
 (
