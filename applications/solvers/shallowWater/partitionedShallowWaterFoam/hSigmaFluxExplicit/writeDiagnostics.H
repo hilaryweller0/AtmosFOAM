@@ -7,7 +7,7 @@
            << endl;
            
     total  << runTime.timeName()
-           << " " << sum(hSum).value()
-           << " " << sum(sigma[0]).value()
+           << " " << (fvc::domainIntegrate(hSum)/Vtot).value()
+           << " " << (fvc::domainIntegrate(sigma[0])/Vtot).value()
            << endl;
 }

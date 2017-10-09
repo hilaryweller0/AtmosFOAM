@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
+            
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
@@ -85,7 +86,7 @@ int main(int argc, char *argv[])
                     volFlux[ip] = volFlux[ip].oldTime() - dt*
                     (
                         ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
-                      + ((twoOmegaf^Uf[ip]) & mesh.Sf())
+                      //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + ggradh
                     );
                 
@@ -101,6 +102,8 @@ int main(int argc, char *argv[])
         #include "writeDiagnostics.H"
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
+        Info << "sigma goes from " << min(sigma[0]+sigma[1]).value() << " to "
+             << max(sigma[0]+sigma[1]).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
 

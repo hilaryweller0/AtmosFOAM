@@ -11,9 +11,12 @@ temperatureGradientField::temperatureGradientField
 )
 :
 tracerField(velocityField),
-rho0(dict.lookupOrDefault<scalar>("maxMagnitude", scalar(1))),
-p0(dict.lookupOrDefault<point>("centre", point(-50e3, 0, 9e3))),
-A(dict.lookupOrDefault<vector>("halfWidth", vector(25e3, 1, 3e3)))
+T0(dict.lookupOrDefault<scalar>("centralValue", scalar(1))),
+p0(dict.lookupOrDefault<point>("centre", point(0, 0, 0))),
+gradientType(dict.lookupOrDefault<string>("gradientType", string("exponential"))),
+g(dict.lookupOrDefault<scalar>("gravitationalConstant", scalar(9.81))),
+cp(dict.lookupOrDefault<scalar>("specificHeatConstPressure", scalar(1004))),
+theta0(dict.lookupOrDefault<scalar>("decayConstant", scalar(300)))
 {};
 
 scalar temperatureGradientField::tracerAt
@@ -23,11 +26,17 @@ scalar temperatureGradientField::tracerAt
 ) const
 {
     vector d = p - p0;
-    scalar theta0 = 300;
-    scalar g = 9.81;
-    scalar c_p = 1004;
     
-    return rho0*Foam::exp(-g*d.z()/(c_p*theta0));
-    //return theta0*( 1 - g*d.z()/(c_p*theta0) );
-
+    if (gradientType == "exponential")
+    {
+        return T0*Foam::exp(-g*d.z()/(cp*theta0));
+    }
+    else if (gradientType == "linear")
+    {
+        return T0 - g*d.z()/(cp*theta0);
+    }
+    else
+    {
+        return T0;
+    }
 }
