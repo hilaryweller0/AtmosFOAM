@@ -15,7 +15,7 @@ profileType(dict.lookupOrDefault<string>("profileType", string("default"))),
 rho0(dict.lookupOrDefault<scalar>("maxMagnitude", scalar(0.001))),
 rhoAir(dict.lookupOrDefault<scalar>("rhoAir", scalar(1))),
 p0(dict.lookupOrDefault<point>("centre", point(-50e3, 0, 9e3))),
-p1(dict.lookupOrDefault<point>("ground", point(0, 0, -1000))),
+p1(dict.lookupOrDefault<point>("ground", point(0, 0, 0))),
 A(dict.lookupOrDefault<vector>("halfWidth", vector(25e3, 1, 3e3)))
 {};
 

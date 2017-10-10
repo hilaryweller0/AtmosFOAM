@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,24 +54,20 @@ int main(int argc, char *argv[])
     #include "energyInit.H"
     #include "writeDiagnosticsInit.H"
 
-    const dimensionedScalar K("K",dimensionSet(0,2,-1,0,0),scalar(50000));
     
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "partitionedCourantNo.H"
-
+        
         for (int icorr=0; icorr < nCorr; icorr++)
         {
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip]);
-                for(label ip2 = 0; ip2 < nParts; ip2++)
-                {
-                    h[ip] -= (2*(ip2 != ip)-1)*dt*K*hOld[ip2]*fvc::laplacian(sigma[ip2]);
-                }
+                //h[ip] = h[ip].oldTime() - dt*fvc::div(flux[ip]);
                 
                 hf[ip] = fvc::interpolate(h[ip]);
                 
@@ -83,11 +79,11 @@ int main(int argc, char *argv[])
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
+            
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
                 sigma[ip] = h[ip]/hSum;
-                hOld[ip] = h[ip];
             }
             
             // Update the velocity in each partition
@@ -98,16 +94,11 @@ int main(int argc, char *argv[])
                 {
                     flux[ip] = flux[ip].oldTime() - dt*
                     (
-                        fvc::flux(fvc::div(flux[ip], u[ip]))
-                      + hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                        fvc::flux(fvc::div(flux[ip]*Uf[ip]))
+                      //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
-                    
-                    for(label ip2 = 0; ip2 < nParts; ip2++)
-                    {
-                        flux[ip] -= (2*(ip2 != ip)-1)*dt*fvc::interpolate(K*hOld[ip2]*fvc::laplacian(sigma[ip2]))*(Uf[ip2] & mesh.Sf());
-                    }
-                    
+
                     volFlux[ip] = flux[ip]/hf[ip];
 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
@@ -121,10 +112,6 @@ int main(int argc, char *argv[])
         #include "energy.H"
         #include "writeDiagnostics.H"
         
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
-        Info << "sigma[1] goes from " << min(sigma[1]).value() << " to "
-             << max(sigma[1]).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
         
