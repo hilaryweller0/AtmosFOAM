@@ -57,7 +57,6 @@ point sleveTransform::computationalToPhysical(const point& p) const
 	s[1] = fineScale;
 	const scalar n = exponent;
 
-	const scalar x = p.x();
 	scalar z = p.z();
 
 	if (z < H.value())
@@ -69,9 +68,9 @@ point sleveTransform::computationalToPhysical(const point& p) const
 			b[i] = Foam::sinh
 				   (
 					   Foam::pow(H.value()/s[i], n)
-					 - Foam::pow(z/s[i], n)
+					 - Foam::pow(p.z()/s[i], n)
 				   )
-				   /Foam::sinh(Foam::pow(H.value()/s[i],n));
+				   /Foam::sinh(Foam::pow(H.value()/s[i], n));
 			z += h[i]*b[i];
 		}
 	}
