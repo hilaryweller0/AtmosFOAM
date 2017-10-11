@@ -14,12 +14,13 @@ lambda(readScalar(dict.lookup("wavelength")))
 
 dimensionedScalar schaerExpMountain::coarseHeightAt(const point& p) const
 {
+    // eqn 14 in doi.org/10.1175/MWR-D-10-05046.1
     return 0.5 * h0 * exp(-sqr(p.x() / a));
 }
 
 dimensionedScalar schaerExpMountain::fineHeightAt(const point& p) const
 {
-    // eqn 46 in dx.doi.org/10.1175/1520-0493(2002)130<2459:ANTFVC>2.0.CO;2
+    // eqn 46 in doi.org/10.1175/1520-0493(2002)130<2459:ANTFVC>2.0.CO;2
     dimensionedScalar h =  h0 * exp(-sqr(p.x() / a)) * sqr(Foam::cos(M_PI*p.x()/lambda));
     return h - coarseHeightAt(p);
 }
