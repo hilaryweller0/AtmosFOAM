@@ -36,14 +36,19 @@ gradSchemes
 divSchemes
 {
     default none;
+    // for partitionedExnerFoam
     div(stable.flux,stable.theta)   Gauss linearUpwind linearUpwind;
     div(buoyant.flux,buoyant.theta) Gauss linearUpwind linearUpwind;
     div(stable.flux,stable.u)       Gauss linearUpwind linearUpwind;
     div(buoyant.flux,buoyant.u)     Gauss linearUpwind linearUpwind;
-//    div(fluxDiff,(stable.sigma*(1-stable.sigma))) Gauss linear;
-//    div(fluxSum,stable.sigma)       Gauss upwind;
-//    div(fluxDiff,(buoyant.sigma*(1-buoyant.sigma))) Gauss linear;
-//    div(fluxSum,buoyant.sigma)       Gauss upwind;
+    
+    // for partitionedExnerFoamAdv
+    div(stable.volFlux,stable.sigmaRho) Gauss upwind;
+    div(buoyant.volFlux,buoyant.sigmaRho) Gauss upwind;
+    div(stable.volFlux,stable.theta) Gauss upwind;
+    div(buoyant.volFlux,buoyant.theta) Gauss upwind;
+    div(stable.volFlux,stable.u) Gauss upwind;
+    div(buoyant.volFlux,buoyant.u) Gauss upwind;
 }
 
 laplacianSchemes
@@ -54,22 +59,26 @@ laplacianSchemes
 interpolationSchemes
 {
     default        none;
+    // For initialisation
+    interpolate(theta) linear;
+    
+    // for partitionedExnerFoam
     interpolate(stable.sigmaRho) linear; //Upwind stable.flux linearUpwind;
     interpolate(buoyant.sigmaRho) linear; //Upwind buoyant.flux linearUpwind;
     interpolate(stable.theta) linear; //Upwind stable.flux linearUpwind;
     interpolate(buoyant.theta) linear; //Upwind buoyant.flux linearUpwind;
     interpolate(stable.sigma) upwind gradExner; // linearUpwind;
     interpolate(buoyant.sigma) upwind gradExner; // linearUpwind;
-//    interpolate((1-stable.sigma)) linear;
-//    interpolate((1-buoyant.sigma)) linear;
     interpolate(rhoSum) linear;
-    //interpolate(rhoTheta) linear;
     interpolate(convection(stable.flux,stable.u)) linear;
     interpolate(convection(buoyant.flux,buoyant.u)) linear;
     interpolate(stable.u) linear;
     interpolate(buoyant.u) linear;
     interpolate((stable.buoyant.massTransfer|stable.sigmaRho)) linear;
     interpolate((buoyant.stable.massTransfer|buoyant.sigmaRho)) linear;
+
+    // for partitionedExnerFoamAdv
+    convection linear;
 }
 
 snGradSchemes

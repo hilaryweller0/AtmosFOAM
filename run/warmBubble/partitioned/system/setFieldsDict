@@ -25,7 +25,7 @@ regions
     // (does zerogradient on boundaries)
     sphereToCell
     {
-        centre (0 500 2e3);
+        centre (0 500 4.5e3);
         radius 2000;
 
         fieldValues

@@ -31,18 +31,21 @@ setFields
 sumFields 0 stable.sigma init_0 stable.sigma 0 buoyant.sigma -scale1 -1
 
 # Plot initial conditions
-gmtFoam theta
+gmtFoam theta -time 0
 gv 0/theta.pdf &
-gmtFoam sigma
+gmtFoam sigma -time 0
 gv 0/sigma.pdf &
 
 # Solve Euler equations
-partitionedExnerFoam >& log & sleep 0.01; tail -f log
+#partitionedExnerFoam >& log & sleep 0.01; tail -f log
+partitionedExnerFoamAdv >& log & sleep 0.01; tail -f log
 
-# Plot one value of theta
+# Plot theta and sigma
 time=100
 gmtFoam theta -time $time
 gv $time/theta.pdf &
+gmtFoam sigma -time $time
+gv $time/sigma.pdf &
 
 sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale0 -1
 gmtFoam -time $time sigmaDiff

@@ -27,7 +27,7 @@ application buoyantFoam;
 startFrom       startTime;
 //startFrom       latestTime;
 
-startTime       900;
+startTime       0;
 
 stopAt          endTime;
 
@@ -37,7 +37,7 @@ deltaT          2;
 
 writeControl    runTime;
 
-writeInterval   10; //100;
+writeInterval   100;
 
 purgeWrite      0;
 
