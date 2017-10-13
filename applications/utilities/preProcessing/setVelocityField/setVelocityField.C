@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     );
 
     timeSelector::addOptions();
-#   include "addTimeOptions.H"
+    #include "addTimeOptions.H"
     #include "setRootCase.H"
     #include "createTime.H"
     instantList timeDirs = timeSelector::select0(runTime, args);
@@ -102,13 +102,6 @@ int main(int argc, char *argv[])
 
         U.write();
         Uf.write();
-        
-        // Write out the velocity magnitude on faces
-        surfaceScalarField magU("magU", mag(Uf));
-        magU.write();
-        // Write out the face areas
-        surfaceScalarField magSf("magSf", mesh.magSf());
-        magSf.write();
     }
 
     return EXIT_SUCCESS;
