@@ -47,6 +47,13 @@ gv $time/theta.pdf &
 gmtFoam sigma -time $time
 gv $time/sigma.pdf &
 
+# animate the results
+for field in theta sigma; do
+    gmtFoam $field
+    eps2gif $field.gif 0/$field.pdf ???/$field.pdf 1000/$field.pdf
+done
+
+# Debugging plots
 sumFields $time sigmaDiff $time buoyant.sigma 0 buoyant.sigma -scale0 -1
 gmtFoam -time $time sigmaDiff
 gv $time/sigmaDiff.pdf &
@@ -63,10 +70,6 @@ sumFields $time ExnerDiff $time Exner 0 Exner -scale1 -1
 sumFields $time UfDiff $time stable.Uf 0 stable.Uf -scale1 -1
 gmtFoam -time $time ExnerDiff
 gv $time/ExnerDiff.pdf &
-
-# animate the results
-gmtFoam theta
-animate 0/theta.pdf ???/theta.pdf 1000/theta.pdf
 
 # Differences between non-partitioned run
 time=2

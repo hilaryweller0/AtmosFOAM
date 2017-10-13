@@ -12,11 +12,12 @@
         for(label ip = 0; ip < nParts; ip++)
         {
             // Rate of change of flux without gravity
-            dVolFluxdt[ip] = (mesh.Sf() &
+            dVolFluxdt[ip] = drag[ip] + (mesh.Sf() &
             (
               -fvc::interpolate
                (
-                   fvc::div(volFlux[ip], u[ip]) - u[ip] * fvc::div(volFlux[ip]),
+                   fvc::div(volFlux[ip], u[ip])
+                 - u[ip] * fvc::div(volFlux[ip]),
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
@@ -32,9 +33,6 @@
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
-            // Explicit version
-            //Exner = pow(R*rhoTheta/pRef, kappa/(1-kappa));
-            // Semi-implicit version
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
@@ -58,7 +56,7 @@
                                *fvc::snGrad(Exner)*mesh.magSf();
                 flux[ip] = fvc::interpolate(sigmaRho[ip])*volFlux[ip];
                 u[ip] = fvc::reconstruct(volFlux[ip]);
-                Uf[ip] = fvc::interpolate(u[ip]);
+                Uf[ip] = fvc::interpolate(u[ip], "Uf");
                 dVolFluxdt[ip] += gSf - Cp*fvc::interpolate(theta[ip])
                                         *fvc::snGrad(Exner)*mesh.magSf();
             }}

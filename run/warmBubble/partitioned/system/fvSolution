@@ -56,8 +56,8 @@ solvers
 
 iterations
 {
-    nOuterCorrectors 2;
-    nCorrectors      2;
+    nOuterCorrectors 1;
+    nCorrectors      1;
     nNonOrthogonalCorrectors 0;
 }
 

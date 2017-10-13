@@ -64,8 +64,7 @@ if (mesh.nInternalFaces())
     {
         scalarField sumPhi
         (
-            fvc::surfaceSum(mag(flux[ip]))().internalField()
-          / sigmaRho[ip].internalField()
+            fvc::surfaceSum(mag(volFlux[ip]))().internalField()
         );
 
         maxCoNums[ip] = 0.5*gMax(sumPhi/(mesh.V().field()))

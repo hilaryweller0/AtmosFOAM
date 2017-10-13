@@ -31,6 +31,7 @@ PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> flux(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
 PtrList<surfaceScalarField> dVolFluxdt(nParts);
+PtrList<surfaceScalarField> drag(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -197,6 +198,21 @@ for (label ip = 0; ip < nParts; ip++)
     );
     dVolFluxdt[ip].oldTime();
     
+    drag.set
+    (
+        ip,
+        new surfaceScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"drag",
+                runTime.timeName(),
+                mesh
+            ),
+            mesh,
+            dimensionedScalar("drag", dimensionSet(0,3,-2,0,0), scalar(0))
+        )
+    );
 }
 
 // Summed variables
@@ -237,3 +253,4 @@ surfaceScalarField gradPcoeffSum
     Cp*fvc::interpolate(rhoTheta)
 );
 
+#include "calculateDrag.H"
