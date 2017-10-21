@@ -15,6 +15,8 @@ class solidBodyRotationVelocityField final : public nonDivergentVelocityField, p
     point initialPositionOf(const point& p, const Time& t) const;
     const vector rotation_;
     const point centre_;
+    const scalar innerRadius_;
+    const scalar outerRadius_;
 };
 
 #endif
