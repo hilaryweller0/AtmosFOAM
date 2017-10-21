@@ -10,7 +10,7 @@ btfVelocityField::btfVelocityField(const dictionary& dict)
 u0("speed", dimVelocity, dict.lookupOrDefault<scalar>("speed", scalar(10))),
 H("domainHeight", dimLength, readScalar(dict.lookup("domainHeight"))),
 m(mountain::New(dict.subDict("mountain"))),
-mode(dict.lookup("analyticSolution") == "horizontalOnly"
+mode(dict.lookupType<word>("analyticSolution") == "horizontalOnly"
         ? analyticSolution::HORIZONTAL_ONLY
         : analyticSolution::VERTICAL_ONLY),
 transform(btfTransform(dict))
