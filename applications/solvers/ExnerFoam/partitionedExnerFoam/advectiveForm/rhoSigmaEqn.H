@@ -11,7 +11,7 @@ for(label ip = 1; ip < nParts; ip++)
     rhoSum += sigmaRho[ip];
 }
 
-// Calculate mass tranfer terms
+/*// Calculate mass tranfer terms
 for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=ip+1; jp < nParts; jp++)
@@ -39,4 +39,4 @@ for(label ip = 0; ip < nParts; ip++) { for(label jp=0; jp < nParts; jp++)
 
 Info << "After diffusion sigma[0] goes from " << min(sigmaRho[1]/rho[1]).value()
      << " to " << max(sigmaRho[1]/rho[1]).value() << endl;
-
+*/
