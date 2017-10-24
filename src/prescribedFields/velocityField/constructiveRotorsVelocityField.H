@@ -15,6 +15,7 @@ class constructiveRotorsVelocityField final : public divergentVelocityField, pub
     private:
     vector velocityAt(const point& p, const Time& t) const;
     point initialPositionOf(const point& p, const Time& t) const;
+    const scalar vmax;
     const scalar xmax;
     const scalar ymax;
     const point center;

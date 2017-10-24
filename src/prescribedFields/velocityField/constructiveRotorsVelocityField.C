@@ -9,9 +9,10 @@ addToRunTimeSelectionTable(velocityField, constructiveRotorsVelocityField, dict)
 
 constructiveRotorsVelocityField::constructiveRotorsVelocityField(const dictionary& dict)
 :
+vmax(dict.lookupOrDefault<scalar>("maxVelocity", scalar(1))),
 xmax(dict.lookupOrDefault<scalar>("xmax", scalar(1))),
 ymax(dict.lookupOrDefault<scalar>("ymax", scalar(1))),
-center(dict.lookupOrDefault<point>("centerOfSystem", point(0,0,0)))
+center(dict.lookupOrDefault<point>("centreOfSystem", point(0,0,0)))
 {};
 
 vector constructiveRotorsVelocityField::velocityAt
@@ -21,12 +22,12 @@ vector constructiveRotorsVelocityField::velocityAt
 ) const
 {
     scalar x = (p.x() - center.x())/xmax;
-    scalar y = (p.z() - center.z())/ymax;
+    scalar y = (p.y() - center.y())/ymax;
     return vector
     (
-        Foam::sin(M_PI*x)*Foam::sin(M_PI*y),
-        0,
-        Foam::cos(1.5*M_PI*x)*Foam::cos(0.5*M_PI*y)
+        vmax*Foam::sin(M_PI*x)*Foam::sin(M_PI*y),
+        vmax*Foam::cos(1.5*M_PI*x)*Foam::cos(0.5*M_PI*y),
+        0
     );
 }
 

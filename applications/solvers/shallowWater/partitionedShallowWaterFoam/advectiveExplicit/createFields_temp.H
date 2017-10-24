@@ -64,17 +64,17 @@ for (label ip = 0; ip < nParts; ip++)
     );
     h[ip].oldTime();
 
-    Uf.set
+    u.set
     (
         ip,
-        new surfaceVectorField
+        new volVectorField
         (
             IOobject
             (
-                partNames[ip]+"Uf",
+                partNames[ip]+"u",
                 runTime.timeName(),
                 mesh,
-                IOobject::READ_IF_PRESENT,
+                IOobject::MUST_READ,
                 IOobject::AUTO_WRITE
             ),
             mesh
@@ -94,26 +94,25 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            Uf[ip] & mesh.Sf()
+            fvc::interpolate(u[ip]) & mesh.Sf()
         )
     );
     volFlux[ip].oldTime();
     
-    u.set
+    Uf.set
     (
         ip,
-        new volVectorField
+        new surfaceVectorField
         (
             IOobject
             (
-                partNames[ip]+"u",
+                partNames[ip]+"Uf",
                 runTime.timeName(),
                 mesh,
-                IOobject::MUST_READ,
+                IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            fvc::reconstruct(volFlux[ip]),
-            Uf[ip].boundaryField().types()
+            (volFlux[ip] - (fvc::interpolate(u[ip]) & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf())
         )
     );
 }
