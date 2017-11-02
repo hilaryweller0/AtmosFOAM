@@ -25,6 +25,8 @@ Application
     testTetDecompose
 
 Description
+    Decompose a mesh cell into tetrahedra, outputting in a format suitable for
+    gnuplot.
 
 \*---------------------------------------------------------------------------*/
 
