@@ -66,6 +66,10 @@ int main(int argc, char *argv[])
     (
         "operatorSplitting", 0
     );
+    const double opSplitOffCentre = mesh.solutionDict().lookupOrDefault<double>
+    (
+        "opSplitOffCenterCoefficient", 0
+    );
     const double timeScale = mesh.solutionDict().lookupOrDefault<double>
     (
         "timeScale", 1.
@@ -90,10 +94,22 @@ int main(int argc, char *argv[])
         
         for (int corr=0; corr < numberOfCorrectors; corr++)
         {
+            rl = rl.oldTime();
+            rv = rv.oldTime();
+        
             #include "calculateSource.H"
+            //Operator Splitting, pre-advection step.
+            if (opSplit)
+            {
+                rl -= dt*(1-opSplitOffCentre)*(Sl*rl_temp - Sv*(rv_temp-rvs));
+                rv += dt*(1-opSplitOffCentre)*(Sl*rl_temp - Sv*(rv_temp-rvs));
+                rl_temp = rl;
+                rv_temp = rv;
+            }
+            
             
             //Prognostic Method.
-            rl = rl.oldTime() - dt*
+            rl -= dt*
             (
                 (1-offCentre)*fvc::div(phi,rl.oldTime())
               +     offCentre*fvc::div(phi,rl_temp)
@@ -105,9 +121,9 @@ int main(int argc, char *argv[])
                 )
             );
             if (implicitSource) rl =  rl/(dt*offCentre*Sl+1);
-            else                rl -= dt*offCentre*Sl*rl_temp;
+            else                rl -= (1-opSplit)*dt*offCentre*Sl*rl_temp;
             
-            rv = rv.oldTime() - dt* 
+            rv -= dt* 
             (
                 (1-offCentre)*fvc::div(phi,rv.oldTime())
               +     offCentre*fvc::div(phi,rv_temp)
@@ -127,18 +143,18 @@ int main(int argc, char *argv[])
             }
             else                
             {
-                rv += dt*offCentre*(Sl*rl_temp - Sv*rv_temp);
+                rv += (1-opSplit)*dt*offCentre*(Sl*rl_temp - Sv*rv_temp);
             }
             
             
-            //Operator Splitting.
+            //Operator Splitting, post-advection step.
             if (opSplit)
             {
                 #include "calculateSource.H"
                 rl_temp = rl;
                 rv_temp = rv;
-                rl -= dt*((1-offCentre)*Sl*rl_temp - (1-offCentre)*Sv*(rv_temp-rvs));
-                rv += dt*((1-offCentre)*Sl*rl_temp - (1-offCentre)*Sv*(rv_temp-rvs));
+                rl -= dt*opSplitOffCentre*(Sl*rl_temp - Sv*(rv_temp-rvs));
+                rv += dt*opSplitOffCentre*(Sl*rl_temp - Sv*(rv_temp-rvs));
             }
                         
             

@@ -45,8 +45,8 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 2);
+    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    volFlux[ip] = volFlux[ip].oldTime() - dt*
+                    /*volFlux[ip] = volFlux[ip].oldTime() - dt*
                     (
                         ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
                       //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
                     Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                            *mesh.Sf()/sqr(mesh.magSf());
+                            *mesh.Sf()/sqr(mesh.magSf());*/
                 }
             }
         }
