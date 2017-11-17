@@ -15,7 +15,7 @@ dimensionedScalar gaussianMountain::heightAt(const point& p) const
 {
     dimensionedScalar h("height", dimLength, scalar(0));
     
-    scalar r = mag(p - centre_);
+    scalar r = horizontalDist(p, centre_);
     h = h0_ / pow((1.0 + pow(mag(r)/halfwidth_.value(),2)), 1.5);
 
     return h;

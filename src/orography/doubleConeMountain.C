@@ -18,8 +18,8 @@ dimensionedScalar doubleConeMountain::heightAt(const point& p) const
 {
     dimensionedScalar h("height", dimLength, scalar(0));
     
-    scalar r = mag(p - centre_);
-    scalar rm = mag(p - centrem_);
+    scalar r = horizontalDist(p, centre_);
+    scalar rm = horizontalDist(p, centrem_);
     if (r < radius_.value())
     {
         h = h0_ * (radius_.value() - r)/radius_.value();

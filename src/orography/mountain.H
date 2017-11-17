@@ -25,6 +25,11 @@ class mountain
     virtual ~mountain() {};
 };
 
+inline scalar horizontalDist(const point& p1, const point& p2)
+{
+    return sqrt(sqr(p1.x() - p2.x()) + sqr(p1.y() - p2.y()));
+}
+
 }
 
 #endif
