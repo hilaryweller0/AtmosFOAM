@@ -25,8 +25,8 @@ Application
     advectionFoam
 
 Description
-    Solves a transport equation for a passive scalar using explicit leap-frog
-    time-stepping or RK2
+    Solves a transport equation for a passive scalar using an explicit
+    time-stepping method.
 
 \*---------------------------------------------------------------------------*/
 
@@ -50,6 +50,8 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    #include "initEnergy.H"
+    #include "energy.H"
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -129,6 +131,8 @@ int main(int argc, char *argv[])
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << endl;
         runTime.write();
+
+        #include "energy.H"
 
         if (timeVaryingWind)
         {

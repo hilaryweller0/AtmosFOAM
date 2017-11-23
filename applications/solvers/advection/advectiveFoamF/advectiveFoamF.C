@@ -45,8 +45,10 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createGravity.H"
     #include "createVolInterpolation.H"
-    #include "createFields.H"
     #include "createSurfaceGrad.H"
+    #include "createFields.H"
+    #include "initEnergy.H"
+    #include "energy.H"
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -76,6 +78,7 @@ int main(int argc, char *argv[])
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << endl;
         runTime.write();
+        #include "energy.H"
     }
 
     Info<< "End\n" << endl;
