@@ -24,14 +24,14 @@ FoamFile
 
 application buoyantFoam;
 
-startFrom       startTime;
-//startFrom       latestTime;
+//startFrom       startTime;
+startFrom       latestTime;
 
 startTime       0;
 
 stopAt          endTime;
 
-endTime         1000;
+endTime        2000;
 
 deltaT          2;
 

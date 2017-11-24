@@ -50,7 +50,7 @@ gv $time/sigma.pdf &
 # animate the results
 for field in theta sigma; do
     gmtFoam $field
-    eps2gif $field.gif 0/$field.pdf ???/$field.pdf 1000/$field.pdf
+    eps2gif $field.gif 0/$field.pdf ???/$field.pdf ????/$field.pdf
 done
 
 # Debugging plots

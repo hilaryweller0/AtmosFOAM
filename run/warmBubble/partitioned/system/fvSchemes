@@ -76,6 +76,8 @@ interpolationSchemes
     interpolate(buoyant.u) linear;
     interpolate((stable.buoyant.massTransfer|stable.sigmaRho)) linear;
     interpolate((buoyant.stable.massTransfer|buoyant.sigmaRho)) linear;
+    interpolate(buoyant.rho) linear;
+    interpolate(stable.rho) linear;
 
     // for partitionedExnerFoamAdv
     convection linear;
