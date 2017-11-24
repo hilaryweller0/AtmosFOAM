@@ -45,14 +45,17 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createGravity.H"
     #include "createVolInterpolation.H"
-    #include "createFields.H"
     #include "createSurfaceGrad.H"
+    #include "createFields.H"
 
     Info<< "\nCalculating advection\n" << endl;
 
     #include "CourantNo.H"
 
     Tf = Tf * mag(g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
+
+    #include "initEnergy.H"
+    #include "energy.H"
 
     while (runTime.loop())
     {
@@ -76,6 +79,7 @@ int main(int argc, char *argv[])
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << endl;
         runTime.write();
+        #include "energy.H"
     }
 
     Info<< "End\n" << endl;
