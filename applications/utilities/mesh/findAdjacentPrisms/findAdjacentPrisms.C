@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2013 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2017 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,18 +22,19 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    advectionFoam
+    findAdjacentPrisms
 
 Description
-    Solves a transport equation for a passive scalar using RK2 timestepping
+    Write a faceSet containing interior faces that connect two prisms.
+    Designed to be used in conjunction with slantedCellMesh to improve
+    mesh quality by merging triangular (prismatic) slanted cells found
+    near the lower boundary of slanted cell meshes.
 
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
-#include "OFstream.H"
-#include "sGradScheme.H"
-#include "volInterpolationScheme.H"
-#include "gravity.H"
+#include "faceSet.H"
+#include "prismMatcher.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,50 +43,30 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #define dt runTime.deltaT()
-    #include "createGravity.H"
-    #include "createVolInterpolation.H"
-    #include "createSurfaceGrad.H"
-    #include "createFields.H"
 
-    Info<< "\nCalculating advection\n" << endl;
+    faceSet adjacentPrismSet(mesh, "adjacentPrismSet", IOobject::NO_READ, IOobject::AUTO_WRITE);
+    prismMatcher prism;
 
-    #include "CourantNo.H"
-
-    Tf = Tf * mag(g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
-
-    #include "initEnergy.H"
-    #include "energy.H"
-
-    while (runTime.loop())
+    for (label faceI = 0; faceI < mesh.nInternalFaces(); faceI++)
     {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        const label& own = mesh.faceOwner()[faceI];
+        const label& neighbour = mesh.faceNeighbour()[faceI];
 
-        for (int corr=0; corr < 3; corr++)
+        if (prism.isA(mesh, own) && prism.isA(mesh, neighbour))
         {
-            Tf = Tf.oldTime() - 0.5*dt *
-            (
-                (Uf & sGrad(Tf)) + 
-                (Uf & sGrad(Tf.oldTime()))
-            );
+            adjacentPrismSet.insert(faceI);
         }
-
-        T = cellCentreReconstruction.interpolate(Tf);
-
-        Tf = Tf * mag(g.unitFaceNormal()) + (1.0 - mag(g.unitFaceNormal()))*fvc::interpolate(T);
-        
-        Info << " Tf goes from " << min(Tf.internalField()) << " to "
-             << max(Tf.internalField()) << endl;
-        Info << " T goes from " << min(T.internalField()) << " to "
-             << max(T.internalField()) << endl;
-        runTime.write();
-        #include "energy.H"
     }
+
+    adjacentPrismSet.write();
+
+    Info << "Written " << adjacentPrismSet.size() << " faces with two adjacent prisms to adjacentPrismSet" << endl;
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "End\n" << endl;
 
     return 0;
 }
-
 
 // ************************************************************************* //
