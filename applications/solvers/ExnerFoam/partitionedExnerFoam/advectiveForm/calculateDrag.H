@@ -15,7 +15,7 @@ if (mag(dragCoeff) > SMALL)
     drag[0] = -dragCoeff/cloudRadius * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
 
     drag[0] = fvc::interpolate(sigma[1])*drag[0];
-    drag[1] = -fvc::interpolate(sigma[0])*drag[0]
+    drag[1] = -fvc::interpolate(sigma[0])*drag[0]/fvc::interpolate(sigma[1])
               *fvc::interpolate(rho[0])/fvc::interpolate(rho[1]);
 
     // The drag force shouldn't reverse the sign of the velocity. Check that 
@@ -23,14 +23,4 @@ if (mag(dragCoeff) > SMALL)
     Info << "Maximum dt*drag is " << dt.value()*max(mag(drag[0])).value() << nl
          << "Maximum stable.flux = " << max(mag(volFlux[0])) << nl
          << "Maximum buoyant.flux = " << max(mag(volFlux[1])) << endl;
-
-    // Check that the two drags are equal and opposite
-    surfaceScalarField netDrag
-    (
-        "netDrag",
-        fvc::interpolate(sigma[0])*fvc::interpolate(rho[0])*drag[0]
-      + fvc::interpolate(sigma[1])*fvc::interpolate(rho[1])*drag[1]
-    );
-    Info << "netDrag goes from " << min(netDrag).value() << " to "
-         << max(netDrag).value() << endl;
 }
