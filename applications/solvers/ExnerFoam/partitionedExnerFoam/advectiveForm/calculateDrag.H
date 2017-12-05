@@ -5,10 +5,11 @@ if (mag(dragCoeff) > SMALL)
     surfaceScalarField cloudRadius
     (
         "cloudRadius",
-        min
+        max
         (
-            fvc::interpolate(sigma[0])*fvc::interpolate(sigma[1])*cloudRadiusMin,
+            cloudRadiusMin,
             cloudRadiusMax
+            *fvc::interpolate(sigma[0])*fvc::interpolate(sigma[1])
         )
     );
 
