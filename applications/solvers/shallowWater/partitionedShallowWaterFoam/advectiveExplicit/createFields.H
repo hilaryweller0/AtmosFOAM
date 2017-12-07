@@ -24,6 +24,7 @@ partNames[1] = "buoyant.";
 PtrList<volScalarField> sigma(nParts);
 PtrList<volScalarField> h(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
+PtrList<surfaceVectorField> drag(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
 
@@ -95,6 +96,26 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::AUTO_WRITE
             ),
             Uf[ip] & mesh.Sf()
+        )
+    );
+    volFlux[ip].oldTime();
+    
+    drag.set
+    (
+        ip,
+        new surfaceVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"drag",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            ),
+            Uf[ip]/dt
+            
+            
         )
     );
     volFlux[ip].oldTime();

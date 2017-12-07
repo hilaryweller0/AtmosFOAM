@@ -47,6 +47,13 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
+    const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
+    const bool modelDrag = itsDict.lookupOrDefault<bool>("modelDrag", true);
+    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.48);
+    //const double lengthScale = itsDict.lookupOrDefault<double>("lengthScale", 40.);
+    dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
+    dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(0.01));
+    dimensionedScalar bubbleRadiusMax("bubbleRadiusMax",dimensionSet(0,1,0,0,0,0,0),scalar(1));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -78,22 +85,34 @@ int main(int argc, char *argv[])
             }
             
             // Update the velocity in each partition
-            surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
+                surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+                
+                //Update prognostic variables.
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    /*volFlux[ip] = volFlux[ip].oldTime() - dt*
+                    #include "drag.H"
+                    
+                    volFlux[ip] = volFlux[ip].oldTime() - dt*
                     (
                         ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
+                        
+                        //( fvc::interpolate
+                        //(
+                        //    fvc::div(volFlux[ip], u[ip])
+                        //  - u[ip] * fvc::div(volFlux[ip])
+                        //) & mesh.Sf() )
+                        
                       //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + ggradh
+                      - (drag[ip] & mesh.Sf())
                     );
                 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
                     Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                            *mesh.Sf()/sqr(mesh.magSf());*/
+                            *mesh.Sf()/sqr(mesh.magSf());
                 }
             }
         }
@@ -104,6 +123,8 @@ int main(int argc, char *argv[])
              << max(sigma[0]).value() << endl;
         Info << "sigma goes from " << min(sigma[0]+sigma[1]).value() << " to "
              << max(sigma[0]+sigma[1]).value() << endl;
+        Info << "h goes from " << min(hSum).value() << " to "
+             << max(hSum).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
 

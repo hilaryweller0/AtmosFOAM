@@ -23,10 +23,12 @@ vector constructiveRotorsVelocityField::velocityAt
 {
     scalar x = (p.x() - center.x())/xmax;
     scalar y = (p.y() - center.y())/ymax;
+    scalar vx = vmax*Foam::sin(M_PI*x)*Foam::sin(M_PI*y);
+    scalar vy = vmax*Foam::cos(1.5*M_PI*x)*Foam::cos(0.5*M_PI*y);
     return vector
     (
-        vmax*Foam::sin(M_PI*x)*Foam::sin(M_PI*y),
-        vmax*Foam::cos(1.5*M_PI*x)*Foam::cos(0.5*M_PI*y),
+        vx,
+        vy,
         0
     );
 }
