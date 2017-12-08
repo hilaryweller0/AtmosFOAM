@@ -27,6 +27,7 @@ PtrList<surfaceVectorField> Uf(nParts);
 PtrList<surfaceVectorField> drag(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<volScalarField> source(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -135,6 +136,23 @@ for (label ip = 0; ip < nParts; ip++)
             ),
             fvc::reconstruct(volFlux[ip]),
             Uf[ip].boundaryField().types()
+        )
+    );
+    
+    source.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"source",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh
         )
     );
 }

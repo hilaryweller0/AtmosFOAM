@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
     const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
     const bool modelDrag = itsDict.lookupOrDefault<bool>("modelDrag", true);
-    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.48);
+    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.);
     //const double lengthScale = itsDict.lookupOrDefault<double>("lengthScale", 40.);
     dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
     dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(0.01));
@@ -72,8 +72,19 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip], h[ip]);
-            
+                h[ip] = h[ip].oldTime() - dt*
+                (
+                    fvc::div(volFlux[ip], h[ip])
+                  + source[ip]*h[ip].oldTime()
+                );
+                for (label jp = 0; jp < ip; jp++)
+                {
+                    h[ip] += dt*source[jp]*h[ip].oldTime();
+                }
+                for (label jp = ip+1; jp < nParts; jp++)
+                {
+                    h[ip] += dt*source[jp]*h[ip].oldTime();
+                }
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
             }
@@ -107,7 +118,17 @@ int main(int argc, char *argv[])
                       //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + ggradh
                       - (drag[ip] & mesh.Sf())
+                      + fvc::interpolate(source[ip])*( Uf[ip] & mesh.Sf() )
                     );
+                
+                    for (label jp = 0; jp < ip; jp++)
+                    {
+                        volFlux[ip] += dt*fvc::interpolate(source[jp])*( Uf[jp] & mesh.Sf() );
+                    }
+                    for (label jp = ip+1; jp < nParts; jp++)
+                    {
+                        h[ip] += dt*source[jp]*h[ip].oldTime();
+                    }
                 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
