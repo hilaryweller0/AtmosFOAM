@@ -28,7 +28,8 @@ if (mag(dragCoeff) > SMALL)
 
     // The drag force shouldn't reverse the sign of the velocity. Check that 
     // drag*dt < flux
-    Info << "Maximum dt*drag is " << dt.value()*max(mag(drag[0])).value() << nl
+    Info << "Maximum dt*drag[0] is " << dt.value()*max(mag(drag[0])).value() << nl
+         << "Maximum dt*drag[1] is " << dt.value()*max(mag(drag[1])).value() << nl
          << "Maximum stable.flux = " << max(mag(volFlux[0])) << nl
          << "Maximum buoyant.flux = " << max(mag(volFlux[1])) << endl;
 }
