@@ -2,22 +2,29 @@
 
 if (mag(dragCoeff) > SMALL)
 {
+    PtrList<surfaceScalarField> sigmaf(nParts);
+    for (label ip = 0; ip < nParts; ip++)
+    {
+        sigmaf.set
+        (
+            ip,
+            new surfaceScalarField(fvc::interpolate(sigma[ip]))
+        );
+    }
+    
     surfaceScalarField cloudRadius
     (
         "cloudRadius",
-        max
-        (
-            cloudRadiusMin,
-            cloudRadiusMax
-            *fvc::interpolate(sigma[0])*fvc::interpolate(sigma[1])
-        )
+        max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1])
     );
+    surfaceScalarField dragCommon = -dragCoeff*fvc::interpolate(rhoSum)
+                 /cloudRadius * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
 
-    drag[0] = -dragCoeff/cloudRadius * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
+    drag[0] = sigmaf[1]/fvc::interpolate(rho[0])*dragCommon;
+    drag[1] = -sigmaf[0]/fvc::interpolate(rho[1])*dragCommon;
 
-    drag[0] = fvc::interpolate(sigma[1])*drag[0];
-    drag[1] = -fvc::interpolate(sigma[0])*drag[0]/fvc::interpolate(sigma[1])
-              *fvc::interpolate(rho[0])/fvc::interpolate(rho[1]);
+    surfaceScalarField netDrag = drag[0]*sigmaf[0]*fvc::interpolate(rho[0])
+                               + drag[1]*sigmaf[1]*fvc::interpolate(rho[1]);
 
     // The drag force shouldn't reverse the sign of the velocity. Check that 
     // drag*dt < flux

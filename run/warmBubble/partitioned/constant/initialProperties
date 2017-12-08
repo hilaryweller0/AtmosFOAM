@@ -25,7 +25,7 @@ FoamFile
 
 // inputs for makeHotBubble
 thetaPrime thetaPrime [0 0  0 1 0 0 0] 2;
-bubbleCentre (0 500 4.5e3);
+bubbleCentre (0 500 2e3);
 bubbleRadii  (2000 1 2000);
 
 // ************************************************************************* //
