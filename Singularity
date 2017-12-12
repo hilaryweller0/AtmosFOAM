@@ -13,5 +13,5 @@ From:ubuntu:$VERSION
 	apt-get install devscripts debhelper openfoam-dev libgdal-dev -y
 
         DEBIAN_FRONTEND=noninteractive \
-	apt-get install atmosfoam-tools -y --allow-unauthenticated --no-install-recommends
+	apt-get install atmosfoam-tools highorderfit -y --allow-unauthenticated --no-install-recommends
 
