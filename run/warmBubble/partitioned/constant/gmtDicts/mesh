@@ -14,7 +14,7 @@ FoamFile
 
 // How to plot
 // Compulsory inputs
-projection "X18c/18c";
+projection "X18c/9c";
 projection2D XZ;
 //patch frontAndBack;
 

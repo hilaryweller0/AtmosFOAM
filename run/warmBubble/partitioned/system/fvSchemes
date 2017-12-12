@@ -47,8 +47,8 @@ divSchemes
     div(buoyant.volFlux,buoyant.sigmaRho) Gauss upwind;
     div(stable.volFlux,stable.theta) Gauss upwind;
     div(buoyant.volFlux,buoyant.theta) Gauss upwind;
-    div(stable.volFlux,stable.u) Gauss upwind;
-    div(buoyant.volFlux,buoyant.u) Gauss upwind;
+    div(stable.volFlux,stable.u) Gauss linearUpwind linearUpwind;
+    div(buoyant.volFlux,buoyant.u) Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes

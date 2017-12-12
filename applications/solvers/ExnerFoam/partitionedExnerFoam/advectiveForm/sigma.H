@@ -12,8 +12,3 @@ for(label ip = 0; ip < nParts; ip++)
     sumSigma += sigma[ip];
 }
 
-Info << "1-sumSigma goes from " << min(1-sumSigma).value() << " to "
-     << max(1-sumSigma).value() << endl;
-Info << "buoyant.sigma goes from " << min(sigma[1]).value() << " to "
-     << max(sigma[1]).value() << endl;
-

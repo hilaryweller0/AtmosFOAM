@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "calculateDrag.H"
             #include "rhoSigmaEqn.H"
             #include "rhoThetaEqn.H"
             #include "sigma.H"
+            #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
         
