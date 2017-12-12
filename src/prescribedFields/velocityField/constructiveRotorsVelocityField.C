@@ -15,6 +15,7 @@ ymax(dict.lookupOrDefault<scalar>("ymax", scalar(1))),
 center(dict.lookupOrDefault<point>("centreOfSystem", point(0,0,0)))
 {};
 
+/*
 vector constructiveRotorsVelocityField::velocityAt
 (
     const point& p,
@@ -31,6 +32,27 @@ vector constructiveRotorsVelocityField::velocityAt
         vy,
         0
     );
+} */
+
+vector constructiveRotorsVelocityField::streamfunctionAt
+(
+        const point& p,
+        const Time& t
+) const
+{
+    // Vector from point p to axis of rotation
+    scalar x = (p.x() - center.x())/xmax;
+    scalar y = 0.5*(p.y() - center.y())/ymax;
+    
+    vector streamfunction;
+    streamfunction[0] = 0;
+    streamfunction[1] = 0;
+    streamfunction[2] = ymax*vmax/M_PI*
+                        (
+                            Foam::sin(M_PI*x)*Foam::cos(M_PI*y) 
+                          - 2/3*Foam::sin(1.5*M_PI*x)*Foam::cos(0.5*M_PI*y)
+                        );
+    return streamfunction;
 }
 
 point constructiveRotorsVelocityField::initialPositionOf

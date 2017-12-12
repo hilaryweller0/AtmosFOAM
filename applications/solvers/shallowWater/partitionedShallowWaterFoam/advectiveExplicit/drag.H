@@ -10,12 +10,12 @@ if (modelDrag)
         for (label jp = 0; jp < ip; jp++)
         {
             volScalarField bubbleRadius = max(bubbleRadiusMin,bubbleRadiusMax*sigma[ip]*sigma[jp]);
-            drag[ip] -= 0.5*dragCoefficient/fvc::interpolate(bubbleRadius) * mag(Uf[ip]-Uf[jp]) * (Uf[ip]-Uf[jp]) / 100.;
+            drag[ip] -= 0.5*fvc::interpolate(sigma[jp])*dragCoefficient/fvc::interpolate(bubbleRadius) * mag(Uf[ip]-Uf[jp]) * (Uf[ip]-Uf[jp]);
         }
         for (label jp = ip+1; jp < nParts; jp++)
         {
             volScalarField bubbleRadius = max(bubbleRadiusMin,bubbleRadiusMax*sigma[ip]*sigma[jp]);
-            drag[ip] -= 0.5*dragCoefficient/fvc::interpolate(bubbleRadius) * mag(Uf[ip]-Uf[jp]) * (Uf[ip]-Uf[jp]) / 100.;
+            drag[ip] -= 0.5*fvc::interpolate(sigma[jp])*dragCoefficient/fvc::interpolate(bubbleRadius) * mag(Uf[ip]-Uf[jp]) * (Uf[ip]-Uf[jp]);
         }
     }
 }
