@@ -10,6 +10,7 @@ if (mag(dragCoeff) > SMALL)
             ip,
             new surfaceScalarField(fvc::interpolate(sigma[ip]))
         );
+        sigmaf[ip] = min(max(sigmaf[ip], scalar(0)), scalar(1));
     }
     
     surfaceScalarField cloudRadius
