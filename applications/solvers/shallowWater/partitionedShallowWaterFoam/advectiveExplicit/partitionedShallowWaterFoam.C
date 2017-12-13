@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
     const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
     const bool modelDrag = itsDict.lookupOrDefault<bool>("modelDrag", true);
-    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.);
+    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.01);
     const double sourceMag = itsDict.lookupOrDefault<double>("sourceMagnitude", 0.01);
     //const double lengthScale = itsDict.lookupOrDefault<double>("lengthScale", 40.);
     dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
