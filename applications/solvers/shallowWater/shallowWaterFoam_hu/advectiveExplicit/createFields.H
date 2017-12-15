@@ -37,7 +37,7 @@ surfaceScalarField volFlux
         "volFlux",
         runTime.timeName(),
         mesh,
-        IOobject::READ_IF_PRESENT,
+        IOobject::MUST_READ,
         IOobject::AUTO_WRITE
     ),
     Uf & mesh.Sf()
@@ -52,7 +52,7 @@ volVectorField U
         "U",
         runTime.timeName(),
         mesh,
-        IOobject::MUST_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
     mesh
