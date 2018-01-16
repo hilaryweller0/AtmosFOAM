@@ -37,9 +37,33 @@ int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
     #include "createTime.H"
+    #include "createMesh.H"
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    wordList partNames(2);
+    partNames[0] = ".stable";
+    partNames[1] = ".bouyant";
+
+    Info << "Reading in partionedVolScalarField sigma" << endl;
+    partionedVolScalarField sigma
+    (
+        partNames, 
+        IOobject("sigma", runTime.timeName(), mesh),
+        mesh
+    );
+    
+/*    Info << "Reading in partionedVolScalarField rho" << endl;
+    partionedVolScalarField rho
+    (
+        partNames, 
+        IOobject("rho", runTime.timeName(), mesh, sigma),
+        mesh
+    );
+    
+    sigma.write();
+    rho.write();
+*/
     Info<< nl << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
         << "  ClockTime = " << runTime.elapsedClockTime() << " s"
         << nl << endl;

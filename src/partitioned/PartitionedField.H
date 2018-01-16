@@ -55,13 +55,13 @@ class PartitionedField
 public:
         //- The names of the parts
         const wordList& partNames;
-        
-        //- The volume fractions in each part
-        const PartitionedField<Type, PatchField, GeoMesh>& sigma;
 
 
     // Private data
 private:
+        //- The volume fractions in each part
+        PartitionedField<Type, PatchField, GeoMesh>& sigma_;
+
         //- The sum over all partitions
         GeometricField<Type, PatchField, GeoMesh> sum_;
  
@@ -76,6 +76,11 @@ private:
 
 public:
 
+    // Public typedefs
+
+        //- Type of mesh on which this PartitionedField is instantiated
+        typedef typename GeoMesh::Mesh Mesh;
+
     // Constructors
 
         //- Construct from partion names and IOobject (must read in fields)
@@ -83,7 +88,7 @@ public:
         (
             const wordList& partNames__,
             const IOobject& io,
-            const GeoMesh& mesh
+            const Mesh& mesh
         );
 
         //- Construct from partion names and the volume fraction (sigma)
@@ -92,7 +97,7 @@ public:
         (
             const wordList& partNames__,
             const IOobject& io,
-            const GeoMesh& mesh,
+            const Mesh& mesh,
             const PartitionedField& sigma__
         );
 
@@ -117,15 +122,20 @@ public:
     //- Destructor
     ~PartitionedField();
 
+    // Access functions
+    
+        //- Sigma - volume fractions in each partition
+        const PartitionedField<Type, PatchField, GeoMesh>& sigma() const
+            { return sigma_; }
+
+        //- Return the sum without updating
+        const GeometricField<Type, PatchField, GeoMesh>& sum() const
+            { return sum_; }
 
     // Member Functions
 
         //- Sum over partitions and return the sum
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
-
-        //- Return the sum without updating
-        const GeometricField<Type, PatchField, GeoMesh>& sum() const
-            { return sum_; }
 
         // Output
         void write();
@@ -135,6 +145,7 @@ public:
         
         // Functions from PtrList
         label size() { return (*this).size();}
+        
         const GeometricField<Type, PatchField, GeoMesh>& operator[]
         (
             const label ip

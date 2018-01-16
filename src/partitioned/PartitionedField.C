@@ -33,12 +33,12 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 (
     const wordList& partNames__,
     const IOobject& io,
-    const GeoMesh& mesh
+    const Mesh& mesh
 )
 :
     PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames.size()),
     partNames(partNames__),
-    sigma(*this),
+    sigma_(*this),
     // Read in the sum
     sum_
     (
@@ -56,7 +56,7 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
     // Read in fields for each partition
     for(label ip = 0; ip < size(); ip++)
     {
-        set
+        (*this).set
         (
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
@@ -84,13 +84,13 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 (
     const wordList& partNames__,
     const IOobject& io,
-    const GeoMesh& mesh,
+    const Mesh& mesh,
     const PartitionedField& sigma__
 )
 :
     PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames.size()),
     partNames(partNames__),
-    sigma(sigma__),
+    sigma_(sigma__),
     // Read in the sum
     sum_
     (
@@ -108,7 +108,7 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
     // Read in fields for each partition
     for(label ip = 0; ip < size(); ip++)
     {
-        set
+        (*this).set
         (
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
@@ -140,13 +140,13 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 :
     PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames.size()),
     partNames(partNames__),
-    sigma(*this),
+    sigma_(*this),
     sum_(field)
 {
     // Set fields for each partition
     for(label ip = 0; ip < size(); ip++)
     {
-        set
+        (*this).set
         (
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
@@ -175,13 +175,13 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 :
     PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames.size()),
     partNames(partNames__),
-    sigma(sigma__),
+    sigma_(sigma__),
     sum_(field)
 {
     // Set fields for each partition
     for(label ip = 0; ip < size(); ip++)
     {
-        set
+        (*this).set
         (
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
@@ -213,14 +213,27 @@ template<class Type, template<class> class PatchField, class GeoMesh>
 const Foam::GeometricField<Type, PatchField, GeoMesh>&
 Foam::PartitionedField<Type, PatchField, GeoMesh>::updateSum()
 {
-    sum_ = sigma[0]*operator[](0);
-
-    // Sum contributions from other partitions
-    for (label ip = 1; ip < size(); ip++)
+    // The sum depends on whether the partionedField is sigma
+    if (this == &sigma_)
     {
-        sum_ += sigma[ip]*operator[](ip);
+        sum_ = sigma_[0];
+
+        // Sum contributions from other partitions
+        for (label ip = 1; ip < size(); ip++)
+        {
+            sum_ += sigma_[ip];
+        }
     }
-    
+    else
+    {
+        sum_ = sigma_[0]*operator[](0);
+
+        // Sum contributions from other partitions
+        for (label ip = 1; ip < size(); ip++)
+        {
+            sum_ += sigma_[ip]*operator[](ip);
+        }
+    }
     return sum_;
 }
 
