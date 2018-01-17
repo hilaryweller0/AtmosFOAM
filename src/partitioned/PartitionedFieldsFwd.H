@@ -51,8 +51,9 @@ class fvPatchField;
 template<class Type, template<class> class PatchField, class GeoMesh>
 class GeometricField;
 
-
 typedef PartitionedField<scalar, fvPatchField, volMesh> partionedVolScalarField;
+
+typedef PartitionedFraction<scalar, fvPatchField, volMesh> partionedVolScalarFraction;
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

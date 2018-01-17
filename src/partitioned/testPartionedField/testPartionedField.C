@@ -43,27 +43,30 @@ int main(int argc, char *argv[])
 
     wordList partNames(2);
     partNames[0] = ".stable";
-    partNames[1] = ".bouyant";
+    partNames[1] = ".buoyant";
 
-    Info << "Reading in partionedVolScalarField sigma" << endl;
-    partionedVolScalarField sigma
+    Info << "Reading in partionedVolScalarFraction sigma" << endl;
+    partionedVolScalarFraction sigma
     (
         partNames, 
         IOobject("sigma", runTime.timeName(), mesh),
         mesh
     );
     
-/*    Info << "Reading in partionedVolScalarField rho" << endl;
+    Info << "Reading in partionedVolScalarField rho" << endl;
     partionedVolScalarField rho
     (
         partNames, 
-        IOobject("rho", runTime.timeName(), mesh, sigma),
-        mesh
+        IOobject("rho", runTime.timeName(), mesh),
+        mesh,
+        sigma
     );
+    
+    runTime++;
     
     sigma.write();
     rho.write();
-*/
+
     Info<< nl << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
         << "  ClockTime = " << runTime.elapsedClockTime() << " s"
         << nl << endl;

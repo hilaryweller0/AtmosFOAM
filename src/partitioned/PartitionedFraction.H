@@ -22,23 +22,21 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::PartitionedField
+    Foam::PartitionedFraction
 
 Description
-    A list of GeometricFields, one for each partion of the atmosphere. A
-    PartitionedField is a PartitioneFraction plus a sigma field which gives
-    the fraction so that
-    sum = sum(sigma*field)
+    A list of GeometricFields, one for each partion of the atmosphere. The
+    Fields are fractions of the atmosphere and can be summed to the total
 
 SourceFiles
-    PartitionedField.C
+    PartitionedFraction.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef PartitionedField_H
-#define PartitionedField_H
+#ifndef PartitionedFraction_H
+#define PartitionedFraction_H
 
-#include "PartitionedFraction.H"
+#include "GeometricField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -46,69 +44,76 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                         Class PartitionedField Declaration
+                         Class PartitionedFraction Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Type, template<class> class PatchField, class GeoMesh>
-class PartitionedField
+class PartitionedFraction
 :
-    public PartitionedFraction<Type, PatchField, GeoMesh>
+    public PtrList<GeometricField<Type, PatchField, GeoMesh> >
 {
-    // Private data
+    // Public data
+public:
+        //- The names of the parts
+        const wordList& partNames;
 
-        //- The fractions in each partition
-        const PartitionedFraction<Type, PatchField, GeoMesh>& sigma_;
+
+    // Protected data
+protected:
+
+        //- The sum over all partitions
+        GeometricField<Type, PatchField, GeoMesh> sum_;
+ 
+    // Private data
+private:
 
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
-        PartitionedField(const PartitionedField&);
+        PartitionedFraction(const PartitionedFraction&);
 
         //- Disallow default bitwise assignment
-        void operator=(const PartitionedField&);
+        void operator=(const PartitionedFraction&);
 
 
 public:
 
     // Public typedefs
 
-        //- Type of mesh on which this PartitionedField is instantiated
+        //- Type of mesh on which this PartitionedFraction is instantiated
         typedef typename GeoMesh::Mesh Mesh;
-        
+
     // Constructors
 
         //- Construct from partion names and IOobject (must read in fields)
-        //- and sigma
-        PartitionedField
+        PartitionedFraction
         (
             const wordList& partNames__,
             const IOobject& io,
-            const Mesh& mesh,
-            const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+            const Mesh& mesh
         );
 
-        //- Construct from partion names and IOobject and sigma.
+        //- Construct from partion names and IOobject.
         //- Initialise all parts to "field"
-        PartitionedField
+        PartitionedFraction
         (
             const wordList& partNames__,
-            const GeometricField<Type, PatchField, GeoMesh>& field,
-            const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+            const GeometricField<Type, PatchField, GeoMesh>& field
         );
 
 
     //- Destructor
-    ~PartitionedField();
+    ~PartitionedFraction();
 
     // Access functions
     
-        //- Return sigma
-        const PartitionedFraction<Type, PatchField, GeoMesh>& sigma() const
-            { return sigma_; }
+        //- Return the sum without updating
+        const GeometricField<Type, PatchField, GeoMesh>& sum() const
+            { return sum_; }
 
     // Member Functions
 
-        //- Sum over partitions weighting by sigma and return the sum
+        //- Sum over partitions and return the sum
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
 
         // Output
@@ -116,7 +121,7 @@ public:
 
         // Input (re-read all fields)
         void readUpdate();
-
+        
         // Functions from PtrList
         label size() const
         {
@@ -140,7 +145,7 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-    #include "PartitionedField.C"
+    #include "PartitionedFraction.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
