@@ -42,7 +42,7 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
     (
         IOobject
         (
-            io.name()+"Sum",
+            "sum." + io.name(),
             io.time().timeName(),
             mesh,
             IOobject::MUST_READ,
@@ -51,10 +51,8 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
         mesh
     )
 {
-    Info << "Reading in " << io.name() << " for each partition" << endl;
     for(label ip = 0; ip < size(); ip++)
     {
-        Info << "Partition " << ip << " called " << partNames[ip] << endl;
         (*this).set
         (
             ip,
@@ -62,7 +60,7 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
             (
                 IOobject
                 (
-                    io.name()+partNames[ip],
+                    partNames[ip] + '.' + io.name(),
                     io.time().timeName(),
                     mesh,
                     IOobject::MUST_READ,
@@ -88,6 +86,8 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
     partNames(partNames__),
     sum_(field)
 {
+    sum_.name("sum."+field.name());
+
     // Set fields for each partition
     for(label ip = 0; ip < size(); ip++)
     {
@@ -98,7 +98,7 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
             (
                 IOobject
                 (
-                    field.name()+partNames[ip],
+                    partNames[ip] + '.' + field.name(),
                     field.time().timeName(),
                     field.mesh(),
                     IOobject::NO_READ

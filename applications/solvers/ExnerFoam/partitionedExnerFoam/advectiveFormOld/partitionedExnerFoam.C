@@ -34,7 +34,6 @@ Description
 #include "HodgeOps.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
-#include "PartitionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

@@ -44,16 +44,27 @@ namespace Foam
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 class volMesh;
+class surfaceMesh;
 
 template<class Type>
 class fvPatchField;
+
+template<class Type>
+class fvsPatchField;
 
 template<class Type, template<class> class PatchField, class GeoMesh>
 class GeometricField;
 
 typedef PartitionedField<scalar, fvPatchField, volMesh> partionedVolScalarField;
+typedef PartitionedField<scalar, fvsPatchField, surfaceMesh> partionedSurfaceScalarField;
+typedef PartitionedField<vector, fvPatchField, volMesh> partionedVolVectorField;
+typedef PartitionedField<vector, fvsPatchField, surfaceMesh> partionedSurfaceVectorField;
 
 typedef PartitionedFraction<scalar, fvPatchField, volMesh> partionedVolScalarFraction;
+typedef PartitionedFraction<scalar, fvsPatchField, surfaceMesh> partionedSurfaceScalarFraction;
+typedef PartitionedFraction<vector, fvPatchField, volMesh> partionedVolVectorFraction;
+typedef PartitionedFraction<vector, fvsPatchField, surfaceMesh> partionedSurfaceVectorFraction;
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

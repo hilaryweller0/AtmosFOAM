@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     wordList partNames(2);
-    partNames[0] = ".stable";
-    partNames[1] = ".buoyant";
+    partNames[0] = "stable";
+    partNames[1] = "buoyant";
 
     Info << "Reading in partionedVolScalarFraction sigma" << endl;
     partionedVolScalarFraction sigma

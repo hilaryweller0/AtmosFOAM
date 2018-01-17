@@ -17,26 +17,21 @@ Exner.oldTime();
 // The partition names
 const label nParts = 2;
 wordList partNames(nParts);
-partNames[0] = "stable";
-partNames[1] = "buoyant";
+partNames[0] = "stable.";
+partNames[1] = "buoyant.";
 
 // Set pointer lists for variables in all partitions. Read in later
-partitionedVolScalarFraction sigma
-(
-    partNames,
-    IOobject("sigma", runTime.timeName(), mesh), 
-    mesh
-);
-partitionedVolScalarField theta(nParts);
-partitionedSurfaceVectorField Uf(nParts);
+PtrList<volScalarField> sigma(nParts);
+PtrList<volScalarField> theta(nParts);
+PtrList<surfaceVectorField> Uf(nParts);
 
-partitionedVolScalarField rho(nParts);
-partitionedVolScalarFraction sigmaRho(nParts);
-partitionedVolVectorField u(nParts);
-partitionedSurfaceScalarFraction flux(nParts);
-partitionedSurfaceScalarField volFlux(nParts);
-partitionedSurfaceScalarField dVolFluxdt(nParts);
-partitionedSurfaceScalarField drag(nParts);
+PtrList<volScalarField> rho(nParts);
+PtrList<volScalarField> sigmaRho(nParts);
+PtrList<volVectorField> u(nParts);
+PtrList<surfaceScalarField> flux(nParts);
+PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<surfaceScalarField> dVolFluxdt(nParts);
+PtrList<surfaceScalarField> drag(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
