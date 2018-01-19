@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     partNames[1] = "buoyant";
 
     Info << "Reading in partionedVolScalarFraction sigma" << endl;
-    partionedVolScalarFraction sigma
+    partitionedVolScalarFraction sigma
     (
         partNames, 
         IOobject("sigma", runTime.timeName(), mesh),
@@ -54,7 +54,7 @@ int main(int argc, char *argv[])
     );
     
     Info << "Reading in partionedVolScalarField rho" << endl;
-    partionedVolScalarField rho
+    partitionedVolScalarField rho
     (
         partNames, 
         IOobject("rho", runTime.timeName(), mesh),
@@ -62,10 +62,18 @@ int main(int argc, char *argv[])
         sigma
     );
     
+    partitionedVolScalarFraction sigmaRho = rho.fraction();
+
+    rho = sigmaRho.field(sigma);
+
     runTime++;
     
     sigma.write();
     rho.write();
+    sigmaRho.write();
+    
+    //sigma = sigmaRho;
+    sigma.write();
 
     Info<< nl << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
         << "  ClockTime = " << runTime.elapsedClockTime() << " s"

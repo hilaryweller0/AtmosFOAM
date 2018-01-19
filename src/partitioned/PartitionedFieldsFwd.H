@@ -55,15 +55,15 @@ class fvsPatchField;
 template<class Type, template<class> class PatchField, class GeoMesh>
 class GeometricField;
 
-typedef PartitionedField<scalar, fvPatchField, volMesh> partionedVolScalarField;
-typedef PartitionedField<scalar, fvsPatchField, surfaceMesh> partionedSurfaceScalarField;
-typedef PartitionedField<vector, fvPatchField, volMesh> partionedVolVectorField;
-typedef PartitionedField<vector, fvsPatchField, surfaceMesh> partionedSurfaceVectorField;
+typedef PartitionedField<scalar, fvPatchField, volMesh> partitionedVolScalarField;
+typedef PartitionedField<scalar, fvsPatchField, surfaceMesh> partitionedSurfaceScalarField;
+typedef PartitionedField<vector, fvPatchField, volMesh> partitionedVolVectorField;
+typedef PartitionedField<vector, fvsPatchField, surfaceMesh> partitionedSurfaceVectorField;
 
-typedef PartitionedFraction<scalar, fvPatchField, volMesh> partionedVolScalarFraction;
-typedef PartitionedFraction<scalar, fvsPatchField, surfaceMesh> partionedSurfaceScalarFraction;
-typedef PartitionedFraction<vector, fvPatchField, volMesh> partionedVolVectorFraction;
-typedef PartitionedFraction<vector, fvsPatchField, surfaceMesh> partionedSurfaceVectorFraction;
+typedef PartitionedFraction<scalar, fvPatchField, volMesh> partitionedVolScalarFraction;
+typedef PartitionedFraction<scalar, fvsPatchField, surfaceMesh> partitionedSurfaceScalarFraction;
+typedef PartitionedFraction<vector, fvPatchField, volMesh> partitionedVolVectorFraction;
+typedef PartitionedFraction<vector, fvsPatchField, surfaceMesh> partitionedSurfaceVectorFraction;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

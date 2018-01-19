@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "PartitionedFraction.H"
+#include "PartitionedField.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -86,7 +87,7 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
     partNames(partNames__),
     sum_(field)
 {
-    sum_.name("sum."+field.name());
+    sum_.rename("sum."+field.name());
 
     // Set fields for each partition
     for(label ip = 0; ip < size(); ip++)
@@ -109,6 +110,56 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
     }
 }
 
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
+(
+    const PartitionedFraction<Type, PatchField, GeoMesh>& copyFrom
+)
+:
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(copyFrom.size()),
+    partNames(copyFrom.partNames),
+    sum_(copyFrom.sum())
+{
+    // Set fields for each partition
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                copyFrom[ip]
+            )
+        );
+    }
+}
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedFraction<Type, PatchField, GeoMesh>::PartitionedFraction
+(
+    const word& newName,
+    const PartitionedFraction<Type, PatchField, GeoMesh>& copyFrom
+)
+:
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(copyFrom.size()),
+    partNames(copyFrom.partNames),
+    sum_(copyFrom.sum())
+{
+    // Set fields for each partition
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                partNames[ip] + '.' + newName,
+                copyFrom[ip]
+            )
+        );
+    }
+}
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
@@ -136,6 +187,36 @@ Foam::PartitionedFraction<Type, PatchField, GeoMesh>::updateSum()
 
 
 template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>
+Foam::PartitionedFraction<Type, PatchField, GeoMesh>::field
+(
+    const PartitionedFraction<Type, PatchField, GeoMesh>& sigma
+) const
+{
+    // Name of the new field
+    string newName = operator[](0).name();
+    newName.erase(0, sigma[0].name().size()+1);
+
+    // Geometric field to start from
+    GeometricField<Type, PatchField, GeoMesh> ff
+    (
+        newName,
+        operator[](0)/sigma[0]
+    );
+    
+    PartitionedField<Type, PatchField, GeoMesh> f(partNames, ff, sigma);
+    
+    for(label ip = 1; ip < size(); ip++)
+    {
+        Info << "Setting partition " << ip << endl;
+        f[ip] = operator[](ip)/sigma[ip];
+    }
+    f.updateSum();
+
+    return f;
+}
+
+template<class Type, template<class> class PatchField, class GeoMesh>
 void Foam::PartitionedFraction<Type, PatchField, GeoMesh>::write()
 {
     for(label ip = 0; ip < size(); ip++)
@@ -158,5 +239,25 @@ void Foam::PartitionedFraction<Type, PatchField, GeoMesh>::readUpdate()
     updateSum();
 }
 
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+void Foam::PartitionedFraction<Type, PatchField, GeoMesh>::operator=
+(
+    const PartitionedFraction<Type, PatchField, GeoMesh>& gf
+)
+{
+    if (this == &gf)
+    {
+        FatalErrorInFunction
+            << "attempted assignment to self"
+            << abort(FatalError);
+    }
+
+    Info << "hello from PartitionedFraction::operator=" << endl;
+    PtrList<GeometricField<Type, PatchField, GeoMesh>>(*this) = gf;
+    Info << "About to update sum" << endl;
+    updateSum();
+    Info << "Done" << endl;
+}
 
 // ************************************************************************* //

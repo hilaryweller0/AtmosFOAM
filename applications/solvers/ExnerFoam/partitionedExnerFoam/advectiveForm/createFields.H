@@ -27,11 +27,20 @@ partitionedVolScalarFraction sigma
     IOobject("sigma", runTime.timeName(), mesh), 
     mesh
 );
+partitionedVolScalarField rho
+(
+    partNames,
+    IOobject("rho", runTime.timeName(), mesh, sigma), 
+    mesh
+);
+partitionedVolScalarFraction sigmaRho
+(
+    "sigmaRho", sigma*rho
+);
+
 partitionedVolScalarField theta(nParts);
 partitionedSurfaceVectorField Uf(nParts);
 
-partitionedVolScalarField rho(nParts);
-partitionedVolScalarFraction sigmaRho(nParts);
 partitionedVolVectorField u(nParts);
 partitionedSurfaceScalarFraction flux(nParts);
 partitionedSurfaceScalarField volFlux(nParts);

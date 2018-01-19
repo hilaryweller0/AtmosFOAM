@@ -59,14 +59,6 @@ class PartitionedField
         //- The fractions in each partition
         const PartitionedFraction<Type, PatchField, GeoMesh>& sigma_;
 
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construct
-        PartitionedField(const PartitionedField&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const PartitionedField&);
-
 
 public:
 
@@ -96,6 +88,15 @@ public:
             const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
         );
 
+        //- Copy construct
+        PartitionedField(const PartitionedField&);
+
+        //- Copy and rename
+        PartitionedField
+        (
+            const word& newName,
+            const PartitionedField<Type, PatchField, GeoMesh>& copyFrom
+        );
 
     //- Destructor
     ~PartitionedField();
@@ -111,13 +112,23 @@ public:
         //- Sum over partitions weighting by sigma and return the sum
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
 
+        //- Multiply the field by sigma
+        PartitionedFraction<Type, PatchField, GeoMesh> fraction() const;
+
         // Output
         void write();
 
         // Input (re-read all fields)
         void readUpdate();
 
-        // Functions from PtrList
+    // Member operators
+    
+        void operator=(const PartitionedField<Type, PatchField, GeoMesh>&);
+        void operator+=(const PartitionedField<Type, PatchField, GeoMesh>&);
+        void operator-=(const PartitionedField<Type, PatchField, GeoMesh>&);
+
+    // Functions from PtrList
+
         label size() const
         {
             return PtrList<GeometricField<Type, PatchField, GeoMesh> >::size();
@@ -127,6 +138,14 @@ public:
         (
             const label ip
         ) const
+        {
+            return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](ip);
+        }
+
+        GeometricField<Type, PatchField, GeoMesh>& operator[]
+        (
+            const label ip
+        )
         {
             return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](ip);
         }

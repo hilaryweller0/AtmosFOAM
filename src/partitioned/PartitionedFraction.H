@@ -43,6 +43,9 @@ SourceFiles
 namespace Foam
 {
 
+template<class Type, template<class> class PatchField, class GeoMesh>
+class PartitionedField;
+
 /*---------------------------------------------------------------------------*\
                          Class PartitionedFraction Declaration
 \*---------------------------------------------------------------------------*/
@@ -64,17 +67,6 @@ protected:
         //- The sum over all partitions
         GeometricField<Type, PatchField, GeoMesh> sum_;
  
-    // Private data
-private:
-
-    // Private Member Functions
-
-        //- Disallow default bitwise copy construct
-        PartitionedFraction(const PartitionedFraction&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const PartitionedFraction&);
-
 
 public:
 
@@ -100,6 +92,16 @@ public:
             const wordList& partNames__,
             const GeometricField<Type, PatchField, GeoMesh>& field
         );
+        
+        //- Copy construct
+        PartitionedFraction(const PartitionedFraction&);
+
+        //- Copy and rename
+        PartitionedFraction
+        (
+            const word& newName,
+            const PartitionedFraction<Type, PatchField, GeoMesh>& copyFrom
+        );
 
 
     //- Destructor
@@ -116,13 +118,21 @@ public:
         //- Sum over partitions and return the sum
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
 
+        //- Divide the fraction by sigma to get a field
+        PartitionedField<Type, PatchField, GeoMesh> field
+            (const PartitionedFraction& sigma) const;
+
         // Output
         void write();
 
         // Input (re-read all fields)
         void readUpdate();
         
-        // Functions from PtrList
+    // Member operators
+    
+        void operator=(const PartitionedFraction<Type, PatchField, GeoMesh>&);
+    
+    // Functions from PtrList
         label size() const
         {
             return PtrList<GeometricField<Type, PatchField, GeoMesh> >::size();
@@ -135,6 +145,16 @@ public:
         {
             return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](ip);
         }
+        
+        GeometricField<Type, PatchField, GeoMesh>& operator[]
+        (
+            const label ip
+        )
+        {
+            return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](ip);
+        }
+        
+        
 };
 
 
