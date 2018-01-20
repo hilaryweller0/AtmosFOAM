@@ -30,236 +30,72 @@ partitionedVolScalarFraction sigma
 partitionedVolScalarField rho
 (
     partNames,
-    IOobject("rho", runTime.timeName(), mesh, sigma), 
-    mesh
+    IOobject("rho", runTime.timeName(), mesh), 
+    mesh,
+    sigma
 );
-partitionedVolScalarFraction sigmaRho
+partitionedVolScalarFraction sigmaRho = rho.fraction();
+
+partitionedVolScalarField theta
 (
-    "sigmaRho", sigma*rho
+    partNames,
+    IOobject("theta", runTime.timeName(), mesh), 
+    mesh,
+    sigmaRho
 );
 
-partitionedVolScalarField theta(nParts);
-partitionedSurfaceVectorField Uf(nParts);
-
-partitionedVolVectorField u(nParts);
-partitionedSurfaceScalarFraction flux(nParts);
-partitionedSurfaceScalarField volFlux(nParts);
-partitionedSurfaceScalarField dVolFluxdt(nParts);
-partitionedSurfaceScalarField drag(nParts);
-
-// Read in or set variables in partitions
-for (label ip = 0; ip < nParts; ip++)
+partitionedSurfaceScalarFraction sigmaRhof
+(
+    partNames,
+    fvc::interpolate(sigmaRho.sum(), "sigmaRho")
+);
+for(label ip = 0; ip < partNames.size(); ip++)
 {
-    sigma.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"sigma",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    sigma[ip].oldTime();
+    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
+    sigmaRhof[ip].rename(partNames[ip]+".sigmaRhof");
+}
+sigmaRhof.updateSum();
 
-    theta.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"theta",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    theta[ip].oldTime();
-    
-    Uf.set
-    (
-        ip,
-        new surfaceVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"Uf",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    
-    rho.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"rho",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
-            pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa)
-        )
-    );
-    rho[ip].write();
-    
-    sigmaRho.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"sigmaRho",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
-            sigma[ip]*rho[ip],
-            "zeroGradient"
-        )
-    );
-    sigmaRho[ip].oldTime();
-    sigmaRho[ip].write();
-    
-    u.set
-    (
-        ip,
-        new volVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"u",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
-            H.reconstruct(Uf[ip] & mesh.Sf()),
-            Uf[ip].boundaryField().types()
-        )
-    );
-    
-    volFlux.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"volFlux",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            Uf[ip] & mesh.Sf()
-        )
-    );
-    volFlux[ip].oldTime();
-    
-    flux.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"flux",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            linearInterpolate(sigmaRho[ip])*(Uf[ip] & mesh.Sf())
-        )
-    );
-    
-    dVolFluxdt.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"dVolFluxdt",
-                runTime.timeName(),
-                mesh
-            ),
-            mesh,
-            dimensionedScalar("dVolFluxdt", dimensionSet(0,3,-2,0,0), scalar(0)),
-            "fixedValue"
-        )
-    );
-    dVolFluxdt[ip].oldTime();
-    
-    drag.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"drag",
-                runTime.timeName(),
-                mesh
-            ),
-            mesh,
-            dimensionedScalar("drag", dimensionSet(0,3,-2,0,0), scalar(0))
-        )
-    );
+partitionedSurfaceVectorField Uf
+(
+    partNames,
+    IOobject("Uf", runTime.timeName(), mesh), 
+    mesh,
+    sigmaRhof
+);
+
+partitionedVolVectorField u
+(
+    partNames,
+    IOobject("u", runTime.timeName(), mesh), 
+    mesh,
+    sigmaRho
+);
+
+partitionedSurfaceScalarFraction flux
+(
+    partNames,
+    Uf.sum() & mesh.Sf()
+);
+for(label ip = 0; ip < flux.size(); ip++)
+{
+    flux[ip] = sigmaRhof[ip]*(Uf[ip] & mesh.Sf());
 }
 
-// Summed variables
-volScalarField rhoSum
-(
-    IOobject
-    (
-        "rhoSum",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
-    ),
-    sigmaRho[0]
-);
-for(label ip = 1; ip < nParts; ip++){ rhoSum += sigmaRho[ip]; }
-rhoSum.write();
+partitionedSurfaceScalarField volFlux = flux.field(sigmaRhof);
 
-volScalarField rhoTheta("rhoSum", sigmaRho[0]*theta[0]);
-for(label ip = 1; ip < nParts; ip++)
-{
-    rhoTheta += sigmaRho[ip]*theta[ip];
-};
+/*partitionedSurfaceScalarField dVolFluxdt
+
+partitionedSurfaceScalarField drag(nParts);
+
+
+
+
+            pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa)
 
 volScalarField Psi("Psi", rhoSum/Exner);
 Psi.oldTime();
 
-surfaceScalarField fluxSum
-(
-    IOobject("fluxSum", runTime.timeName(), mesh),
-    flux[0]
-);
-for(label ip = 1; ip < nParts; ip++){ fluxSum += flux[ip]; }
 
 surfaceScalarField gradPcoeffSum
 (
@@ -268,3 +104,4 @@ surfaceScalarField gradPcoeffSum
 );
 
 #include "calculateDrag.H"
+*/

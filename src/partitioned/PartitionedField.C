@@ -33,7 +33,7 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
     const wordList& partNames__,
     const IOobject& io,
     const Mesh& mesh,
-    const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+    const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
 )
 :
     PartitionedFraction<Type, PatchField, GeoMesh>(partNames__, io, mesh),
@@ -48,7 +48,7 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 (
     const wordList& partNames__,
     const GeometricField<Type, PatchField, GeoMesh>& field,
-    const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+    const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
 )
 :
     PartitionedFraction<Type, PatchField, GeoMesh>(partNames__, field),
@@ -178,9 +178,7 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::operator=
             << abort(FatalError);
     }
 
-    Info << "hello from PartitionedField::operator=" << endl;
     PartitionedFraction<Type, PatchField, GeoMesh>(*this) = gf;
-    Info << "done" << endl;
 }
 
 template<class Type, template<class> class PatchField, class GeoMesh>

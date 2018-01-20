@@ -253,11 +253,8 @@ void Foam::PartitionedFraction<Type, PatchField, GeoMesh>::operator=
             << abort(FatalError);
     }
 
-    Info << "hello from PartitionedFraction::operator=" << endl;
     PtrList<GeometricField<Type, PatchField, GeoMesh>>(*this) = gf;
-    Info << "About to update sum" << endl;
     updateSum();
-    Info << "Done" << endl;
 }
 
 // ************************************************************************* //

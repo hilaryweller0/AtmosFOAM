@@ -72,9 +72,6 @@ int main(int argc, char *argv[])
     rho.write();
     sigmaRho.write();
     
-    //sigma = sigmaRho;
-    sigma.write();
-
     Info<< nl << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
         << "  ClockTime = " << runTime.elapsedClockTime() << " s"
         << nl << endl;

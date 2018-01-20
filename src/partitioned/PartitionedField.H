@@ -57,7 +57,7 @@ class PartitionedField
     // Private data
 
         //- The fractions in each partition
-        const PartitionedFraction<Type, PatchField, GeoMesh>& sigma_;
+        const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma_;
 
 
 public:
@@ -76,7 +76,7 @@ public:
             const wordList& partNames__,
             const IOobject& io,
             const Mesh& mesh,
-            const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+            const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
         );
 
         //- Construct from partion names and IOobject and sigma.
@@ -85,7 +85,7 @@ public:
         (
             const wordList& partNames__,
             const GeometricField<Type, PatchField, GeoMesh>& field,
-            const PartitionedFraction<Type, PatchField, GeoMesh>& sigma__
+            const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
         );
 
         //- Copy construct
@@ -104,7 +104,7 @@ public:
     // Access functions
     
         //- Return sigma
-        const PartitionedFraction<Type, PatchField, GeoMesh>& sigma() const
+        const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma() const
             { return sigma_; }
 
     // Member Functions
