@@ -25,10 +25,12 @@ Class
     Foam::PartitionedField
 
 Description
-    A list of GeometricFields, one for each partion of the atmosphere. A
-    PartitionedField is a PartitioneFraction plus a sigma field which gives
-    the fraction so that
+    A list of GeometricFields, one for each partion of the atmosphere. 
+    Holds a reference to an optional partionedField sigma which is the 
+    fraction of the total so that 
     sum = sum(sigma*field)
+    or if sigma does not exist then
+    sum = sum(field)
 
 SourceFiles
     PartitionedField.C
@@ -38,7 +40,7 @@ SourceFiles
 #ifndef PartitionedField_H
 #define PartitionedField_H
 
-#include "PartitionedFraction.H"
+#include "GeometricField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -52,12 +54,30 @@ namespace Foam
 template<class Type, template<class> class PatchField, class GeoMesh>
 class PartitionedField
 :
-    public PartitionedFraction<Type, PatchField, GeoMesh>
+    public PtrList<GeometricField<Type, PatchField, GeoMesh> >
 {
     // Private data
 
+        //- The base name for all of the partitions
+        const word baseName_;
+
+        //- The names of the parts
+        const wordList partNames_;
+
+        //- The sum over all partitions
+        GeometricField<Type, PatchField, GeoMesh> sum_;
+
+        //- Switch - does the PartitionedField hold a reference to sigma
+        const Switch needsSigma_;
+
         //- The fractions in each partition
-        const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma_;
+        const PartitionedField<scalar, PatchField, GeoMesh>& sigma_;
+
+        //- Optional storage for the rates of change
+        mutable PtrList<GeometricField<Type, PatchField, GeoMesh> >* ddtPtr_;
+
+    // Dissallow copy construct
+    //    PartitionedField(const PartitionedField&);
 
 
 public:
@@ -69,43 +89,88 @@ public:
         
     // Constructors
 
-        //- Construct from partion names and IOobject (must read in fields)
-        //- and sigma
+        //- Read in based on names
         PartitionedField
         (
+            const word& baseName__,
             const wordList& partNames__,
-            const IOobject& io,
             const Mesh& mesh,
-            const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
+            const word& timeName
         );
 
-        //- Construct from partion names and IOobject and sigma.
+        //- Read in based on names and sigma
+        PartitionedField
+        (
+            const word& baseName__,
+            const wordList& partNames__,
+            const Mesh& mesh,
+            const word& timeName, 
+            const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+        );
+
         //- Initialise all parts to "field"
         PartitionedField
         (
+            const word& baseName__,
             const wordList& partNames__,
-            const GeometricField<Type, PatchField, GeoMesh>& field,
-            const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
+            const GeometricField<Type, PatchField, GeoMesh>& field
         );
 
-        //- Copy construct
-        PartitionedField(const PartitionedField&);
-
-        //- Copy and rename
+        //- Initialise all parts to "field", with sigma
         PartitionedField
         (
-            const word& newName,
-            const PartitionedField<Type, PatchField, GeoMesh>& copyFrom
+            const word& baseName__,
+            const wordList& partNames__,
+            const GeometricField<Type, PatchField, GeoMesh>& field,
+            const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
         );
+
 
     //- Destructor
     ~PartitionedField();
 
     // Access functions
     
+        //- The base name for all of the partitions
+        const word& baseName() const { return baseName_; }
+
+        //- The names of the parts
+        const wordList& partNames() const { return partNames_; }
+
+        //- The sum over all partitions
+        const GeometricField<Type, PatchField, GeoMesh>& sum() const
+            { return sum_; }
+
+        //- Switch - does the PartitionedField hold a reference to sigma
+        const Switch& needsSigma() const { return needsSigma_;}
+
         //- Return sigma
-        const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma() const
+        const PartitionedField<scalar, PatchField, GeoMesh>& sigma() const
             { return sigma_; }
+            
+        //- Rate of change - const access
+        const PtrList<GeometricField<Type, PatchField, GeoMesh>>& ddt() const
+        {
+            if (!ddtPtr_)
+            {
+                FatalErrorIn("PartitionedField::ddt()")
+                    << "ddtPtr_ not set by storeTime()"
+                    << abort(FatalError);
+            }
+            return *ddtPtr_;
+        }
+
+        //- Rate of change - non const access
+        PtrList<GeometricField<Type, PatchField, GeoMesh>>& ddt()
+        {
+            if (!ddtPtr_)
+            {
+                FatalErrorIn("PartitionedField::ddt()")
+                    << "ddtPtr_ not set by storeTime()"
+                    << abort(FatalError);
+            }
+            return *ddtPtr_;
+        }
 
     // Member Functions
 
@@ -113,7 +178,16 @@ public:
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
 
         //- Multiply the field by sigma
-        PartitionedFraction<Type, PatchField, GeoMesh> fraction() const;
+        PartitionedField<Type, PatchField, GeoMesh> fraction() const;
+
+        //- Divide the field by given sigma
+        PartitionedField<Type, PatchField, GeoMesh> divideBy
+        (
+            const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+        ) const;
+        
+        //- Store the old time values and the rates of change
+        void storeTime();
 
         // Output
         void write();

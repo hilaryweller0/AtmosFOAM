@@ -45,28 +45,25 @@ int main(int argc, char *argv[])
     partNames[0] = "stable";
     partNames[1] = "buoyant";
 
-    Info << "Reading in partionedVolScalarFraction sigma" << endl;
-    partitionedVolScalarFraction sigma
+    Info << "Reading in partionedVolScalarField sigma" << endl;
+    partitionedVolScalarField sigma
     (
-        partNames, 
-        IOobject("sigma", runTime.timeName(), mesh),
-        mesh
+        "sigma", partNames, mesh, runTime.timeName()
     );
     
     Info << "Reading in partionedVolScalarField rho" << endl;
     partitionedVolScalarField rho
     (
-        partNames, 
-        IOobject("rho", runTime.timeName(), mesh),
-        mesh,
-        sigma
+        "rho", partNames, mesh, runTime.timeName(), sigma
     );
     
-    partitionedVolScalarFraction sigmaRho = rho.fraction();
+    partitionedVolScalarField sigmaRho = rho.fraction();
 
-    rho = sigmaRho.field(sigma);
+    rho = sigmaRho.divideBy(sigma);
 
     runTime++;
+    
+    sigmaRho.storeTime();
     
     sigma.write();
     rho.write();

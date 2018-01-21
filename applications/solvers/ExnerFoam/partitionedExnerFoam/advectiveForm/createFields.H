@@ -21,81 +21,83 @@ partNames[0] = "stable";
 partNames[1] = "buoyant";
 
 // Set pointer lists for variables in all partitions. Read in later
-partitionedVolScalarFraction sigma
+partitionedVolScalarField sigma
 (
-    partNames,
-    IOobject("sigma", runTime.timeName(), mesh), 
-    mesh
+    "sigma", partNames, mesh, runTime.timeName()
 );
 partitionedVolScalarField rho
 (
-    partNames,
-    IOobject("rho", runTime.timeName(), mesh), 
-    mesh,
+    "rho", partNames,
+    volScalarField
+    (
+        IOobject("rho", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("rho", dimDensity, scalar(1))
+    ),
     sigma
 );
-partitionedVolScalarFraction sigmaRho = rho.fraction();
+partitionedVolScalarField sigmaRho = rho.fraction();
 
 partitionedVolScalarField theta
 (
-    partNames,
-    IOobject("theta", runTime.timeName(), mesh), 
-    mesh,
-    sigmaRho
+    "theta", partNames, mesh, runTime.timeName(), sigmaRho
 );
 
-partitionedSurfaceScalarFraction sigmaRhof
+for(label ip = 0; ip < partNames.size(); ip++)
+{
+    rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
+}
+rho.updateSum();
+sigmaRho = rho.fraction();
+
+partitionedSurfaceScalarField sigmaRhof
 (
-    partNames,
+    "sigmaRhof", partNames,
     fvc::interpolate(sigmaRho.sum(), "sigmaRho")
 );
 for(label ip = 0; ip < partNames.size(); ip++)
 {
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
-    sigmaRhof[ip].rename(partNames[ip]+".sigmaRhof");
 }
 sigmaRhof.updateSum();
 
 partitionedSurfaceVectorField Uf
 (
-    partNames,
-    IOobject("Uf", runTime.timeName(), mesh), 
-    mesh,
-    sigmaRhof
+    "Uf", partNames, mesh, runTime.timeName(), sigmaRhof
 );
 
-partitionedVolVectorField u
+partitionedSurfaceScalarField flux
 (
-    partNames,
-    IOobject("u", runTime.timeName(), mesh), 
-    mesh,
-    sigmaRho
-);
-
-partitionedSurfaceScalarFraction flux
-(
-    partNames,
-    Uf.sum() & mesh.Sf()
+    "flux", partNames, Uf.sum() & mesh.Sf()
 );
 for(label ip = 0; ip < flux.size(); ip++)
 {
     flux[ip] = sigmaRhof[ip]*(Uf[ip] & mesh.Sf());
 }
 
-partitionedSurfaceScalarField volFlux = flux.field(sigmaRhof);
+partitionedSurfaceScalarField volFlux = flux.divideBy(sigmaRhof);
 
-/*partitionedSurfaceScalarField dVolFluxdt
+partitionedVolVectorField u
+(
+    "u", partNames, fvc::reconstruct(volFlux[0]), sigmaRho
+);
+for(label ip = 1; ip < partNames.size(); ip++)
+{
+    u[ip] = fvc::reconstruct(volFlux[ip]);
+}
+
+// Store necessary old times and rates of change
+volFlux.storeTime();
+rho.storeTime();
+sigma.storeTime();
+theta.storeTime();
+sigmaRho.storeTime();
+
+/*
 
 partitionedSurfaceScalarField drag(nParts);
-
-
-
-
-            pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa)
-
 volScalarField Psi("Psi", rhoSum/Exner);
 Psi.oldTime();
-
 
 surfaceScalarField gradPcoeffSum
 (

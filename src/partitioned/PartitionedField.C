@@ -30,15 +30,46 @@ License
 template<class Type, template<class> class PatchField, class GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 (
+    const word& baseName__,
     const wordList& partNames__,
-    const IOobject& io,
     const Mesh& mesh,
-    const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
+    const word& timeName
 )
 :
-    PartitionedFraction<Type, PatchField, GeoMesh>(partNames__, io, mesh),
-    sigma_(sigma__)
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames__.size()),
+    baseName_(baseName__),
+    partNames_(partNames__),
+    sum_
+    (
+        IOobject
+        (
+            "sum."+baseName_, timeName, mesh,
+            IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensioned<Type>("sum", dimless, pTraits<Type>::zero)
+    ),
+    needsSigma_(false),
+    sigma_(*this),
+    ddtPtr_(NULL)
 {
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                IOobject
+                (
+                    partNames()[ip] + '.' + baseName(), timeName, mesh,
+                    IOobject::MUST_READ, IOobject::AUTO_WRITE
+                ),
+                mesh
+            )
+        );
+    }
+
     updateSum();
 }
 
@@ -46,36 +77,131 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 template<class Type, template<class> class PatchField, class GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
 (
+    const word& baseName__,
+    const wordList& partNames__,
+    const Mesh& mesh,
+    const word& timeName,
+    const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+)
+:
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames__.size()),
+    baseName_(baseName__),
+    partNames_(partNames__),
+    sum_
+    (
+        IOobject
+        (
+            "sum."+baseName_, timeName, mesh,
+            IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE
+        ),
+        mesh,
+        dimensioned<Type>("sum", dimless, pTraits<Type>::zero)
+    ),
+    needsSigma_(true),
+    sigma_(sigma__),
+    ddtPtr_(NULL)
+{
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                IOobject
+                (
+                    partNames()[ip] + '.' + baseName(), timeName, mesh,
+                    IOobject::MUST_READ, IOobject::AUTO_WRITE
+                ),
+                mesh
+            )
+        );
+    }
+
+    updateSum();
+}
+
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
+(
+    const word& baseName__,
+    const wordList& partNames__,
+    const GeometricField<Type, PatchField, GeoMesh>& field
+)
+:
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames__.size()),
+    baseName_(baseName__),
+    partNames_(partNames__),
+    sum_
+    (
+        IOobject
+        (
+            "sum."+baseName_, field.time().timeName(), field.mesh(),
+            IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE
+        ),
+        field.mesh(),
+        dimensioned<Type>("sum", dimless, pTraits<Type>::zero)
+    ),
+    needsSigma_(false),
+    sigma_(*this),
+    ddtPtr_(NULL)
+{
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                partNames_[ip]+'.'+baseName_, field
+            )
+        );
+    }
+    updateSum();
+}
+
+
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
+(
+    const word& baseName__,
     const wordList& partNames__,
     const GeometricField<Type, PatchField, GeoMesh>& field,
-    const PartitionedFraction<scalar, PatchField, GeoMesh>& sigma__
+    const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
 )
 :
-    PartitionedFraction<Type, PatchField, GeoMesh>(partNames__, field),
-    sigma_(sigma__)
-{}
-
-
-template<class Type, template<class> class PatchField, class GeoMesh>
-Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
-(
-    const PartitionedField<Type, PatchField, GeoMesh>& copyFrom
-)
-:
-    PartitionedFraction<Type, PatchField, GeoMesh>(copyFrom),
-    sigma_(copyFrom.sigma())
-{}
-
-template<class Type, template<class> class PatchField, class GeoMesh>
-Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
-(
-    const word& newName,
-    const PartitionedField<Type, PatchField, GeoMesh>& copyFrom
-)
-:
-    PartitionedFraction<Type, PatchField, GeoMesh>(copyFrom, newName),
-    sigma_(copyFrom.sigma())
-{}
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(partNames__.size()),
+    baseName_(baseName__),
+    partNames_(partNames__),
+    sum_
+    (
+        IOobject
+        (
+            "sum."+baseName_, field.time().timeName(), field.mesh(),
+            IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE
+        ),
+        field.mesh(),
+        dimensioned<Type>("sum", dimless, pTraits<Type>::zero)
+    ),
+    needsSigma_(true),
+    sigma_(sigma__),
+    ddtPtr_(NULL)
+{
+    for(label ip = 0; ip < size(); ip++)
+    {
+        (*this).set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                partNames_[ip]+'.'+baseName_, field
+            )
+        );
+    }
+    updateSum();
+}
 
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
@@ -91,53 +217,144 @@ template<class Type, template<class> class PatchField, class GeoMesh>
 const Foam::GeometricField<Type, PatchField, GeoMesh>&
 Foam::PartitionedField<Type, PatchField, GeoMesh>::updateSum()
 {
-    GeometricField<Type, PatchField, GeoMesh>& sum_
-         = PartitionedFraction<Type, PatchField, GeoMesh>::sum_;
 
-    sum_ = sigma_[0]*operator[](0);
-
-    // Sum contributions from other partitions
-    for (label ip = 1; ip < size(); ip++)
+    if (!needsSigma_)
     {
-        sum_ += sigma_[ip]*operator[](ip);
-    }
+        sum_.dimensions().reset(operator[](0).dimensions());
+        sum_ = operator[](0);
 
+        // Sum contributions from other partitions
+        for (label ip = 1; ip < size(); ip++)
+        {
+            sum_ += operator[](ip);
+        }
+    }
+    else
+    {
+        sum_.dimensions().reset
+        (
+            operator[](0).dimensions()*sigma_[0].dimensions()
+        );
+    
+        sum_ = sigma_[0]*operator[](0);
+
+        // Sum contributions from other partitions
+        for (label ip = 1; ip < size(); ip++)
+        {
+            sum_ += sigma_[ip]*operator[](ip);
+        }
+    }
+    
     return sum_;
 }
 
 
 template<class Type, template<class> class PatchField, class GeoMesh>
-Foam::PartitionedFraction<Type, PatchField, GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>::fraction() const
 {
-    const wordList& partNames = PartitionedFraction<Type, PatchField, GeoMesh>::partNames;
-    
+    if (!needsSigma())
+    {
+        FatalErrorIn("PartitionedField::fraction")
+            << "cannot calculate a fraction without sigma"
+            << abort(FatalError);
+    }
+
     // Name of the fraction
-    string newName = operator[](0).name();
-    const word& partName = partNames[0];
-    newName.erase(0, partName.size());
-    newName = sigma_[0].name() + newName;
-    newName.erase(0, partName.size()+1);
+    string newName = sigma_.baseName()+'.'+baseName();
     
     // Geometric field to start from
-    GeometricField<Type, PatchField, GeoMesh> fracField
+    GeometricField<Type, PatchField, GeoMesh> fracField(newName, sum_);
+    
+    PartitionedField<Type, PatchField, GeoMesh> frac
     (
-        newName,
-        operator[](0)*sigma_[0]
+        newName, partNames(), fracField
     );
     
-    PartitionedFraction<Type, PatchField, GeoMesh> frac
-    (
-        partNames,
-        fracField
-    );
-    
-    for(label ip = 1; ip < size(); ip++)
+    for(label ip = 0; ip < size(); ip++)
     {
         frac[ip] = operator[](ip)*sigma_[ip];
     }
 
     return frac;
+}
+
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>
+Foam::PartitionedField<Type, PatchField, GeoMesh>::divideBy
+(
+    const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+) const
+{
+    if (needsSigma())
+    {
+        FatalErrorIn("PartitionedField::divideBy")
+            << "cannot calculate divideBy sigma for a field with sigma"
+            << abort(FatalError);
+    }
+
+    // Name of the new field
+    string newName = baseName();
+    newName.erase(0, sigma()[0].name().size()+1);
+    
+    // Geometric field to start from
+    GeometricField<Type, PatchField, GeoMesh> ff
+    (
+        newName, operator[](0)/sigma__[0]
+    );
+
+    // New partitionedField
+    PartitionedField<Type, PatchField, GeoMesh> f
+    (
+        newName, partNames(), ff, sigma__
+    );
+    
+    for(label ip = 1; ip < size(); ip++)
+    {
+        f[ip] = operator[](ip)/sigma__[ip];
+    }
+
+    return f;
+}
+
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+void Foam::PartitionedField<Type, PatchField, GeoMesh>::storeTime()
+{
+    // Only call this function once (only set the pointers once)
+    if (ddtPtr_)
+    {
+        FatalErrorIn("PartitionedField::storeTime")
+            << "already called, ddtPtr_ already set"
+            << abort(FatalError);
+    }
+
+    // Store old time for all of the fields
+    for(label ip = 0; ip < size(); ip++)
+    {
+        operator[](ip).oldTime();
+    }
+    
+    // Create fields for all the time directories
+    ddtPtr_ = new PtrList<GeometricField<Type, PatchField, GeoMesh> >
+    (
+        partNames().size()
+    );
+    for(label ip = 0; ip < size(); ip++)
+    {
+        ddt().set
+        (
+            ip,
+            new GeometricField<Type, PatchField, GeoMesh>
+            (
+                partNames()[ip]+".ddt."+baseName(),
+                (operator[](ip) - operator[](ip).oldTime())
+                /operator[](ip).time().deltaT()
+            )
+        );
+        ddt()[ip].oldTime();
+    }
 }
 
 
@@ -150,7 +367,17 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::write()
     }
 
     updateSum();
-    PartitionedFraction<Type, PatchField, GeoMesh>::sum_.write();
+    sum_.write();
+
+    // Write out old time and rate of change if set
+    if (ddtPtr_)
+    {
+        for(label ip = 0; ip < size(); ip++)
+        {
+            operator[](ip).oldTime().write();
+            ddt()[ip].write();
+        }
+    }
 }
 
 
@@ -178,7 +405,8 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::operator=
             << abort(FatalError);
     }
 
-    PartitionedFraction<Type, PatchField, GeoMesh>(*this) = gf;
+    PtrList<GeometricField<Type, PatchField, GeoMesh>>(*this) = gf;
+    sum_ = gf.sum();
 }
 
 template<class Type, template<class> class PatchField, class GeoMesh>
@@ -195,8 +423,7 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::operator+=
             << abort(FatalError);
     }
     
-    PartitionedFraction<Type, PatchField, GeoMesh>::sum_
-        += gf.sum();
+    sum_ += gf.sum();
 
     for(label ip = 0; ip < size(); ip++)
     {
@@ -219,8 +446,7 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::operator-=
             << abort(FatalError);
     }
     
-    PartitionedFraction<Type, PatchField, GeoMesh>::sum_
-        -= gf.sum();
+    sum_ -= gf.sum();
 
     for(label ip = 0; ip < size(); ip++)
     {

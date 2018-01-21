@@ -60,11 +60,6 @@ typedef PartitionedField<scalar, fvsPatchField, surfaceMesh> partitionedSurfaceS
 typedef PartitionedField<vector, fvPatchField, volMesh> partitionedVolVectorField;
 typedef PartitionedField<vector, fvsPatchField, surfaceMesh> partitionedSurfaceVectorField;
 
-typedef PartitionedFraction<scalar, fvPatchField, volMesh> partitionedVolScalarFraction;
-typedef PartitionedFraction<scalar, fvsPatchField, surfaceMesh> partitionedSurfaceScalarFraction;
-typedef PartitionedFraction<vector, fvPatchField, volMesh> partitionedVolVectorFraction;
-typedef PartitionedFraction<vector, fvsPatchField, surfaceMesh> partitionedSurfaceVectorFraction;
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
