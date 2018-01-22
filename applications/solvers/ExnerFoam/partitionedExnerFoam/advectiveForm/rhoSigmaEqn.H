@@ -8,8 +8,11 @@ for(label ip = 0; ip < nParts; ip++)
         (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
       + offCentre*sigmaRho.ddt()[ip]
     );
+    
+    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
 sigmaRho.updateSum();
+sigmaRhof.updateSum();
 
 /*// Calculate mass tranfer terms
 for(label ip = 0; ip < nParts; ip++)

@@ -183,7 +183,8 @@ public:
         //- Divide the field by given sigma
         PartitionedField<Type, PatchField, GeoMesh> divideBy
         (
-            const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+            const PartitionedField<scalar, PatchField, GeoMesh>& sigma__,
+            const word newBaseName = ""
         ) const;
         
         //- Store the old time values and the rates of change

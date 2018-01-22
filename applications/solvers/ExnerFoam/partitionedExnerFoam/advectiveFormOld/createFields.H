@@ -231,7 +231,7 @@ volScalarField rhoSum
 for(label ip = 1; ip < nParts; ip++){ rhoSum += sigmaRho[ip]; }
 rhoSum.write();
 
-volScalarField rhoTheta("rhoSum", sigmaRho[0]*theta[0]);
+volScalarField rhoTheta("rhoTheta", sigmaRho[0]*theta[0]);
 for(label ip = 1; ip < nParts; ip++)
 {
     rhoTheta += sigmaRho[ip]*theta[ip];

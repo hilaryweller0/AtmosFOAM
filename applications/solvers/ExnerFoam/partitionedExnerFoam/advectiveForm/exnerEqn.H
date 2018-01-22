@@ -1,34 +1,40 @@
 {
-    Psi = pow(rhoSum,(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*rhoTheta/rhoSum, kappa/(kappa-1));
+    Psi = pow(rho.sum(),(2*kappa-1)/(kappa-1))
+         *pow(R/pRef*theta.sum()/rho.sum(), kappa/(kappa-1));
     
-    gradPcoeffSum = Cp*fvc::interpolate(rhoTheta);
+    gradPcoeffSum = Cp*fvc::interpolate(theta.sum(), "theta");
 
     for (int corr=0; corr<nCorr; corr++)
     {
         // Explicit part of velocity for each partition
-        fluxSum
-             == dimensionedScalar("flux", dimensionSet(1,0,-1,0,0), scalar(0));
         for(label ip = 0; ip < nParts; ip++)
         {
             // Rate of change of flux without gravity
-            dVolFluxdt[ip] = drag[ip] + (mesh.Sf() &
+            volFlux.ddt()[ip] = drag[ip] + (mesh.Sf() &
             (
               -fvc::interpolate
                (
-                   fvc::div(volFlux[ip], u[ip])
+                   fvc::div(volFlux[ip], u[ip], "u")
                  - u[ip] * fvc::div(volFlux[ip]),
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
             ));
             // Flux with gravity
-            volFlux[ip] = volFlux[ip].oldTime() + dt*dVolFluxdt[ip] + dt*gSf;
-            flux[ip] = fvc::interpolate(sigmaRho[ip])*volFlux[ip];
-            fluxSum += flux[ip];
+            volFlux[ip] = volFlux[ip].oldTime() + dt*
+            (
+                (1-offCentre)*volFlux.ddt()[ip].oldTime()
+              + offCentre*(volFlux.ddt()[ip] + gSf)
+            );
+            flux[ip] = sigmaRhof[ip]*volFlux[ip];
         }
+        flux.updateSum();
         // Needed for Exner boundary conditions
-        surfaceScalarField rhog("rhog", fvc::interpolate(rhoSum)*gSf);
+        surfaceScalarField rhog
+        (
+            "rhog",
+            fvc::interpolate(rho.sum(), "rho")*gSf
+        );
 
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
@@ -36,7 +42,7 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              + fvc::div(fluxSum)
+              + fvc::div(flux.sum())
               - fvm::laplacian(dt*gradPcoeffSum, Exner)
             );
 
@@ -52,13 +58,17 @@
             // Back-substitutions
             if (nonOrth == nNonOrthCorr) { for(label ip = 0; ip < nParts; ip++)
             {
-                volFlux[ip] -= dt*Cp*fvc::interpolate(theta[ip])
+                surfaceScalarField thetaf = fvc::interpolate
+                (
+                    theta[ip], "theta"
+                );
+                volFlux[ip] -= dt*Cp*thetaf
                                *fvc::snGrad(Exner)*mesh.magSf();
-                flux[ip] = fvc::interpolate(sigmaRho[ip])*volFlux[ip];
+                flux[ip] = sigmaRhof[ip]*volFlux[ip];
                 u[ip] = fvc::reconstruct(volFlux[ip]);
                 Uf[ip] = fvc::interpolate(u[ip], "Uf");
-                dVolFluxdt[ip] += gSf - Cp*fvc::interpolate(theta[ip])
-                                        *fvc::snGrad(Exner)*mesh.magSf();
+                volFlux.ddt()[ip] += gSf - Cp*thetaf
+                                    *fvc::snGrad(Exner)*mesh.magSf();
             }}
         }
     }

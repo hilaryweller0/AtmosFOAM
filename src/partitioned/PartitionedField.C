@@ -275,7 +275,7 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::fraction() const
     {
         frac[ip] = operator[](ip)*sigma_[ip];
     }
-
+    
     return frac;
 }
 
@@ -284,7 +284,8 @@ template<class Type, template<class> class PatchField, class GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>::divideBy
 (
-    const PartitionedField<scalar, PatchField, GeoMesh>& sigma__
+    const PartitionedField<scalar, PatchField, GeoMesh>& sigma__,
+    const word newBaseName
 ) const
 {
     if (needsSigma())
@@ -295,8 +296,12 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::divideBy
     }
 
     // Name of the new field
-    string newName = baseName();
-    newName.erase(0, sigma()[0].name().size()+1);
+    string newName = newBaseName;
+    if (newBaseName == "")
+    {
+        newName = baseName();
+        newName.erase(0, sigma()[0].name().size()+1);
+    }
     
     // Geometric field to start from
     GeometricField<Type, PatchField, GeoMesh> ff
@@ -404,8 +409,12 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::operator=
             << "attempted assignment to self"
             << abort(FatalError);
     }
-
-    PtrList<GeometricField<Type, PatchField, GeoMesh>>(*this) = gf;
+    
+    //PtrList<GeometricField<Type, PatchField, GeoMesh>>(*this) = gf;
+    for(label ip = 0; ip < size(); ip++)
+    {
+        operator[](ip) = gf[ip];
+    }
     sum_ = gf.sum();
 }
 

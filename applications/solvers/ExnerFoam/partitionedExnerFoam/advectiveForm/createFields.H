@@ -49,6 +49,7 @@ for(label ip = 0; ip < partNames.size(); ip++)
 }
 rho.updateSum();
 sigmaRho = rho.fraction();
+sigmaRho.updateSum();
 theta.updateSum();
 
 partitionedSurfaceScalarField sigmaRhof
@@ -85,7 +86,7 @@ for(label ip = 0; ip < flux.size(); ip++)
     flux[ip] = sigmaRhof[ip]*(Uf[ip] & mesh.Sf());
 }
 
-partitionedSurfaceScalarField volFlux = flux.divideBy(sigmaRhof);
+partitionedSurfaceScalarField volFlux = flux.divideBy(sigmaRhof, "volFlux");
 
 partitionedVolVectorField u
 (
@@ -98,8 +99,6 @@ for(label ip = 1; ip < partNames.size(); ip++)
 
 // Store necessary old times and rates of change
 volFlux.storeTime();
-rho.storeTime();
-sigma.storeTime();
 theta.storeTime();
 sigmaRho.storeTime();
 
