@@ -1,15 +1,15 @@
 // update rhoSigma according to the continuity equation
 for(label ip = 0; ip < nParts; ip++)
 {
-    sigmaRho[ip] = sigmaRho[ip].oldTime()
-                 - dt*fvc::div(volFlux[ip], sigmaRho[ip]);
-}
+    sigmaRho.ddt()[ip] = -fvc::div(volFlux[ip], sigmaRho[ip], "sigmaRho");
 
-rhoSum = sigmaRho[0];
-for(label ip = 1; ip < nParts; ip++)
-{
-    rhoSum += sigmaRho[ip];
+    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
+    (
+        (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
+      + offCentre*sigmaRho.ddt()[ip]
+    );
 }
+sigmaRho.updateSum();
 
 /*// Calculate mass tranfer terms
 for(label ip = 0; ip < nParts; ip++)

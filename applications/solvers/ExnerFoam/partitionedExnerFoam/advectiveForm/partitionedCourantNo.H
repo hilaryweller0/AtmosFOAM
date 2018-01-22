@@ -36,16 +36,10 @@ scalarList maxCoNums(nParts, scalar(0));
 
 if (mesh.nInternalFaces())
 {
-    fluxSum = flux[0];
-    for(label ip = 1; ip < nParts; ip++)
-    {
-        fluxSum += flux[ip];
-    }
-
     scalarField sumPhi
     (
-        fvc::surfaceSum(mag(fluxSum))().internalField()
-      / rhoSum.internalField()
+        fvc::surfaceSum(mag(flux.sum()))().internalField()
+      / rho.sum().internalField()
     );
 
     CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
@@ -56,7 +50,8 @@ if (mesh.nInternalFaces())
     volScalarField Ndt
     (
         "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(rhoTheta/rhoSum))/rhoTheta*rhoSum))
+        dt*Foam::sqrt(mag((g & fvc::grad(theta.sum()/rho.sum()))
+        /theta.sum()*rho.sum()))
     );
     maxNdt = gMax(Ndt);
 

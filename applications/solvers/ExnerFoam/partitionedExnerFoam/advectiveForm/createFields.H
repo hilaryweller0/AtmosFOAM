@@ -49,17 +49,27 @@ for(label ip = 0; ip < partNames.size(); ip++)
 }
 rho.updateSum();
 sigmaRho = rho.fraction();
+theta.updateSum();
 
 partitionedSurfaceScalarField sigmaRhof
 (
-    "sigmaRhof", partNames,
-    fvc::interpolate(sigmaRho.sum(), "sigmaRho")
+    "sigmaRhof", partNames, fvc::interpolate(sigmaRho[0], "sigmaRho")
 );
-for(label ip = 0; ip < partNames.size(); ip++)
+for(label ip = 1; ip < partNames.size(); ip++)
 {
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
 sigmaRhof.updateSum();
+
+partitionedSurfaceScalarField sigmaf
+(
+    "sigmaf", partNames, fvc::interpolate(sigma[0], "sigma")
+);
+for(label ip = 1; ip < partNames.size(); ip++)
+{
+    sigmaf[ip] = fvc::interpolate(sigma[ip], "sigma");
+}
+sigmaf.updateSum();
 
 partitionedSurfaceVectorField Uf
 (
@@ -93,17 +103,24 @@ sigma.storeTime();
 theta.storeTime();
 sigmaRho.storeTime();
 
-/*
+Info << "Initialising the drag between partitions" << endl;
+surfaceScalarField cloudRadius
+(
+    "cloudRadius",
+    max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1])
+);
+surfaceScalarField dragCommon = -dragCoeff/cloudRadius
+                         * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
+partitionedSurfaceScalarField drag("drag", partNames, dragCommon);
 
-partitionedSurfaceScalarField drag(nParts);
-volScalarField Psi("Psi", rhoSum/Exner);
+volScalarField Psi("Psi", sigmaRho.sum()/Exner);
 Psi.oldTime();
 
 surfaceScalarField gradPcoeffSum
 (
     IOobject("gradPcoeff", runTime.timeName(), mesh),
-    Cp*fvc::interpolate(rhoTheta)
+    Cp*fvc::interpolate(theta.sum(), "theta")
 );
 
 #include "calculateDrag.H"
-*/
+

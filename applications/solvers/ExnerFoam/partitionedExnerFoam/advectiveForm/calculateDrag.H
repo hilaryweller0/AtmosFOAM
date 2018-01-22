@@ -1,31 +1,30 @@
-// Calculating the drag forced between two partitions
+// Calculating the drag force between two partitions
 
 if (mag(dragCoeff) > SMALL)
 {
-    PtrList<surfaceScalarField> sigmaf(nParts);
+    // Update sigma
     for (label ip = 0; ip < nParts; ip++)
     {
-        sigmaf.set
-        (
-            ip,
-            new surfaceScalarField(fvc::interpolate(sigma[ip]))
-        );
+        sigmaf[ip] = fvc::interpolate(sigma[ip], "sigma");
         sigmaf[ip] = min(max(sigmaf[ip], scalar(0)), scalar(1));
     }
     
-    surfaceScalarField cloudRadius
-    (
-        "cloudRadius",
-        max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1])
-    );
-    surfaceScalarField dragCommon = -dragCoeff*fvc::interpolate(rhoSum)
-                 /cloudRadius * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
+    // Update sigmaRhof
+    for(label ip = 0; ip < partNames.size(); ip++)
+    {
+        sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
+    }
+    sigmaRhof.updateSum();
 
-    drag[0] = sigmaf[1]/fvc::interpolate(rho[0])*dragCommon;
-    drag[1] = -sigmaf[0]/fvc::interpolate(rho[1])*dragCommon;
+    // Calculate the cloud radius and hence the drag
+    cloudRadius = max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1]);
+    surfaceScalarField dragCommon = -dragCoeff/cloudRadius 
+                          * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
 
-    surfaceScalarField netDrag = drag[0]*sigmaf[0]*fvc::interpolate(rho[0])
-                               + drag[1]*sigmaf[1]*fvc::interpolate(rho[1]);
+    drag[0] = sigmaf[1]*dragCommon*sigmaRhof.sum()
+                /fvc::interpolate(rho[0], "rho");
+    drag[1] =-sigmaf[0]*dragCommon*sigmaRhof.sum()
+                /fvc::interpolate(rho[1], "rho");
 
     // The drag force shouldn't reverse the sign of the velocity. Check that 
     // drag*dt < flux

@@ -15,10 +15,10 @@ IOdictionary transferProps
 const dimensionedScalar cloudRadiusMax(transferProps.lookup("cloudRadiusMax"));
 const dimensionedScalar cloudRadiusMin(transferProps.lookup("cloudRadiusMin"));
 const scalar dragCoeff(readScalar(transferProps.lookup("dragCoeff")));
-const scalar heatTransferCoeff
-(
-    readScalar(transferProps.lookup("heatTransferCoeff"))
-);
+//const scalar heatTransferCoeff
+//(
+//    readScalar(transferProps.lookup("heatTransferCoeff"))
+//);
 //const dimensionedScalar thermalConductivity
 //(
 //    envProperties.lookup("thermalConductivity")

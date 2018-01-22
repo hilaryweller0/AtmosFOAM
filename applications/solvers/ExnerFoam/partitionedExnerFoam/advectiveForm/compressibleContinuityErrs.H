@@ -31,9 +31,9 @@ Description
 \*---------------------------------------------------------------------------*/
 
 {
-    dimensionedScalar totalMass = fvc::domainIntegrate(rhoSum);
+    dimensionedScalar totalMass = fvc::domainIntegrate(rho.sum());
 
-    volScalarField rhoDiff = rhoSum - Psi*Exner;
+    volScalarField rhoDiff = rho.sum() - Psi*Exner;
 
     scalar sumLocalContErr =
     (
@@ -53,7 +53,7 @@ Description
         << endl;
     
     Info << "Maximum rho difference fraction = "
-         << max(mag(rhoDiff/rhoSum)).value() << endl;
+         << max(mag(rhoDiff/rho.sum())).value() << endl;
 }
 
 // ************************************************************************* //
