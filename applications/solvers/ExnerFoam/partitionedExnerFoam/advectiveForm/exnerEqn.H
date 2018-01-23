@@ -42,8 +42,9 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
+              + (1-offCentre)*fvc::div(flux.sum().oldTime())
               + fvc::div(flux.sum())
-              - fvm::laplacian(dt*gradPcoeffSum, Exner)
+              - fvm::laplacian(offCentre*dt*gradPcoeffSum, Exner)
             );
 
             if(ucorr==nOuterCorr-1 && nonOrth==nNonOrthCorr && corr==nCorr-1)
@@ -56,20 +57,25 @@
             }
 
             // Back-substitutions
-            if (nonOrth == nNonOrthCorr) { for(label ip = 0; ip < nParts; ip++)
+            if (nonOrth == nNonOrthCorr)
             {
-                surfaceScalarField thetaf = fvc::interpolate
-                (
-                    theta[ip], "theta"
-                );
-                volFlux[ip] -= dt*Cp*thetaf
-                               *fvc::snGrad(Exner)*mesh.magSf();
-                flux[ip] = sigmaRhof[ip]*volFlux[ip];
-                u[ip] = fvc::reconstruct(volFlux[ip]);
-                Uf[ip] = fvc::interpolate(u[ip], "Uf");
-                volFlux.ddt()[ip] += gSf - Cp*thetaf
-                                    *fvc::snGrad(Exner)*mesh.magSf();
-            }}
+                for(label ip = 0; ip < nParts; ip++)
+                {
+                    surfaceScalarField thetaf = fvc::interpolate
+                    (
+                        theta[ip], "theta"
+                    );
+                    volFlux[ip] -= offCentre*dt*Cp*thetaf
+                                   *fvc::snGrad(Exner)*mesh.magSf();
+                    flux[ip] = sigmaRhof[ip]*volFlux[ip];
+                    u[ip] = fvc::reconstruct(volFlux[ip]);
+                    Uf[ip] = fvc::interpolate(u[ip], "Uf");
+                    volFlux.ddt()[ip] += gSf - Cp*thetaf
+                                        *fvc::snGrad(Exner)*mesh.magSf();
+                }
+                flux.updateSum();
+                volFlux.updateSum();
+            }
         }
     }
 }

@@ -101,6 +101,7 @@ for(label ip = 1; ip < partNames.size(); ip++)
 volFlux.storeTime();
 theta.storeTime();
 sigmaRho.storeTime();
+flux.sum().oldTime();
 
 Info << "Initialising the drag between partitions" << endl;
 surfaceScalarField cloudRadius
