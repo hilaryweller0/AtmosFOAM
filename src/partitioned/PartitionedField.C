@@ -251,16 +251,16 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::updateSum()
 
 template<class Type, template<class> class PatchField, class GeoMesh>
 Foam::PartitionedField<Type, PatchField, GeoMesh>
-Foam::PartitionedField<Type, PatchField, GeoMesh>::fraction() const
+Foam::PartitionedField<Type, PatchField, GeoMesh>::timesSigma() const
 {
     if (!needsSigma())
     {
-        FatalErrorIn("PartitionedField::fraction")
-            << "cannot calculate a fraction without sigma"
+        FatalErrorIn("PartitionedField::timesSigma")
+            << "cannot calculate timesSigma without sigma"
             << abort(FatalError);
     }
 
-    // Name of the fraction
+    // Name of the timesSigma
     string newName = sigma_.baseName()+'.'+baseName();
     
     // Geometric field to start from

@@ -6,7 +6,7 @@
 
     for (int corr=0; corr<nCorr; corr++)
     {
-        // Explicit part of velocity for each partition
+        // Explicit part of velocity for each partition (without mass tranfers)
         for(label ip = 0; ip < nParts; ip++)
         {
             // Rate of change of flux without gravity
@@ -20,19 +20,6 @@
                )
              - 2*(Omega ^ Uf[ip])
             ));
-            
-            // Include the mass transfer terms
-            for(label jp=0; jp < nParts; jp++)
-            {
-                if (ip != jp)
-                {
-                    volFlux.ddt()[ip] += fvc::interpolate
-                    (
-                        massTransfer[jp][ip]/sigmaRho[ip],
-                        "massTransfer"
-                    )*(volFlux[jp] - volFlux[ip]);
-                }
-            }
             
             // Flux with gravity
             volFlux[ip] = volFlux[ip].oldTime() + dt*
@@ -81,6 +68,20 @@
                     );
                     volFlux[ip] -= offCentre*dt*Cp*thetaf
                                    *fvc::snGrad(Exner)*mesh.magSf();
+
+                    // Include the mass transfer terms
+                    for(label jp=0; jp < nParts; jp++)
+                    {
+                        if (ip != jp)
+                        {
+                            volFlux[ip] += dt*fvc::interpolate
+                            (
+                                massTransfer[jp][ip]/sigmaRho[ip],
+                                "massTransfer"
+                            )*(volFlux[jp] - volFlux[ip]);
+                        }
+                    }
+
                     flux[ip] = sigmaRhof[ip]*volFlux[ip];
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip], "Uf");

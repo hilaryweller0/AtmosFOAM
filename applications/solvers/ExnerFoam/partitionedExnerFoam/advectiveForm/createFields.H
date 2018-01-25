@@ -25,6 +25,8 @@ partitionedVolScalarField sigma
 (
     "sigma", partNames, mesh, runTime.timeName()
 );
+
+Info << "Setting rho for each partition\n" << endl;
 partitionedVolScalarField rho
 (
     "rho", partNames,
@@ -36,7 +38,7 @@ partitionedVolScalarField rho
     ),
     sigma
 );
-partitionedVolScalarField sigmaRho = rho.fraction();
+partitionedVolScalarField sigmaRho = rho.timesSigma();
 
 Info << "Reading in theta in each partition\n" << endl;
 partitionedVolScalarField theta
@@ -50,7 +52,7 @@ for(label ip = 0; ip < partNames.size(); ip++)
     rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
 }
 rho.updateSum();
-sigmaRho = rho.fraction();
+sigmaRho = rho.timesSigma();
 sigmaRho.updateSum();
 theta.updateSum();
 

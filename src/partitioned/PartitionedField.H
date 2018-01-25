@@ -178,7 +178,7 @@ public:
         const GeometricField<Type, PatchField, GeoMesh>& updateSum();
 
         //- Multiply the field by sigma
-        PartitionedField<Type, PatchField, GeoMesh> fraction() const;
+        PartitionedField<Type, PatchField, GeoMesh> timesSigma() const;
 
         //- Divide the field by given sigma
         PartitionedField<Type, PatchField, GeoMesh> divideBy

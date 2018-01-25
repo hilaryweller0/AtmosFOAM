@@ -20,4 +20,7 @@ const scalar dragCoeff(readScalar(transferProps.lookup("dragCoeff")));
 const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 
 // Is mass transfer decided based on w
-const Switch wTransfer(transferProps.lookup("wTransfer"));
+//const Switch wTransfer(transferProps.lookup("wTransfer"));
+
+// Minimum sigmaRho for each partition
+const dimensionedScalar minSigmaRho(transferProps.lookup("minSigmaRho"));
