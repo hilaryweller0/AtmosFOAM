@@ -1,20 +1,5 @@
-// update rhoSigma according to the continuity equation
-for(label ip = 0; ip < nParts; ip++)
-{
-    sigmaRho.ddt()[ip] = -fvc::div(volFlux[ip], sigmaRho[ip], "sigmaRho");
-
-    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
-    (
-        (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
-      + offCentre*sigmaRho.ddt()[ip]
-    );
-    
-    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
-}
-sigmaRho.updateSum();
-sigmaRhof.updateSum();
-
-/*// Calculate mass tranfer terms
+// Calculate mass tranfer terms
+// Diffusion between partitions
 for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=ip+1; jp < nParts; jp++)
@@ -28,18 +13,51 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-Info << "Before diffusion sigma[0] goes from " << min(sigmaRho[1]/rho[1]).value()
-     << " to " << max(sigmaRho[1]/rho[1]).value() << endl;
-
-// Now update sigmaRho with diffusion
-for(label ip = 0; ip < nParts; ip++) { for(label jp=0; jp < nParts; jp++)
+// Tranfer from 0 to 1 when w>0 and from 1 to 0 when w<0
+/*if (wTransfer)
 {
-    if (ip != jp)
+    volScalarField w0 = u[0].component(vector::Z);
+    volScalarField w1 = u[1].component(vector::Z);
+    forAll(u, cellI)
     {
-        sigmaRho[ip] += dt*(massTransfer[jp][ip] - massTransfer[ip][jp]);
-    }
-}}
+        if (w[cellI] < 0)
+        {
+            massTransfer[1][0][cellI] = sigmaRho[1][cellI]*0.5/runTime.deltaT();
+            massTransfer[0][1][cellI] = 0;
+        }
+        else
+        {
+            massTransfer[0][1][cellI] = sigmaRho[0][cellI]*0.5/runTime.deltaT();
+            massTransfer[1][0][cellI] = 0;
+        }
+}*/
 
-Info << "After diffusion sigma[0] goes from " << min(sigmaRho[1]/rho[1]).value()
-     << " to " << max(sigmaRho[1]/rho[1]).value() << endl;
-*/
+// update rhoSigma according to the continuity equation
+for(label ip = 0; ip < nParts; ip++)
+{
+    // Calculate the rate of change
+    sigmaRho.ddt()[ip] = -fvc::div(volFlux[ip], sigmaRho[ip], "sigmaRho");
+
+    // Add mass transer terms
+    for(label jp=0; jp < nParts; jp++)
+    {
+        if (ip != jp)
+        {
+            sigmaRho.ddt()[ip] += massTransfer[jp][ip] - massTransfer[ip][jp];
+        }
+    }
+
+    // Update sigmaRho based on the rate of change
+    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
+    (
+        (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
+      + offCentre*sigmaRho.ddt()[ip]
+    );
+    
+    // Update the surface (face) values
+    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
+}
+// Update the sums
+sigmaRho.updateSum();
+sigmaRhof.updateSum();
+

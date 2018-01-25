@@ -20,6 +20,20 @@
                )
              - 2*(Omega ^ Uf[ip])
             ));
+            
+            // Include the mass transfer terms
+            for(label jp=0; jp < nParts; jp++)
+            {
+                if (ip != jp)
+                {
+                    volFlux.ddt()[ip] += fvc::interpolate
+                    (
+                        massTransfer[jp][ip]/sigmaRho[ip],
+                        "massTransfer"
+                    )*(volFlux[jp] - volFlux[ip]);
+                }
+            }
+            
             // Flux with gravity
             volFlux[ip] = volFlux[ip].oldTime() + dt*
             (
