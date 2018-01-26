@@ -17,38 +17,50 @@ for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=ip+1; jp < nParts; jp++)
     {
-       massTransfer[ip][jp] = 0.25*Ksigma*
+        massTransferTmp = 0.5*Ksigma*
         (
-            rho[jp]*fvc::laplacian(sigma[jp])
-          - rho[ip]*fvc::laplacian(sigma[ip])
+            fvc::laplacian(sigmaRho[jp])
+          - fvc::laplacian(sigmaRho[ip])
         );
-    massTransfer[jp][ip] = -massTransfer[ip][jp];
+        massTransfer[ip][jp] = max(massTransferTmp, massTransferZero);
+        massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
     }
 }
 
-// Stability constraints for mass transfer terms
-for(label it = 0; it < 4; it++) for(label ip = 0; ip < nParts; ip++)
-{
-    for(label jp = 0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            // Constraint to keep sigmaRho > 0
-            massTransfer[ip][jp] = min
-            (
-                massTransfer[ip][jp],
-                massTransfer[jp][ip] + sigmaRho[ip]/dt - minSigmaRho/dt
-            );
 
-            // Constraint for transported variables
-            massTransfer[ip][jp] = min
-            (
-                massTransfer[ip][jp],
-                max(sigmaRho[jp]/dt, minSigmaRho/dt)
-            );
-        }
-    }
-}
+//// Stability constraints for mass transfer terms
+//// Constraint for transported variables
+//for(label ip = 0; ip < nParts; ip++)
+//{
+//    for(label jp = 0; jp < nParts; jp++)
+//    {
+//        if (ip != jp)
+//        {
+//            massTransfer[ip][jp] = min
+//            (
+//                massTransfer[ip][jp],
+//                max(sigmaRho[jp]/dt, minSigmaRho/dt)
+//            );
+//        }
+//    }
+//}
+
+//// Constraint to keep sigmaRho > 0
+//for(label it = 0; it < 4; it++)
+//for(label ip = 0; ip < nParts; ip++)
+//{
+//    for(label jp = 0; jp < nParts; jp++)
+//    {
+//        if (ip != jp)
+//        {
+//            massTransfer[ip][jp] = max
+//            (
+//                massTransfer[ip][jp],
+//                massTransfer[jp][ip] - sigmaRho[ip]/dt + minSigmaRho/dt
+//            );
+//        }
+//    }
+//}
 
 Info << "Before mass transfers, sigmaRho[0] goes from "
      << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
@@ -79,5 +91,4 @@ for(label ip = 0; ip < nParts; ip++)
 }
 sigmaRho.updateSum();
 sigmaRhof.updateSum();
-
 

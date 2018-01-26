@@ -134,6 +134,18 @@ partitionedSurfaceScalarField drag("drag", partNames, dragCommon);
 #include "calculateDrag.H"
 
 Info << "Initialising the mass transfer between partitions\n" << endl;
+// A temporary massTransfer field (for calculations)
+const dimensionedScalar massTransferZero
+(
+    "massTransferZero", dimensionSet(1,-3,-1,0,0), scalar(0)
+);
+volScalarField massTransferTmp
+(
+    IOobject("massTransfer", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    mesh,
+    massTransferZero
+);
 PtrList<partitionedVolScalarField> massTransfer(nParts);
 for(label jp = 0; jp < nParts; jp++)
 {
@@ -142,14 +154,7 @@ for(label jp = 0; jp < nParts; jp++)
         jp, 
         new partitionedVolScalarField
         (
-            partNames[jp]+'.'+"massTransfer", partNames, 
-            volScalarField
-            (
-                IOobject("massTransfer", runTime.timeName(), mesh,
-                         IOobject::NO_READ, IOobject::AUTO_WRITE),
-                mesh,
-                dimensionedScalar("", dimensionSet(1,-3,-1,0,0), scalar(0))
-            )
+            partNames[jp]+'.'+"massTransfer", partNames, massTransferTmp
         )
     );
 }

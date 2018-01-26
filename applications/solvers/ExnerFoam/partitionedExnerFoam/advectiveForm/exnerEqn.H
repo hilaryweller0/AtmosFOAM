@@ -69,24 +69,41 @@
                     volFlux[ip] -= offCentre*dt*Cp*thetaf
                                    *fvc::snGrad(Exner)*mesh.magSf();
 
-                    // Include the mass transfer terms
+                    volFlux.ddt()[ip] += gSf - Cp*thetaf
+                                        *fvc::snGrad(Exner)*mesh.magSf();
+                }
+            
+                // Include the mass transfer terms implicitly
+                for(label ip = 0; ip < nParts; ip++)
+                {
+                    surfaceScalarField denominator = sigmaRhof[ip];
+                    surfaceScalarField numerator = sigmaRhof[ip]*volFlux[ip];
+
                     for(label jp=0; jp < nParts; jp++)
                     {
                         if (ip != jp)
                         {
-                            volFlux[ip] += dt*fvc::interpolate
+                            surfaceScalarField massTransferf
+                                = dt*fvc::interpolate
                             (
-                                massTransfer[jp][ip]/sigmaRho[ip],
-                                "massTransfer"
-                            )*(volFlux[jp] - volFlux[ip]);
+                                massTransfer[jp][ip], "massTransfer"
+                            );
+                            numerator += massTransferf*volFlux[jp];
+                            denominator += massTransferf;
+                        }
+                    }
+                    for(label cellI = 0; cellI < mesh.nCells(); cellI++)
+                    {
+                        if (mag(denominator[cellI]) > 1e-4)
+                        {
+                            volFlux[ip][cellI] = numerator[cellI]
+                                /denominator[cellI];
                         }
                     }
 
                     flux[ip] = sigmaRhof[ip]*volFlux[ip];
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip], "Uf");
-                    volFlux.ddt()[ip] += gSf - Cp*thetaf
-                                        *fvc::snGrad(Exner)*mesh.magSf();
                 }
                 flux.updateSum();
                 volFlux.updateSum();
@@ -94,3 +111,4 @@
         }
     }
 }
+
