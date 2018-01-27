@@ -26,25 +26,25 @@ for(label ip = 0; ip < nParts; ip++)
 //    }
 
     // Include the mass transfer terms (operator split, implicit source)
-    volScalarField denominator = sigmaRho[ip];
-    volScalarField numerator = sigmaRho[ip]*theta[ip];
+    volScalarField denominator
+    (
+        IOobject("denom", runTime.timeName(), mesh),
+        mesh, dimensionedScalar("", dimless, scalar(1))
+    );
+    volScalarField numerator = theta[ip];
 
     for(label jp=0; jp < nParts; jp++)
     {
         if (ip != jp)
         {
-            numerator += dt*massTransfer[jp][ip]*theta[jp];
-            denominator += dt*massTransfer[jp][ip];
+            volScalarField incr = dt*massTransfer[jp][ip]
+                /max(sigmaRho[ip], minSigmaRho);
+            numerator += incr*theta[jp];
+            denominator += incr;
         }
     }
     
-    for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-    {
-        if (mag(denominator[cellI]) > 1e-4)
-        {
-            theta[ip][cellI] = numerator[cellI]/denominator[cellI];
-        }
-    }
+    theta[ip] = numerator/denominator;
 }
 // Update the sum
 theta.updateSum();

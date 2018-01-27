@@ -76,8 +76,12 @@
                 // Include the mass transfer terms implicitly
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    surfaceScalarField denominator = sigmaRhof[ip];
-                    surfaceScalarField numerator = sigmaRhof[ip]*volFlux[ip];
+                    surfaceScalarField denominator
+                    (
+                        IOobject("denom", runTime.timeName(), mesh),
+                        mesh, dimensionedScalar("", dimless, scalar(1))
+                    );
+                    surfaceScalarField numerator = volFlux[ip];
 
                     for(label jp=0; jp < nParts; jp++)
                     {
@@ -87,19 +91,12 @@
                                 = dt*fvc::interpolate
                             (
                                 massTransfer[jp][ip], "massTransfer"
-                            );
+                            )/max(sigmaRhof[ip], minSigmaRho);
                             numerator += massTransferf*volFlux[jp];
                             denominator += massTransferf;
                         }
                     }
-                    for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-                    {
-                        if (mag(denominator[cellI]) > 1e-4)
-                        {
-                            volFlux[ip][cellI] = numerator[cellI]
-                                /denominator[cellI];
-                        }
-                    }
+                    volFlux[ip] = numerator/denominator;
 
                     flux[ip] = sigmaRhof[ip]*volFlux[ip];
                     u[ip] = fvc::reconstruct(volFlux[ip]);
