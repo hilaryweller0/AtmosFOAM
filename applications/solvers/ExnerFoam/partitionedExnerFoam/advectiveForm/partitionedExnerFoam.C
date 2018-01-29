@@ -34,6 +34,8 @@ Description
 #include "HodgeOps.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
+#include "PartitionedFields.H"
+#include "moreListOps.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -71,14 +73,14 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-            #include "rhoThetaEqn.H"
+            #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
         
         #include "rhoSigmaEqn.H"
-        #include "rhoThetaEqn.H"
+        #include "thetaEqn.H"
         #include "sigma.H"
 
         #include "compressibleContinuityErrs.H"

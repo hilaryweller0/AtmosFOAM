@@ -1,0 +1,3 @@
+PartitionedFields.C
+
+LIB = $(FOAM_USER_LIBBIN)/libPartitionedFields

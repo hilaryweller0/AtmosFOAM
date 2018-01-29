@@ -15,16 +15,12 @@ IOdictionary transferProps
 const dimensionedScalar cloudRadiusMax(transferProps.lookup("cloudRadiusMax"));
 const dimensionedScalar cloudRadiusMin(transferProps.lookup("cloudRadiusMin"));
 const scalar dragCoeff(readScalar(transferProps.lookup("dragCoeff")));
-const scalar heatTransferCoeff
-(
-    readScalar(transferProps.lookup("heatTransferCoeff"))
-);
-//const dimensionedScalar thermalConductivity
-//(
-//    envProperties.lookup("thermalConductivity")
-//);
-//const dimensionedScalar nu(envProperties.lookup("nu"));
-//const dimensionedScalar heatDist(envProperties.lookup("heatDist"));
 
-//const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
+// Diffusion coefficient for inter-partition mass transfer
+const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 
+// Is mass transfer decided based on w
+//const Switch wTransfer(transferProps.lookup("wTransfer"));
+
+// Minimum sigmaRho for each partition
+const dimensionedScalar minSigmaRho(transferProps.lookup("minSigmaRho"));
