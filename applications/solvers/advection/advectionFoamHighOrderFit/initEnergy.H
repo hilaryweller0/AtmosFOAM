@@ -1,1 +1,0 @@
-../advectionFoam/initEnergy.H

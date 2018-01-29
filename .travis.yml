@@ -24,4 +24,4 @@ install:
   - sudo gem install deb-s3 -v 0.8.0
   - cd $TRAVIS_BUILD_DIR
 
-script: ./singularity.dist.sh 17.04 zesty
+script: ./singularity.dist.sh 17.10 artful
