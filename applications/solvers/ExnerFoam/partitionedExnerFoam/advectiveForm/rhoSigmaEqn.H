@@ -1,8 +1,11 @@
 // update rhoSigma according to the continuity equation (without transfers)
 for(label ip = 0; ip < nParts; ip++)
 {
-    // Calculate the rate of change
-    sigmaRho.ddt()[ip] = -fvc::div(volFlux[ip], sigmaRho[ip], "sigmaRho");
+    // Calculate the rate of change using old sigmaRho for bounded advection
+    sigmaRho.ddt()[ip] = -fvc::div
+    (
+        volFlux[ip], sigmaRho[ip].oldTime(), "sigmaRho"
+    );
 
     // Update sigmaRho based on the rate of change
     sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
@@ -17,10 +20,9 @@ for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=ip+1; jp < nParts; jp++)
     {
-        massTransferTmp = 0.5*Ksigma*
+        massTransferTmp = 0.5*Ksigma*fvc::laplacian
         (
-            fvc::laplacian(sigmaRho[jp])
-          - fvc::laplacian(sigmaRho[ip])
+            sigmaRho[jp] -sigmaRho[ip]
         );
         massTransfer[ip][jp] = max(massTransferTmp, massTransferZero);
         massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
@@ -45,22 +47,20 @@ for(label ip = 0; ip < nParts; ip++)
 //    }
 //}
 
-//// Constraint to keep sigmaRho > 0
-//for(label it = 0; it < 4; it++)
-//for(label ip = 0; ip < nParts; ip++)
-//{
-//    for(label jp = 0; jp < nParts; jp++)
-//    {
-//        if (ip != jp)
-//        {
-//            massTransfer[ip][jp] = max
-//            (
-//                massTransfer[ip][jp],
-//                massTransfer[jp][ip] - sigmaRho[ip]/dt + minSigmaRho/dt
-//            );
-//        }
-//    }
-//}
+// Constraint to keep sigmaRho > 0
+for(label ip = 0; ip < nParts; ip++)
+{
+    for(label jp = 0; jp < nParts; jp++)
+    {
+        if (ip != jp)
+        {
+            massTransfer[ip][jp] = min
+            (
+                massTransfer[ip][jp], (sigmaRho[ip]-minSigmaRho)/dt
+            );
+        }
+    }
+}
 
 Info << "Before mass transfers, sigmaRho[0] goes from "
      << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
