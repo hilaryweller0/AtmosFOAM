@@ -7,11 +7,11 @@ From:ubuntu:$VERSION
 	sh -c "wget -O - http://dl.openfoam.org/gpg.key | apt-key add -"
 	add-apt-repository "http://dl.openfoam.org/ubuntu dev" -y
 	add-apt-repository "http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev" -y
-	apt-get -qq update
+	apt-get -qq update --allow-insecure-repositories
 
 	DEBIAN_FRONTEND=noninteractive \
 	apt-get install devscripts debhelper openfoam-dev libgdal-dev -y
 
         DEBIAN_FRONTEND=noninteractive \
-	apt-get install atmosfoam-tools highorderfit -y --allow-unauthenticated --no-install-recommends
+	apt-get install atmosfoam-tools -y --allow-unauthenticated --no-install-recommends
 
