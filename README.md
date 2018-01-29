@@ -19,7 +19,7 @@ A collection of OpenFOAM computational fluid dynamics applications and libraries
     sudo add-apt-repository http://dl.openfoam.org/ubuntu
     sudo add-apt-repository "http://dl.openfoam.org/ubuntu dev"
     sudo add-apt-repository "http://atmosfoam-apt.s3-website-eu-west-1.amazonaws.com dev"
-    sudo apt-get update
+    sudo apt-get update --allow-insecure-repositories
     sudo apt-get install atmosfoam
 
 ## Testing
