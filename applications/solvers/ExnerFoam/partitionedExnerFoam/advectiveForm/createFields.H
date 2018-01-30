@@ -184,3 +184,8 @@ partitionedSurfaceScalarField transferf
     )
 );
 
+// Horizontal laplacian of theta for calculating transfer terms
+partitionedVolScalarField horizLaplacianTheta
+(
+    "horizLaplacianTheta", partNames, fvc::laplacian(theta[0])
+);

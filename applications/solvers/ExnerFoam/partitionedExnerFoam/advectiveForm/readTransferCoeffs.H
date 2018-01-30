@@ -23,4 +23,4 @@ const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 //const Switch wTransfer(transferProps.lookup("wTransfer"));
 
 // Minimum sigmaRho for each partition
-const dimensionedScalar minSigmaRho(transferProps.lookup("minSigmaRho"));
+const scalar minSigma = readScalar(transferProps.lookup("minSigma"));

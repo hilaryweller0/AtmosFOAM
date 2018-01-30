@@ -30,6 +30,31 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 
+// Mass transfer based on buoyancy
+for(label ip = 0; ip < nParts; ip++)
+{
+    surfaceScalarField gradTheta = fvc::snGrad(theta[ip]);
+    gradTheta -= gradTheta*gUnitNormal;
+    horizLaplacianTheta[ip] = fvc::div(gradTheta*mesh.magSf());
+}
+if (nParts != 2)
+{
+    FatalErrorIn("rhoSigmaEqn.H")
+        << " mass transfer terms only formulated for nParts = 2, not nParts = "
+        << nParts << exit(FatalError);
+}
+for(label cellI = 0; cellI < mesh.nCells(); cellI++)
+{
+    if (horizLaplacianTheta[0][cellI] < 0)
+    {
+        massTransfer[0][1][cellI] += sigmaRho[0][cellI]/dt.value();
+    }
+    if (horizLaplacianTheta[1][cellI] > 0)
+    {
+        massTransfer[1][0][cellI] += sigmaRho[1][cellI]/dt.value();
+    }
+}
+
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -39,7 +64,7 @@ for(label ip = 0; ip < nParts; ip++)
         {
             massTransfer[ip][jp] = min
             (
-                massTransfer[ip][jp], (sigmaRho[ip]-minSigmaRho)/dt
+                massTransfer[ip][jp], (sigmaRho[ip]-minSigma*rho[ip])/dt
             );
         }
     }
@@ -82,8 +107,8 @@ if (nParts != 2)
         << " transfer terms only formulated for nParts = 2, not nParts = "
         << nParts << exit(FatalError);
 }
-transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaRho);
-transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaRho);
+transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigma*rho[1]);
+transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigma*rho[0]);
 transfer.updateSum();
 transferf[0] = fvc::interpolate(transfer[0], "massTransfer");
 transferf[1] = fvc::interpolate(transfer[1], "massTransfer");
