@@ -49,12 +49,16 @@ int main(int argc, char *argv[])
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
     const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
     const bool modelDrag = itsDict.lookupOrDefault<bool>("modelDrag", true);
-    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.00);
+    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.01);
     const double sourceMag = itsDict.lookupOrDefault<double>("sourceMagnitude", 0.01);
+    const vector yNorm(0,1,0);
     //const double lengthScale = itsDict.lookupOrDefault<double>("lengthScale", 40.);
-    dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
+    //dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
+    dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(1));
     dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(0));
     dimensionedScalar bubbleRadiusMax("bubbleRadiusMax",dimensionSet(0,1,0,0,0,0,0),scalar(1));
+    dimensionedScalar buoyancyMagnitude("buoyancyMagnitude",dimensionSet(0,1,-1,0,0,0,0),scalar(10));
+    dimensionedScalar timeScale = 10*dt;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -76,15 +80,15 @@ int main(int argc, char *argv[])
                 h[ip] = h[ip].oldTime() - dt*
                 (
                     fvc::div(volFlux[ip], h[ip])
-                  + sourceMag*source[ip]*h[ip].oldTime()
+                  + sourceMag*sink[ip]*h[ip].oldTime()
                 );
                 for (label jp = 0; jp < ip; jp++)
                 {
-                    h[ip] += dt*sourceMag*source[jp]*h[jp].oldTime();
+                    h[ip] += dt*sourceMag*sink[jp]*h[jp].oldTime();
                 }
                 for (label jp = ip+1; jp < nParts; jp++)
                 {
-                    h[ip] += dt*sourceMag*source[jp]*h[jp].oldTime();
+                    h[ip] += dt*sourceMag*sink[jp]*h[jp].oldTime();
                 }
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
@@ -99,7 +103,8 @@ int main(int argc, char *argv[])
             // Update the velocity in each partition
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
-                surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+                //surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+                surfaceScalarField ggradh = lengthScale*g*fvc::snGrad(hSum)/fvc::interpolate(hSum)*mesh.magSf();
                 
                 //Update prognostic variables.
                 for(label ip = 0; ip < nParts; ip++)
@@ -119,18 +124,22 @@ int main(int argc, char *argv[])
                       //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + ggradh
                       - (drag[ip] & mesh.Sf())
+                      - buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf())
+                      //+ fvc::interpolate(gravity)*(yNorm & mesh.Sf())
                       //+ sourceMag*fvc::interpolate(source[ip])*( Uf[ip] & mesh.Sf() )
                     );
                 
                     for (label jp = 0; jp < ip; jp++)
                     {
-                        volFlux[ip] += dt*sourceMag*fvc::interpolate(source[jp])*
+                        volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
                                           fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                        //volFlux[ip] += dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf());
                     }
                     for (label jp = ip+1; jp < nParts; jp++)
                     {
-                        volFlux[ip] += dt*sourceMag*fvc::interpolate(source[jp])*
+                        volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
                                           fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                        //volFlux[ip] += dt*buoyancyMagnitude*fvc::interpolate(momentumSource[jp])*(yNorm & mesh.Sf());
                     }
                 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
@@ -149,8 +158,10 @@ int main(int argc, char *argv[])
              << max(sigma[0]+sigma[1]).value() << endl;
         Info << "h goes from " << min(hSum).value() << " to "
              << max(hSum).value() << endl;
+        Info << "Total h: " << sum(hSum).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
+
 
         runTime.write();
 

@@ -14,6 +14,19 @@ volScalarField hSum
 );
 hSum.oldTime();
 
+volScalarField gravity
+(
+    IOobject
+    (
+        "gravity",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 // The partition names
 const label nParts = 2;
 wordList partNames(nParts);
@@ -27,7 +40,8 @@ PtrList<surfaceVectorField> Uf(nParts);
 PtrList<surfaceVectorField> drag(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
-PtrList<volScalarField> source(nParts);
+PtrList<volScalarField> sink(nParts);
+PtrList<volScalarField> momentumSource(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -139,14 +153,31 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     
-    source.set
+    sink.set
     (
         ip,
         new volScalarField
         (
             IOobject
             (
-                partNames[ip]+"source",
+                partNames[ip]+"sink",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh
+        )
+    );
+    
+    momentumSource.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"momentumSource",
                 runTime.timeName(),
                 mesh,
                 IOobject::MUST_READ,
