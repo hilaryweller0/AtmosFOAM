@@ -159,3 +159,28 @@ for(label jp = 0; jp < nParts; jp++)
     );
 }
 
+// Transfer terms for other variables (assuming nParts == 2)
+partitionedVolScalarField transfer
+(
+    "transfer",
+    partNames,
+    volScalarField
+    (
+        IOobject("transfer", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimless, scalar(0))
+    )
+);
+
+partitionedSurfaceScalarField transferf
+(
+    "transferf",
+    partNames,
+    surfaceScalarField
+    (
+        IOobject("transfer", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimless, scalar(0))
+    )
+);
+

@@ -73,31 +73,17 @@
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
             
-                // Include the mass transfer terms implicitly
+                // Include the mass transfer terms implicitly (for nParts = 2)
+                volFlux[0] =
+                (
+                    (1+transferf[0])*volFlux[0] + transferf[1]*volFlux[1]
+                )/(1+transferf.sum());
+                volFlux[1] = (volFlux[1] + transferf[0]*volFlux[0])
+                            /(1+transferf[0]);
+
+                // Update mass flux and velocities based on the flux
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    surfaceScalarField denominator
-                    (
-                        IOobject("denom", runTime.timeName(), mesh),
-                        mesh, dimensionedScalar("", dimless, scalar(1))
-                    );
-                    surfaceScalarField numerator = volFlux[ip];
-
-                    for(label jp=0; jp < nParts; jp++)
-                    {
-                        if (ip != jp)
-                        {
-                            surfaceScalarField massTransferf
-                                = dt*fvc::interpolate
-                            (
-                                massTransfer[jp][ip], "massTransfer"
-                            )/max(sigmaRhof[ip], minSigmaRho);
-                            numerator += massTransferf*volFlux[jp];
-                            denominator += massTransferf;
-                        }
-                    }
-                    volFlux[ip] = numerator/denominator;
-
                     flux[ip] = sigmaRhof[ip]*volFlux[ip];
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip], "Uf");

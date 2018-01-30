@@ -2,24 +2,18 @@
 
 if (mag(dragCoeff) > SMALL)
 {
-    // Update sigma
-    for (label ip = 0; ip < nParts; ip++)
+    // This code only works for nParts == 2
+    if (nParts != 2)
     {
-        sigmaf[ip] = fvc::interpolate(sigma[ip], "sigma");
-        sigmaf[ip] = min(max(sigmaf[ip], scalar(0)), scalar(1));
+        FatalErrorIn("calculateDrag.H")
+            << " drag is only formulated for nParts = 2, not nParts = "
+            << nParts << exit(FatalError);
     }
-    
-    // Update sigmaRhof
-    for(label ip = 0; ip < partNames.size(); ip++)
-    {
-        sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
-    }
-    sigmaRhof.updateSum();
 
     // Calculate the cloud radius and hence the drag
     cloudRadius = max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1]);
-    surfaceScalarField dragCommon = -dragCoeff/cloudRadius 
-                          * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
+    dragCommon = -dragCoeff/cloudRadius 
+                 * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
 
     drag[0] = sigmaf[1]*dragCommon*sigmaRhof.sum()
                 /fvc::interpolate(rho[0], "rho");

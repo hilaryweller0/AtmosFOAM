@@ -12,40 +12,11 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
-// Mass transfer terms
-for(label ip = 0; ip < nParts; ip++)
-{
-// Include the mass transfer terms (operator split, explicit source)
-//    for(label jp=0; jp < nParts; jp++)
-//    {
-//        if (ip != jp)
-//        {
-//            theta[ip] += dt*massTransfer[jp][ip]/sigmaRho[ip]*
-//                         (theta[jp] - theta[ip]);
-//        }
-//    }
+// Mass transfer terms (for nParts = 2 only)
+theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
+           /(1+transfer.sum());
+theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
 
-    // Include the mass transfer terms (operator split, implicit source)
-    volScalarField denominator
-    (
-        IOobject("denom", runTime.timeName(), mesh),
-        mesh, dimensionedScalar("", dimless, scalar(1))
-    );
-    volScalarField numerator = theta[ip];
-
-    for(label jp=0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            volScalarField incr = dt*massTransfer[jp][ip]
-                /max(sigmaRho[ip], minSigmaRho);
-            numerator += incr*theta[jp];
-            denominator += incr;
-        }
-    }
-    
-    theta[ip] = numerator/denominator;
-}
 // Update the sum
 theta.updateSum();
 

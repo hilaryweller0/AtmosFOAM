@@ -30,23 +30,6 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 
-//// Stability constraints for mass transfer terms
-//// Constraint for transported variables
-//for(label ip = 0; ip < nParts; ip++)
-//{
-//    for(label jp = 0; jp < nParts; jp++)
-//    {
-//        if (ip != jp)
-//        {
-//            massTransfer[ip][jp] = min
-//            (
-//                massTransfer[ip][jp],
-//                max(sigmaRho[jp]/dt, minSigmaRho/dt)
-//            );
-//        }
-//    }
-//}
-
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -91,4 +74,18 @@ for(label ip = 0; ip < nParts; ip++)
 }
 sigmaRho.updateSum();
 sigmaRhof.updateSum();
+
+// Transfer terms for other variables (assuming nParts == 2)
+if (nParts != 2)
+{
+    FatalErrorIn("rhoSigmaEqn.H")
+        << " transfer terms only formulated for nParts = 2, not nParts = "
+        << nParts << exit(FatalError);
+}
+transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaRho);
+transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaRho);
+transfer.updateSum();
+transferf[0] = fvc::interpolate(transfer[0], "massTransfer");
+transferf[1] = fvc::interpolate(transfer[1], "massTransfer");
+transferf.updateSum();
 
