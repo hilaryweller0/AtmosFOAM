@@ -44,6 +44,31 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     
+    bool useCoriolis = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useCoriolis", false
+    );
+    bool useDrag = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useDrag", true
+    );
+    bool useDiffusion = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useDiffusion", false
+    );
+    bool useMassTransfer = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useMassTransfer", true
+    );
+    bool useBuoyancy = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useBuoyancy", true
+    );
+    bool useGravity = mesh.solutionDict().lookupOrDefault<bool>
+    (
+        "useGravity", true
+    );
+    
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
@@ -103,8 +128,8 @@ int main(int argc, char *argv[])
             // Update the velocity in each partition
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
-                //surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
-                surfaceScalarField ggradh = lengthScale*g*fvc::snGrad(hSum)/fvc::interpolate(hSum)*mesh.magSf();
+                surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+                //surfaceScalarField ggradh = lengthScale*g*fvc::snGrad(hSum)/fvc::interpolate(hSum)*mesh.magSf();
                 
                 //Update prognostic variables.
                 for(label ip = 0; ip < nParts; ip++)
@@ -114,32 +139,23 @@ int main(int argc, char *argv[])
                     volFlux[ip] = volFlux[ip].oldTime() - dt*
                     (
                         ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
-                        
-                        //( fvc::interpolate
-                        //(
-                        //    fvc::div(volFlux[ip], u[ip])
-                        //  - u[ip] * fvc::div(volFlux[ip])
-                        //) & mesh.Sf() )
-                        
-                      //+ ((twoOmegaf^Uf[ip]) & mesh.Sf())
                       + ggradh
-                      - (drag[ip] & mesh.Sf())
-                      - buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf())
-                      //+ fvc::interpolate(gravity)*(yNorm & mesh.Sf())
-                      //+ sourceMag*fvc::interpolate(source[ip])*( Uf[ip] & mesh.Sf() )
                     );
+                    
+                    if (useCoriolis) { volFlux[ip] += -dt*((twoOmegaf^Uf[ip]) & mesh.Sf()); }
+                    if (useDrag)     { volFlux[ip] +=  dt*(drag[ip] & mesh.Sf()); }
+                    if (useBuoyancy) { volFlux[ip] +=  dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf()); }
+                    if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
                 
                     for (label jp = 0; jp < ip; jp++)
                     {
                         volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
                                           fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                        //volFlux[ip] += dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf());
                     }
                     for (label jp = ip+1; jp < nParts; jp++)
                     {
                         volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
                                           fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                        //volFlux[ip] += dt*buoyancyMagnitude*fvc::interpolate(momentumSource[jp])*(yNorm & mesh.Sf());
                     }
                 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
