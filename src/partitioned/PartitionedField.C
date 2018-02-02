@@ -217,7 +217,8 @@ template<class Type, template<class> class PatchField, class GeoMesh>
 const Foam::GeometricField<Type, PatchField, GeoMesh>&
 Foam::PartitionedField<Type, PatchField, GeoMesh>::updateSum()
 {
-
+    // Sum depends on whether it is sigma weighted
+    
     if (!needsSigma_)
     {
         sum_.dimensions().reset(operator[](0).dimensions());
@@ -259,22 +260,30 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::timesSigma() const
             << "cannot calculate timesSigma without sigma"
             << abort(FatalError);
     }
-
+    
     // Name of the timesSigma
     string newName = sigma_.baseName()+'.'+baseName();
     
     // Geometric field to start from
-    GeometricField<Type, PatchField, GeoMesh> fracField(newName, sum_);
+    const GeometricField<Type, PatchField, GeoMesh>& f = operator[](0);
+    GeometricField<Type, PatchField, GeoMesh> fracField
+    (
+        IOobject(newName, f.time().timeName(), f.mesh()),
+        f*sigma_[0],
+        f.boundaryField().types()
+    );
     
     PartitionedField<Type, PatchField, GeoMesh> frac
     (
         newName, partNames(), fracField
     );
     
-    for(label ip = 0; ip < size(); ip++)
+    for(label ip = 1; ip < size(); ip++)
     {
         frac[ip] = operator[](ip)*sigma_[ip];
     }
+    
+    frac.updateSum();
     
     return frac;
 }

@@ -34,7 +34,8 @@ partitionedVolScalarField rho
     (
         IOobject("rho", runTime.timeName(), mesh),
         mesh,
-        dimensionedScalar("rho", dimDensity, scalar(1))
+        dimensionedScalar("rho", dimDensity, scalar(1)),
+        sigma[0].boundaryField().types()
     ),
     sigma
 );

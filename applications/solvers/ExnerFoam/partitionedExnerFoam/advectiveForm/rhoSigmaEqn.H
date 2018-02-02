@@ -4,15 +4,24 @@ for(label ip = 0; ip < nParts; ip++)
     // Calculate the rate of change using old sigmaRho for bounded advection
     sigmaRho.ddt()[ip] = -fvc::div
     (
-        volFlux[ip], sigmaRho[ip].oldTime(), "sigmaRho"
+        (1-offCentre)*volFlux[ip].oldTime() + offCentre*volFlux[ip],
+        sigmaRho[ip].oldTime(),
+        "sigmaRho"
     );
 
     // Update sigmaRho based on the rate of change
-    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
-    (
-        (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
-      + offCentre*sigmaRho.ddt()[ip]
-    );
+    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*sigmaRho.ddt()[ip];
+    sigmaRho[ip].correctBoundaryConditions();
+    
+/*    Tuple2<scalar, label> minSigmaRho = minWhere(sigmaRho[ip]);
+    label cellI = minSigmaRho.second();
+    Info << "sigmaRho[" << ip << "] minimum " 
+         << minSigmaRho.first() << " at " << cellI
+         << " where sigmaRho[" << ip << "].oldTime() is " 
+         << sigmaRho[ip].oldTime()[cellI]
+         << " and dt*sigmaRho.ddt()[" << ip << "] is "
+         << dt.value()*sigmaRho.ddt()[ip][cellI] << endl;
+*/
 }
 
 // Calculate mass tranfer terms as diffusion between partitions
@@ -31,27 +40,30 @@ for(label ip = 0; ip < nParts; ip++)
 
 
 // Mass transfer based on buoyancy
-for(label ip = 0; ip < nParts; ip++)
+if (thetaTransfer)
 {
-    surfaceScalarField gradTheta = fvc::snGrad(theta[ip]);
-    gradTheta -= gradTheta*gUnitNormal;
-    horizLaplacianTheta[ip] = fvc::div(gradTheta*mesh.magSf());
-}
-if (nParts != 2)
-{
-    FatalErrorIn("rhoSigmaEqn.H")
-        << " mass transfer terms only formulated for nParts = 2, not nParts = "
-        << nParts << exit(FatalError);
-}
-for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-{
-    if (horizLaplacianTheta[0][cellI] < 0)
+    for(label ip = 0; ip < nParts; ip++)
     {
-        massTransfer[0][1][cellI] += sigmaRho[0][cellI]/dt.value();
+        surfaceScalarField gradTheta = fvc::snGrad(theta[ip], "theta");
+        gradTheta -= gradTheta*gUnitNormal;
+        horizLaplacianTheta[ip] = fvc::div(gradTheta*mesh.magSf());
     }
-    if (horizLaplacianTheta[1][cellI] > 0)
+    if (nParts != 2)
     {
-        massTransfer[1][0][cellI] += sigmaRho[1][cellI]/dt.value();
+        FatalErrorIn("rhoSigmaEqn.H")
+            << " mass transfer terms only formulated for nParts = 2, not nParts = "
+            << nParts << exit(FatalError);
+    }
+    for(label cellI = 0; cellI < mesh.nCells(); cellI++)
+    {
+        if (horizLaplacianTheta[0][cellI] < 0)
+        {
+            massTransfer[0][1][cellI] += sigmaRho[0][cellI]/dt.value();
+        }
+        if (horizLaplacianTheta[1][cellI] > 0)
+        {
+            massTransfer[1][0][cellI] += sigmaRho[1][cellI]/dt.value();
+        }
     }
 }
 
@@ -70,6 +82,18 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
+/*for(label ip = 0; ip < nParts; ip++)
+{
+    Tuple2<scalar, label> minSigmaRho = minWhere(sigmaRho[ip]);
+    label cellI = minSigmaRho.second();
+    Info << "sigmaRho[" << ip << "] minimum " 
+         << minSigmaRho.first() << " at " << cellI
+         << " where sigmaRho[" << ip << "].oldTime() is " 
+         << sigmaRho[ip].oldTime()[cellI]
+         << " and dt*sigmaRho.ddt()[" << ip << "] is "
+         << dt.value()*sigmaRho.ddt()[ip][cellI] << endl;
+}
+*/
 Info << "Before mass transfers, sigmaRho[0] goes from "
      << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
 Info << "Before mass transfers, sigmaRho[1] goes from "

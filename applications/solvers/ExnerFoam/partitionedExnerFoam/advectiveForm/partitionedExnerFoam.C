@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"
+            #include "partitionedCourantNo.H"
         }
         
         #include "rhoSigmaEqn.H"
