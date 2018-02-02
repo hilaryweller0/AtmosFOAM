@@ -14,6 +14,19 @@ volScalarField hSum
 );
 hSum.oldTime();
 
+volScalarField gravity
+(
+    IOobject
+    (
+        "gravity",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 // The partition names
 const label nParts = 2;
 wordList partNames(nParts);
@@ -24,8 +37,11 @@ partNames[1] = "buoyant.";
 PtrList<volScalarField> sigma(nParts);
 PtrList<volScalarField> h(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
+PtrList<surfaceVectorField> drag(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<volScalarField> sink(nParts);
+PtrList<volScalarField> momentumSource(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -74,13 +90,13 @@ for (label ip = 0; ip < nParts; ip++)
                 partNames[ip]+"Uf",
                 runTime.timeName(),
                 mesh,
-                IOobject::MUST_READ,
+                IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
             mesh
         )
     );
-
+    
     volFlux.set
     (
         ip,
@@ -98,7 +114,27 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     volFlux[ip].oldTime();
-
+    
+    drag.set
+    (
+        ip,
+        new surfaceVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"drag",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::AUTO_WRITE
+            ),
+            Uf[ip]/dt
+            
+            
+        )
+    );
+    volFlux[ip].oldTime();
+    
     u.set
     (
         ip,
@@ -109,11 +145,45 @@ for (label ip = 0; ip < nParts; ip++)
                 partNames[ip]+"u",
                 runTime.timeName(),
                 mesh,
-                IOobject::NO_READ,
+                IOobject::MUST_READ,
                 IOobject::AUTO_WRITE
             ),
             fvc::reconstruct(volFlux[ip]),
             Uf[ip].boundaryField().types()
+        )
+    );
+    
+    sink.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"sink",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh
+        )
+    );
+    
+    momentumSource.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"momentumSource",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh
         )
     );
 }

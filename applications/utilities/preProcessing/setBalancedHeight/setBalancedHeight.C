@@ -99,11 +99,18 @@ int main(int argc, char *argv[])
         
         // Ensure the domain contains the correct mean h
         dimensionedScalar hMeanTmp = fvc::domainIntegrate(h)
+<<<<<<< HEAD
             /dimensionedScalar("", dimVol, gSum(mesh.V()));
         h += hMean - hMeanTmp;
         Info << "h goes from " << min(h).value() << " to " << max(h).value()
              << " mean = " << fvc::domainIntegrate(h)
                               /dimensionedScalar("", dimVol, gSum(mesh.V()))
+=======
+            /dimensionedScalar("",dimVol,gSum(mesh.V()));
+        h += hMean - hMeanTmp;
+        Info << "h goes from " << min(h).value() << " to " << max(h).value()
+             << " mean = " << fvc::domainIntegrate(h)//dimensionedScalar("",dimVol,gSum(mesh.V()))
+>>>>>>> ee14f17e32f6c4212b859a93e62cf7f3adacf6bc
              << endl;
     }
 
