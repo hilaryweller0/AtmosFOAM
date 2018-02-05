@@ -77,12 +77,14 @@ int main(int argc, char *argv[])
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"
-            #include "partitionedCourantNo.H"
         }
         
         #include "rhoSigmaEqn.H"
         #include "thetaEqn.H"
         #include "sigma.H"
+
+        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
+             << max(sigma[0]).value() << endl;
 
         #include "compressibleContinuityErrs.H"
         runTime.write();

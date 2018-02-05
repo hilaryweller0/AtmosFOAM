@@ -85,16 +85,17 @@ partitionedSurfaceVectorField Uf
 );
 
 Info << "Calculating the mass flux and volume flux in each partition\n"<<endl;
-partitionedSurfaceScalarField flux
+partitionedSurfaceScalarField volFlux
 (
-    "flux", partNames, Uf.sum() & mesh.Sf()
+    "volFlux", partNames, Uf[0] & mesh.Sf(), sigmaRhof
 );
-for(label ip = 0; ip < flux.size(); ip++)
+for(label ip = 1; ip < volFlux.size(); ip++)
 {
-    flux[ip] = sigmaRhof[ip]*(Uf[ip] & mesh.Sf());
+    volFlux[ip] = Uf[ip] & mesh.Sf();
 }
+volFlux.updateSum();
 
-partitionedSurfaceScalarField volFlux = flux.divideBy(sigmaRhof, "volFlux");
+partitionedSurfaceScalarField flux = volFlux.timesSigma();
 
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
 partitionedVolVectorField u
@@ -185,8 +186,16 @@ partitionedSurfaceScalarField transferf
     )
 );
 
-// Horizontal laplacian of theta for calculating transfer terms
-partitionedVolScalarField horizLaplacianTheta
+// Frequency for calculating mass transfer terms
+partitionedVolScalarField transferFreq
 (
-    "horizLaplacianTheta", partNames, fvc::laplacian(theta[0])
+    "transferFreq",
+    partNames,
+    volScalarField
+    (
+        IOobject("transferFreq", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimensionSet(0,0,-1,0,0), scalar(0))
+    )
 );
+

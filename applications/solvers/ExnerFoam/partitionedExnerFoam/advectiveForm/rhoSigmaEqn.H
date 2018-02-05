@@ -44,9 +44,8 @@ if (thetaTransfer)
 {
     for(label ip = 0; ip < nParts; ip++)
     {
-        surfaceScalarField gradTheta = fvc::snGrad(theta[ip], "theta");
-        gradTheta -= gradTheta*gUnitNormal;
-        horizLaplacianTheta[ip] = fvc::div(gradTheta*mesh.magSf());
+        transferFreq[ip] = thetaTransferDiffusivity*fvc::laplacian(theta[ip])
+                           /theta[ip];
     }
     if (nParts != 2)
     {
@@ -56,13 +55,15 @@ if (thetaTransfer)
     }
     for(label cellI = 0; cellI < mesh.nCells(); cellI++)
     {
-        if (horizLaplacianTheta[0][cellI] < 0)
+        if (transferFreq[0][cellI] < 0)
         {
-            massTransfer[0][1][cellI] += sigmaRho[0][cellI]/dt.value();
+            massTransfer[0][1][cellI] -= sigmaRho[0][cellI]
+                                        *transferFreq[0][cellI];
         }
-        if (horizLaplacianTheta[1][cellI] > 0)
+        if (transferFreq[1][cellI] > 0)
         {
-            massTransfer[1][0][cellI] += sigmaRho[1][cellI]/dt.value();
+            massTransfer[1][0][cellI] += sigmaRho[1][cellI]
+                                        *transferFreq[1][cellI];
         }
     }
 }
@@ -93,12 +94,12 @@ for(label ip = 0; ip < nParts; ip++)
          << " and dt*sigmaRho.ddt()[" << ip << "] is "
          << dt.value()*sigmaRho.ddt()[ip][cellI] << endl;
 }
-*/
+*//*
 Info << "Before mass transfers, sigmaRho[0] goes from "
      << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
 Info << "Before mass transfers, sigmaRho[1] goes from "
      << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
-
+*/
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -111,11 +112,11 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-Info << "After mass transfers, sigmaRho[0] goes from "
+/*Info << "After mass transfers, sigmaRho[0] goes from "
      << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
 Info << "After mass transfers, sigmaRho[1] goes from "
      << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
-
+*/
 // Update the sums and face values
 for(label ip = 0; ip < nParts; ip++)
 {
