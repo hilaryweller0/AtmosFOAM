@@ -43,48 +43,8 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    #include "createVariables.H"
     
-    bool useCoriolis = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useCoriolis", false
-    );
-    bool useDrag = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useDrag", true
-    );
-    bool useDiffusion = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useDiffusion", false
-    );
-    bool useMassTransfer = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useMassTransfer", true
-    );
-    bool useBuoyancy = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useBuoyancy", true
-    );
-    bool useGravity = mesh.solutionDict().lookupOrDefault<bool>
-    (
-        "useGravity", true
-    );
-    
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-    const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
-    const bool modelDrag = itsDict.lookupOrDefault<bool>("modelDrag", true);
-    const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.01);
-    const double sourceMag = itsDict.lookupOrDefault<double>("sourceMagnitude", 0.01);
-    const vector yNorm(0,1,0);
-    //const double lengthScale = itsDict.lookupOrDefault<double>("lengthScale", 40.);
-    //dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
-    dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(1));
-    dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(0));
-    dimensionedScalar bubbleRadiusMax("bubbleRadiusMax",dimensionSet(0,1,0,0,0,0,0),scalar(1));
-    dimensionedScalar buoyancyMagnitude("buoyancyMagnitude",dimensionSet(0,1,-1,0,0,0,0),scalar(10));
-    dimensionedScalar timeScale = 10*dt;
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -99,91 +59,25 @@ int main(int argc, char *argv[])
 
         for (int icorr=0; icorr < nCorr; icorr++)
         {
-            // Advect h in each partition
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                h[ip] = h[ip].oldTime() - dt*
-                (
-                    fvc::div(volFlux[ip], h[ip])
-                  + sourceMag*sink[ip]*h[ip].oldTime()
-                );
-                for (label jp = 0; jp < ip; jp++)
-                {
-                    h[ip] += dt*sourceMag*sink[jp]*h[jp].oldTime();
-                }
-                for (label jp = ip+1; jp < nParts; jp++)
-                {
-                    h[ip] += dt*sourceMag*sink[jp]*h[jp].oldTime();
-                }
-                if (ip == 0) hSum = h[ip];
-                else hSum += h[ip];
-            }
-            
-            // Update sigma (diagnostic)
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                sigma[ip] = h[ip]/hSum;
-            }
-            
-            // Update the velocity in each partition
-            for (int ucorr = 0; ucorr < nUCorr; ucorr++)
-            {
-                surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
-                //surfaceScalarField ggradh = lengthScale*g*fvc::snGrad(hSum)/fvc::interpolate(hSum)*mesh.magSf();
-                
-                //Update prognostic variables.
-                for(label ip = 0; ip < nParts; ip++)
-                {
-                    #include "drag.H"
-                    
-                    volFlux[ip] = volFlux[ip].oldTime() - dt*
-                    (
-                        ((Uf[ip]&fvc::interpolate(fvc::grad(Uf[ip])))&mesh.Sf())
-                      + ggradh
-                    );
-                    
-                    if (useCoriolis) { volFlux[ip] += -dt*((twoOmegaf^Uf[ip]) & mesh.Sf()); }
-                    if (useDrag)     { volFlux[ip] +=  dt*(drag[ip] & mesh.Sf()); }
-                    if (useBuoyancy) { volFlux[ip] +=  dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf()); }
-                    if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
-                
-                    for (label jp = 0; jp < ip; jp++)
-                    {
-                        volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
-                                          fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                    }
-                    for (label jp = ip+1; jp < nParts; jp++)
-                    {
-                        volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
-                                          fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                    }
-                
-                    u[ip] = fvc::reconstruct(volFlux[ip]);
-                    Uf[ip] = fvc::interpolate(u[ip]);
-                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                            *mesh.Sf()/sqr(mesh.magSf());
-                }
-            }
+            #include "continuityEquation.H"
+            #include "updateSigma.H"
+            #include "momentumEquation.H"
         }
 
         #include "energy.H"
         #include "writeDiagnostics.H"
+        
+        runTime.write();
+
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
-        Info << "sigma goes from " << min(sigma[0]+sigma[1]).value() << " to "
-             << max(sigma[0]+sigma[1]).value() << endl;
         Info << "h goes from " << min(hSum).value() << " to "
              << max(hSum).value() << endl;
         Info << "Total h: " << sum(hSum).value() << endl;
-        Info << "Energy change: " 
-             << normalEnergyChange << endl;
-
-
-        runTime.write();
-
-        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
-            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
-            << nl << endl;
+        Info << "Energy change: " << normalEnergyChange << endl;
+        Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+             << nl << endl;
     }
 
     Info<< "End\n" << endl;
