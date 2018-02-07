@@ -136,10 +136,14 @@ partitionedSurfaceScalarField drag("drag", partNames, dragCommon);
 #include "calculateDrag.H"
 
 Info << "Initialising the mass transfer between partitions\n" << endl;
-// A temporary massTransfer field (for calculations)
+// Temporary mass and heat transfer fields (for calculations)
 const dimensionedScalar massTransferZero
 (
     "massTransferZero", dimensionSet(1,-3,-1,0,0), scalar(0)
+);
+const dimensionedScalar heatTransferZero
+(
+    "heatTransferZero", dimensionSet(0,-2,0,1,0), scalar(0)
 );
 volScalarField massTransferTmp
 (
