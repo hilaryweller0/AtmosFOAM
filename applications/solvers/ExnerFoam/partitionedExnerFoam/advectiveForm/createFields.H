@@ -190,16 +190,3 @@ partitionedSurfaceScalarField transferf
     )
 );
 
-// Frequency for calculating mass transfer terms
-partitionedVolScalarField transferFreq
-(
-    "transferFreq",
-    partNames,
-    volScalarField
-    (
-        IOobject("transferFreq", runTime.timeName(), mesh),
-        mesh,
-        dimensionedScalar("", dimensionSet(0,0,-1,0,0), scalar(0))
-    )
-);
-

@@ -13,15 +13,8 @@ for(label ip = 0; ip < nParts; ip++)
     sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*sigmaRho.ddt()[ip];
     sigmaRho[ip].correctBoundaryConditions();
     
-/*    Tuple2<scalar, label> minSigmaRho = minWhere(sigmaRho[ip]);
-    label cellI = minSigmaRho.second();
-    Info << "sigmaRho[" << ip << "] minimum " 
-         << minSigmaRho.first() << " at " << cellI
-         << " where sigmaRho[" << ip << "].oldTime() is " 
-         << sigmaRho[ip].oldTime()[cellI]
-         << " and dt*sigmaRho.ddt()[" << ip << "] is "
-         << dt.value()*sigmaRho.ddt()[ip][cellI] << endl;
-*/
+    // Update the sums and face values
+    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
 
 // Calculate mass tranfer terms as diffusion between partitions
@@ -39,33 +32,26 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 
-// Mass transfer based on buoyancy
-if (thetaTransfer)
+// Mass transfer based on horizontal divergence
+if (divergenceTransfer)
 {
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        transferFreq[ip] = thetaTransferDiffusivity*fvc::laplacian(theta[ip])
-                           /theta[ip];
-    }
     if (nParts != 2)
     {
         FatalErrorIn("rhoSigmaEqn.H")
-            << " mass transfer terms only formulated for nParts = 2, not nParts = "
+            << " mass transfer terms based on divergence formulated for nParts = 2, not nParts = "
             << nParts << exit(FatalError);
     }
-    for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-    {
-        if (transferFreq[0][cellI] < 0)
-        {
-            massTransfer[0][1][cellI] -= sigmaRho[0][cellI]
-                                        *transferFreq[0][cellI];
-        }
-        if (transferFreq[1][cellI] > 0)
-        {
-            massTransfer[1][0][cellI] += sigmaRho[1][cellI]
-                                        *transferFreq[1][cellI];
-        }
-    }
+    massTransfer[0][1] += max
+    (
+        fvc::div(flux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
+        massTransferZero
+    );
+    
+    massTransfer[1][0] -= min
+    (
+        fvc::div(flux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
+        massTransferZero
+    );
 }
 
 // Constraint to keep sigmaRho > 0
@@ -83,23 +69,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-/*for(label ip = 0; ip < nParts; ip++)
-{
-    Tuple2<scalar, label> minSigmaRho = minWhere(sigmaRho[ip]);
-    label cellI = minSigmaRho.second();
-    Info << "sigmaRho[" << ip << "] minimum " 
-         << minSigmaRho.first() << " at " << cellI
-         << " where sigmaRho[" << ip << "].oldTime() is " 
-         << sigmaRho[ip].oldTime()[cellI]
-         << " and dt*sigmaRho.ddt()[" << ip << "] is "
-         << dt.value()*sigmaRho.ddt()[ip][cellI] << endl;
-}
-*//*
-Info << "Before mass transfers, sigmaRho[0] goes from "
-     << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
-Info << "Before mass transfers, sigmaRho[1] goes from "
-     << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
-*/
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -112,11 +81,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-/*Info << "After mass transfers, sigmaRho[0] goes from "
-     << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
-Info << "After mass transfers, sigmaRho[1] goes from "
-     << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
-*/
 // Update the sums and face values
 for(label ip = 0; ip < nParts; ip++)
 {
