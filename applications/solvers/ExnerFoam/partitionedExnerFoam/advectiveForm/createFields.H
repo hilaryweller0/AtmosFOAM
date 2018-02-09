@@ -34,7 +34,8 @@ partitionedVolScalarField rho
     (
         IOobject("rho", runTime.timeName(), mesh),
         mesh,
-        dimensionedScalar("rho", dimDensity, scalar(1))
+        dimensionedScalar("rho", dimDensity, scalar(1)),
+        sigma[0].boundaryField().types()
     ),
     sigma
 );
@@ -84,16 +85,17 @@ partitionedSurfaceVectorField Uf
 );
 
 Info << "Calculating the mass flux and volume flux in each partition\n"<<endl;
-partitionedSurfaceScalarField flux
+partitionedSurfaceScalarField volFlux
 (
-    "flux", partNames, Uf.sum() & mesh.Sf()
+    "volFlux", partNames, Uf[0] & mesh.Sf(), sigmaRhof
 );
-for(label ip = 0; ip < flux.size(); ip++)
+for(label ip = 1; ip < volFlux.size(); ip++)
 {
-    flux[ip] = sigmaRhof[ip]*(Uf[ip] & mesh.Sf());
+    volFlux[ip] = Uf[ip] & mesh.Sf();
 }
+volFlux.updateSum();
 
-partitionedSurfaceScalarField volFlux = flux.divideBy(sigmaRhof, "volFlux");
+partitionedSurfaceScalarField flux = volFlux.timesSigma();
 
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
 partitionedVolVectorField u
@@ -134,10 +136,14 @@ partitionedSurfaceScalarField drag("drag", partNames, dragCommon);
 #include "calculateDrag.H"
 
 Info << "Initialising the mass transfer between partitions\n" << endl;
-// A temporary massTransfer field (for calculations)
+// Temporary mass and heat transfer fields (for calculations)
 const dimensionedScalar massTransferZero
 (
     "massTransferZero", dimensionSet(1,-3,-1,0,0), scalar(0)
+);
+const dimensionedScalar heatTransferZero
+(
+    "heatTransferZero", dimensionSet(0,-2,0,1,0), scalar(0)
 );
 volScalarField massTransferTmp
 (
@@ -184,8 +190,3 @@ partitionedSurfaceScalarField transferf
     )
 );
 
-// Horizontal laplacian of theta for calculating transfer terms
-partitionedVolScalarField horizLaplacianTheta
-(
-    "horizLaplacianTheta", partNames, fvc::laplacian(theta[0])
-);

@@ -4,15 +4,17 @@ for(label ip = 0; ip < nParts; ip++)
     // Calculate the rate of change using old sigmaRho for bounded advection
     sigmaRho.ddt()[ip] = -fvc::div
     (
-        volFlux[ip], sigmaRho[ip].oldTime(), "sigmaRho"
+        (1-offCentre)*volFlux[ip].oldTime() + offCentre*volFlux[ip],
+        sigmaRho[ip].oldTime(),
+        "sigmaRho"
     );
 
     // Update sigmaRho based on the rate of change
-    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*
-    (
-        (1-offCentre)*sigmaRho.ddt()[ip].oldTime()
-      + offCentre*sigmaRho.ddt()[ip]
-    );
+    sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*sigmaRho.ddt()[ip];
+    sigmaRho[ip].correctBoundaryConditions();
+    
+    // Update the sums and face values
+    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
 
 // Calculate mass tranfer terms as diffusion between partitions
@@ -30,29 +32,26 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 
-// Mass transfer based on buoyancy
-for(label ip = 0; ip < nParts; ip++)
+// Mass transfer based on horizontal divergence
+if (divergenceTransfer)
 {
-    surfaceScalarField gradTheta = fvc::snGrad(theta[ip]);
-    gradTheta -= gradTheta*gUnitNormal;
-    horizLaplacianTheta[ip] = fvc::div(gradTheta*mesh.magSf());
-}
-if (nParts != 2)
-{
-    FatalErrorIn("rhoSigmaEqn.H")
-        << " mass transfer terms only formulated for nParts = 2, not nParts = "
-        << nParts << exit(FatalError);
-}
-for(label cellI = 0; cellI < mesh.nCells(); cellI++)
-{
-    if (horizLaplacianTheta[0][cellI] < 0)
+    if (nParts != 2)
     {
-        massTransfer[0][1][cellI] += sigmaRho[0][cellI]/dt.value();
+        FatalErrorIn("rhoSigmaEqn.H")
+            << " mass transfer terms based on divergence formulated for nParts = 2, not nParts = "
+            << nParts << exit(FatalError);
     }
-    if (horizLaplacianTheta[1][cellI] > 0)
-    {
-        massTransfer[1][0][cellI] += sigmaRho[1][cellI]/dt.value();
-    }
+    massTransfer[0][1] += max
+    (
+        fvc::div(flux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
+        massTransferZero
+    );
+    
+    massTransfer[1][0] -= min
+    (
+        fvc::div(flux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
+        massTransferZero
+    );
 }
 
 // Constraint to keep sigmaRho > 0
@@ -70,11 +69,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-Info << "Before mass transfers, sigmaRho[0] goes from "
-     << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
-Info << "Before mass transfers, sigmaRho[1] goes from "
-     << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
-
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -86,11 +80,6 @@ for(label ip = 0; ip < nParts; ip++)
         }
     }
 }
-
-Info << "After mass transfers, sigmaRho[0] goes from "
-     << min(sigmaRho[0]).value() << " to " << max(sigmaRho[0]).value() << endl;
-Info << "After mass transfers, sigmaRho[1] goes from "
-     << min(sigmaRho[1]).value() << " to " << max(sigmaRho[1]).value() << endl;
 
 // Update the sums and face values
 for(label ip = 0; ip < nParts; ip++)

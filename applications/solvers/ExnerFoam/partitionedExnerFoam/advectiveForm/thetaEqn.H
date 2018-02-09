@@ -12,7 +12,13 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
-// Mass transfer terms (for nParts = 2 only)
+// Mass transfer terms (for nParts = 2 only) block implicit solution
+if (nParts != 2)
+{
+    FatalErrorIn("thetaEqn.H")
+        << " transfer terms only formulated for nParts = 2, not nParts = "
+        << nParts << exit(FatalError);
+}
 theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
            /(1+transfer.sum());
 theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);

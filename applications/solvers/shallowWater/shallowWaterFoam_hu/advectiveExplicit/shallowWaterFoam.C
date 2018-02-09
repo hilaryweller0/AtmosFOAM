@@ -23,19 +23,15 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedExnerFoamAdv
+    shallowWaterFoamAdvExp
 
 Description
-    Transient Solver for dry,buoyant, inviscid, incompressible, non-hydrostatic
-    partitioned flow, advective form momentum equation
+    Transient Solver for shallow water flow - fully explicit with
+    momentum equations in advective form
 
 \*---------------------------------------------------------------------------*/
 
-#include "HodgeOps.H"
 #include "fvCFD.H"
-#include "ExnerTheta.H"
-#include "PartitionedFields.H"
-#include "moreListOps.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,48 +41,60 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
-    #include "readThermoProperties.H"
-    #include "readTransferCoeffs.H"
-    HodgeOps H(mesh);
-    surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
-    #include "initContinuityErrs.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nNonOrthCorr =
-        itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
+    #include "energyInit.H"
+    #include "writeDiagnosticsInit.H"
 
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "partitionedCourantNo.H"
+        #include "courantNo.H"
 
-        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
+        for (int icorr=0; icorr < nCorr; icorr++)
         {
-            #include "rhoSigmaEqn.H"
-            #include "thetaEqn.H"
-            #include "sigma.H"
-            #include "calculateDrag.H"
-            #include "exnerEqn.H"
+            h = h.oldTime() - dt*
+            (
+                fvc::div(volFlux, h)
+            );
+            
+            // Update the velocity in each partition
+            for (int ucorr = 0; ucorr < nUCorr; ucorr++)
+            {
+                surfaceScalarField ggradh = g*fvc::snGrad(h)*mesh.magSf();
+                
+                //Update prognostic variables.
+                volFlux = volFlux.oldTime() - dt*
+                (
+                    ((Uf&fvc::interpolate(fvc::grad(Uf)))&mesh.Sf())
+                    
+                  //+ ((twoOmegaf^Uf) & mesh.Sf())
+                  + ggradh
+                );
+                
+                U = fvc::reconstruct(volFlux);
+                Uf = fvc::interpolate(U);
+                Uf += (volFlux - (Uf & mesh.Sf()))
+                        *mesh.Sf()/sqr(mesh.magSf());
+            }
         }
-        
-        #include "rhoSigmaEqn.H"
-        #include "thetaEqn.H"
-        #include "sigma.H"
 
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
+        #include "energy.H"
+        #include "writeDiagnostics.H"
+        Info << "h goes from " << min(h).value() << " to "
+             << max(h).value() << endl;
+        Info << "Energy change: " 
+             << normalEnergyChange << endl;
 
-        #include "compressibleContinuityErrs.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
