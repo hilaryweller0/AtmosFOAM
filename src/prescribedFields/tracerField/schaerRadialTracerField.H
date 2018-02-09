@@ -15,6 +15,7 @@ class schaerRadialTracerField final : public tracerField
     const scalar rho0;
     const point p0;
     const vector A;
+    const label exponent;
 };
 
 #endif
