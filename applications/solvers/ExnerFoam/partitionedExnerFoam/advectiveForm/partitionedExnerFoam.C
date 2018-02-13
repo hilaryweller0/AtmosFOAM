@@ -36,6 +36,7 @@ Description
 #include "ExnerTheta.H"
 #include "PartitionedFields.H"
 #include "moreListOps.H"
+#include "unitVectors.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -73,6 +74,7 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
+            #include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
@@ -80,6 +82,7 @@ int main(int argc, char *argv[])
         }
         
         #include "rhoSigmaEqn.H"
+        #include "massTransfers.H"
         #include "thetaEqn.H"
         #include "sigma.H"
 

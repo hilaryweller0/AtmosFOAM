@@ -19,8 +19,14 @@ const scalar dragCoeff(readScalar(transferProps.lookup("dragCoeff")));
 // Diffusion coefficient for inter-partition mass transfer
 const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 
-// Is mass transfer decided based on horizontal divergence
-const Switch divergenceTransfer(transferProps.lookup("divergenceTransfer"));
+// Is mass transfer decided based on vertical velocity
+const Switch wTransfer(transferProps.lookup("wTransfer"));
 
 // Minimum sigmaRho for each partition
 const scalar minSigma = readScalar(transferProps.lookup("minSigma"));
+
+//// Coefficient for heat transfer between partitions
+//const dimensionedScalar thetaTransferDiffusivity
+//(
+//    transferProps.lookup("thetaTransferDiffusivity")
+//);
