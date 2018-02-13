@@ -20,58 +20,25 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         if (useBuoyancy) { volFlux[ip] +=  dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf()); }
         if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
         
-        volScalarField total_source = 0*h[ip];
+        u[ip] = fvc::reconstruct(volFlux[ip]);
+        Uf[ip] = fvc::interpolate(u[ip]);
+        Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                *mesh.Sf()/sqr(mesh.magSf());
+    }
+    
+    for(label ip = 0; ip < nParts; ip++)
+    {
         for (label jp = 0; jp < nParts; jp++)
         {
             if (jp != ip)
             {
-                total_source = 0*h[ip];
-                if (useMassTransfer) { total_source += dt*sourceMag*sink[jp]*h[jp].oldTime(); }
-                if (useDiffusion)    { total_source += max(dt*diffusionCoeff*fvc::laplacian(h[ip].oldTime() - h[jp].oldTime()),0*h[ip]); }
-                
-                total_source = min(total_source, h[jp].oldTime());
-                
-                volFlux[ip] += fvc::interpolate(total_source/hSum)*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                volFlux[ip] += fvc::interpolate(total_sink[ip]/h[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
             }
         }
-        
-        /*if (useDiffusion)
-        {
-            for (label jp = 0; jp < nParts; jp++)
-            {
-                if (jp != ip)
-                {
-
-                    volFlux[ip] += dt*diffusionCoeff*
-                               (
-                                   ( 
-
-                                       fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])
-                                       *fvc::interpolate(fvc::laplacian(sigma[jp]))*(Uf[jp]-Uf[ip])
-                             //- fvc::interpolate(fvc::laplacian(sigma[ip].oldTime()))*Uf[ip]
-                                   )
-                                   & mesh.Sf()
-                               );
-                }
-            }
-
-        }
-        
-        if (useMassTransfer)
-        {
-            for (label jp = 0; jp < nParts; jp++)
-            {
-                if (jp != ip)
-                {
-                    volFlux[ip] += dt*sourceMag*fvc::interpolate(sink[jp])*
-                                      fvc::interpolate(sigma[jp])/fvc::interpolate(sigma[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                }
-            }
-        }*/
-        
+    }
     
-        
-    
+    for(label ip = 0; ip < nParts; ip++)
+    {
         u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
         Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))

@@ -8,7 +8,7 @@ bool useDrag = mesh.solutionDict().lookupOrDefault<bool>
 );
 bool useDiffusion = mesh.solutionDict().lookupOrDefault<bool>
 (
-    "useDiffusion", false
+    "useDiffusion", true
 );
 bool useMassTransfer = mesh.solutionDict().lookupOrDefault<bool>
 (
@@ -36,5 +36,5 @@ dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),
 dimensionedScalar bubbleRadiusMax("bubbleRadiusMax",dimensionSet(0,1,0,0,0,0,0),scalar(1));
 
 dimensionedScalar buoyancyMagnitude("buoyancyMagnitude",dimensionSet(0,1,-1,0,0,0,0),scalar(10));
-dimensionedScalar diffusionCoeff("diffusionCoefficient",dimensionSet(0,2,-1,0,0,0,0),scalar(500));
+dimensionedScalar diffusionCoeff("diffusionCoefficient",dimensionSet(0,2,-1,0,0,0,0),scalar(5000));
 dimensionedScalar timeScale = 10*dt;

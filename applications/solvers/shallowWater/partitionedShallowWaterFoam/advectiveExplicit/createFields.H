@@ -42,6 +42,8 @@ PtrList<volVectorField> u(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
 PtrList<volScalarField> sink(nParts);
 PtrList<volScalarField> momentumSource(nParts);
+PtrList<volScalarField> total_source(nParts);
+PtrList<volScalarField> total_sink(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -184,6 +186,40 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::AUTO_WRITE
             ),
             mesh
+        )
+    );
+    
+    total_source.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"total_source",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            0*h[ip]
+        )
+    );
+    
+    total_sink.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"total_sink",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            0*h[ip]
         )
     );
 }
