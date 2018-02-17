@@ -22,6 +22,12 @@ const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 // Is mass transfer decided based on vertical velocity
 const Switch wTransfer(transferProps.lookup("wTransfer"));
 
+// Is mass transfer decided based on grad(theta)
+const Switch thetaTransfer(transferProps.lookup("thetaTransfer"));
+const dimensionedScalar thetaTransferDiffusivity
+(
+    transferProps.lookup("thetaTransferDiffusivity")
+);
+
 // Minimum sigmaRho for each partition
 const scalar minSigma = readScalar(transferProps.lookup("minSigma"));
-

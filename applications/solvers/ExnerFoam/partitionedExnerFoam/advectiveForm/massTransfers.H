@@ -43,6 +43,28 @@ if (wTransfer)
     );
 }
 
+// Mass transfer based on buoyancy
+if (thetaTransfer)
+{
+    if (nParts != 2)
+    {
+        FatalErrorIn("rhoSigmaEqn.H")
+            << " mass transfer terms only formulated for nParts = 2, not nParts = "
+            << nParts << exit(FatalError);
+    }
+
+    massTransfer[0][1] -= sigmaRho[0]*thetaTransferDiffusivity*min
+    (
+        fvc::laplacian(theta[0])/theta[0],
+        dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
+    );
+    massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*min
+    (
+        fvc::laplacian(theta[1])/theta[1],
+        dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
+    );
+}
+
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
