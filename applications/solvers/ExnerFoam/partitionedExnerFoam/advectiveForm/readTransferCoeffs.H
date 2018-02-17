@@ -25,8 +25,3 @@ const Switch wTransfer(transferProps.lookup("wTransfer"));
 // Minimum sigmaRho for each partition
 const scalar minSigma = readScalar(transferProps.lookup("minSigma"));
 
-//// Coefficient for heat transfer between partitions
-//const dimensionedScalar thetaTransferDiffusivity
-//(
-//    transferProps.lookup("thetaTransferDiffusivity")
-//);

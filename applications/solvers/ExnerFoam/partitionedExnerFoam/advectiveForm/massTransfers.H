@@ -13,7 +13,7 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 
-// Mass transfer based on vertical velocity
+// Mass transfer based on vertical velocity and horizontal divergence
 if (wTransfer)
 {
     if (nParts != 2)
@@ -23,24 +23,23 @@ if (wTransfer)
             << nParts << exit(FatalError);
     }
     
-    // Area of the interface between the partitions
-    surfaceVectorField gradSigma = fvc::interpolate(fvc::grad(sigma[0]));
-    volScalarField interfaceArea
+    massTransfer[0][1] -= max(sign(u[0].component(vector::Z)), dimlessZero)*
+    min
     (
-        "interfaceArea",
-        0.5*fvc::surfaceSum(mag(mesh.Sf() & unitVector(gradSigma)))
-    );
-    
-    massTransfer[0][1] += max
-    (
-        rho[0]*u[0].component(vector::Z)*interfaceArea/cellVolume,
+        fvc::div(flux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
         massTransferZero
     );
     
-    massTransfer[1][0] += max
+    massTransfer[1][0] -= min(sign(u[1].component(vector::Z)), dimlessZero)*
+    max
     (
-        -rho[1]*u[1].component(vector::Z)*interfaceArea/cellVolume,
+        fvc::div(flux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
         massTransferZero
+    );
+     volScalarField transfer
+     (
+        "transfer",
+        massTransfer[0][1] - massTransfer[1][0]
     );
 }
 
