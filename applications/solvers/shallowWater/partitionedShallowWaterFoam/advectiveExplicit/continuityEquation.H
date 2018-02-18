@@ -1,10 +1,18 @@
 // Advect h in each partition
 for(label ip = 0; ip < nParts; ip++)
 {
-    h[ip] = h[ip].oldTime() - dt*
+    h_temp[ip] = h[ip].oldTime();
+    h[ip] = h_temp[ip] - dt*
     (
+        (1-offCentre)*fvc::div(volFlux[ip].oldTime(), h[ip].oldTime())
+      + offCentre*
         fvc::div(volFlux[ip], h[ip])
     );
+    
+    if (useOperatorSplitting)
+    {
+        h_temp[ip] = h[ip];
+    }
     
     //Calculate total height.
     if (ip == 0) hSum  = h[ip];
@@ -18,29 +26,30 @@ if ((useMassTransfer) or (useDiffusion))
     for(label ip = 0; ip < nParts; ip++)
     {
         total_sink[ip]   = 0*h[ip];
-        //volScalarField total_source = 0*h[ip];
-        if (useMassTransfer) { total_sink[ip] += dt*sourceMag*sink[ip]*h[ip]; }
+        if (useMassTransfer) 
+        { 
+            total_sink[ip] += dt*sourceMag*sink[ip]*h_temp[ip]; 
+        }
+        
         for (label jp = 0; jp < nParts; jp++)
         {
             if (jp != ip)
             {
-                if (useDiffusion)    { total_sink[ip] += max(dt*diffusionCoeff*fvc::laplacian(h[jp] - h[ip]),0*h[ip]); }
-                
-                //total_source = 0*h[ip];
-                //if (useMassTransfer) { total_source += dt*sourceMag*sink[jp]*h[jp].oldTime(); }
-                //if (useDiffusion)    { total_source += max(dt*diffusionCoeff*fvc::laplacian(h[ip].oldTime() - h[jp].oldTime()),0*h[ip]); }
-                
-                //total_source = min(total_source, h[jp].oldTime());
-                
-                //h[ip] += total_source;
+                if (useDiffusion)    
+                {
+                    total_sink[ip] += max
+                    (
+                        dt*diffusionCoeff*fvc::laplacian(h_temp[jp] - h_temp[ip]), 
+                        minimumMassTransfer
+                    ); 
+                }
             }
         }
-        //h[ip] += -total_sink;
     }
     
     for (label ip = 0; ip < nParts; ip++)
     {
-        total_sink[ip] = min(total_sink[ip], h[ip]);
+        total_sink[ip] = min(total_sink[ip], h_temp[ip]);
     }
     
     for (label ip = 0; ip < nParts; ip++)
@@ -49,7 +58,10 @@ if ((useMassTransfer) or (useDiffusion))
         
         for (label jp = 0; jp < nParts; jp++)
         {
-            h[ip] += total_sink[jp];
+            if (jp != ip)
+            {
+                h[ip] += total_sink[jp];
+            }
         }
         
         //Calculate total height.
