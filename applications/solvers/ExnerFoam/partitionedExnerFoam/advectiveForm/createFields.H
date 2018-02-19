@@ -198,12 +198,3 @@ partitionedSurfaceScalarField transferf
     )
 );
 
-// Store cell volumes for calculating mass transfer
-volScalarField cellVolume
-(
-    IOobject("cellVolume", runTime.constant(), mesh),
-    mesh,
-    dimensionedScalar("V", dimVol, scalar(1))
-);
-cellVolume.ref() = mesh.V();
-
