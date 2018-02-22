@@ -154,7 +154,14 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
             (
-                partNames_[ip]+'.'+baseName_, field
+                IOobject
+                (
+                    partNames()[ip] + '.' + baseName(), 
+                    field.mesh().time().timeName(),
+                    field.mesh(),
+                    IOobject::NO_READ, IOobject::AUTO_WRITE
+                ),
+                field
             )
         );
     }
@@ -196,7 +203,15 @@ Foam::PartitionedField<Type, PatchField, GeoMesh>::PartitionedField
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
             (
-                partNames_[ip]+'.'+baseName_, field
+                IOobject
+                (
+                    partNames_[ip]+'.'+baseName_,
+                    field.mesh().time().timeName(),
+                    field.mesh(),
+                    IOobject::NO_READ, IOobject::AUTO_WRITE
+                ),
+                field
+                
             )
         );
     }
@@ -362,9 +377,15 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::storeTime()
             ip,
             new GeometricField<Type, PatchField, GeoMesh>
             (
-                partNames()[ip]+".ddt."+baseName(),
+                IOobject
+                (
+                    partNames()[ip]+".ddt."+baseName(),
+                    operator[](ip).mesh().time().timeName(),
+                    operator[](ip).mesh()
+                ),
                 (operator[](ip) - operator[](ip).oldTime())
-                /operator[](ip).time().deltaT()
+                    /operator[](ip).time().deltaT(),
+                "fixedValue"
             )
         );
         ddt()[ip].oldTime();

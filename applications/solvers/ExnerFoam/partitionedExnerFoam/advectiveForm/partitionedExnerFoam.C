@@ -90,6 +90,7 @@ int main(int argc, char *argv[])
              << max(sigma[0]).value() << endl;
 
         #include "compressibleContinuityErrs.H"
+        #include "correctContinuityErrs.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

@@ -12,7 +12,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-
 // Mass transfer based on vertical velocity and horizontal divergence
 if (wTransfer)
 {
@@ -35,11 +34,6 @@ if (wTransfer)
     (
         fvc::div(flux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
         massTransferZero
-    );
-     volScalarField transfer
-     (
-        "transfer",
-        massTransfer[0][1] - massTransfer[1][0]
     );
 }
 
@@ -65,6 +59,13 @@ if (thetaTransfer)
     );
 }
 
+Info << "Before limititng massTransfer[0][1] goes from "
+     << min(massTransfer[0][1]).value()
+     << " to " << max(massTransfer[0][1]).value() << endl;
+Info << "Before limititng massTransfer[1][0] goes from "
+     << min(massTransfer[1][0]).value()
+     << " to " << max(massTransfer[1][0]).value() << endl;
+
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -79,6 +80,13 @@ for(label ip = 0; ip < nParts; ip++)
         }
     }
 }
+
+Info << "After limititng massTransfer[0][1] goes from "
+     << min(massTransfer[0][1]).value()
+     << " to " << max(massTransfer[0][1]).value() << endl;
+Info << "After limititng massTransfer[1][0] goes from "
+     << min(massTransfer[1][0]).value()
+     << " to " << max(massTransfer[1][0]).value() << endl;
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)

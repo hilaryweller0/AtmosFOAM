@@ -44,8 +44,8 @@
             (
                 fvm::ddt(Psi, Exner)
               + (1-offCentre)*fvc::div(flux.sum().oldTime())
-              + fvc::div(flux.sum())
-              - fvm::laplacian(offCentre*dt*gradPcoeffSum, Exner)
+              + offCentre*fvc::div(flux.sum())
+              - fvm::laplacian(sqr(offCentre)*dt*gradPcoeffSum, Exner)
             );
 
             if(ucorr==nOuterCorr-1 && nonOrth==nNonOrthCorr && corr==nCorr-1)
