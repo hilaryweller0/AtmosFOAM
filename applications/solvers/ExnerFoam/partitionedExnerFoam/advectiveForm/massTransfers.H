@@ -59,13 +59,6 @@ if (thetaTransfer)
     );
 }
 
-Info << "Before limititng massTransfer[0][1] goes from "
-     << min(massTransfer[0][1]).value()
-     << " to " << max(massTransfer[0][1]).value() << endl;
-Info << "Before limititng massTransfer[1][0] goes from "
-     << min(massTransfer[1][0]).value()
-     << " to " << max(massTransfer[1][0]).value() << endl;
-
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -80,13 +73,6 @@ for(label ip = 0; ip < nParts; ip++)
         }
     }
 }
-
-Info << "After limititng massTransfer[0][1] goes from "
-     << min(massTransfer[0][1]).value()
-     << " to " << max(massTransfer[0][1]).value() << endl;
-Info << "After limititng massTransfer[1][0] goes from "
-     << min(massTransfer[1][0]).value()
-     << " to " << max(massTransfer[1][0]).value() << endl;
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -115,8 +101,9 @@ if (nParts != 2)
         << " transfer terms only formulated for nParts = 2, not nParts = "
         << nParts << exit(FatalError);
 }
-transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigma*rho[1]);
-transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigma*rho[0]);
+const scalar minSigmaDiv = max(minSigma, VSMALL);
+transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
+transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 transfer.updateSum();
 transferf[0] = fvc::interpolate(transfer[0], "massTransfer");
 transferf[1] = fvc::interpolate(transfer[1], "massTransfer");

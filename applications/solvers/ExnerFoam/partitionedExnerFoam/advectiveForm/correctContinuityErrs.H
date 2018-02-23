@@ -31,15 +31,16 @@ Description
 \*---------------------------------------------------------------------------*/
 
 {
-    rho.updateSum();
-    sigmaRho.updateSum();
-    volScalarField rhoCorr = Psi*Exner/sigmaRho.sum();
-    
     for(label ip = 0; ip < nParts; ip++)
     {
-        rho[ip] *= rhoCorr;
-        sigmaRho[ip] *= rhoCorr;
+        rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
+        sigmaRho[ip] = sigma[ip]*rho[ip];
     }
+    rho.updateSum();
+    sigmaRho.updateSum();
+    theta.updateSum();
+    Psi = pow(rho.sum(),(2*kappa-1)/(kappa-1))
+         *pow(R/pRef*theta.sum()/rho.sum(), kappa/(kappa-1));
 }
 
 // ************************************************************************* //
