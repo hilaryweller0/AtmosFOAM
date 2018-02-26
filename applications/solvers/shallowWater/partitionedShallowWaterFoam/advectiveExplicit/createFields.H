@@ -1,6 +1,6 @@
 // Read in prognostic variables
 Info<< "Reading field h\n" << endl;
-volScalarField hSum
+volScalarField h
 (
     IOobject
     (
@@ -12,7 +12,7 @@ volScalarField hSum
     ),
     mesh
 );
-hSum.oldTime();
+h.oldTime();
 
 volScalarField gravity
 (
@@ -27,231 +27,120 @@ volScalarField gravity
     mesh
 );
 
-// The partition names
-const label nParts = 2;
+Info << "Setting up fluid types." << endl;
+const label nParts = fluidsDict.lookupOrDefault<label>
+(
+    "numberOfFluids", 2
+);
 wordList partNames(nParts);
-partNames[0] = "stable.";
-partNames[1] = "buoyant.";
+std::ostringstream fluidDefaultName;
+std::ostringstream fluidSettingName;
 
-// Set pointer lists for variables in all partitions. Read in later
-PtrList<volScalarField> sigma(nParts);
-PtrList<volScalarField> h(nParts);
-PtrList<volScalarField> h_temp(nParts);
-PtrList<surfaceVectorField> Uf(nParts);
-PtrList<surfaceVectorField> drag(nParts);
-PtrList<volVectorField> u(nParts);
-PtrList<surfaceScalarField> volFlux(nParts);
-PtrList<volScalarField> sink(nParts);
-PtrList<volScalarField> momentumSource(nParts);
-PtrList<volScalarField> total_source(nParts);
-PtrList<volScalarField> total_sink(nParts);
-
-// Read in or set variables in partitions
-for (label ip = 0; ip < nParts; ip++)
+Info << "Generating fields for " << nParts << " fluids" << endl;
+for (label ip=0; ip<nParts; ip++)
 {
-    sigma.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"sigma",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
+    fluidSettingName.str(""); 
+    fluidSettingName.clear();
+    fluidSettingName << "fluidName" << ip;
     
-    h.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"h",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ
-            ),
-            hSum*sigma[ip]
-        )
-    );
-    h[ip].oldTime();
+    fluidDefaultName.str(""); 
+    fluidDefaultName.clear();
+    fluidDefaultName << "fluid" << ip;
     
-    h_temp.set
+    partNames[ip] = fluidsDict.lookupOrDefault<string>
     (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"h_temp",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ
-            ),
-            h[ip]
-        )
+        fluidSettingName.str(), fluidDefaultName.str()
     );
-
-    Uf.set
-    (
-        ip,
-        new surfaceVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"Uf",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    Uf[ip].oldTime();
-    
-    volFlux.set
-    (
-        ip,
-        new surfaceScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"volFlux",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            Uf[ip] & mesh.Sf()
-        )
-    );
-    volFlux[ip].oldTime();
-    
-    drag.set
-    (
-        ip,
-        new surfaceVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"drag",
-                runTime.timeName(),
-                mesh,
-                IOobject::READ_IF_PRESENT,
-                IOobject::AUTO_WRITE
-            ),
-            Uf[ip]/dt
-            
-            
-        )
-    );
-    volFlux[ip].oldTime();
-    
-    u.set
-    (
-        ip,
-        new volVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"u",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            fvc::reconstruct(volFlux[ip]),
-            Uf[ip].boundaryField().types()
-        )
-    );
-    
-    sink.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"sink",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    
-    momentumSource.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"momentumSource",
-                runTime.timeName(),
-                mesh,
-                IOobject::MUST_READ,
-                IOobject::AUTO_WRITE
-            ),
-            mesh
-        )
-    );
-    
-    total_source.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"total_source",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
-            0*h[ip]
-        )
-    );
-    
-    total_sink.set
-    (
-        ip,
-        new volScalarField
-        (
-            IOobject
-            (
-                partNames[ip]+"total_sink",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::AUTO_WRITE
-            ),
-            0*h[ip]
-        )
-    );
-    total_sink[ip].oldTime();
+    Info << fluidSettingName.str() << " " << fluidDefaultName.str() << endl;
+    Info << "Fluid " << ip << " name: " << partNames[ip] << endl;
 }
 
-surfaceScalarField fluxSum
+Info << "Reading sigma (volume fraction) for each fluid." << endl;
+partitionedVolScalarField sigma
 (
-    IOobject
-    (
-        "fluxSum",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
-    ),
-    fvc::interpolate(hSum)*volFlux[0]*0
+    "sigma", partNames, mesh, runTime.timeName()
+);
+
+partitionedSurfaceScalarField sigmaf
+(
+    "sigmaf", partNames, fvc::interpolate(sigma[0], "sigma")
+);
+for (label ip=0; ip<nParts; ip++)
+{
+    sigmaf[ip] = fvc::interpolate(sigma[ip], "sigma");
+}
+sigmaf.updateSum();
+
+Info << "Setting effective fluid heights." << endl;
+partitionedVolScalarField sigmah
+(
+    "sigmah", partNames, sigma[0] * h, sigma
+);
+partitionedSurfaceScalarField sigmahf
+(
+    "sigmahf", partNames, fvc::interpolate(sigmah[0]), sigmaf
+);
+partitionedVolScalarField sigmah_temp
+(
+    "sigmah_temp", partNames, sigmah[0], sigma
+);
+for (label ip=0; ip<nParts; ip++)
+{
+    sigmah[ip] = sigma[ip]*h;
+    sigmahf[ip] = fvc::interpolate(sigmah[ip],"sigmah");
+    sigmah_temp[ip] = sigmah[ip];
+}
+
+Info << "Reading velocity of each fluid." << endl;
+partitionedSurfaceVectorField Uf
+(
+    "Uf", partNames, mesh, runTime.timeName(), sigmaf
+);
+
+Info << "Diagnosing fluxes for each fluid." << endl;
+partitionedSurfaceScalarField volFlux
+(
+    //"volFlux", partNames, Uf[0] & mesh.Sf(), sigmaf
+    "volFlux", partNames, mesh, runTime.timeName(), sigmaf
+);
+partitionedSurfaceScalarField flux
+(
+    "flux", partNames, fvc::interpolate(h)*volFlux[0], sigmaf
+);
+for (label ip=0; ip<nParts; ip++)
+{
+    volFlux[ip] = Uf[ip] & mesh.Sf();
+    flux[ip] = fvc::interpolate(h)*volFlux[ip];
+}
+volFlux.updateSum();
+
+Info << "Diagnosing cell-centred velocity of each fluid." << endl;
+partitionedVolVectorField u
+(
+    //"u", partNames, fvc::reconstruct(volFlux[0]), sigma
+    "u", partNames, mesh, runTime.timeName(), sigma
+);
+for (label ip=0; ip<nParts; ip++)
+{
+    u[ip] = fvc::reconstruct(volFlux[0]);
+}
+
+Info << "Initialising drag for each fluid." << endl;
+partitionedSurfaceVectorField drag
+(
+    "drag", partNames, 0*Uf[0]/dt, sigmaf
+);
+
+Info << "Setting transfer terms." << endl;
+partitionedVolScalarField sink
+(
+    "sink", partNames, mesh, runTime.timeName()
+);
+partitionedVolScalarField totalSink
+(
+    "totalSink", partNames, 0*sigmah[0], sigma
+);
+partitionedVolScalarField momentumSource
+(
+    "momentumSource", partNames, mesh, runTime.timeName()
 );

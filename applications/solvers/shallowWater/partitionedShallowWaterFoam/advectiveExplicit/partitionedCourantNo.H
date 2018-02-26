@@ -38,7 +38,7 @@ if (mesh.nInternalFaces())
     maxCoG = max
     (
         runTime.deltaTValue()*mesh.deltaCoeffs()
-        *Foam::sqrt(g*fvc::interpolate(hSum))
+        *Foam::sqrt(g*fvc::interpolate(h))
     ).value();
 
     for(label ip = 0; ip < nParts; ip++)
@@ -53,7 +53,7 @@ if (mesh.nInternalFaces())
     }
 }
 
-Info<< "Max gravirty wave Courant number: " << maxCoG
+Info<< "Max gravity wave Courant number: " << maxCoG
     << " partition Cournat number maximums: " << maxCoNums << endl;
 
 // ************************************************************************* //

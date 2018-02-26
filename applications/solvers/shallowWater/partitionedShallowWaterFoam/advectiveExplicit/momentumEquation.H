@@ -1,10 +1,8 @@
 // Update the velocity in each partition
 for (int ucorr = 0; ucorr < nUCorr; ucorr++)
 {
-    surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
-    //surfaceScalarField ggradh = lengthScale*g*fvc::snGrad(hSum)/fvc::interpolate(hSum)*mesh.magSf();
+    surfaceScalarField ggradh = g*fvc::snGrad(h)*mesh.magSf();
     
-    fluxSum *= 0;
     //Update prognostic variables.
     for(label ip = 0; ip < nParts; ip++)
     {
@@ -20,7 +18,7 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             (
                 ( Uf[ip] & fvc::interpolate( fvc::grad(Uf[ip]) ) ) & mesh.Sf()
             )
-          + (1-offCentre)*g*fvc::snGrad(hSum.oldTime())*mesh.magSf()
+          + (1-offCentre)*g*fvc::snGrad(h.oldTime())*mesh.magSf()
         );
         
         if (useCoriolis) { volFlux[ip] += -dt*((twoOmegaf^Uf[ip]) & mesh.Sf()); }
@@ -28,7 +26,7 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         if (useBuoyancy) { volFlux[ip] +=  dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf()); }
         if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
         
-        fluxSum += fvc::interpolate(h[ip])*volFlux[ip];
+        flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
         
         /*u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
@@ -41,15 +39,15 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
     {
         fvScalarMatrix hEqn
         (
-            fvm::ddt(hSum)
-          + fvc::div(fluxSum)
-          - fvm::laplacian(offCentre*dt*g*hSum.oldTime(), hSum)
+            fvm::ddt(h)
+          + fvc::div(flux.sum())
+          - fvm::laplacian(offCentre*dt*g*h.oldTime(), h)
         );
         hEqn.solve();
     }
     for(label ip = 0; ip < nParts; ip++)
     {
-        volFlux[ip] += -offCentre*dt*g*fvc::snGrad(hSum)*mesh.magSf();
+        volFlux[ip] += -offCentre*dt*g*fvc::snGrad(h)*mesh.magSf();
     }
     
     //Add momentum transfer from mass transfer terms.
@@ -59,7 +57,7 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         {
             if (jp != ip)
             {
-                volFlux[ip] += fvc::interpolate(total_sink[jp]/h_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                volFlux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
             }
         }
     }

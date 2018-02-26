@@ -1,3 +1,16 @@
+//Read dictionaries for settings.
+IOdictionary fluidsDict
+(
+    IOobject
+    (
+        "setFluidsDict",
+        mesh.time().system(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::NO_WRITE
+    )
+);
+
 //Settings for numerics.
 bool useOperatorSplitting = mesh.solutionDict().lookupOrDefault<bool>
 (
@@ -5,7 +18,7 @@ bool useOperatorSplitting = mesh.solutionDict().lookupOrDefault<bool>
 );
 bool semiImplicit = mesh.solutionDict().lookupOrDefault<bool>
 (
-    "semiImplicit", true
+    "semiImplicit", false
 );
 
 //Settings for physics.
@@ -15,7 +28,7 @@ bool useCoriolis = mesh.solutionDict().lookupOrDefault<bool>
 );
 bool useDrag = mesh.solutionDict().lookupOrDefault<bool>
 (
-    "useDrag", true
+    "useDrag", false
 );
 bool useDiffusion = mesh.solutionDict().lookupOrDefault<bool>
 (
@@ -38,7 +51,7 @@ bool useGravity = mesh.solutionDict().lookupOrDefault<bool>
 const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
 const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
 const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 0.5);
+const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 1.);
 const double offCentreOpSplit = itsDict.lookupOrDefault<double>("offCentre", 0.5);
 
 dimensionedScalar minimumMassTransfer("minimumMassTransfer",dimensionSet(0,1,0,0,0,0,0),scalar(0));

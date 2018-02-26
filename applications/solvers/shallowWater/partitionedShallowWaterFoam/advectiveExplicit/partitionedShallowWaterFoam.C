@@ -32,6 +32,7 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
+#include "PartitionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,15 +43,15 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #define dt runTime.deltaT()
-    #include "createFields.H"
     #include "createVariables.H"
+    #include "createFields.H"
     
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
     #include "writeDiagnosticsInit.H"
-
+    
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
@@ -71,15 +72,15 @@ int main(int argc, char *argv[])
 
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
-        Info << "h goes from " << min(hSum).value() << " to "
-             << max(hSum).value() << endl;
-        Info << "Total h: " << sum(hSum).value() << endl;
+        Info << "h goes from " << min(h).value() << " to "
+             << max(h).value() << endl;
+        Info << "Total h: " << sum(h).value() << endl;
         Info << "Energy change: " << normalEnergyChange << endl;
         Info << "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
              << "  ClockTime = " << runTime.elapsedClockTime() << " s"
              << nl << endl;
     }
-
+    
     Info<< "End\n" << endl;
 
     return 0;
