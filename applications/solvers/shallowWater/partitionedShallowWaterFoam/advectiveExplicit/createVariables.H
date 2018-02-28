@@ -50,9 +50,9 @@ bool useGravity = mesh.solutionDict().lookupOrDefault<bool>
 
 const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
 const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 1.);
-const double offCentreOpSplit = itsDict.lookupOrDefault<double>("offCentre", 0.5);
+const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrectors", 1);
+const double offCentre = mesh.solutionDict().lookupOrDefault<double>("offCentre", 0.9);
+const double offCentreOpSplit = mesh.solutionDict().lookupOrDefault<double>("offCentreOperatorSplitting", 0.5);
 
 dimensionedScalar minimumMassTransfer("minimumMassTransfer",dimensionSet(0,1,0,0,0,0,0),scalar(0));
 

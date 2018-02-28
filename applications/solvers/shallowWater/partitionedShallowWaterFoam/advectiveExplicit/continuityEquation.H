@@ -12,11 +12,10 @@ for(label ip = 0; ip < nParts; ip++)
     {
         sigmah_temp[ip] = sigmah[ip];
     }
-    
-    //Update total height.
-    sigmah.updateSum();
-    h = sigmah.sum();
 }
+//Update total height.
+sigmah.updateSum();
+h = sigmah.sum();
 
 //Apply mass transfers using operator splitting.
 //CURRENTLY ONLY VALID FOR 2 PARTITIONS
@@ -30,11 +29,11 @@ if ((useMassTransfer) or (useDiffusion))
             totalSink[ip] += dt*sourceMag*sink[ip]*sigmah_temp[ip]; 
         }
         
-        for (label jp = 0; jp < nParts; jp++)
+        if (useDiffusion)
         {
-            if (jp != ip)
+            for (label jp = 0; jp < nParts; jp++)
             {
-                if (useDiffusion)    
+                if (jp != ip)
                 {
                     totalSink[ip] += max
                     (
@@ -62,9 +61,8 @@ if ((useMassTransfer) or (useDiffusion))
                 sigmah[ip] += totalSink[jp];
             }
         }
-        
-        //Update total height.
-        sigmah.updateSum();
-        h = sigmah.sum();
     }
+    //Update total height.
+    //sigmah.updateSum();
+    h = sigmah.sum();
 }

@@ -33,7 +33,7 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                 *mesh.Sf()/sqr(mesh.magSf());*/
     }
-    
+    flux.updateSum();
     //Helmholtz equation and final update of height gradient term.
     if (semiImplicit)
     {

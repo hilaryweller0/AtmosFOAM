@@ -74,15 +74,16 @@ sigmaf.updateSum();
 Info << "Setting effective fluid heights." << endl;
 partitionedVolScalarField sigmah
 (
-    "sigmah", partNames, sigma[0] * h, sigma
+    "sigmah", partNames, sigma[0] * h
 );
+sigmah.updateSum();
 partitionedSurfaceScalarField sigmahf
 (
-    "sigmahf", partNames, fvc::interpolate(sigmah[0]), sigmaf
+    "sigmahf", partNames, fvc::interpolate(sigmah[0])
 );
 partitionedVolScalarField sigmah_temp
 (
-    "sigmah_temp", partNames, sigmah[0], sigma
+    "sigmah_temp", partNames, sigmah[0]
 );
 for (label ip=0; ip<nParts; ip++)
 {
@@ -105,12 +106,12 @@ partitionedSurfaceScalarField volFlux
 );
 partitionedSurfaceScalarField flux
 (
-    "flux", partNames, fvc::interpolate(h)*volFlux[0], sigmaf
+    "flux", partNames, fvc::interpolate(sigmah[0])*volFlux[0]
 );
 for (label ip=0; ip<nParts; ip++)
 {
     volFlux[ip] = Uf[ip] & mesh.Sf();
-    flux[ip] = fvc::interpolate(h)*volFlux[ip];
+    flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
 }
 volFlux.updateSum();
 
