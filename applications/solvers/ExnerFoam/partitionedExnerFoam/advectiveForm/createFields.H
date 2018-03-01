@@ -129,9 +129,8 @@ surfaceScalarField cloudRadius
     "cloudRadius",
     max(cloudRadiusMin, cloudRadiusMax*sigmaf[0]*sigmaf[1])
 );
-surfaceScalarField dragCommon = -dragCoeff/cloudRadius
-                         * mag(Uf[0] - Uf[1])*(Uf[0] - Uf[1]) & mesh.Sf();
-partitionedSurfaceScalarField drag("drag", partNames, dragCommon);
+surfaceScalarField dragCommon = -dragCoeff*sigmaRhof.sum()/cloudRadius
+                         * mag(Uf[0] - Uf[1]);
 
 #include "calculateDrag.H"
 

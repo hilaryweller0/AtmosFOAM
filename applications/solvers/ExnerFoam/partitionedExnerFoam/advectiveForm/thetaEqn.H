@@ -1,4 +1,4 @@
-// flux form rho theta equation
+// advective form theta equation
 for(label ip = 0; ip < nParts; ip++)
 {
     theta.ddt()[ip] =-fvc::div(volFlux[ip], theta[ip], "theta")

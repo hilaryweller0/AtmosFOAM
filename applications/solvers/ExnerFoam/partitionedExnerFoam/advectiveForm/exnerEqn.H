@@ -10,7 +10,7 @@
         for(label ip = 0; ip < nParts; ip++)
         {
             // Rate of change of flux without gravity
-            volFlux.ddt()[ip] = drag[ip] + (mesh.Sf() &
+            volFlux.ddt()[ip] = mesh.Sf() &
             (
               -fvc::interpolate
                (
@@ -19,7 +19,7 @@
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
-            ));
+            );
             
             // Flux with gravity
             volFlux[ip] = volFlux[ip].oldTime() + dt*
@@ -73,7 +73,15 @@
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
             
-                // Include the mass transfer terms implicitly (for nParts = 2)
+                // Include the mass transfer and drag implicitly (for nParts=2)
+                transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
+                             + dt*dragCommon
+                             *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
+                transferf[1] = fvc::interpolate(transfer[1], "massTransfer")
+                             + dt*dragCommon
+                             *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
+                transferf.updateSum();
+                
                 volFlux[0] =
                 (
                     (1+transferf[0])*volFlux[0] + transferf[1]*volFlux[1]

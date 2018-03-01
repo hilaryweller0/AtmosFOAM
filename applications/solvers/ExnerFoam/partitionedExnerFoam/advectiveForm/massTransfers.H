@@ -105,7 +105,4 @@ const scalar minSigmaDiv = max(minSigma, VSMALL);
 transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
 transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 transfer.updateSum();
-transferf[0] = fvc::interpolate(transfer[0], "massTransfer");
-transferf[1] = fvc::interpolate(transfer[1], "massTransfer");
-transferf.updateSum();
 
