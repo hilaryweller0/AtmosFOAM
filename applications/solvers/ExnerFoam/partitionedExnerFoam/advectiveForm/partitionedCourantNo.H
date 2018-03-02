@@ -32,7 +32,6 @@ Description
 scalar CoNum = 0.0;
 scalar meanCoNum = 0.0;
 scalar maxNdt = 0.0;
-scalarList maxCoNums(nParts, scalar(0));
 
 if (mesh.nInternalFaces())
 {

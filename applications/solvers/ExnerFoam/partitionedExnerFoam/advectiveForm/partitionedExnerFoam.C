@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
+    #include "initDiags.H"
+    #include "calcDiags.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -86,6 +88,7 @@ int main(int argc, char *argv[])
 
         #include "compressibleContinuityErrs.H"
         #include "correctContinuityErrs.H"
+        #include "calcDiags.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
