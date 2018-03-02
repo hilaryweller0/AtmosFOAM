@@ -80,11 +80,6 @@ int main(int argc, char *argv[])
             #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
-        
-        #include "rhoSigmaEqn.H"
-        #include "massTransfers.H"
-        #include "thetaEqn.H"
-        #include "sigma.H"
 
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
