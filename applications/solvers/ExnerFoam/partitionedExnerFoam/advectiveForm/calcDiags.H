@@ -1,34 +1,33 @@
 // Energy calculations
 
+scalarList energy(nParts, scalar(0));
+scalarList KE(nParts, scalar(0));
+scalarList PE(nParts, scalar(0));
+scalarList IE(nParts, scalar(0));
+
+// Caclulate the initial energy in each partition
 for(label ip = 0; ip < partNames.size(); ip++)
 {
-    energy[ip] = 0.5*sigmaRho[0]*magSqr(u[ip])
-               + sigmaRho[ip]*theta[ip]*Exner*Cv
-               - sigmaRho[ip]*(g & mesh.C());
+    volScalarField energyTmp = 0.5*sigmaRho[ip]*magSqr(u[ip]);
+    KE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+    energyTmp = - sigmaRho[ip]*(g & mesh.C());
+    PE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+    energyTmp = sigmaRho[ip]*theta[ip]*Exner*Cv;
+    IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+    energy[ip] = KE[ip] + PE[ip] + IE[ip];
 }
 
-energyMean = 0.5*rho.sum()*magSqr(u.updateSum()/rho.sum())
-           + theta.updateSum()*Exner*Cv
-           - rho.sum()*(g & mesh.C());
-
-scalar energyMeanSum = (fvc::domainIntegrate(energyMean)/Vtot).value();
-
-
-scalarList energySum(nParts, scalar(0));
-
-for(label ip = 0; ip < partNames.size(); ip++)
-{
-    energySum[ip] = (fvc::domainIntegrate(energy[ip])/Vtot).value();
-}
-
-const scalar energyTot = sum(energySum);
+scalar energyTot = sum(energy);
 
 diags << runTime.timeName() << "  "
       << maxCoNums[0] << "  " << maxCoNums[1] << "  "
       << min(sigma[1]).value() << "  "
       << max(sigma[1]).value() << "  "
-      << (energySum[0]-energyInit[0])/energyInitTot << "  "
-      << (energySum[1]-energyInit[1])/energyInitTot << "  "
-      << (energyTot-energyInitTot)/energyInitTot << "  "
-      << (energyMeanSum - energyMeanInit)/energyMeanInit << endl;
+      << (KE[0] - KEInit[0])/energyInitTot << "  "
+      << (KE[1] - KEInit[1])/energyInitTot << "  "
+      << (PE[0] - PEInit[0])/energyInitTot << "  "
+      << (PE[1] - PEInit[1])/energyInitTot << "  "
+      << (IE[0] - IEInit[0])/energyInitTot << "  "
+      << (IE[1] - IEInit[1])/energyInitTot << "  "
+      << (energyTot - energyInitTot)/energyInitTot << endl;
 

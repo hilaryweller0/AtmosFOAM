@@ -19,6 +19,9 @@ const scalar dragCoeff(readScalar(transferProps.lookup("dragCoeff")));
 // Diffusion coefficient for inter-partition mass transfer
 const dimensionedScalar Ksigma(transferProps.lookup("Ksigma"));
 
+// Is mass transferred based on partition divergence
+const Switch divTransfer(transferProps.lookup("divTransfer"));
+
 // Is mass transfer decided based on vertical velocity
 const Switch wTransfer(transferProps.lookup("wTransfer"));
 

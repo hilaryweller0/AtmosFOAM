@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
         #include "compressibleContinuityErrs.H"
         #include "correctContinuityErrs.H"
         #include "calcDiags.H"
+for(label ip= 0; ip < partNames.size(); ip++)
+{
+    div[ip] = fvc::div(flux[ip]);
+}
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

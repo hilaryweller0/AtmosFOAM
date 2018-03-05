@@ -1,15 +1,38 @@
 // Calculate mass tranfer terms as diffusion between partitions
-for(label ip = 0; ip < nParts; ip++)
+if (Ksigma.value() > SMALL)
 {
-    for(label jp=ip+1; jp < nParts; jp++)
+    for(label ip = 0; ip < nParts; ip++)
     {
-        massTransferTmp = 0.5*Ksigma*fvc::laplacian
-        (
-            sigmaRho[jp] -sigmaRho[ip]
-        );
-        massTransfer[ip][jp] = max(massTransferTmp, massTransferZero);
-        massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
+        for(label jp=ip+1; jp < nParts; jp++)
+        {
+            massTransferTmp = 0.5*Ksigma*fvc::laplacian
+            (
+                sigmaRho[jp] -sigmaRho[ip]
+            );
+            massTransfer[ip][jp] = max(massTransferTmp, massTransferZero);
+            massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
+        }
     }
+}
+
+// Mass transfer to avoid changes in sigmaRho due to partition divergence
+if (divTransfer)
+{
+    if (nParts != 2)
+    {
+        FatalErrorIn("rhoSigmaEqn.H")
+            << " mass transfer terms based on divTransfer formulated for nParts = 2, not nParts = "
+            << nParts << exit(FatalError);
+    }
+    
+    for(label ip = 0; ip < partNames.size(); ip++)
+    {
+        divu[ip] = fvc::div(volFlux[ip]);
+    }
+    
+    volScalarField T = sigmaRho[0]*(divu[0] - divu.updateSum()/rho.sum());
+    massTransfer[0][1] = -min(T, massTransferZero);
+    massTransfer[1][0] = max(T, massTransferZero);
 }
 
 // Mass transfer based on vertical velocity and horizontal divergence
