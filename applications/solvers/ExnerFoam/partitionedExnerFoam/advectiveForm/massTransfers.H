@@ -31,8 +31,8 @@ if (divTransfer)
     }
     
     volScalarField T = sigmaRho[0]*(divu[0] - divu.updateSum()/rho.sum());
-    massTransfer[0][1] = -min(T, massTransferZero);
-    massTransfer[1][0] = max(T, massTransferZero);
+    massTransfer[0][1] -= min(T, massTransferZero);
+    massTransfer[1][0] += max(T, massTransferZero);
 }
 
 // Mass transfer based on vertical velocity and horizontal divergence
@@ -82,6 +82,18 @@ if (thetaTransfer)
     );
 }
 
+Info << "Before mass transfer sigmaRho goes from "
+     << min(sigmaRho[0]).value() << " to "
+     << max(sigmaRho[0]).value() << " and from "
+     << min(sigmaRho[1]).value() << " to "
+     << max(sigmaRho[1]).value() << endl;
+
+Info << "Before limiting massTransfer terms go from "
+     << min(massTransfer[0][1]).value() << " to "
+     << max(massTransfer[0][1]).value() << " and from "
+     << min(massTransfer[1][0]).value() << " to "
+     << max(massTransfer[1][0]).value() << endl;
+
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -91,11 +103,18 @@ for(label ip = 0; ip < nParts; ip++)
         {
             massTransfer[ip][jp] = min
             (
-                massTransfer[ip][jp], (sigmaRho[ip]-minSigma*rho[ip])/dt
+                massTransfer[ip][jp],
+                (max(sigmaRho[ip], densityZero)-minSigma*rho[ip])/dt
             );
         }
     }
 }
+
+Info << "After limiting massTransfer terms go from "
+     << min(massTransfer[0][1]).value() << " to "
+     << max(massTransfer[0][1]).value() << " and from "
+     << min(massTransfer[1][0]).value() << " to "
+     << max(massTransfer[1][0]).value() << endl;
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -128,4 +147,10 @@ const scalar minSigmaDiv = max(minSigma, VSMALL);
 transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
 transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 transfer.updateSum();
+
+Info << "transfer goes from "
+     << min(transfer[0]).value() << " to "
+     << max(transfer[0]).value() << " and from "
+     << min(transfer[1]).value() << " to "
+     << max(transfer[1]).value() << endl;
 

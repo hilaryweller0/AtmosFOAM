@@ -79,20 +79,16 @@ int main(int argc, char *argv[])
             #include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
-            #include "calculateDrag.H"
+//            #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
+        
+//        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
+//             << max(sigma[0]).value() << endl;
 
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
-
-        #include "compressibleContinuityErrs.H"
-        #include "correctContinuityErrs.H"
-        #include "calcDiags.H"
-for(label ip= 0; ip < partNames.size(); ip++)
-{
-    div[ip] = fvc::div(flux[ip]);
-}
+//        #include "compressibleContinuityErrs.H"
+//        #include "correctContinuityErrs.H"
+//        #include "calcDiags.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
