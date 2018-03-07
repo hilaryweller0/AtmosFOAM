@@ -1,3 +1,4 @@
+{
 // Energy calculations
 
 scalarList energy(nParts, scalar(0));
@@ -10,13 +11,19 @@ for(label ip = 0; ip < partNames.size(); ip++)
 {
     volScalarField energyTmp = 0.5*sigmaRho[ip]*magSqr(u[ip]);
     KE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+    
     energyTmp = - sigmaRho[ip]*(g & mesh.C());
     PE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
-    energyTmp = sigmaRho[ip]*theta[ip]*Exner*Cv;
+    
+    energyTmp = sigmaRho[ip]*theta[ip]*sigmaRho.sum()/Psi*Cv;
     IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+    
     energy[ip] = KE[ip] + PE[ip] + IE[ip];
 }
 
+scalar KEsum = sum(KE);
+scalar PEsum = sum(PE);
+scalar IEsum = sum(IE);
 scalar energyTot = sum(energy);
 
 diags << runTime.timeName() << "  "
@@ -29,5 +36,8 @@ diags << runTime.timeName() << "  "
       << (PE[1] - PEInit[1])/energyInitTot << "  "
       << (IE[0] - IEInit[0])/energyInitTot << "  "
       << (IE[1] - IEInit[1])/energyInitTot << "  "
-      << (energyTot - energyInitTot)/energyInitTot << endl;
-
+      << (energyTot - energyInitTot)/energyInitTot << "  "
+      << (KEsum - KEsumInit)/energyInitTot << "  "
+      << (PEsum - PEsumInit)/energyInitTot << "  "
+      << (IEsum - IEsumInit)/energyInitTot << endl;
+}

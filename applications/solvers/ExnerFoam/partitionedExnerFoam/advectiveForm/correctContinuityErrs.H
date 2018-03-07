@@ -31,16 +31,14 @@ Description
 \*---------------------------------------------------------------------------*/
 
 {
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
-        sigmaRho[ip] = sigma[ip]*rho[ip];
-    }
-    rho.updateSum();
-    sigmaRho.updateSum();
-    theta.updateSum();
-    Psi = pow(rho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/rho.sum(), kappa/(kappa-1));
+//    for(label ip = 0; ip < nParts; ip++)
+//    {
+//        rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
+//        sigma[ip] = sigmaRho[ip]/rho[ip];
+//    }
+//    rho.updateSum();
+    Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
+         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
 }
 
 // ************************************************************************* //

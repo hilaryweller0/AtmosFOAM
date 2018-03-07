@@ -1,7 +1,7 @@
 Info << "Initialising diagnostics file diags.dat\n" << endl;
 
 OFstream diags(args.rootPath() / args.caseName()/"diags.dat");
-diags << "#time   maxCo0   maxCo1   minSigma   maxSigma   KE0  KE1 PE0  PE1   IE0  IE1 totalEnergy" << endl;
+diags << "#time   maxCo0   maxCo1   minSigma   maxSigma   KE0  KE1 PE0  PE1   IE0  IE1 totalEnergy KEsum PEsum IEsum" << endl;
 
 scalarList maxCoNums(nParts, scalar(0));
 
@@ -25,5 +25,8 @@ for(label ip = 0; ip < partNames.size(); ip++)
     energyInit[ip] = KEInit[ip] + PEInit[ip] + IEInit[ip];
 }
 
+const scalar KEsumInit = sum(KEInit);
+const scalar PEsumInit = sum(PEInit);
+const scalar IEsumInit = sum(IEInit);
 const scalar energyInitTot = sum(energyInit);
 

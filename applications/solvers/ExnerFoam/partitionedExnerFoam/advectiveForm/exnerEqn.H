@@ -1,6 +1,6 @@
 {
-    Psi = pow(rho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/rho.sum(), kappa/(kappa-1));
+    Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
+         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
     
     gradPcoeffSum = Cp*fvc::interpolate(theta.sum(), "theta");
 
@@ -34,18 +34,9 @@
         surfaceScalarField rhog
         (
             "rhog",
-            fvc::interpolate(rho.sum(), "rho")*gSf
+            fvc::interpolate(sigmaRho.sum(), "rho")*gSf
         );
         
-        surfaceVectorField momentum
-        (
-            "momentum",
-            fvc::interpolate(fvc::reconstruct(flux.sum()), "Uf")
-        );
-        momentum += mesh.Sf()/sqr(mesh.magSf())
-            *(flux.sum() - (momentum & mesh.Sf()));
-        momentum.write();
-
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {

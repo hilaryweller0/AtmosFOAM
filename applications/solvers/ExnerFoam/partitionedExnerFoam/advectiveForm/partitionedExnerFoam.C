@@ -76,19 +76,19 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-            #include "massTransfers.H"
+//            #include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
 //            #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
         
-//        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-//             << max(sigma[0]).value() << endl;
+        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
+             << max(sigma[0]).value() << endl;
 
-//        #include "compressibleContinuityErrs.H"
-//        #include "correctContinuityErrs.H"
-//        #include "calcDiags.H"
+        #include "compressibleContinuityErrs.H"
+        #include "correctContinuityErrs.H"
+        #include "calcDiags.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
