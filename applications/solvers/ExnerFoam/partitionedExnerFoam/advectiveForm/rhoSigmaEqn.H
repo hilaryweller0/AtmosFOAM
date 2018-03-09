@@ -2,10 +2,11 @@
 for(label ip = 0; ip < nParts; ip++)
 {
     // Calculate the rate of change using old sigmaRho for bounded advection
+    flux[ip] = linearInterpolate(rho[ip])*volFlux[ip];
     sigmaRho.ddt()[ip] = -fvc::div
     (
-        (1-offCentre)*volFlux[ip].oldTime() + offCentre*volFlux[ip],
-        sigmaRho[ip].oldTime(),
+        (1-offCentre)*flux[ip].oldTime() + offCentre*flux[ip],
+        sigma[ip].oldTime(),
         "sigmaRho"
     );
 
@@ -16,6 +17,7 @@ for(label ip = 0; ip < nParts; ip++)
     // Update the sums and face values
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
+flux.updateSum();
 sigmaRho.updateSum();
 sigmaRhof.updateSum();
 

@@ -365,6 +365,9 @@ void Foam::PartitionedField<Type, PatchField, GeoMesh>::storeTime()
         operator[](ip).oldTime();
     }
     
+    // Store old sum
+    sum().oldTime();
+    
     // Create fields for all the time directories
     ddtPtr_ = new PtrList<GeometricField<Type, PatchField, GeoMesh> >
     (

@@ -37,7 +37,7 @@ if (mesh.nInternalFaces())
 {
     scalarField sumPhi
     (
-        fvc::surfaceSum(mag(flux.sum()))().internalField()
+        fvc::surfaceSum(mag(sigmaFlux.sum()))().internalField()
       / rho.sum().internalField()
     );
 

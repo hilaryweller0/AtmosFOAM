@@ -76,11 +76,14 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-//            #include "massTransfers.H"
+            #include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
-//            #include "calculateDrag.H"
-            #include "exnerEqn.H"
+            #include "calculateDrag.H"
+            //if (ucorr < nOuterCorr-1)
+            {
+                #include "exnerEqn.H"
+            }
         }
         
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "

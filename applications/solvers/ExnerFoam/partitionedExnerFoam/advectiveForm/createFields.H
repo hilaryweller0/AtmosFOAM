@@ -95,7 +95,17 @@ for(label ip = 1; ip < volFlux.size(); ip++)
 }
 volFlux.updateSum();
 
-partitionedSurfaceScalarField flux = volFlux.timesSigma();
+partitionedSurfaceScalarField flux
+(
+    "flux", partNames, linearInterpolate(rho[0])*volFlux[0], sigmaf
+);
+for(label ip = 1; ip < volFlux.size(); ip++)
+{
+    flux[ip] = linearInterpolate(rho[ip])*volFlux[ip];
+}
+flux.updateSum();
+
+partitionedSurfaceScalarField sigmaFlux = volFlux.timesSigma();
 
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
 partitionedVolVectorField u
@@ -112,6 +122,10 @@ volFlux.storeTime();
 theta.storeTime();
 sigmaRho.storeTime();
 flux.sum().oldTime();
+flux.storeTime();
+rho.storeTime();
+sigma.storeTime();
+sigmaFlux.storeTime();
 
 Info << "Initialising the compressibility\n" << endl;
 volScalarField Psi("Psi", sigmaRho.sum()/Exner);
@@ -200,17 +214,6 @@ partitionedSurfaceScalarField transferf
         dimensionedScalar("", dimless, scalar(0))
     )
 );
-
-partitionedVolScalarField div
-(
-    "div",
-    partNames,
-    fvc::div(flux[0])
-);
-for(label ip= 1; ip < partNames.size(); ip++)
-{
-    div[ip] = fvc::div(flux[ip]);
-}
 
 partitionedVolScalarField divu
 (

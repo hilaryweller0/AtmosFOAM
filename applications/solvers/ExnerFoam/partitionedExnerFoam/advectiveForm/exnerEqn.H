@@ -27,9 +27,9 @@
                 (1-offCentre)*volFlux.ddt()[ip].oldTime()
               + offCentre*(volFlux.ddt()[ip] + gSf)
             );
-            flux[ip] = sigmaRhof[ip]*volFlux[ip];
+            sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
         }
-        flux.updateSum();
+        sigmaFlux.updateSum();
         // Needed for Exner boundary conditions
         surfaceScalarField rhog
         (
@@ -43,8 +43,8 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              + (1-offCentre)*fvc::div(flux.sum().oldTime())
-              + offCentre*fvc::div(flux.sum())
+              + (1-offCentre)*fvc::div(sigmaFlux.sum().oldTime())
+              + offCentre*fvc::div(sigmaFlux.sum())
               - fvm::laplacian(sqr(offCentre)*dt*gradPcoeffSum, Exner)
             );
 
@@ -92,11 +92,11 @@
                 // Update mass flux and velocities based on the flux
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    flux[ip] = sigmaRhof[ip]*volFlux[ip];
+                    sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip], "Uf");
                 }
-                flux.updateSum();
+                sigmaFlux.updateSum();
                 volFlux.updateSum();
             }
         }

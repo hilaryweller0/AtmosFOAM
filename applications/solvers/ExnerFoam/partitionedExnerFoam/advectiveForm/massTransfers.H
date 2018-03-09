@@ -14,6 +14,23 @@ if (Ksigma.value() > SMALL)
         }
     }
 }
+else
+{
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        for(label jp=ip+1; jp < nParts; jp++)
+        {
+            massTransfer[ip][jp] == massTransferZero;
+            massTransfer[jp][ip] == massTransferZero;
+        }
+    }
+}
+
+//Info << "Before divTransfer"
+//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
+//     << " to " << max(massTransfer[0][1]).value()
+//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
+//     << " to " << max(massTransfer[1][0]).value() << endl;
 
 // Mass transfer to avoid changes in sigmaRho due to partition divergence
 if (divTransfer)
@@ -35,6 +52,12 @@ if (divTransfer)
     massTransfer[1][0] += max(T, massTransferZero);
 }
 
+//Info << "After divTransfer"
+//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
+//     << " to " << max(massTransfer[0][1]).value()
+//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
+//     << " to " << max(massTransfer[1][0]).value() << endl;
+
 // Mass transfer based on vertical velocity and horizontal divergence
 if (wTransfer)
 {
@@ -48,17 +71,23 @@ if (wTransfer)
     massTransfer[0][1] -= max(sign(u[0].component(vector::Z)), dimlessZero)*
     min
     (
-        fvc::div(flux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
+        fvc::div(sigmaFlux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
         massTransferZero
     );
     
     massTransfer[1][0] -= min(sign(u[1].component(vector::Z)), dimlessZero)*
     max
     (
-        fvc::div(flux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
+        fvc::div(sigmaFlux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
         massTransferZero
     );
 }
+
+//Info << "After wTransfer"
+//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
+//     << " to " << max(massTransfer[0][1]).value()
+//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
+//     << " to " << max(massTransfer[1][0]).value() << endl;
 
 // Mass transfer based on buoyancy
 if (thetaTransfer)
@@ -82,6 +111,12 @@ if (thetaTransfer)
     );
 }
 
+//Info << "After thetaTransfer"
+//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
+//     << " to " << max(massTransfer[0][1]).value()
+//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
+//     << " to " << max(massTransfer[1][0]).value() << endl;
+
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -92,11 +127,24 @@ for(label ip = 0; ip < nParts; ip++)
             massTransfer[ip][jp] = min
             (
                 massTransfer[ip][jp],
-                (max(sigmaRho[ip], densityZero)-minSigma*rho[ip])/dt
+                max
+                (
+                    (max(sigmaRho[ip], densityZero)-minSigma*rho[ip])/dt,
+                    massTransferZero
+                )
             );
         }
     }
 }
+
+//Info << "Before mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
+//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value()
+//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
+//     << " to " << max(massTransfer[0][1]).value()
+//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
+//     << " to " << max(massTransfer[1][0]).value()
+//     << "\nmin(rho[0]) = " << min(rho[0]).value() 
+//     << "\nmin(rho[1]) = " << min(rho[1]).value() << endl;
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -110,13 +158,11 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-// Update the sums and face values
-for(label ip = 0; ip < nParts; ip++)
-{
-    sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
-}
+//Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
+//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
+
+// Update the sum
 sigmaRho.updateSum();
-sigmaRhof.updateSum();
 
 // Transfer terms for other variables (assuming nParts == 2)
 if (nParts != 2)
