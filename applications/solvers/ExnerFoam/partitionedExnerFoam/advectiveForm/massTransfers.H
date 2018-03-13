@@ -34,14 +34,15 @@ if (Ksigma.value() > SMALL)
 // Mass transfer to avoid changes in sigmaRho due to partition divergence
 if (divTransfer)
 {
-//    for(label ip = 0; ip < partNames.size(); ip++)
-//    {
-//        divu[ip] = fvc::div(volFlux[ip]);
-//    }
-//    
-//    volScalarField T = sigmaRho[0]*divu[0] - sigmaRho[1]*divu[1];
-    volScalarField T =-sigmaRho.ddt()[0] - (u[0] & fvc::grad(sigmaRho[0], "advectSigmaRho0"))
-                     + sigmaRho.ddt()[1] + (u[1] & fvc::grad(sigmaRho[1], "advectSigmaRho1"));
+    for(label ip = 0; ip < partNames.size(); ip++)
+    {
+        divu[ip] = fvc::div(volFlux[ip]);
+    }
+    
+    volScalarField T = sigmaRho[0]*divu[0] - sigmaRho[1]*divu[1];
+
+//    volScalarField T =-sigmaRho.ddt()[0] - (u[0] & fvc::grad(sigmaRho[0], "advectSigmaRho0"))
+//                     + sigmaRho.ddt()[1] + (u[1] & fvc::grad(sigmaRho[1], "advectSigmaRho1"));
     massTransfer[0][1] = -0.5*min(T, massTransferZero);
     massTransfer[1][0] = 0.5*max(T, massTransferZero);
 
