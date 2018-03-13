@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip]);
+                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip].oldTime());
                 //h[ip] = h[ip].oldTime() - dt*fvc::div(flux[ip]);
                 
                 hf[ip] = fvc::interpolate(h[ip]);
@@ -94,8 +94,8 @@ int main(int argc, char *argv[])
                 {
                     flux[ip] = flux[ip].oldTime() - dt*
                     (
-                        fvc::flux(fvc::div(flux[ip]*Uf[ip]))
-                      //+ hf[ip]*((twoOmegaf^Uf[ip]) & mesh.Sf())
+                        //fvc::flux(fvc::div(flux[ip]*Uf[ip]))
+                        (fvc::interpolate(fvc::div(flux[ip], u[ip].oldTime())) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
 
@@ -103,8 +103,8 @@ int main(int argc, char *argv[])
 
                     u[ip] = fvc::reconstruct(volFlux[ip]);
                     Uf[ip] = fvc::interpolate(u[ip]);
-                    Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                            *mesh.Sf()/sqr(mesh.magSf());
+                    //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                    //        *mesh.Sf()/sqr(mesh.magSf());
                 }
             }
         }
@@ -112,6 +112,8 @@ int main(int argc, char *argv[])
         #include "energy.H"
         #include "writeDiagnostics.H"
         
+        
+        Info << "Total h: " << sum(hSum).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
         
