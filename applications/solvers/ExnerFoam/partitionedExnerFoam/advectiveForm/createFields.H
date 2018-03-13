@@ -215,16 +215,16 @@ partitionedSurfaceScalarField transferf
     )
 );
 
-partitionedVolScalarField divu
-(
-    "divu",
-    partNames,
-    fvc::div(volFlux[0]),
-    sigmaRho
-);
+//partitionedVolScalarField divu
+//(
+//    "divu",
+//    partNames,
+//    fvc::div(volFlux[0]),
+//    sigmaRho
+//);
 
-for(label ip = 1; ip < partNames.size(); ip++)
-{
-    divu[ip] = fvc::div(volFlux[ip]);
-}
+//for(label ip = 1; ip < partNames.size(); ip++)
+//{
+//    divu[ip] = fvc::div(volFlux[ip]);
+//}
 
