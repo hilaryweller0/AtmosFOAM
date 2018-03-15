@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoamFluxExp
+    partitionedShallowWaterFoamFluxAgrid
 
 Description
     Transient Solver for shallow water partitioned flow - fully explicit with
@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
+    const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 0.5);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -66,7 +67,11 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip].oldTime());
+                h[ip] = h[ip].oldTime() - dt*
+                (
+                    (1-offCentre)*fvc::div(volFlux[ip].oldTime(),h[ip].oldTime())
+                  + offCentre*fvc::div(volFlux[ip],h[ip])
+                );
                 
                 hf[ip] = fvc::interpolate(h[ip],"linear");
                 
@@ -77,6 +82,8 @@ int main(int argc, char *argv[])
                 
                 if (ip == 0) hSum = h[ip];
                 else hSum += h[ip];
+            
+                hu[ip] = h[ip]*u[ip];
             }
             
             // Update sigma (diagnostic)
@@ -86,36 +93,26 @@ int main(int argc, char *argv[])
             }
             
             // Update the velocity in each partition
-            surfaceScalarField ggradh = 0*g*fvc::snGrad(hSum)*mesh.magSf();
+            //volVectorField ggradh = g*fvc::grad(hSum);
+            volVectorField ggradh = 0*g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    flux[ip] = flux[ip].oldTime() - dt*
+                    hu[ip] = hu[ip].oldTime() - dt*
                     (
-                        //fvc::flux(fvc::div(flux[ip]*Uf[ip]))
-                        (fvc::interpolate(fvc::div(flux[ip].oldTime(), u[ip].oldTime())) & mesh.Sf())
-                      + hf[ip]*ggradh
+                        (1-offCentre)*fvc::div(volFlux[ip].oldTime(),hu[ip].oldTime())
+                      + offCentre*fvc::div(volFlux[ip],hu[ip])
+                      + h[ip]*ggradh
                     );
                     
-                    volFlux[ip] = flux[ip]/hf[ip];
-
-                    forAll(flux,celli)
-                    {
-                        if (volFlux[ip][celli]*volFlux[ip].oldTime()[celli] < 0*volFlux[ip][celli]*volFlux[ip].oldTime()[celli])
-                        {
-                            Info << "SWITCHING OF FLUX" << endl;
-                            Info << "index: " << celli << endl;
-                            Info << "old value: " << volFlux[ip].oldTime()[celli] << endl;
-                            Info << "new value: " << volFlux[ip][celli] << endl;
-                        }
-                    }
+                    u[ip] = hu[ip]/h[ip];
                     
-                    u[ip] = fvc::reconstruct(volFlux[ip]);
-                    //u[ip] = fvc::reconstruct(flux[ip])/h[ip];
                     Uf[ip] = fvc::interpolate(u[ip]);
-                    //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                    //        *mesh.Sf()/sqr(mesh.magSf());
+                    
+                    volFlux[ip] = Uf[ip] & mesh.Sf();
+                    
+                    flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
                 }
             }
         }
