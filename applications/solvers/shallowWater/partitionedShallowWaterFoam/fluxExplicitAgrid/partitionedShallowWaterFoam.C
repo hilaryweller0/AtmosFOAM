@@ -94,7 +94,8 @@ int main(int argc, char *argv[])
             
             // Update the velocity in each partition
             //volVectorField ggradh = g*fvc::grad(hSum);
-            volVectorField ggradh = 0*g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
+            volVectorField ggradh = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
+            volVectorField ggradhOld = g*fvc::reconstruct(fvc::snGrad(hSum.oldTime())*mesh.magSf());
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
@@ -103,7 +104,8 @@ int main(int argc, char *argv[])
                     (
                         (1-offCentre)*fvc::div(volFlux[ip].oldTime(),hu[ip].oldTime())
                       + offCentre*fvc::div(volFlux[ip],hu[ip])
-                      + h[ip]*ggradh
+                      + (1-offCentre)*h[ip].oldTime()*ggradhOld
+                      + offCentre*h[ip]*ggradh
                     );
                     
                     u[ip] = hu[ip]/h[ip];

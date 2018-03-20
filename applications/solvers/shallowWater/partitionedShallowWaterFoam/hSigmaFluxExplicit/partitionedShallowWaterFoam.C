@@ -67,7 +67,6 @@ int main(int argc, char *argv[])
             for(label ip = 0; ip < nParts; ip++)
             {
                 h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip].oldTime());
-                
                 hf[ip] = fvc::interpolate(h[ip],"linear");
                 
                 Info << "h[" << ip << "] goes from " 
@@ -93,26 +92,13 @@ int main(int argc, char *argv[])
                 {
                     flux[ip] = flux[ip].oldTime() - dt*
                     (
-                        //fvc::flux(fvc::div(flux[ip]*Uf[ip]))
                         (fvc::interpolate(fvc::div(flux[ip].oldTime(), u[ip].oldTime())) & mesh.Sf())
                       + hf[ip]*ggradh
                     );
                     
                     volFlux[ip] = flux[ip]/hf[ip];
 
-                    forAll(flux,celli)
-                    {
-                        if (volFlux[ip][celli]*volFlux[ip].oldTime()[celli] < 0*volFlux[ip][celli]*volFlux[ip].oldTime()[celli])
-                        {
-                            Info << "SWITCHING OF FLUX" << endl;
-                            Info << "index: " << celli << endl;
-                            Info << "old value: " << volFlux[ip].oldTime()[celli] << endl;
-                            Info << "new value: " << volFlux[ip][celli] << endl;
-                        }
-                    }
-                    
                     u[ip] = fvc::reconstruct(volFlux[ip]);
-                    //u[ip] = fvc::reconstruct(flux[ip])/h[ip];
                     Uf[ip] = fvc::interpolate(u[ip]);
                     //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                     //        *mesh.Sf()/sqr(mesh.magSf());

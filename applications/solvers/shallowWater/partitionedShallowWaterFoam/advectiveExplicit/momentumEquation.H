@@ -23,7 +23,14 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         
         if (useCoriolis) { volFlux[ip] += -dt*((twoOmegaf^Uf[ip]) & mesh.Sf()); }
         if (useDrag)     { volFlux[ip] +=  dt*(drag[ip] & mesh.Sf()); }
-        if (useBuoyancy) { volFlux[ip] +=  dt*buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf()); }
+        if (useBuoyancy) 
+        { 
+            volFlux[ip] += dt*
+            (
+                buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf())
+              - (fvc::interpolate(momentumSink[ip]*fvc::reconstruct(volFlux[ip])) & mesh.Sf())
+            ); 
+        }
         if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
         
         flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];

@@ -141,6 +141,10 @@ partitionedVolScalarField totalSink
 (
     "totalSink", partNames, 0*sigmah[0], sigma
 );
+partitionedVolScalarField momentumSink
+(
+    "momentumSink", partNames, mesh, runTime.timeName()
+);
 partitionedVolScalarField momentumSource
 (
     "momentumSource", partNames, mesh, runTime.timeName()
