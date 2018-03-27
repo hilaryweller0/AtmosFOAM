@@ -23,6 +23,12 @@ theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
            /(1+transfer.sum());
 theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
 
+//// Explicit application of mass transfer terms using conserved variables
+//theta[0] += dt*(massTransfer[1][0]*theta[1] - massTransfer[0][1]*theta[0])
+//            / max(sigmaRho[0], minSigmaDiv*rho[0]);
+//theta[1] += dt*(massTransfer[0][1]*theta[0] - massTransfer[1][0]*theta[1])
+//            / max(sigmaRho[1], minSigmaDiv*rho[1]);
+
 // Update the sum
 theta.updateSum();
 
