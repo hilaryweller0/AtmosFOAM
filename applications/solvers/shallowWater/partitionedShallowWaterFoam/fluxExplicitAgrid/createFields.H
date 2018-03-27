@@ -16,6 +16,9 @@ hSum.oldTime();
 
 // The partition names
 const label nParts = 2;
+wordList partName(nParts);
+partName[0] = "stable";
+partName[1] = "buoyant";
 wordList partNames(nParts);
 partNames[0] = "stable.";
 partNames[1] = "buoyant.";

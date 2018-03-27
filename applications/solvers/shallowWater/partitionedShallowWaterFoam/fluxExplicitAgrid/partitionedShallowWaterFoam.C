@@ -45,9 +45,9 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
+    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-    const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 0.5);
+    const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 0);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -93,13 +93,15 @@ int main(int argc, char *argv[])
             }
             
             // Update the velocity in each partition
-            //volVectorField ggradh = g*fvc::grad(hSum);
-            volVectorField ggradh = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
-            volVectorField ggradhOld = g*fvc::reconstruct(fvc::snGrad(hSum.oldTime())*mesh.magSf());
+            
+            //volVectorField ggradh = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
+            //volVectorField ggradhOld = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
+                    volVectorField ggradh = g*fvc::grad(hSum,partName[ip]);
+                    volVectorField ggradhOld = g*fvc::grad(hSum,partName[ip]);
                     hu[ip] = hu[ip].oldTime() - dt*
                     (
                         (1-offCentre)*fvc::div(volFlux[ip].oldTime(),hu[ip].oldTime())

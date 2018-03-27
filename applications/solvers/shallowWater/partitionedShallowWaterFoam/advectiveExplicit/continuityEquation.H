@@ -1,3 +1,13 @@
+if (runTime.time().value() > 100)
+{
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        sink[ip] *= 0;
+        momentumSink[ip] *= 0;
+        momentumSource[ip] *= 0;
+    }
+}
+
 // Advect h in each partition
 for(label ip = 0; ip < nParts; ip++)
 {
