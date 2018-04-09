@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
+    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
             }
             
             // Update the velocity in each partition
-            surfaceScalarField ggradh = 0*g*fvc::snGrad(hSum)*mesh.magSf();
+            surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
