@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    #include "energyTransfersInit.H"
     #include "writeDiagnosticsInit.H"
     
     while (runTime.loop())
@@ -63,6 +64,7 @@ int main(int argc, char *argv[])
             #include "continuityEquation.H"
             #include "updateSigma.H"
             #include "momentumEquation.H"
+            #include "massTransfer.H"
         }
 
         #include "energy.H"

@@ -57,18 +57,6 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         volFlux[ip] += -offCentre*dt*g*fvc::snGrad(h)*mesh.magSf();
     }
     
-    //Add momentum transfer from mass transfer terms.
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        for (label jp = 0; jp < nParts; jp++)
-        {
-            if (jp != ip)
-            {
-                volFlux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-            }
-        }
-    }
-    
     for(label ip = 0; ip < nParts; ip++)
     {
         u[ip] = fvc::reconstruct(volFlux[ip]);
