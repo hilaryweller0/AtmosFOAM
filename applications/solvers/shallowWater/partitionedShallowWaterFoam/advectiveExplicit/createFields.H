@@ -108,10 +108,15 @@ partitionedSurfaceScalarField flux
 (
     "flux", partNames, fvc::interpolate(sigmah[0])*volFlux[0]
 );
+partitionedSurfaceScalarField flux_temp
+(
+    "flux_temp", partNames, fvc::interpolate(sigmah[0])*volFlux[0]
+);
 for (label ip=0; ip<nParts; ip++)
 {
     volFlux[ip] = Uf[ip] & mesh.Sf();
     flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
+    flux_temp[ip] = flux[ip];
 }
 volFlux.updateSum();
 

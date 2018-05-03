@@ -51,19 +51,23 @@ if ((useMassTransfer) or (useDiffusion))
     h = sigmah.sum();
 
     //Add momentum transfer from mass transfer terms.
+    flux_temp = flux;
     for(label ip = 0; ip < nParts; ip++)
     {
+        flux[ip] -= fvc::interpolate(totalSink[ip])/fvc::interpolate(sigmah_temp[ip])*flux_temp[ip];
         for (label jp = 0; jp < nParts; jp++)
         {
             if (jp != ip)
             {
-                volFlux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                //volFlux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
+                flux[ip] += fvc::interpolate(totalSink[jp])/fvc::interpolate(sigmah_temp[jp])*flux_temp[jp];
             }
         }
     }
 
     for(label ip = 0; ip < nParts; ip++)
     {
+        volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip]);
         u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
         Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
