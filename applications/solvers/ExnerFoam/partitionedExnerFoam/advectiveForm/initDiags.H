@@ -12,10 +12,26 @@ scalarList KEInit(nParts, scalar(0));
 scalarList PEInit(nParts, scalar(0));
 scalarList IEInit(nParts, scalar(0));
 
+// Read in the backgroud potential temperature and calculate its
+// internal energy
+volScalarField thetaBack
+(
+    IOobject
+    (
+        "theta_init",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ
+    ),
+    mesh
+);
+volScalarField energyTmp = sigmaRho.sum()*thetaBack*Exner*Cv;
+const scalar IEBack = (fvc::domainIntegrate(energyTmp)/Vtot).value();
+
 // Caclulate the initial energy in each partition
 for(label ip = 0; ip < partNames.size(); ip++)
 {
-    volScalarField energyTmp = 0.5*sigmaRho[ip]*magSqr(u[ip]);
+    energyTmp = 0.5*sigmaRho[ip]*magSqr(u[ip]);
     KEInit[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     energyTmp = - sigmaRho[ip]*(g & mesh.C());
     PEInit[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
@@ -29,4 +45,7 @@ const scalar KEsumInit = sum(KEInit);
 const scalar PEsumInit = sum(PEInit);
 const scalar IEsumInit = sum(IEInit);
 const scalar energyInitTot = sum(energyInit);
+const scalar availableEnergy = IEsumInit - IEBack;
+Info << "Available energy = " << availableEnergy << endl;
+Info << "energyInitTot = " << energyInitTot << endl;
 
