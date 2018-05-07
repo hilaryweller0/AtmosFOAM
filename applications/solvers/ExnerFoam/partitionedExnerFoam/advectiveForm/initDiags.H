@@ -48,4 +48,7 @@ const scalar energyInitTot = sum(energyInit);
 const scalar availableEnergy = IEsumInit - IEBack;
 Info << "Available energy = " << availableEnergy << endl;
 Info << "energyInitTot = " << energyInitTot << endl;
+Info << "Initial KE = " << KEsumInit << endl;
+Info << "Initial PE = " << PEsumInit << endl;
+Info << "Initial IE = " << IEsumInit << endl;
 

@@ -19,6 +19,7 @@ if (nParts != 2)
         << " transfer terms only formulated for nParts = 2, not nParts = "
         << nParts << exit(FatalError);
 }
+
 theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
            /(1+transfer.sum());
 theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);

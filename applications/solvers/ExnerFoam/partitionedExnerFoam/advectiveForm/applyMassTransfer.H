@@ -28,6 +28,11 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
+// Transfer terms for other variables
+const scalar minSigmaDiv = max(minSigma, VSMALL);
+transfer[0] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
+transfer[1] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
+
 //Info << "Before mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value()
 //     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
@@ -55,9 +60,4 @@ for(label ip = 0; ip < nParts; ip++)
 //Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
 
-
-// Transfer terms for other variables
-const scalar minSigmaDiv = max(minSigma, VSMALL);
-transfer[0] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
-transfer[1] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 }
