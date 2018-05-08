@@ -14,6 +14,15 @@
     KE2 = fvc::domainIntegrate(energyField)/Vtot;
 
     E2 = KE2 + PE2;
+    
+    F2 *= 0;
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        F2 += fvc::interpolate(sigmah[ip])*volFlux[ip];
+        //F2 += flux[ip];
+    }
+    
+    Info << "Change in momentum max: " << min(F2-F1).value() << " " << max(F2-F1).value() << endl;
 
     energyChangeStream << runTime.timeName() << " " << KE2.value() - KE1.value() << " " << PE2.value() - PE1.value() << endl;
 }
