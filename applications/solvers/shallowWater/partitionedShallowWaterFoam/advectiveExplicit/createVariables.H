@@ -59,7 +59,7 @@ dimensionedScalar minimumMassTransfer("minimumMassTransfer",dimensionSet(0,1,0,0
 //Settings for drag.
 const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
 const double dragCoefficient = itsDict.lookupOrDefault<double>("dragCoefficient", 0.01);
-const double sourceMag = itsDict.lookupOrDefault<double>("sourceMagnitude", 0.05);
+const double sourceMag = itsDict.lookupOrDefault<double>("sourceMagnitude", 0.02);
 const vector yNorm(0,1,0);
 dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0.025));
 dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(0));
