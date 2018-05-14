@@ -27,8 +27,8 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         { 
             volFlux[ip] += dt*
             (
+                //Foam::sin(M_PI*runTime.time().value()/100.)*Foam::sin(M_PI*runTime.time().value()/100.)*
                 buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf())
-              - (fvc::interpolate(momentumSink[ip]*fvc::reconstruct(volFlux[ip])) & mesh.Sf())
             ); 
         }
         if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }

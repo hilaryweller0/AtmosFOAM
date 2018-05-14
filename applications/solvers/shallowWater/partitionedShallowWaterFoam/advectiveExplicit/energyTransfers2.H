@@ -22,7 +22,12 @@
         //F2 += flux[ip];
     }
     
+    deltaF = mag(fvc::domainIntegrate(fvc::reconstruct(F2-F1))) / Vtot;
+    
     Info << "Change in momentum max: " << min(F2-F1).value() << " " << max(F2-F1).value() << endl;
 
-    energyChangeStream << runTime.timeName() << " " << KE2.value() - KE1.value() << " " << PE2.value() - PE1.value() << endl;
+    energyChangeStream << runTime.timeName() << " " 
+                       << KE2.value() - KE1.value() << " " 
+                       << PE2.value() - PE1.value() << " "
+                       << deltaF.value() << endl;
 }

@@ -2,7 +2,7 @@
 //CURRENTLY ONLY VALID FOR 2 PARTITIONS
 if ((useMassTransfer) or (useDiffusion))
 {
-    
+    #include "energyTransfers1.H"
 
     for(label ip = 0; ip < nParts; ip++)
     {
@@ -58,7 +58,7 @@ if ((useMassTransfer) or (useDiffusion))
         volFlux_temp[ip] = volFlux[ip];
     }
     
-    #include "energyTransfers1.H"
+    
     
     //volFlux_temp = volFlux;
     for(label ip = 0; ip < nParts; ip++)
@@ -78,7 +78,7 @@ if ((useMassTransfer) or (useDiffusion))
 
     for(label ip = 0; ip < nParts; ip++)
     {
-        //volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip]);
+        volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip]);
         u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
         Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))

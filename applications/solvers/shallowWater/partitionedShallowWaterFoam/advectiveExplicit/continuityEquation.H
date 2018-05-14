@@ -3,7 +3,6 @@ if (runTime.time().value() > 100)
     for(label ip = 0; ip < nParts; ip++)
     {
         sink[0] *= 0;
-        momentumSink[ip] *= 0;
         momentumSource[ip] *= 0;
     }
 }
