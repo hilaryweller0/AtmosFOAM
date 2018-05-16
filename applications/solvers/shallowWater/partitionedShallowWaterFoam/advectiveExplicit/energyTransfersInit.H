@@ -3,6 +3,7 @@ OFstream energyChangeStream(energyChangeDat);
 energyChangeStream << "#time   delta_KE    delta_PE    delta_F" << endl;
 
 volScalarField energyField("energyField", 0.5*g*sqr(h));
+dimensionedScalar deltaKE("deltaKE", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar E1("E1", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar KE1("KE1", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar PE1("PE1", dimensionSet(0,3,-2,0,0), scalar(0));

@@ -15,6 +15,8 @@
 
     E2 = KE2 + PE2;
     
+    deltaKE = KE2 - KE1;
+    
     F2 *= 0;
     for(label ip = 0; ip < nParts; ip++)
     {
@@ -24,7 +26,9 @@
     
     deltaF = mag(fvc::domainIntegrate(fvc::reconstruct(F2-F1))) / Vtot;
     
-    Info << "Change in momentum max: " << min(F2-F1).value() << " " << max(F2-F1).value() << endl;
+    Info << "Change in momentum min/max: " << min(F2-F1).value() << " " << max(F2-F1).value() << endl;
+    Info << "Change in kinetic energy: " << deltaKE.value() << endl;
+    
 
     energyChangeStream << runTime.timeName() << " " 
                        << KE2.value() - KE1.value() << " " 

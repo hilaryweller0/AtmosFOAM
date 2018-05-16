@@ -149,7 +149,7 @@ partitionedVolScalarField sink
 );
 partitionedVolScalarField totalSink
 (
-    "totalSink", partNames, 0*sigmah[0], sigma
+    "totalSink", partNames, 0*sigma[0]/dt, sigma
 );
 partitionedVolScalarField momentumSink
 (

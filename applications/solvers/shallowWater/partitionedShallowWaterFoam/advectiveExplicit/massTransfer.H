@@ -3,14 +3,17 @@
 if ((useMassTransfer) or (useDiffusion))
 {
     #include "energyTransfers1.H"
-
+    
     for(label ip = 0; ip < nParts; ip++)
     {
         sigmah_temp[ip] = sigmah[ip];
-        totalSink[ip]   = 0*sigmah[ip];
+    }
+    
+    for(label ip = 0; ip < nParts; ip++)
+    {
         if (useMassTransfer) 
         { 
-            totalSink[ip] += dt*sourceMag*sink[ip]*sigmah_temp[ip]; 
+            totalSink[ip] = min( sourceMag*sink[ip], 1./dt );
         }
         
         if (useDiffusion)
@@ -31,18 +34,13 @@ if ((useMassTransfer) or (useDiffusion))
     
     for (label ip = 0; ip < nParts; ip++)
     {
-        totalSink[ip] = min(totalSink[ip], sigmah_temp[ip]);
-    }
-    
-    for (label ip = 0; ip < nParts; ip++)
-    {
-        sigmah[ip] -= totalSink[ip];
+        sigmah[ip] -= dt*totalSink[ip]*sigmah_temp[ip];
         
         for (label jp = 0; jp < nParts; jp++)
         {
             if (jp != ip)
             {
-                sigmah[ip] += totalSink[jp];
+                sigmah[ip] += dt*totalSink[jp]*sigmah_temp[jp];
             }
         }
     }
@@ -53,25 +51,19 @@ if ((useMassTransfer) or (useDiffusion))
     //Add momentum transfer from mass transfer terms.
     for(label ip = 0; ip < nParts; ip++)
     {
-        flux[ip] = fvc::interpolate(sigmah_temp[ip])*volFlux[ip];
         flux_temp[ip] = flux[ip];
-        volFlux_temp[ip] = volFlux[ip];
     }
-    
-    
     
     //volFlux_temp = volFlux;
     for(label ip = 0; ip < nParts; ip++)
     {
-        //flux[ip] -= fvc::interpolate(totalSink[ip])*volFlux[ip];
-        flux[ip] -= fvc::interpolate(totalSink[ip]/sigmah_temp[ip])*flux_temp[ip];
+        flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
         for (label jp = 0; jp < nParts; jp++)
         {
             if (jp != ip)
             {
                 //volFlux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                //flux[ip] += fvc::interpolate(totalSink[jp])*volFlux[jp];
-                flux[ip] += fvc::interpolate(totalSink[jp]/sigmah_temp[jp])*flux_temp[jp];
+                flux[ip] += dt*fvc::interpolate(totalSink[jp])*flux_temp[jp];
             }
         }
     }
@@ -81,8 +73,8 @@ if ((useMassTransfer) or (useDiffusion))
         volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip]);
         u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
-        Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                *mesh.Sf()/sqr(mesh.magSf());
+        //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+        //        *mesh.Sf()/sqr(mesh.magSf());
     }
 
     #include "energyTransfers2.H"
