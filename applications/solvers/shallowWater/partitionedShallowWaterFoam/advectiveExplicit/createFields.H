@@ -159,3 +159,16 @@ partitionedVolScalarField momentumSource
 (
     "momentumSource", partNames, mesh, runTime.timeName()
 );
+
+surfaceScalarField delta_ke
+(
+    IOobject
+    (
+        "delta_ke",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    0.*fvc::interpolate(sigmah[0])*volFlux[0]*volFlux[0]
+);
