@@ -14,15 +14,14 @@
     }
     else
     {
-        //thetaf = 1/fvc::interpolate(1/theta);
         thetaf = fvc::interpolate(theta);
         G = 1/G;
     }
 
     for (int corr=0; corr<nCorr; corr++)
     {
-	    // Explicit part of rate of change of flux
-    	dPhidt = -mesh.Sf() &
+        // Explicit part of rate of change of flux
+        dPhidt = -mesh.Sf() &
         (
             fvc::interpolate(fvc::div(phi,U)) 
          + (2*rhof*(Omega^(Uf-Ug)))

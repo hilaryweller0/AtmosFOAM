@@ -62,9 +62,9 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "compressibleCourantNo.H"
-	#include "UEqn.H"
+        #include "UEqn.H"
 
-	while (pimple.loop())
+        while (pimple.loop())
         {
             #include "rhoThetaEqn.H"
 

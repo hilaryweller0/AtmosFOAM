@@ -19,26 +19,27 @@ while (pimple.correct())
 
     while (pimple.correctNonOrthogonal())
     {
-	fvScalarMatrix ExnerEqn
-	(
-	    fvm::ddt(Psi, Exner)
-	  + fvc::div(phiHbyA)
-	  - fvm::laplacian(rhof*rhorAUf*Cp*thetaf, Exner)
-	  + fvc::div(rhof*rhorAUf*gSf)
-	);
+        fvScalarMatrix ExnerEqn
+        (
+            fvm::ddt(Psi, Exner)
+          + fvc::div(phiHbyA)
+          - fvm::laplacian(rhof*rhorAUf*Cp*thetaf, Exner)
+          + fvc::div(rhof*rhorAUf*gSf)
+        );
 
-	ExnerEqn.solve(mesh.solver(Exner.select(pimple.finalInnerIter())));
+        ExnerEqn.solve(mesh.solver(Exner.select(pimple.finalInnerIter())));
 
-	if (pimple.finalNonOrthogonalIter())
-	{
-            phi = phiHbyA - rhof*rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+        if (pimple.finalNonOrthogonalIter())
+        {
+            phi = phiHbyA
+                - rhof*rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
                 + rhof*rhorAUf*gSf;
             U = HbyA + fvc::reconstruct
             (
                 (- Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf() + gSf)*rhorAUf
             );
-	    Uf = fvc::interpolate(U);
-	}
+            Uf = fvc::interpolate(U);
+        }
     }
 }
 
