@@ -38,6 +38,14 @@ bool useMassTransfer = mesh.solutionDict().lookupOrDefault<bool>
 (
     "useMassTransfer", true
 );
+bool implicitMassTransfer = mesh.solutionDict().lookupOrDefault<bool>
+(
+    "implicitMassTransfer", false
+);
+bool implicitMomentumTransfer = mesh.solutionDict().lookupOrDefault<bool>
+(
+    "implicitMomentumTransfer", false
+);
 bool useBuoyancy = mesh.solutionDict().lookupOrDefault<bool>
 (
     "useBuoyancy", true
@@ -55,6 +63,7 @@ const double offCentre = mesh.solutionDict().lookupOrDefault<double>("offCentre"
 const double offCentreOpSplit = mesh.solutionDict().lookupOrDefault<double>("offCentreOperatorSplitting", 0.5);
 
 dimensionedScalar minimumMassTransfer("minimumMassTransfer",dimensionSet(0,1,0,0,0,0,0),scalar(0));
+dimensionedScalar delta("delta",dimensionSet(0,1,0,0,0,0,0),scalar(0));
 
 //Settings for drag.
 const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);

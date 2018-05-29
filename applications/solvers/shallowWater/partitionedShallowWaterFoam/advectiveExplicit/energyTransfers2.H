@@ -29,6 +29,7 @@
     
     Info << "Change in momentum min/max: " << min(F2-F1).value() << " " << max(F2-F1).value() << endl;
     Info << "Change in kinetic energy: " << deltaKE.value() << endl;
+    Info << "Min/Max KE change: " << min(delta_ke).value() << " " << max(delta_ke).value() << endl;
     
 
     energyChangeStream << runTime.timeName() << " " 
