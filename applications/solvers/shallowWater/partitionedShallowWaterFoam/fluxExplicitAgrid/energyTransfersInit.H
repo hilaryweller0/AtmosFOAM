@@ -11,8 +11,6 @@ dimensionedScalar E2("E2", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar KE2("KE2", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar PE2("PE2", dimensionSet(0,3,-2,0,0), scalar(0));
 dimensionedScalar deltaF("deltaF", dimensionSet(0,2,-1,0,0), scalar(0));
-surfaceScalarField F1("F1", fvc::interpolate(sigmah[0])*volFlux[0]);
-surfaceScalarField F2("F2", fvc::interpolate(sigmah[0])*volFlux[0]);
 volVectorField hu1("hu1", hu[0]);
 volVectorField hu2("hu2", hu[0]);
 //const dimensionedScalar Vtot = sum(mesh.V());

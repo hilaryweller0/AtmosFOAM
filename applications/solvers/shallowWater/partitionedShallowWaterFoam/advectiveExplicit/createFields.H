@@ -131,6 +131,75 @@ partitionedVolVectorField u
     //"u", partNames, fvc::reconstruct(volFlux[0]), sigma
     "u", partNames, mesh, runTime.timeName(), sigma
 );
+
+PtrList<volVectorField> u_temp(nParts);
+PtrList<volVectorField> hu(nParts);
+PtrList<volVectorField> hu_temp(nParts);
+for (label ip = 0; ip < nParts; ip++)
+{
+    u_temp.set
+    (
+        ip,
+        new volVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"u_temp",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            u[ip]
+        )
+    );
+    
+    hu.set
+    (
+        ip,
+        new volVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"hu",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            sigmah[ip]*u[ip]
+        )
+    );
+    
+    hu_temp.set
+    (
+        ip,
+        new volVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"hu_temp",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            sigmah[ip]*u[ip]
+        )
+    );
+}
+/*partitionedVolVectorField u_temp
+(
+    "u_temp", partNames, u[0]
+);
+partitionedVolVectorField hu
+(
+    "hu", partNames, sigmah[0]*u[0]
+);
+partitionedVolVectorField hu_temp
+(
+    "hu_temp", partNames, hu[0]
+);*/
 for (label ip=0; ip<nParts; ip++)
 {
     u[ip] = fvc::reconstruct(volFlux[0]);
@@ -160,15 +229,28 @@ partitionedVolScalarField momentumSource
     "momentumSource", partNames, mesh, runTime.timeName()
 );
 
-surfaceScalarField delta_ke
+surfaceScalarField delta_ke_face
 (
     IOobject
     (
-        "delta_ke",
+        "delta_ke_face",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
         IOobject::AUTO_WRITE
     ),
     0.*fvc::interpolate(sigmah[0])*volFlux[0]*volFlux[0]
+);
+
+volScalarField delta_ke_centre
+(
+    IOobject
+    (
+        "delta_ke_centre",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    0.*sigmah[0]*magSqr(u[0])
 );

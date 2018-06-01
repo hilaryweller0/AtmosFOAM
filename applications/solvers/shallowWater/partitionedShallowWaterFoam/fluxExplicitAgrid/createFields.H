@@ -1,6 +1,6 @@
 // Read in prognostic variables
 Info<< "Reading field h\n" << endl;
-volScalarField hSum
+volScalarField h
 (
     IOobject
     (
@@ -12,7 +12,7 @@ volScalarField hSum
     ),
     mesh
 );
-hSum.oldTime();
+h.oldTime();
 
 // The partition names
 const label nParts = 2;
@@ -25,14 +25,19 @@ partNames[1] = "buoyant.";
 
 // Set pointer lists for variables in all partitions. Read in later
 PtrList<volScalarField> sigma(nParts);
-PtrList<volScalarField> h(nParts);
+PtrList<volScalarField> sigmah(nParts);
+PtrList<volScalarField> sigmah_temp(nParts);
 PtrList<volScalarField> hOld(nParts);
-PtrList<surfaceScalarField> hf(nParts);
+PtrList<surfaceScalarField> sigmahf(nParts);
 PtrList<surfaceVectorField> Uf(nParts);
 PtrList<volVectorField> u(nParts);
 PtrList<volVectorField> hu(nParts);
+PtrList<volVectorField> hu_temp(nParts);
 PtrList<surfaceScalarField> flux(nParts);
 PtrList<surfaceScalarField> volFlux(nParts);
+PtrList<volScalarField> sink(nParts);
+PtrList<volScalarField> totalSink(nParts);
+PtrList<volScalarField> momentumSource(nParts);
 
 // Read in or set variables in partitions
 for (label ip = 0; ip < nParts; ip++)
@@ -54,36 +59,52 @@ for (label ip = 0; ip < nParts; ip++)
         )
     );
     
-    h.set
+    sigmah.set
     (
         ip,
         new volScalarField
         (
             IOobject
             (
-                partNames[ip]+"h",
+                partNames[ip]+"sigmah",
                 runTime.timeName(),
                 mesh,
                 IOobject::NO_READ
             ),
-            hSum*sigma[ip]
+            h*sigma[ip]
         )
     );
-    h[ip].oldTime();
+    sigmah[ip].oldTime();
 
-    hf.set
+    sigmah_temp.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"sigmah_temp",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ
+            ),
+            h*sigma[ip]
+        )
+    );
+
+    sigmahf.set
     (
         ip,
         new surfaceScalarField
         (
             IOobject
             (
-                partNames[ip]+"hf",
+                partNames[ip]+"sigmahf",
                 runTime.timeName(),
                 mesh,
                 IOobject::NO_READ
             ),
-            linearInterpolate(h[ip])
+            linearInterpolate(sigmah[ip])
         )
     );
     
@@ -117,7 +138,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            (Uf[ip] & mesh.Sf())*hf[ip]
+            (Uf[ip] & mesh.Sf())*sigmahf[ip]
         )
     );
     flux[ip].oldTime();
@@ -135,7 +156,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::READ_IF_PRESENT,
                 IOobject::AUTO_WRITE
             ),
-            flux[ip]/hf[ip]
+            Uf[ip] & mesh.Sf()
         )
     );
 
@@ -152,7 +173,7 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::NO_READ,
                 IOobject::AUTO_WRITE
             ),
-            fvc::reconstruct(flux[ip]/hf[ip]),
+            fvc::reconstruct(flux[ip]/sigmahf[ip]),
             Uf[ip].boundaryField().types()
         )
     );
@@ -170,8 +191,88 @@ for (label ip = 0; ip < nParts; ip++)
                 IOobject::NO_READ,
                 IOobject::AUTO_WRITE
             ),
-            h[ip]*u[ip]
+            sigmah[ip]*u[ip]
+        )
+    );
+    
+    hu_temp.set
+    (
+        ip,
+        new volVectorField
+        (
+            IOobject
+            (
+                partNames[ip]+"hu_temp",
+                runTime.timeName(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::AUTO_WRITE
+            ),
+            sigmah[ip]*u[ip]
+        )
+    );
+    
+    sink.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"sink",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh
+        )
+    );
+    
+    totalSink.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"totalSink",
+                runTime.timeName(),
+                mesh,
+                IOobject::READ_IF_PRESENT,
+                IOobject::NO_WRITE
+            ),
+            0*sigma[0]/dt
+        )
+    );
+    
+    momentumSource.set
+    (
+        ip,
+        new volScalarField
+        (
+            IOobject
+            (
+                partNames[ip]+"momentumSource",
+                runTime.timeName(),
+                mesh,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE
+            ),
+            mesh
         )
     );
 }
 
+volScalarField delta_ke_centre
+(
+    IOobject
+    (
+        "delta_ke_centre",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    0.*sigmah[0]*magSqr(u[0])
+);

@@ -43,16 +43,13 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    #include "createVariables.H"
     
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-    const double offCentre = itsDict.lookupOrDefault<double>("offCentre", 0);
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    #include "energyTransfersInit.H"
     #include "writeDiagnosticsInit.H"
 
     
@@ -67,29 +64,29 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*
+                sigmah[ip] = sigmah[ip].oldTime() - dt*
                 (
-                    (1-offCentre)*fvc::div(volFlux[ip].oldTime(),h[ip].oldTime())
-                  + offCentre*fvc::div(volFlux[ip],h[ip])
+                    (1-offCentre)*fvc::div(volFlux[ip].oldTime(),sigmah[ip].oldTime())
+                  + offCentre*fvc::div(volFlux[ip],sigmah[ip])
                 );
                 
-                hf[ip] = fvc::interpolate(h[ip],"linear");
+                sigmahf[ip] = fvc::interpolate(sigmah[ip],"linear");
                 
-                Info << "h[" << ip << "] goes from " 
-                     << min(h[ip].internalField()).value() 
+                Info << "sigmah[" << ip << "] goes from " 
+                     << min(sigmah[ip].internalField()).value() 
                      << " to " 
-                     << max(h[ip].internalField()).value() << endl;
+                     << max(sigmah[ip].internalField()).value() << endl;
                 
-                if (ip == 0) hSum = h[ip];
-                else hSum += h[ip];
+                if (ip == 0) h = sigmah[ip];
+                else h += sigmah[ip];
             
-                hu[ip] = h[ip]*u[ip];
+                hu[ip] = sigmah[ip]*u[ip];
             }
             
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
-                sigma[ip] = h[ip]/hSum;
+                sigma[ip] = sigmah[ip]/h;
             }
             
             // Update the velocity in each partition
@@ -100,17 +97,22 @@ int main(int argc, char *argv[])
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    volVectorField ggradh = g*fvc::grad(hSum,partName[ip]);
-                    volVectorField ggradhOld = g*fvc::grad(hSum,partName[ip]);
+                    volVectorField ggradh = g*fvc::grad(h,partName[ip]);
+                    volVectorField ggradhOld = g*fvc::grad(h.oldTime(),partName[ip]);
                     hu[ip] = hu[ip].oldTime() - dt*
                     (
                         (1-offCentre)*fvc::div(volFlux[ip].oldTime(),hu[ip].oldTime())
                       + offCentre*fvc::div(volFlux[ip],hu[ip])
-                      + (1-offCentre)*h[ip].oldTime()*ggradhOld
-                      + offCentre*h[ip]*ggradh
+                      + (1-offCentre)*sigmah[ip].oldTime()*ggradhOld
+                      + offCentre*sigmah[ip]*ggradh
                     );
                     
-                    u[ip] = hu[ip]/h[ip];
+                    if (useBuoyancy) 
+                    { 
+                        hu[ip] += dt*sigmah[ip]*buoyancyMagnitude*momentumSource[ip]*yNorm;
+                    }
+                    
+                    u[ip] = hu[ip]/sigmah[ip];
                     
                     Uf[ip] = fvc::interpolate(u[ip]);
                     
@@ -119,13 +121,15 @@ int main(int argc, char *argv[])
                     flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
                 }
             }
+            
+            #include "massTransfer.H"
         }
 
         #include "energy.H"
         #include "writeDiagnostics.H"
         
         
-        Info << "Total h: " << sum(hSum).value() << endl;
+        Info << "Total h: " << sum(h).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
         
