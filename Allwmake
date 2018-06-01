@@ -3,6 +3,9 @@ cd ${0%/*} || exit 1    # run from this directory
 
 set -e
 
+# Parse arguments for library compilation
+. $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
+
 [ -n "$FOAM_EXT_LIBBIN" ] || {
     echo "Error: FOAM_EXT_LIBBIN not set"
     echo "    Check the OpenFOAM entries in your dot-files and source them."
@@ -15,7 +18,7 @@ set -e
     exit 1
 }
 
-src/Allwmake $*
-applications/Allwmake $*
+src/Allwmake $targetType $*
+applications/Allwmake $targetType $*
 wmake unittest
 testAtmosFOAM

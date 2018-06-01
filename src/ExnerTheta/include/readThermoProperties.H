@@ -12,8 +12,14 @@ IOdictionary thermoDict
     )
 );
 
-const dimensionedScalar T0(thermoDict.lookup("T0"));
-const dimensionedScalar pRef(thermoDict.lookup("pRef"));
+const dimensionedScalar T0
+(
+    "T0", dimTemperature, readScalar(thermoDict.lookup("T0"))
+);
+const dimensionedScalar pRef
+(
+    "pRef", dimPressure, readScalar(thermoDict.lookup("pRef"))
+);
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (

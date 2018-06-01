@@ -3,11 +3,14 @@ cd ${0%/*} || exit 1    # run from this directory
 
 set -e
 
+# Parse arguments for library compilation
+. $WM_PROJECT_DIR/wmake/scripts/AllwmakeParseArguments
+
 [ -n "$FOAM_EXT_LIBBIN" ] || {
     echo "Error: FOAM_EXT_LIBBIN not set"
     echo "    Check the OpenFOAM entries in your dot-files and source them."
     exit 1
 }
 
-wmake -j -a utilities
-wmake -j -a solvers
+wmake -all $targetType utilities
+wmake -all $targetType solvers
