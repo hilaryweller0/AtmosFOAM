@@ -100,6 +100,11 @@ int main(int argc, char *argv[])
 	);
 	ExnerNew.correctBoundaryConditions();
 	ExnerNew.write();
+	
+	p = pRef*pow(ExnerNew, 1/kappa);
+	p.write();
+	T = ExnerNew*theta;
+	T.write();
 
     Info<< "End\n" << endl;
 

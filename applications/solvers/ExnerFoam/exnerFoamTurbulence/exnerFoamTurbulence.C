@@ -23,54 +23,23 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamH
+    exnerFoamTurbulence
 
 Description
     Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and V (flux in d direction)
+    using a simultaneous solution of Exner, theta and phi
 
 \*---------------------------------------------------------------------------*/
 
 #include "HodgeOps.H"
 #include "fvCFD.H"
+#include "turbulentFluidThermoModel.H"  // turbulence modelling
 #include "ExnerTheta.H"
 #include "OFstream.H"
+#include "fluidThermo.H"
+#include "fvOptions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-scalar entropy(const volScalarField& theta, const volScalarField& rho)
-{
-    return gSum
-    (
-        fvc::domainIntegrate(rho).value() * theta.field() * Foam::log(theta.field())
-    );
-}
-
-scalar variance(const volScalarField& field) {
-    scalar totalVolume = 0;
-    scalar average = 0;
-
-    forAll(field.mesh().cells(), cellI)
-    {
-        scalar value = field[cellI];
-        scalar cellVolume = field.mesh().V()[cellI];
-        totalVolume += cellVolume;
-        average += value*cellVolume;
-    }
-
-    average /= totalVolume;
-
-    scalar variance = 0;
-    forAll(field.mesh().cells(), cellI)
-    {
-        scalar value = field[cellI];
-        scalar cellVolume = field.mesh().V()[cellI];
-        variance += pow(value - average, 2) * cellVolume;
-    }
-
-    variance /= totalVolume;
-    return variance;
-}
 
 int main(int argc, char *argv[])
 {
@@ -80,17 +49,13 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
     HodgeOps H(mesh);
-    surfaceScalarField gd("gd", g & H.delta());
+//    const surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
-    const scalar initEntropy = entropy(theta, rho);
-    scalar thetaVariance = variance(theta);
-    scalar thetaRhoVariance = variance(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
-    #include "initCourantFile.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -98,9 +63,9 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
-    const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
-
-    //const dimensionedScalar radiativeTimescale("radiativeTimescale", dimTime, 60*60*24);
+    
+    turbulence->validate();   //- Validate turbulence fields after construction
+                            //  and update derived fields as required
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -113,51 +78,38 @@ int main(int argc, char *argv[])
         #include "compressibleCourantNo.H"
 
         // update old time variables for Crank-Nicholson
-        V.oldTime() += (1-offCentre)*dt*dVdt;
+        phi.oldTime() += (1-offCentre)*dt*dPhidt;
         // Old part of theta change (before any variables are updated)
-        if (SIgravityWaves)
-        {
-            thetaf.oldTime() = fvc::interpolate
-            (
-                (
-                    rho.oldTime()*theta.oldTime()
-                  - (1-offCentre)*dt*divUtheta.oldTime()
-                )/(rho.oldTime() - (1-offCentre)*dt*divU.oldTime()),
-                "interpolate(theta)"
-            );
-        }
 
-        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
+        // U predictor
+        //U = fvc::reconstruct((phi.oldTime() + offCentre*dt*dPhidt)/rhof);
+
+        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
-            #include "rhoEqn.H"
             #include "rhoThetaEqn.H"
+
+            // Exner and momentum equations
             #include "exnerEqn.H"
         }
         
-        #include "rhoEqn.H"
         #include "rhoThetaEqn.H"
         
-        // Updates for next time step
-        {
-//            theta += dt * (radiation - theta)/radiativeTimescale;
-            thetaf = fvc::interpolate(theta);
-        }
-        dVdt += rhof*gd - H.magd()*Cp*rhof*thetaf*fvc::snGrad(Exner)
-              - muSponge*V;
-        divU == fvc::div(U);
-        divUtheta == fvc::div(U, theta);
+        // Update rates of change for next time step
+        thetaf = fvc::interpolate(theta);
+        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner))
+                - muSponge*phi;
+        divPhi = fvc::div(phi);
+        divPhitheta = fvc::div(phi, theta);
         
         #include "compressibleContinuityErrs.H"
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
                                         - initHeat;
-        normalisedHeatDiff = (totalHeatDiff/initHeat).value();
-        entropyError = (entropy(theta, rho) - initEntropy) / initEntropy;
-        thetaVariance = variance(theta);
-        thetaRhoVariance = variance(theta*rho);
-        Info << "Heat error = " << normalisedHeatDiff << ", entropy error = "
-             << entropyError << endl;
+        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
         #include "energy.H"
+        
+        //- Solve the turbulence equations and correct the turbulence viscosity
+        turbulence->correct(); 
 
         runTime.write();
 

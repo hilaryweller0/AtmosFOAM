@@ -21,6 +21,18 @@ const volScalarField theta
     mesh
 );
 
+volScalarField p
+(
+    IOobject("p", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    pRef*pow(Exner, 1/kappa)
+);
+
+volScalarField T
+(
+    IOobject("T", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    theta*Exner
+);
+
 const surfaceScalarField thetaf("thetaf", fvc::interpolate(theta));
 
 //Info<< "Creating field rho\n" << endl;

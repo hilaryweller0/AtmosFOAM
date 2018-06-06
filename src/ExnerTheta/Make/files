@@ -2,6 +2,7 @@ BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerMoistFvPatchScalarField.C
 BCs/hydrostaticExnerFvPatchScalarField.C
 BCs/partitionedHydrostaticExnerFvPatchScalarField.C
+BCs/geostrophic_ExnerFvPatchScalarField.C
 moistThermo/perfectGasPhase.C
 moistThermo/liquidPhase.C
 moistThermo/fluidSpecie.C
