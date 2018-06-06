@@ -13,10 +13,6 @@
     {
         // mom eqn deviatoric turb. stress term 
         fvVectorMatrix turbM(turbulence->divDevRhoReff(U));
-        
-        // convert dev. stress from implicit to explicit
-        volVectorField turbV("turbV", turbM & U);
-        turbV.write(); // for debugging
     
         // Explicit part of rate of change of flux
         dPhidt = -mesh.Sf() &
@@ -25,9 +21,9 @@
             (
                 fvc::div(phi,U)
 //              + (2/3)*fvc::grad(turbulence->k())  // isotropic turbulent stress
-              - turbV
+              + (turbM & U)
             )
-//          + (2*rhof*(Omega^(Uf-Ug)))   // Coriolis term
+          + (2*rhof*(Omega^(Uf-Ug)))   // Coriolis term
         );
 
         // phiU is the flux without g or dpdz (to get the BCs right)
@@ -70,16 +66,8 @@
         // Update the pressure and temperature based on the new Exner
         thermo.p() = pRef*pow(Exner, 1/kappa);
         thermo.T() = theta*Exner;
-        
-        volVectorField gradPminusrhog
-        (
-            "gradPminusrhog2",
-            fvc::reconstruct
-            (
-                rhof*(Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf() - gSf)
-            )
-        );
-        gradPminusrhog.write();
+//        thermo.he() == thermo.he(thermo.p(),thermo.T());
+//        thermo.correct();
     }
 }
 
