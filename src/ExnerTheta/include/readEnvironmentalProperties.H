@@ -37,3 +37,19 @@ dimensionedScalar diffusionCoeff
         dimensionedScalar("K", dimensionSet(0,2,-1,0,0), scalar(0))
     )
 );
+
+// Gravity as a uniformDimensionedVectorField for consistency with
+// other turbulence related things
+uniformDimensionedVectorField gvf
+(
+    IOobject
+    (
+        "g",
+        runTime.constant(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    g
+);
+

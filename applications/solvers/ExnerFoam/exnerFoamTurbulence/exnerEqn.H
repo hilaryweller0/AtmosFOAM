@@ -21,7 +21,7 @@
             (
                 fvc::div(phi,U)
 //              + (2/3)*fvc::grad(turbulence->k())  // isotropic turbulent stress
-              + (turbM & U)
+              + turbStress
             )
           + (2*rhof*(Omega^(Uf-Ug)))   // Coriolis term
         );

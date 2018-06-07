@@ -184,3 +184,10 @@ forAll(phiU.boundaryField(), patchi)
     }
 }
 
+// Turbulent Stress
+volVectorField turbStress
+(
+    IOobject("turbStress", runTime.timeName(), mesh),
+    U*rho/runTime.deltaT()
+);
+

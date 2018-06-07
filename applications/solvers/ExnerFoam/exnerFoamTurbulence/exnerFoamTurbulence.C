@@ -33,7 +33,7 @@ Description
 
 #include "HodgeOps.H"
 #include "fvCFD.H"
-#include "turbulentFluidThermoModel.H"  // turbulence modelling
+#include "turbulentFluidThermoModel.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
 #include "fluidThermo.H"
@@ -86,6 +86,7 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
+            #include "UEqn.H"
             #include "rhoThetaEqn.H"
 
             // Exner and momentum equations
