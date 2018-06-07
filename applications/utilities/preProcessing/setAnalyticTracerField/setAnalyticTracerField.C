@@ -49,23 +49,23 @@ int main(int argc, char *argv[])
         )
     );
 
-    Info << "Reading T_init" << endl;
+    const word tracerName = args.optionFound("name") ?
+                              args.optionRead<word>("name") :
+                              "T_analytic";
+
+    Info << "Reading " << tracerName << "_init" << endl;
     volScalarField T_init
     (
         IOobject
         (
-            "T_init",
+            tracerName+"_init",
             runTime.constant(),
             mesh,
-            IOobject::MUST_READ,
-            IOobject::NO_WRITE
+            IOobject::MUST_READ
         ),
         mesh
     );
 
-    const word tracerName = args.optionFound("name") ?
-                              args.optionRead<word>("name") :
-                              "T_analytic";
     Info << "Creating tracer field " << tracerName << endl;
     volScalarField T
     (
@@ -121,11 +121,10 @@ int main(int argc, char *argv[])
     (
         IOobject
         (
-            "Tf_init",
+            tracerName+"f_init",
             runTime.constant(),
             mesh,
-            IOobject::READ_IF_PRESENT,
-            IOobject::NO_WRITE
+            IOobject::READ_IF_PRESENT
         ),
         linearInterpolate(T_init)
     );
@@ -133,7 +132,7 @@ int main(int argc, char *argv[])
     Info << "Creating Tf_analytic" << endl;
     surfaceScalarField Tf
     (
-        IOobject("Tf_analytic", runTime.timeName(), mesh, IOobject::NO_READ),
+        IOobject(tracerName+"f_analytic", runTime.timeName(), mesh),
         Tf_init
     );
 
@@ -145,7 +144,8 @@ int main(int argc, char *argv[])
         tracer->applyTo(T);
         T.write();
 
-        Info << "writing Tf_analytic for time " << runTime.timeName() << endl;
+        Info << "writing " << tracerName << "f_analytic for time "
+             << runTime.timeName() << endl;
         tracer->applyTo(Tf);
         Tf.write();
     }

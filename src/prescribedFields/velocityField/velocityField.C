@@ -5,7 +5,7 @@ defineRunTimeSelectionTable(velocityField, dict);
 
 autoPtr<velocityField> velocityField::New(const dictionary& dict)
 {
-    const word velocityFieldType(dict.lookup("type"));
+    const word velocityFieldType(dict.lookupOrDefault<word>("type", "uniform"));
 
     dictConstructorTable::iterator cstrIter =
         dictConstructorTablePtr_->find(velocityFieldType);

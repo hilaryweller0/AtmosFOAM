@@ -9,7 +9,7 @@ addToRunTimeSelectionTable(velocityField, uniformVelocityField, dict);
 
 uniformVelocityField::uniformVelocityField(const dictionary& dict)
 :
-v(dict.lookupOrDefault<vector>("velocity", vector(1,1,1)))
+v(dict.lookupOrDefault<vector>("velocity", vector::zero))
 {};
 
 vector uniformVelocityField::velocityAt
