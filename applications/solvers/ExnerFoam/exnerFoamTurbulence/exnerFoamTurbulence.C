@@ -36,8 +36,9 @@ Description
 #include "turbulentFluidThermoModel.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
-#include "fluidThermo.H"
+#include "rhoThermo.H"
 #include "fvOptions.H"
+#include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -62,7 +63,12 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    fv::CrankNicolsonDdtScheme<vector> drhoUdt
+    (
+        mesh,
+        mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
+    );
+    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
@@ -77,17 +83,10 @@ int main(int argc, char *argv[])
 
         #include "compressibleCourantNo.H"
 
-        // update old time variables for Crank-Nicholson
-        phi.oldTime() += (1-offCentre)*dt*dPhidt;
-        // Old part of theta change (before any variables are updated)
-
-        // U predictor
-        //U = fvc::reconstruct((phi.oldTime() + offCentre*dt*dPhidt)/rhof);
-
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
-            #include "UEqn.H"
             #include "rhoThetaEqn.H"
+            #include "UEqn.H"
 
             // Exner and momentum equations
             #include "exnerEqn.H"
@@ -96,11 +95,7 @@ int main(int argc, char *argv[])
         #include "rhoThetaEqn.H"
         
         // Update rates of change for next time step
-        thetaf = fvc::interpolate(theta);
-        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner))
-                - muSponge*phi;
-        divPhi = fvc::div(phi);
-        divPhitheta = fvc::div(phi, theta);
+        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner));
         
         #include "compressibleContinuityErrs.H"
 

@@ -76,9 +76,9 @@ thermo.T() = theta*Exner;
 thetaf.oldTime();
 
 // Reading in the sponge layer coefficients (if present)
-surfaceScalarField muSponge
+volScalarField muSponge
 (
-    surfaceScalarField
+    volScalarField
     (
         IOobject("muSponge", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
@@ -159,15 +159,9 @@ surfaceVectorField vperp("vperp", Uf - (Uf & mesh.Sf())*mesh.Sf()/sqr(mesh.magSf
 surfaceScalarField dPhidt
 (
     IOobject("dPhidt", runTime.timeName(), mesh),
-    -(mesh.Sf() & (fvc::interpolate(fvc::div(phi,U))+2*rhof*(Omega^(Uf-Ug))))
-    +rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner)),
+    rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner)),
     phiUBCs
 );
-
-volScalarField divPhi("divPhi", fvc::div(phi));
-volScalarField divPhitheta("divPhitheta", fvc::div(phi, theta));
-divPhi.oldTime();
-divPhitheta.oldTime();
 
 // fix no flow boundaries
 forAll(phiU.boundaryField(), patchi)
@@ -183,11 +177,4 @@ forAll(phiU.boundaryField(), patchi)
         dPhidt.boundaryFieldRef()[patchi] == 0;
     }
 }
-
-// Turbulent Stress
-volVectorField turbStress
-(
-    IOobject("turbStress", runTime.timeName(), mesh),
-    U*rho/runTime.deltaT()
-);
 

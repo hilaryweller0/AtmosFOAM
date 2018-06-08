@@ -1,7 +1,7 @@
 // update density according to the continuity equation
 solve
 (
-    fvm::ddt(rho) + (1-offCentre)*divPhi + offCentre*fvc::div(phi)
+    fvm::ddt(rho) + fvc::div(phi)
 );
 rhof = fvc::interpolate(rho);
 
@@ -9,11 +9,9 @@ rhof = fvc::interpolate(rho);
 fvScalarMatrix thetaEqn
 (
     fvm::ddt(rho, theta)
-  + (1-offCentre)*divPhitheta.oldTime()
-  + offCentre*fvm::div(phi, theta)
+  + fvm::div(phi, theta)
   - fvm::laplacian(turbulence->alphaEff(), theta)
 );
-// note: alphaEff() would take into account the effects of molecular viscosity
 
 thetaEqn.solve();
 
