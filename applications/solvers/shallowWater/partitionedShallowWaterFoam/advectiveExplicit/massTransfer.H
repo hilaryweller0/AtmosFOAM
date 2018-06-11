@@ -111,15 +111,15 @@ if ((useMassTransfer) or (useDiffusion))
     {
         for(label ip = 0; ip < nParts; ip++)
         {
-            flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
-            //hu[ip] -= dt*totalSink[ip]*hu_temp[ip];
+            //flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
+            hu[ip] -= dt*totalSink[ip]*hu_temp[ip];
             for (label jp = 0; jp < nParts; jp++)
             {
                 if (jp != ip)
                 {
                     //volFlux[ip] += dt*fvc::interpolate(totalSink[jp])*fvc::interpolate(sigmah_temp[jp])/fvc::interpolate(sigmah_temp[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                    flux[ip] += dt*fvc::interpolate(totalSink[jp])*flux_temp[jp];
-                    //hu[ip] += dt*totalSink[jp]*hu_temp[jp];
+                    //flux[ip] += dt*fvc::interpolate(totalSink[jp])*flux_temp[jp];
+                    hu[ip] += dt*totalSink[jp]*hu_temp[jp];
                 }
             }
             //u[ip] = hu[ip] / (sigmah[ip] + delta);
@@ -172,15 +172,15 @@ if ((useMassTransfer) or (useDiffusion))
 
     for(label ip = 0; ip < nParts; ip++)
     {
-        volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip] + delta);
+        //volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip] + delta);
         //flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
-        u[ip] = fvc::reconstruct(volFlux[ip]);
+        //u[ip] = fvc::reconstruct(volFlux[ip]);
         
         
         Uf[ip] = fvc::interpolate(u[ip]);
         
-        //volFlux[ip] = Uf[ip] & mesh.Sf();
-        //flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
+        volFlux[ip] = Uf[ip] & mesh.Sf();
+        flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
         
         Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                 *mesh.Sf()/sqr(mesh.magSf());
