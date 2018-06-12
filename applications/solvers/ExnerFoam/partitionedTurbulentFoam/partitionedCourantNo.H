@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -21,51 +21,53 @@ License
     You should have received a copy of the GNU General Public License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
-InClass
-    Foam::PartitionedField
+Global
+    CourantNo
 
 Description
-
-SourceFiles
-    PartitionedFields.C
+    Calculates and outputs the mean and maximum Courant Numbers and Ndt
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef PartitionedFieldsFwd_H
-#define PartitionedFieldsFwd_H
+scalar CoNum = 0.0;
+scalar meanCoNum = 0.0;
+scalar maxNdt = 0.0;
 
-#include "PartitionedField.H"
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-namespace Foam
+if (mesh.nInternalFaces())
 {
+    scalarField sumPhi
+    (
+        fvc::surfaceSum(mag(sigmaFlux.sum()))().internalField()
+      / rho.sum().internalField()
+    );
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
-class volMesh;
-class surfaceMesh;
+    meanCoNum =
+        0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
 
-template<class Type>
-class fvPatchField;
+    volScalarField Ndt
+    (
+        "Ndt",
+        dt*Foam::sqrt(mag((g & fvc::grad(theta.sum()/rho.sum()))
+        /theta.sum()*rho.sum()))
+    );
+    maxNdt = gMax(Ndt);
 
-template<class Type>
-class fvsPatchField;
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        scalarField sumPhi
+        (
+            fvc::surfaceSum(mag(volFlux[ip]))().internalField()
+        );
 
-template<class Type, template<class> class PatchField, class GeoMesh>
-class GeometricField;
+        maxCoNums[ip] = 0.5*gMax(sumPhi/(mesh.V().field()))
+                    *runTime.deltaTValue();
+    }
+}
 
-typedef PartitionedField<scalar, fvPatchField, volMesh> partitionedVolScalarField;
-typedef PartitionedField<scalar, fvsPatchField, surfaceMesh> partitionedSurfaceScalarField;
-typedef PartitionedField<vector, fvPatchField, volMesh> partitionedVolVectorField;
-typedef PartitionedField<vector, fvsPatchField, surfaceMesh> partitionedSurfaceVectorField;
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-#endif
+Info<< "Courant Number mean: " << meanCoNum
+    << " max: " << CoNum << " max Ndt = " << maxNdt
+    << " partition maximums: " << maxCoNums << endl;
 
 // ************************************************************************* //

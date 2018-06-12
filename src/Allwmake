@@ -23,4 +23,4 @@ wmake $makeType finiteVolume
 wmake $makeType CharneyPhillips
 wmake $makeType ghostMesh
 wmake $makeType shallowWater
-wmake $makeType partitioned
+

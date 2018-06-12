@@ -23,11 +23,12 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamTurbulence
+    partitionedTurbulentFoam
 
 Description
-    Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi
+    Transient Solver for dry,buoyant, inviscid, incompressible, non-hydrostatic
+    partitioned flow, advective form momentum equation with bouyantkEpsilon
+    turbulence model
 
 \*---------------------------------------------------------------------------*/
 
@@ -35,10 +36,8 @@ Description
 #include "fvCFD.H"
 #include "turbulentFluidThermoModel.H"
 #include "ExnerTheta.H"
-#include "OFstream.H"
 #include "rhoThermo.H"
-#include "fvOptions.H"
-#include "CrankNicolsonDdtScheme.H"
+#include "PartitionedFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,28 +48,26 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
+    #include "readTransferCoeffs.H"
     HodgeOps H(mesh);
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
-    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
-    #include "initEnergy.H"
-    #include "energy.H"
+    #include "initDiags.H"
+    #include "calcDiags.H"
     
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    fv::CrankNicolsonDdtScheme<vector> drhoUdt
-    (
-        mesh,
-        mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
-    );
-    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
-    
-    turbulence->validate();   //- Validate turbulence fields after construction
-                            //  and update derived fields as required
+    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+
+    // Validate turbulence fields after construction and update derived fields
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        turbulence[ip].validate();
+    }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -80,32 +77,30 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "compressibleCourantNo.H"
+        #include "partitionedCourantNo.H"
 
-        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "rhoThetaEqn.H"
-            #include "UEqn.H"
-
-            // Exner and momentum equations
+            #include "rhoSigmaEqn.H"
+            #include "massTransfers.H"
+            #include "thetaEqn.H"
+            #include "sigma.H"
+            #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
         
-        #include "rhoThetaEqn.H"
-        
-        // Update rates of change for next time step
-        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner));
-        
-        #include "compressibleContinuityErrs.H"
-
-        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
-                                        - initHeat;
-        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
-        #include "energy.H"
-        
         //- Solve the turbulence equations and correct the turbulence viscosity
-        turbulence->correct(); 
+        for(label ip = 0; ip < nParts; ip++)
+        {
+            turbulence[ip].correct();
+        }
 
+        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
+             << max(sigma[0]).value() << endl;
+
+        #include "compressibleContinuityErrs.H"
+        #include "correctContinuityErrs.H"
+        #include "calcDiags.H"
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
