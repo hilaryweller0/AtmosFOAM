@@ -1,15 +1,14 @@
 // advective form theta equation
 for(label ip = 0; ip < nParts; ip++)
 {
-    theta.ddt()[ip] =-fvc::div(volFlux[ip], theta[ip], "theta")
-                    + theta[ip]*fvc::div(volFlux[ip]);
-
-    // Update theta according to the rate of change
-    theta[ip] = theta[ip].oldTime() + dt*
+    fvScalarMatrix thetaEqn
     (
-        (1-offCentre)*theta.ddt()[ip].oldTime()
-      + offCentre*theta.ddt()[ip]
+        fvm::ddt(theta[ip])
+      + fvm::div(volFlux[ip], theta[ip], "theta")
+      - theta[ip]*fvc::div(volFlux[ip])
+      - fvm::laplacian(turbulence[ip].kappaEff(), theta[ip])
     );
+    thetaEqn.solve();
 }
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
@@ -27,3 +26,8 @@ theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
 // Update the sum
 theta.updateSum();
 
+// Update the thermodynamics
+for(label ip = 0; ip < nParts; ip++)
+{
+    thermos[ip].T() = theta[ip]*Exner;
+}

@@ -38,6 +38,7 @@ Description
 #include "ExnerTheta.H"
 #include "rhoThermo.H"
 #include "PartitionedFields.H"
+#include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -61,7 +62,12 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    fv::CrankNicolsonDdtScheme<vector> drhoUdt
+    (
+        mesh,
+        mesh.schemesDict().subDict("ddtSchemes").lookup("volFlux_CN")
+    );
+    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
 
     // Validate turbulence fields after construction and update derived fields
     for(label ip = 0; ip < nParts; ip++)
@@ -86,6 +92,7 @@ int main(int argc, char *argv[])
             #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
+            #include "UEqn.H"
             #include "exnerEqn.H"
         }
         

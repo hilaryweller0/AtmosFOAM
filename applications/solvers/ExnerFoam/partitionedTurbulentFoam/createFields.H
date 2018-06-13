@@ -12,7 +12,6 @@ volScalarField Exner
     ),
     mesh
 );
-Exner.oldTime();
 
 // The partition names
 const label nParts = 2;
@@ -137,8 +136,6 @@ for(label ip = 1; ip < partNames.size(); ip++)
 
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.storeTime();
-theta.storeTime();
-sigmaRho.storeTime();
 flux.sum().oldTime();
 flux.storeTime();
 rho.storeTime();

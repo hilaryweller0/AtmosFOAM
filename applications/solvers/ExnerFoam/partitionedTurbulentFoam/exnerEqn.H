@@ -15,7 +15,8 @@
               -fvc::interpolate
                (
                    fvc::div(volFlux[ip], u[ip], "u")
-                 - u[ip] * fvc::div(volFlux[ip]),
+                 - u[ip] * fvc::div(volFlux[ip])
+                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/sigmaRho[ip],
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
@@ -43,9 +44,8 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              + (1-offCentre)*fvc::div(sigmaFlux.sum().oldTime())
-              + offCentre*fvc::div(sigmaFlux.sum())
-              - fvm::laplacian(sqr(offCentre)*dt*gradPcoeffSum, Exner)
+              + fvc::div(sigmaFlux.sum())
+              - fvm::laplacian(offCentre*dt*gradPcoeffSum, Exner)
             );
 
             if(ucorr==nOuterCorr-1 && nonOrth==nNonOrthCorr && corr==nCorr-1)
@@ -99,6 +99,14 @@
                 sigmaFlux.updateSum();
                 volFlux.updateSum();
             }
+        }
+        // Update the pressure and temperature based on the new Exner
+        for(label ip = 0; ip < nParts; ip++)
+        {
+            thermos[ip].p() = pRef*pow(Exner, 1/kappa);
+            thermos[ip].T() = theta[ip]*Exner;
+            thermos[ip].he() == thermos[ip].he(thermos[ip].p(),thermos[ip].T());
+            thermos[ip].correct();
         }
     }
 }
