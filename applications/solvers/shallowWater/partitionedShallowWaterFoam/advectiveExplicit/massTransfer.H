@@ -20,7 +20,6 @@ if ((useMassTransfer) or (useDiffusion))
         if (useMassTransfer) 
         { 
             totalSink[ip] += sourceMag*sink[ip];
-            //totalSink[ip] = min( sourceMag*sink[ip], 1./dt );
         }
         
         if (useDiffusion)
@@ -95,18 +94,6 @@ if ((useMassTransfer) or (useDiffusion))
         u[0] = hu[0] / (sigmah[0] + delta);
         u[1] = hu[1] / (sigmah[1] + delta);
     }
-    /*else
-    {
-        surfaceScalarField denominator("denominator",1 + dt*
-            (
-                fvc::interpolate(totalSink[0])*fvc::interpolate(sigmah_temp[0])/fvc::interpolate(sigmah_temp[1] + delta)
-              + fvc::interpolate(totalSink[1])*fvc::interpolate(sigmah_temp[1])/fvc::interpolate(sigmah_temp[0] + delta)
-            ));
-        volFlux[0] = volFlux_temp[0] * (1 + dt*fvc::interpolate(totalSink[0])*fvc::interpolate(sigmah_temp[0])/fvc::interpolate(sigmah_temp[1] + delta)) / denominator
-        + volFlux_temp[1] * dt*fvc::interpolate(totalSink[1])*fvc::interpolate(sigmah_temp[1])/fvc::interpolate(sigmah_temp[0] + delta) / denominator;
-        volFlux[1] = volFlux_temp[1] * (1 + dt*fvc::interpolate(totalSink[1])*fvc::interpolate(sigmah_temp[1])/fvc::interpolate(sigmah_temp[0] + delta)) / denominator
-        + volFlux_temp[0] * fvc::interpolate(totalSink[0])*fvc::interpolate(sigmah_temp[0])/fvc::interpolate(sigmah_temp[1] + delta) / denominator;
-    }*/
     else
     {
         for(label ip = 0; ip < nParts; ip++)
@@ -124,51 +111,7 @@ if ((useMassTransfer) or (useDiffusion))
             }
             //u[ip] = hu[ip] / (sigmah[ip] + delta);
         }
-        
-        //Correction to keep u bounded for sharp gradients of the transfer term.
-        sigmah_temp[0] = sigmah[0];
-        /*forAll(u[0],celli)
-        {
-            uminx = min(u_temp[0][celli].component(vector::X),u_temp[1][celli].component(vector::X));
-            umaxx = max(u_temp[0][celli].component(vector::X),u_temp[1][celli].component(vector::X));
-            uminy = min(u_temp[0][celli].component(vector::Y),u_temp[1][celli].component(vector::Y));
-            umaxy = max(u_temp[0][celli].component(vector::Y),u_temp[1][celli].component(vector::Y));
-            uminz = min(u_temp[0][celli].component(vector::Z),u_temp[1][celli].component(vector::Z));
-            umaxz = max(u_temp[0][celli].component(vector::Z),u_temp[1][celli].component(vector::Z));
-            
-            u0x = max( min(u[0][celli].component(vector::X), umaxx), uminx );
-            u1x = max( min(u[1][celli].component(vector::X), umaxx), uminx );
-            u0y = max( min(u[0][celli].component(vector::Y), umaxy), uminy );
-            u1y = max( min(u[1][celli].component(vector::Y), umaxy), uminy );
-            u0z = max( min(u[0][celli].component(vector::Z), umaxz), uminz );
-            u1z = max( min(u[1][celli].component(vector::Z), umaxz), uminz );
-            
-            //umin = vector(uminx,uminy,uminz);
-            //umax = vector(umaxx,umaxy,umaxz);
-            
-            //u[0][celli] = max( min(u[0][celli], umax), umin );
-            //u[1][celli] = max( min(u[1][celli], umax), umin );
-            
-            u[0][celli] = vector(u0x,u0y,u0z);
-            u[1][celli] = vector(u1x,u1y,u1z);
-        
-            /*if (mag(u[0][celli] - u[1][celli]) != 0.)
-            //{
-                sigmah_temp[0][celli] = mag(hu[0][celli] + hu[1][celli] - (sigmah[0][celli] + sigmah[1][celli])*u[1][celli])/mag(u[0][celli] - u[1][celli]);
-                sigmah_temp[0][celli] = max( min(sigmah_temp[0][celli], sigmah[0][celli] + sigmah[1][celli] - delta.value()), delta.value());
-                if ((sigmah[0][celli] + sigmah[1][celli] - sigmah_temp[0][celli] < 0.) or (sigmah_temp[0][celli] < 0.))
-                {
-                    Info << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" << endl;
-                    Info << "h0 old/new: " << sigmah[0][celli] << " " << sigmah_temp[0][celli] << endl;
-                    Info << "h1 old/new: " << sigmah[1][celli] << " " << sigmah[0][celli] + sigmah[1][celli] - sigmah_temp[0][celli] << endl;
-                } 
-                sigmah[1][celli] = sigmah[0][celli] + sigmah[1][celli] - sigmah_temp[0][celli];
-                sigmah[0][celli] = sigmah_temp[0][celli];
-            }
-        }*/
-        hu[0] = sigmah[0]*u[0];
-        hu[1] = sigmah[1]*u[1];
-    }
+    }        
 
     for(label ip = 0; ip < nParts; ip++)
     {
