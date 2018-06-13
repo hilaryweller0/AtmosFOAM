@@ -6,7 +6,7 @@ for(label ip = 0; ip < nParts; ip++)
         fvm::ddt(theta[ip])
       + fvm::div(volFlux[ip], theta[ip], "theta")
       - theta[ip]*fvc::div(volFlux[ip])
-      - fvm::laplacian(turbulence[ip].kappaEff(), theta[ip])
+      - fvm::laplacian(turbulence[ip].alphaEff()/rho[ip], theta[ip])
     );
     thetaEqn.solve();
 }

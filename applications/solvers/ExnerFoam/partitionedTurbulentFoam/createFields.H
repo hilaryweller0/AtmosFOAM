@@ -127,7 +127,7 @@ partitionedSurfaceScalarField sigmaFlux = volFlux.timesSigma();
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
 partitionedVolVectorField u
 (
-    "u", partNames, fvc::reconstruct(volFlux[0]), sigmaRho
+    "u", partNames, mesh, runTime.timeName(), sigmaRho
 );
 for(label ip = 1; ip < partNames.size(); ip++)
 {
