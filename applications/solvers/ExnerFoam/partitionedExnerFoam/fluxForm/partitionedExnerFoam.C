@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    //const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
