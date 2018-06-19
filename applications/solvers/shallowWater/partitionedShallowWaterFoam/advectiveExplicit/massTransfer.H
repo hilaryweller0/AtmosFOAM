@@ -96,37 +96,51 @@ if ((useMassTransfer) or (useDiffusion))
     }
     else
     {
-        for(label ip = 0; ip < nParts; ip++)
+        if (centreMomentumTransfer)
         {
-            //flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
-            hu[ip] -= dt*totalSink[ip]*hu_temp[ip];
-            for (label jp = 0; jp < nParts; jp++)
+            Info << "Here1" << endl;
+            for(label ip = 0; ip < nParts; ip++)
             {
-                if (jp != ip)
+                hu[ip] -= dt*totalSink[ip]*hu_temp[ip];
+                for (label jp = 0; jp < nParts; jp++)
                 {
-                    //volFlux[ip] += dt*fvc::interpolate(totalSink[jp])*fvc::interpolate(sigmah_temp[jp])/fvc::interpolate(sigmah_temp[ip])*( (Uf[jp]-Uf[ip]) & mesh.Sf() );
-                    //flux[ip] += dt*fvc::interpolate(totalSink[jp])*flux_temp[jp];
-                    hu[ip] += dt*totalSink[jp]*hu_temp[jp];
+                    if (jp != ip)
+                    {
+                        hu[ip] += dt*totalSink[jp]*hu_temp[jp];
+                    }
                 }
+                u[ip] = hu[ip] / (sigmah[ip] + delta);
+                Uf[ip] = fvc::interpolate(u[ip]);
+                //volFlux[ip] = Uf[ip] & mesh.Sf();
+                //flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
+                
+                flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
+                volFlux[ip] = flux[ip] / (fvc::interpolate(sigmah[ip]) + delta);
+                
+                //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                //          *mesh.Sf()/sqr(mesh.magSf());
             }
-            //u[ip] = hu[ip] / (sigmah[ip] + delta);
         }
-    }        
-
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        //volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip] + delta);
-        //flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
-        //u[ip] = fvc::reconstruct(volFlux[ip]);
-        
-        
-        Uf[ip] = fvc::interpolate(u[ip]);
-        
-        volFlux[ip] = Uf[ip] & mesh.Sf();
-        flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
-        
-        Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                *mesh.Sf()/sqr(mesh.magSf());
+        else if (faceMomentumTransfer)
+        {
+            Info << "Here2" << endl;
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
+                for (label jp = 0; jp < nParts; jp++)
+                {
+                    if (jp != ip)
+                    {
+                        flux[ip] += dt*fvc::interpolate(totalSink[jp])*flux_temp[jp];
+                    }
+                }
+                volFlux[ip] = flux[ip]/fvc::interpolate(sigmah[ip] + delta);
+                u[ip] = fvc::reconstruct(volFlux[ip]);
+                Uf[ip] = fvc::interpolate(u[ip]);
+                Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
+                          *mesh.Sf()/sqr(mesh.magSf());
+            }
+        }
     }
 
     #include "energyTransfers2.H"

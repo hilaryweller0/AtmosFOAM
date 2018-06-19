@@ -46,6 +46,14 @@ bool implicitMomentumTransfer = mesh.solutionDict().lookupOrDefault<bool>
 (
     "implicitMomentumTransfer", false
 );
+bool centreMomentumTransfer = mesh.solutionDict().lookupOrDefault<bool>
+(
+    "centreMomentumTransfer", true
+);
+bool faceMomentumTransfer = mesh.solutionDict().lookupOrDefault<bool>
+(
+    "faceMomentumTransfer", false
+);
 bool useBuoyancy = mesh.solutionDict().lookupOrDefault<bool>
 (
     "useBuoyancy", true
@@ -64,32 +72,6 @@ const double offCentreOpSplit = mesh.solutionDict().lookupOrDefault<double>("off
 
 dimensionedScalar minimumMassTransfer("minimumMassTransfer",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
 dimensionedScalar delta("delta",dimensionSet(0,1,0,0,0,0,0),scalar(1e-16));
-//dimensionedScalar uminx("uminx",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar umaxx("umaxx",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar uminy("uminy",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar umaxy("umaxy",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar uminz("uminz",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar umaxz("umaxz",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-double uminx;
-double umaxx;
-double uminy;
-double umaxy;
-double uminz;
-double umaxz;
-double u0x;
-double u1x;
-double u0y;
-double u1y;
-double u0z;
-double u1z;
-//dimensionedScalar u0x("u0x",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar u1x("u1x",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar u0y("u0y",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar u1y("u1y",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar u0z("u0z",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-//dimensionedScalar u1z("u1z",dimensionSet(0,1,-1,0,0,0,0),scalar(0));
-vector umin(0.,0.,0.);
-vector umax(0.,0.,0.);
 
 //Settings for drag.
 const int Nmax = itsDict.lookupOrDefault<int>("maximumBubbles", 10);
@@ -100,6 +82,6 @@ dimensionedScalar lengthScale("lengthScale",dimensionSet(0,1,0,0,0,0,0),scalar(0
 dimensionedScalar bubbleRadiusMin("bubbleRadiusMin",dimensionSet(0,1,0,0,0,0,0),scalar(1e-6));
 dimensionedScalar bubbleRadiusMax("bubbleRadiusMax",dimensionSet(0,1,0,0,0,0,0),scalar(100));
 
-dimensionedScalar buoyancyMagnitude("buoyancyMagnitude",dimensionSet(0,1,-1,0,0,0,0),scalar(2));
+dimensionedScalar buoyancyMagnitude("buoyancyMagnitude",dimensionSet(0,1,-1,0,0,0,0),scalar(20));
 dimensionedScalar diffusionCoeff("diffusionCoefficient",dimensionSet(0,2,-1,0,0,0,0),scalar(500));
 dimensionedScalar timeScale = 10*dt;
