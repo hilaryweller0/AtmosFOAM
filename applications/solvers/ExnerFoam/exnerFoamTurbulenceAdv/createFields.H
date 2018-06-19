@@ -115,7 +115,20 @@ forAll(mesh.boundaryMesh(), patchi)
     }
 }
 
-Info<< "Calculating face flux field phi\n" << endl;
+Info<< "Calculating face flux fields volFlux and phi\n" << endl;
+surfaceScalarField volFlux
+(
+    IOobject
+    (
+       "volFlux",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    Uf & mesh.Sf()
+);
+volFlux.oldTime();
 surfaceScalarField phi
 (
     IOobject
@@ -127,9 +140,7 @@ surfaceScalarField phi
         IOobject::AUTO_WRITE
     ),
     rhof*(Uf & mesh.Sf())
-//    phiUBCs
 );
-phi.oldTime();
 
 //  turbulence fields
 Info<< "Creating turbulence model\n" << endl;
@@ -145,23 +156,23 @@ autoPtr<compressible::turbulenceModel> turbulence
 );
 
 // Temporary flux with fixed boundary conditions (without hydrostatic terms)
-surfaceScalarField phiU
+surfaceScalarField volFluxU
 (
-    IOobject("phiU", runTime.timeName(), mesh),
-    phi,
+    IOobject("volFluxU", runTime.timeName(), mesh),
+    volFlux,
     phiUBCs
 );
 
 // Rates of change for Crank-Nicholson
-surfaceScalarField dPhidt
+surfaceScalarField dvolFluxdt
 (
-    IOobject("dPhidt", runTime.timeName(), mesh),
-    rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner)),
+    IOobject("dvolFluxdt", runTime.timeName(), mesh),
+    gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner),
     phiUBCs
 );
 
 // fix no flow boundaries
-forAll(phiU.boundaryField(), patchi)
+forAll(volFluxU.boundaryField(), patchi)
 {
     const word btype = mesh.boundaryMesh()[patchi].type();
     const word utype = U.boundaryField()[patchi].type();
@@ -170,8 +181,8 @@ forAll(phiU.boundaryField(), patchi)
         btype == "wall" || btype == "symmetryPlane" || btype == "empty"
     )
     {
-        phiU.boundaryFieldRef()[patchi] == 0;
-        dPhidt.boundaryFieldRef()[patchi] == 0;
+        volFluxU.boundaryFieldRef()[patchi] == 0;
+        dvolFluxdt.boundaryFieldRef()[patchi] == 0;
     }
 }
 

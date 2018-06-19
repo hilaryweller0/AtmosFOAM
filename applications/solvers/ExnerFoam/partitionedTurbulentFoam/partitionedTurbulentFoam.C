@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         mesh,
         mesh.schemesDict().subDict("ddtSchemes").lookup("volFlux_CN")
     );
-    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
+    const scalar ocCoeff = drhoUdt.ocCoeff();
 
     // Validate turbulence fields after construction and update derived fields
     for(label ip = 0; ip < nParts; ip++)
@@ -95,6 +95,8 @@ int main(int argc, char *argv[])
             #include "UEqn.H"
             #include "exnerEqn.H"
         }
+        #include "rhoSigmaEqn.H"
+        #include "massTransfers.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
         for(label ip = 0; ip < nParts; ip++)

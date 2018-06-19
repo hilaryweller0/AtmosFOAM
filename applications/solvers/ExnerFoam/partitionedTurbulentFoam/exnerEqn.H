@@ -2,7 +2,7 @@
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
          *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
     
-    gradPcoeffSum = Cp*fvc::interpolate(theta.sum(), "theta");
+    gradPcoeffSum = Cp*thetaf.sum();
 
     for (int corr=0; corr<nCorr; corr++)
     {
@@ -23,21 +23,17 @@
             );
             
             // Flux with gravity
-            volFlux[ip] = volFlux[ip].oldTime() + dt*
+            volFlux[ip] = volFlux[ip].oldTime() + dt/(1+ocCoeff)*
             (
-                (1-offCentre)*volFlux.ddt()[ip].oldTime()
-              + offCentre*(volFlux.ddt()[ip] + gSf)
+                (volFlux.ddt()[ip] + gSf)
+              + ocCoeff*volFlux.ddt()[ip].oldTime()
             );
             sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
         }
         sigmaFlux.updateSum();
         // Needed for Exner boundary conditions
-        surfaceScalarField rhog
-        (
-            "rhog",
-            fvc::interpolate(sigmaRho.sum(), "rho")*gSf
-        );
-        
+        surfaceScalarField rhog("rhog", sigmaRhof.sum()*gSf);
+
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
@@ -45,7 +41,7 @@
             (
                 fvm::ddt(Psi, Exner)
               + fvc::div(sigmaFlux.sum())
-              - fvm::laplacian(offCentre*dt*gradPcoeffSum, Exner)
+              - fvm::laplacian(dt/(1+ocCoeff)*gradPcoeffSum, Exner)
             );
 
             if(ucorr==nOuterCorr-1 && nonOrth==nNonOrthCorr && corr==nCorr-1)
@@ -62,24 +58,22 @@
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    surfaceScalarField thetaf = fvc::interpolate
-                    (
-                        theta[ip], "theta"
-                    );
-                    volFlux[ip] -= offCentre*dt*Cp*thetaf
+                    volFlux[ip] -= dt/(1+ocCoeff)*Cp*thetaf[ip]
                                    *fvc::snGrad(Exner)*mesh.magSf();
 
-                    volFlux.ddt()[ip] += gSf - Cp*thetaf
+                    volFlux.ddt()[ip] += gSf - Cp*thetaf[ip]
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
-            
+
                 // Include the mass transfer and drag implicitly (for nParts=2)
-                transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
-                             + dt*dragCommon
-                             *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
-                transferf[1] = fvc::interpolate(transfer[1], "massTransfer")
-                             + dt*dragCommon
-                             *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
+                transferf[0]
+                    = fvc::interpolate(transfer[0], "massTransfer")
+                    + dt*dragCommon
+                     *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
+                transferf[1]
+                    = fvc::interpolate(transfer[1], "massTransfer")
+                    + dt*dragCommon
+                      *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
                 transferf.updateSum();
                 
                 volFlux[0] =
@@ -110,4 +104,6 @@
         }
     }
 }
+u.updateSum();
+Uf.updateSum();
 

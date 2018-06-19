@@ -19,7 +19,7 @@ volScalarField thetaBack
     IOobject
     (
         "theta_init",
-        runTime.timeName(),
+        runTime.constant(),
         mesh,
         IOobject::MUST_READ
     ),

@@ -5,7 +5,7 @@ for(label ip = 0; ip < nParts; ip++)
     (
         fvm::ddt(theta[ip])
       + fvm::div(volFlux[ip], theta[ip], "theta")
-      - theta[ip]*fvc::div(volFlux[ip])
+      - fvm::Sp(fvc::div(volFlux[ip]), theta[ip])
       - fvm::laplacian(turbulence[ip].alphaEff()/rho[ip], theta[ip])
     );
     thetaEqn.solve();
@@ -23,8 +23,13 @@ theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
            /(1+transfer.sum());
 theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
 
-// Update the sum
+// Update the sum and the faces values
+for(label ip = 0; ip < nParts; ip++)
+{
+    thetaf[ip] = fvc::interpolate(theta[ip]);
+}
 theta.updateSum();
+thetaf.updateSum();
 
 // Update the thermodynamics
 for(label ip = 0; ip < nParts; ip++)

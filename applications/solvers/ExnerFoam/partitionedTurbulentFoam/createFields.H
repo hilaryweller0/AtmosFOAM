@@ -95,6 +95,17 @@ for(label ip = 1; ip < partNames.size(); ip++)
 }
 sigmaf.updateSum();
 
+// theta on the faces
+partitionedSurfaceScalarField thetaf
+(
+    "thetaf", partNames, fvc::interpolate(theta[0], "theta"), sigmaRhof
+);
+for(label ip = 1; ip < partNames.size(); ip++)
+{
+    thetaf[ip] = fvc::interpolate(theta[ip], "theta");
+}
+thetaf.updateSum();
+
 Info << "Reading in the velocity in each partition\n" << endl;
 partitionedSurfaceVectorField Uf
 (
@@ -136,9 +147,8 @@ for(label ip = 1; ip < partNames.size(); ip++)
 
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.storeTime();
-flux.sum().oldTime();
+sigmaRho.storeTime();
 flux.storeTime();
-rho.storeTime();
 sigma.storeTime();
 sigmaFlux.storeTime();
 
@@ -254,7 +264,7 @@ for(label ip = 0; ip < nParts; ip++)
         ip,
         compressible::turbulenceModel::New
         (
-            rho[ip], u[ip], sigmaFlux[ip], thermos[ip]
+            rho[ip], u[ip], flux[ip], thermos[ip]
         )
     );
 }

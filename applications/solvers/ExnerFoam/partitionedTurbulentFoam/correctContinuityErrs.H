@@ -26,13 +26,13 @@ Global
     correctContinuityErrs
 
 Description
-    corrects Exner and Psi to be consisteng with sigmaRho
+    corrects Exner and Psi to be consistent with sigmaRho
 
 \*---------------------------------------------------------------------------*/
 
 {
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
+         *pow(R/pRef*theta.mean(), kappa/(kappa-1));
     Exner = sigmaRho.sum()/Psi;
 }
 

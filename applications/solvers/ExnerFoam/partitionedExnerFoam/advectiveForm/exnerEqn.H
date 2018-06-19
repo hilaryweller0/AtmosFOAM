@@ -36,7 +36,7 @@
             "rhog",
             fvc::interpolate(sigmaRho.sum(), "rho")*gSf
         );
-        
+
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
@@ -72,7 +72,7 @@
                     volFlux.ddt()[ip] += gSf - Cp*thetaf
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
-            
+
                 // Include the mass transfer and drag implicitly (for nParts=2)
                 transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
                              + dt*dragCommon

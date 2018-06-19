@@ -8,21 +8,23 @@
     for (int corr=0; corr<nCorr; corr++)
     {
         // Explicit part of rate of change of flux
-        dPhidt = -mesh.Sf() & fvc::interpolate
+        dvolFluxdt = -mesh.Sf() & fvc::interpolate
         (
-            fvc::div(phi, U)
-//          + ((turbulence->divDevRhoReff(U)) & U)
-          + 2*rho*(Omega^(U-Ug))
-          - muSponge*rho*(sqr(ghat) & U)
+            fvc::div(volFlux, U)
+          - U*fvc::div(volFlux)
+//          + ((turbulence->divDevRhoReff(U)) & U)/rho
+          + 2*(Omega^(U-Ug))
+          - muSponge*(sqr(ghat) & U)
         );
 
-        // phiU is the flux without g or dpdz (to get the BCs right)
-        phiU = phi.oldTime()
-             + (1-offCentre)*dt*dPhidt.oldTime()
-             + offCentre*dt*dPhidt;
+        // volFluxU is the flux without g or dpdz (to get the BCs right)
+        volFluxU = volFlux.oldTime()
+             + (1-offCentre)*dt*dvolFluxdt.oldTime()
+             + offCentre*dt*dvolFluxdt;
 
         // add the gravity terms
-        phi = phiU + offCentre*dt*rhof*gSf;
+        volFlux = volFluxU + offCentre*dt*gSf;
+        phi = volFlux*rhof;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
@@ -44,10 +46,10 @@
 
             if (nonOrth == nNonOrthCorr)
             {
-                phi -= offCentre*dt*Cp*rhof*thetaf*fvc::snGrad(Exner)*mesh.magSf();
-                //phi += ExnerEqn.flux()/offCentre;
-                //U = H.reconstruct(phi/rhof);
-                U = fvc::reconstruct(phi/rhof);
+                volFlux -= offCentre*dt*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf();
+                
+                phi = volFlux*rhof;
+                U = fvc::reconstruct(volFlux);
                 Uf = fvc::interpolate(U);
             }
         }
