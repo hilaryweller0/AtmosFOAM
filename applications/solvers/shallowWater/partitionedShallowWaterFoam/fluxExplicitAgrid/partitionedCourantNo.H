@@ -45,7 +45,7 @@ if (mesh.nInternalFaces())
     {
         scalarField sumPhi
         (
-            fvc::surfaceSum(mag(volFlux[ip]))().internalField()
+            fvc::surfaceSum(mag(flux[ip])/sigmahf[ip])().internalField()
         );
 
         maxCoNums[ip] = 0.5*gMax(sumPhi/(mesh.V().field()))
@@ -53,7 +53,7 @@ if (mesh.nInternalFaces())
     }
 }
 
-Info<< "Max gravity wave Courant number: " << maxCoG
+Info<< "Max gravirty wave Courant number: " << maxCoG
     << " partition Cournat number maximums: " << maxCoNums << endl;
 
 // ************************************************************************* //

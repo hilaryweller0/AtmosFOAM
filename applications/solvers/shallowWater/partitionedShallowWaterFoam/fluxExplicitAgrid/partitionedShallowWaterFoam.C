@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedShallowWaterFoamFluxExp
+    partitionedShallowWaterFoamFluxAgrid
 
 Description
     Transient Solver for shallow water partitioned flow - fully explicit with
@@ -43,15 +43,13 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
+    #include "createVariables.H"
     
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
-    const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
-    const int nUCorr = itsDict.lookupOrDefault<int>("nUCorrs", 1);
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
     #include "energyInit.H"
+    #include "energyTransfersInit.H"
     #include "writeDiagnosticsInit.H"
 
     
@@ -66,51 +64,72 @@ int main(int argc, char *argv[])
             // Advect h in each partition
             for(label ip = 0; ip < nParts; ip++)
             {
-                h[ip] = h[ip].oldTime() - dt*fvc::div(volFlux[ip],h[ip].oldTime());
-                hf[ip] = fvc::interpolate(h[ip],"linear");
+                sigmah[ip] = sigmah[ip].oldTime() - dt*
+                (
+                    (1-offCentre)*fvc::div(volFlux[ip].oldTime(),sigmah[ip].oldTime())
+                  + offCentre*fvc::div(volFlux[ip],sigmah[ip])
+                );
                 
-                Info << "h[" << ip << "] goes from " 
-                     << min(h[ip].internalField()).value() 
+                sigmahf[ip] = fvc::interpolate(sigmah[ip],"linear");
+                
+                Info << "sigmah[" << ip << "] goes from " 
+                     << min(sigmah[ip].internalField()).value() 
                      << " to " 
-                     << max(h[ip].internalField()).value() << endl;
+                     << max(sigmah[ip].internalField()).value() << endl;
                 
-                if (ip == 0) hSum = h[ip];
-                else hSum += h[ip];
+                if (ip == 0) h = sigmah[ip];
+                else h += sigmah[ip];
+            
+                hu[ip] = sigmah[ip]*u[ip];
             }
             
             // Update sigma (diagnostic)
             for(label ip = 0; ip < nParts; ip++)
             {
-                sigma[ip] = h[ip]/hSum;
+                sigma[ip] = sigmah[ip]/h;
             }
             
             // Update the velocity in each partition
-            surfaceScalarField ggradh = g*fvc::snGrad(hSum)*mesh.magSf();
+            
+            //volVectorField ggradh = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
+            //volVectorField ggradhOld = g*fvc::reconstruct(fvc::snGrad(hSum)*mesh.magSf());
             for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    flux[ip] = flux[ip].oldTime() - dt*
+                    volVectorField ggradh = g*fvc::grad(h,partName[ip]);
+                    volVectorField ggradhOld = g*fvc::grad(h.oldTime(),partName[ip]);
+                    hu[ip] = hu[ip].oldTime() - dt*
                     (
-                        (fvc::interpolate(fvc::div(flux[ip].oldTime(), u[ip].oldTime())) & mesh.Sf())
-                      + hf[ip]*ggradh
+                        (1-offCentre)*fvc::div(volFlux[ip].oldTime(),hu[ip].oldTime())
+                      + offCentre*fvc::div(volFlux[ip],hu[ip])
+                      + (1-offCentre)*sigmah[ip].oldTime()*ggradhOld
+                      + offCentre*sigmah[ip]*ggradh
                     );
                     
-                    volFlux[ip] = flux[ip]/hf[ip];
-
-                    u[ip] = fvc::reconstruct(volFlux[ip]);
+                    if (useBuoyancy) 
+                    { 
+                        hu[ip] += dt*sigmah[ip]*buoyancyMagnitude*momentumSource[ip]*yNorm;
+                    }
+                    
+                    u[ip] = hu[ip]/sigmah[ip];
+                    
                     Uf[ip] = fvc::interpolate(u[ip]);
-                    //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
-                    //        *mesh.Sf()/sqr(mesh.magSf());
+                    
+                    volFlux[ip] = Uf[ip] & mesh.Sf();
+                    
+                    flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
                 }
             }
+            
+            #include "massTransfer.H"
         }
 
         #include "energy.H"
         #include "writeDiagnostics.H"
         
         
-        Info << "Total h: " << sum(hSum).value() << endl;
+        Info << "Total h: " << sum(h).value() << endl;
         Info << "Energy change: " 
              << normalEnergyChange << endl;
         

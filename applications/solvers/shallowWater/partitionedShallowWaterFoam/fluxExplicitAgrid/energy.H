@@ -5,8 +5,8 @@
     PE = fvc::domainIntegrate(energyField)/Vtot;
     
     // Kinetic energy
-    energyField *= 0;
-    for(label ip = 0; ip < nParts; ip++)
+    energyField = 0.5*sigmah[0]*magSqr(u[0]);
+    for(label ip = 1; ip < nParts; ip++)
     {
         energyField += 0.5*sigmah[ip]*magSqr(u[ip]);
     }
