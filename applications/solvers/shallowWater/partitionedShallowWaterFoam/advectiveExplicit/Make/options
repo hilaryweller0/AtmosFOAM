@@ -1,10 +1,9 @@
 EXE_INC = \
     -ggdb3 -O0 \
-    -I$(ATMOSFOAM_SRC)/partitioned/lnInclude \
+    -I$(ATMOSFOAM_TOOLS_SRC)/partitioned/lnInclude \
     -I$(ATMOSFOAM_SRC)/shallowWater/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
-    -I$(LIB_SRC)/finiteVolume/lnInclude \
-    -I$(LIB_SRC)/PartitionedFields/lnInclude
+    -I$(LIB_SRC)/finiteVolume/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \

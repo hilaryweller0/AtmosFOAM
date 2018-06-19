@@ -8,7 +8,7 @@ for(label ip = 0; ip < nParts; ip++)
         fvm::ddt(u[ip])
       + fvm::div(volFlux[ip], u[ip], "u")
       - fvm::Sp(fvc::div(volFlux[ip]), u[ip])
-      + (1/sigmaRho[ip])*turbulence[ip].divDevRhoReff(u[ip])
+      + (1/rho[ip])*turbulence[ip].divDevRhoReff(u[ip])
       + 2*(Omega^u[ip])
     );
     

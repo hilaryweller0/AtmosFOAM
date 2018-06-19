@@ -16,7 +16,7 @@
                (
                    fvc::div(volFlux[ip], u[ip], "u")
                  - u[ip] * fvc::div(volFlux[ip])
-                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/sigmaRho[ip],
+                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/rho[ip],
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
