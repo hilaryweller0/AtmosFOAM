@@ -23,11 +23,12 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamTurbulence
+    turbulentExnerFoam
 
 Description
-    Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi
+    Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
+    using a simultaneous solution of Exner, theta and phi. 
+    Optional turbulence modelling.
 
 \*---------------------------------------------------------------------------*/
 
