@@ -100,11 +100,7 @@ if ((useMassTransfer) or (useDiffusion))
         {
             Info << "Here1" << endl;
             
-            volVectorField hu1("hu1", hu[0]);
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                hu1 += hu[ip];
-            }
+            volVectorField hu1("hu1", hu.updateSum());
             hu1.write();
             for(label ip = 0; ip < nParts; ip++)
             {
@@ -127,11 +123,7 @@ if ((useMassTransfer) or (useDiffusion))
                 //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                 //          *mesh.Sf()/sqr(mesh.magSf());
             }
-            volVectorField hu2("hu2", hu[0]);
-            for(label ip = 0; ip < nParts; ip++)
-            {
-                hu2 += hu[ip];
-            }
+            volVectorField hu2("hu2", hu.updateSum());
             hu2.write();
         }
         else if (faceMomentumTransfer)

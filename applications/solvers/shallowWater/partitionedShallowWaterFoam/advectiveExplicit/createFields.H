@@ -128,81 +128,22 @@ volFlux.updateSum();
 Info << "Diagnosing cell-centred velocity of each fluid." << endl;
 partitionedVolVectorField u
 (
-    //"u", partNames, fvc::reconstruct(volFlux[0]), sigma
     "u", partNames, mesh, runTime.timeName(), sigma
 );
-
-PtrList<volVectorField> u_temp(nParts);
-PtrList<volVectorField> hu(nParts);
-PtrList<volVectorField> hu_temp(nParts);
-for (label ip = 0; ip < nParts; ip++)
-{
-    u_temp.set
-    (
-        ip,
-        new volVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"u_temp",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            u[ip]
-        )
-    );
-    
-    hu.set
-    (
-        ip,
-        new volVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"hu",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            sigmah[ip]*u[ip]
-        )
-    );
-    
-    hu_temp.set
-    (
-        ip,
-        new volVectorField
-        (
-            IOobject
-            (
-                partNames[ip]+"hu_temp",
-                runTime.timeName(),
-                mesh,
-                IOobject::NO_READ,
-                IOobject::NO_WRITE
-            ),
-            sigmah[ip]*u[ip]
-        )
-    );
-}
-/*partitionedVolVectorField u_temp
-(
-    "u_temp", partNames, u[0]
-);
-partitionedVolVectorField hu
-(
-    "hu", partNames, sigmah[0]*u[0]
-);
-partitionedVolVectorField hu_temp
-(
-    "hu_temp", partNames, hu[0]
-);*/
 for (label ip=0; ip<nParts; ip++)
 {
-    u[ip] = fvc::reconstruct(volFlux[0]);
+    u[ip] = fvc::reconstruct(volFlux[ip]);
+}
+
+partitionedVolVectorField u_temp("u_temp", partNames, u[0], sigma);
+partitionedVolVectorField hu("hu", partNames, sigmah[0]*u[0]);
+partitionedVolVectorField hu_temp("hu_temp", partNames, hu[0]);
+
+for (label ip = 1; ip < nParts; ip++)
+{
+    u_temp[ip] = u[ip];
+    hu[ip] = sigmah[ip]*u[ip];
+    hu_temp[ip] = hu[ip];
 }
 
 Info << "Initialising drag for each fluid." << endl;
