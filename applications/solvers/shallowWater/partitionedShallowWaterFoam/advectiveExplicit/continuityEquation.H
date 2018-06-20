@@ -23,7 +23,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 //Update total height.
-sigmah.updateSum();
-h = sigmah.sum();
+h = sigmah.updateSum();
 
 

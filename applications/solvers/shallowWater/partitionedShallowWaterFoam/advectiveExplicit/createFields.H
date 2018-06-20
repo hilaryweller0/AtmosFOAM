@@ -195,3 +195,9 @@ volScalarField delta_ke_centre
     ),
     0.*sigmah[0]*magSqr(u[0])
 );
+
+// Store old time levels for some partitionedFields
+sigmah.storeTime();
+volFlux.storeTime();
+Uf.storeTime();
+

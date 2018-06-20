@@ -98,10 +98,18 @@ if ((useMassTransfer) or (useDiffusion))
     {
         if (centreMomentumTransfer)
         {
-            Info << "Here1" << endl;
-            
+            sigmaf.updateSum();
+            sigma.updateSum();
+            sigmah.updateSum();
             volVectorField hu1("hu1", hu.updateSum());
             hu1.write();
+            volVectorField u1("u1", u.updateSum());
+            u1.write();
+            surfaceScalarField volFlux1("volFlux1", volFlux.updateSum());
+            volFlux1.write();
+            surfaceScalarField flux1("flux1", flux.updateSum());
+            flux1.write();
+
             for(label ip = 0; ip < nParts; ip++)
             {
                 hu[ip] -= dt*totalSink[ip]*hu_temp[ip];
@@ -125,10 +133,15 @@ if ((useMassTransfer) or (useDiffusion))
             }
             volVectorField hu2("hu2", hu.updateSum());
             hu2.write();
+            volVectorField u2("u2", u.updateSum());
+            u2.write();
+            surfaceScalarField volFlux2("volFlux2", volFlux.updateSum());
+            volFlux2.write();
+            surfaceScalarField flux2("flux2", flux.updateSum());
+            flux2.write();
         }
         else if (faceMomentumTransfer)
         {
-            Info << "Here2" << endl;
             for(label ip = 0; ip < nParts; ip++)
             {
                 flux[ip] -= dt*fvc::interpolate(totalSink[ip])*flux_temp[ip];
