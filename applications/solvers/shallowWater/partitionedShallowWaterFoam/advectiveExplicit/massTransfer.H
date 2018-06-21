@@ -8,8 +8,9 @@ if ((useMassTransfer) or (useDiffusion))
         sigmah_temp[ip] = sigmah[ip];
         flux_temp[ip] = flux[ip];
         volFlux_temp[ip] = volFlux[ip];
-        hu[ip] = sigmah_temp[ip]*u[ip];
-        hu_temp[ip] = sigmah_temp[ip]*u[ip];
+        //hu[ip] = sigmah_temp[ip]*u[ip];
+        //hu[ip] = fvc::reconstruct(flux[ip]);
+        hu_temp[ip] = hu[ip];
         u_temp[ip] = u[ip];
     }
     
@@ -102,13 +103,14 @@ if ((useMassTransfer) or (useDiffusion))
             sigma.updateSum();
             sigmah.updateSum();
             volVectorField hu1("hu1", hu.updateSum());
-            hu1.write();
+            //hu1.write();
             volVectorField u1("u1", u.updateSum());
-            u1.write();
+            //u1.write();
             surfaceScalarField volFlux1("volFlux1", volFlux.updateSum());
-            volFlux1.write();
+            //volFlux1.write();
             surfaceScalarField flux1("flux1", flux.updateSum());
-            flux1.write();
+            //flux1.write();
+            Info << "Total flux1: " << sum(flux1) << endl;
 
             for(label ip = 0; ip < nParts; ip++)
             {
@@ -122,23 +124,23 @@ if ((useMassTransfer) or (useDiffusion))
                 }
                 u[ip] = hu[ip] / (sigmah[ip] + delta);
                 Uf[ip] = fvc::interpolate(u[ip]);
-                //volFlux[ip] = Uf[ip] & mesh.Sf();
-                //flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
-                
                 flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
+                
+                //volFlux[ip] = Uf[ip] & mesh.Sf();
                 volFlux[ip] = flux[ip] / (fvc::interpolate(sigmah[ip]) + delta);
                 
                 //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
                 //          *mesh.Sf()/sqr(mesh.magSf());
             }
             volVectorField hu2("hu2", hu.updateSum());
-            hu2.write();
+            //hu2.write();
             volVectorField u2("u2", u.updateSum());
-            u2.write();
+            //u2.write();
             surfaceScalarField volFlux2("volFlux2", volFlux.updateSum());
-            volFlux2.write();
+            //volFlux2.write();
             surfaceScalarField flux2("flux2", flux.updateSum());
-            flux2.write();
+            //flux2.write();
+            Info << "Total flux2: " << sum(flux2) << endl;
         }
         else if (faceMomentumTransfer)
         {
