@@ -59,9 +59,13 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
     
     for(label ip = 0; ip < nParts; ip++)
     {
-        flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
+        //flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
         u[ip] = fvc::reconstruct(volFlux[ip]);
         Uf[ip] = fvc::interpolate(u[ip]);
+        
+        hu[ip] = sigmah[ip]*u[ip];
+        flux[ip] = fvc::interpolate(hu[ip]) & mesh.Sf();
+        
         //Uf[ip] += (volFlux[ip] - (Uf[ip] & mesh.Sf()))
         //        *mesh.Sf()/sqr(mesh.magSf());
     }
