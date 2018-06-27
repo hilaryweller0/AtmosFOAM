@@ -35,6 +35,7 @@ Description
 #include "HodgeOps.H"
 #include "fvCFD.H"
 #include "turbulentFluidThermoModel.H"
+#include "PhaseCompressibleTurbulenceModel.H"
 #include "ExnerTheta.H"
 #include "rhoThermo.H"
 #include "PartitionedFields.H"

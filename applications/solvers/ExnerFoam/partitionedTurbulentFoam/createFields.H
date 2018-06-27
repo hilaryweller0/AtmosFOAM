@@ -254,17 +254,16 @@ for(label ip = 1; ip < partNames.size(); ip++)
 }
 
 Info << "Initialising turbulence in each partition\n" << endl;
-PtrList<compressible::turbulenceModel> turbulence(nParts);
+PtrList<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>
+     turbulence(nParts);
 for(label ip = 0; ip < nParts; ip++)
 {
-    Info << "sigmaFlux[ip] name = " << sigmaFlux[ip].name() << endl;
-
     turbulence.set
     (
         ip,
-        compressible::turbulenceModel::New
+        ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>::New
         (
-            rho[ip], u[ip], flux[ip], thermos[ip]
+            sigma[ip], rho[ip], u[ip], sigmaFlux[ip], flux[ip], thermos[ip]
         )
     );
 }
