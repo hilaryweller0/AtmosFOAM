@@ -76,8 +76,8 @@ makeLaminarModel(Stokes);
 #include "kEpsilon.H"
 makeRASModel(kEpsilon);
 
-#include "buoyantKEpsilon.H"
-makeRASModel(buoyantKEpsilon);
+#include "multiFluidBuoyantKEpsilon.H"
+makeRASModel(multiFluidBuoyantKEpsilon);
 
 
 // ************************************************************************* //

@@ -6,11 +6,9 @@ if (nParts != 2)
         << nParts << exit(FatalError);
 }
 
-// Zero the transfer terms for other variables then calculate and apply mass 
-// transfer terms in serial
-
-transfer[0] = 0;
-transfer[1] = 0;
+// Zero the transfer terms then calculate and apply mass
+massTransfer[0][1] = massTransferZero;
+massTransfer[1][0] = massTransferZero;
 
 // Mass tranfer terms as diffusion between partitions
 if (Ksigma.value() > SMALL)
@@ -23,12 +21,10 @@ if (Ksigma.value() > SMALL)
             (
                 sigmaRho[jp] -sigmaRho[ip]
             );
-            massTransfer[ip][jp] = max(massTransferTmp, massTransferZero);
-            massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
+            massTransfer[ip][jp] += max(massTransferTmp, massTransferZero);
+            massTransfer[jp][ip] -= min(massTransferTmp, massTransferZero);
         }
     }
-
-    #include "applyMassTransfer.H"
 }
 
 // Mass transfer to avoid changes in sigmaRho due to partition divergence
@@ -36,48 +32,44 @@ if (divTransfer)
 {
     volScalarField T =-sigmaRho.ddt()[0] - (u[0] & fvc::grad(sigmaRho[0], "advectSigmaRho0"))
                      + sigmaRho.ddt()[1] + (u[1] & fvc::grad(sigmaRho[1], "advectSigmaRho1"));
-    massTransfer[0][1] = -0.5*min(T, massTransferZero);
-    massTransfer[1][0] = 0.5*max(T, massTransferZero);
-
-    #include "applyMassTransfer.H"
+    massTransfer[0][1] -= 0.5*min(T, massTransferZero);
+    massTransfer[1][0] += 0.5*max(T, massTransferZero);
 }
 
 // Mass transfer based on vertical velocity and horizontal divergence
 if (wTransfer)
 {
-    massTransfer[0][1] = -max(sign(u[0].component(vector::Z)), dimlessZero)*
+    massTransfer[0][1] -= max(sign(u[0].component(vector::Z)), dimlessZero)*
     min
     (
         fvc::div(sigmaFlux[0] - sigmaRhof[0]*((Uf[0] & ghat)*ghatSf)),
         massTransferZero
     );
     
-    massTransfer[1][0] = -min(sign(u[1].component(vector::Z)), dimlessZero)*
+    massTransfer[1][0] -= min(sign(u[1].component(vector::Z)), dimlessZero)*
     max
     (
         fvc::div(sigmaFlux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
         massTransferZero
     );
-
-    #include "applyMassTransfer.H"
 }
 
 // Mass transfer based on buoyancy
 if (thetaTransfer)
 {
-    massTransfer[0][1] = -sigmaRho[0]*thetaTransferDiffusivity*min
+    massTransfer[0][1] -= sigmaRho[0]*thetaTransferDiffusivity*min
     (
         fvc::laplacian(theta[0])/theta[0],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
-    massTransfer[1][0] = sigmaRho[1]*thetaTransferDiffusivity*max
+    massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*max
     (
         fvc::laplacian(theta[1])/theta[1],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
-
-    #include "applyMassTransfer.H"
 }
+
+#include "applyMassTransfer.H"
 
 // Update the sums
 sigmaRho.updateSum();

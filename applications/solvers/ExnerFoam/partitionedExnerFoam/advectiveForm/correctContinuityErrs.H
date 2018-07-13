@@ -26,7 +26,7 @@ Global
     correctContinuityErrs
 
 Description
-    corrects Exner and Psi to be consisteng with sigmaRho
+    corrects Exner and Psi to be consistent with sigmaRho
 
 \*---------------------------------------------------------------------------*/
 

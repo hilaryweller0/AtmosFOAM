@@ -38,6 +38,7 @@ Description
 #include "PhaseCompressibleTurbulenceModel.H"
 #include "ExnerTheta.H"
 #include "rhoThermo.H"
+#include "Partitioned.H"
 #include "PartitionedFields.H"
 #include "CrankNicolsonDdtScheme.H"
 

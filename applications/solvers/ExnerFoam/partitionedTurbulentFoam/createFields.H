@@ -210,7 +210,7 @@ for(label jp = 0; jp < nParts; jp++)
         jp, 
         new partitionedVolScalarField
         (
-            partNames[jp]+'.'+"massTransfer", partNames, massTransferTmp
+            "massTransfer."+partNames[jp], partNames, massTransferTmp
         )
     );
 }
@@ -254,8 +254,8 @@ for(label ip = 1; ip < partNames.size(); ip++)
 }
 
 Info << "Initialising turbulence in each partition\n" << endl;
-PtrList<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>
-     turbulence(nParts);
+Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>
+     turbulence(mesh, partNames);
 for(label ip = 0; ip < nParts; ip++)
 {
     turbulence.set
