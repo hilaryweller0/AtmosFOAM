@@ -13,6 +13,7 @@ fvScalarMatrix thetaEqn
   - fvm::laplacian(turbulence->alphaEff(), theta)
 );
 
+theta.correctBoundaryConditions();
 thetaEqn.solve();
 
 thermo.T() = theta*Exner;

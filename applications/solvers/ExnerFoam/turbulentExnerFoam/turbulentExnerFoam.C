@@ -38,7 +38,6 @@ Description
 #include "ExnerTheta.H"
 #include "OFstream.H"
 #include "rhoThermo.H"
-#include "fvOptions.H"
 #include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -69,7 +68,7 @@ int main(int argc, char *argv[])
         mesh,
         mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
     );
-    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
+    const scalar ocCoeff = drhoUdt.ocCoeff();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
