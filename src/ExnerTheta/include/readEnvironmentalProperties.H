@@ -28,6 +28,15 @@ const dimensionedVector Ug
         dimensionedVector("Ug", dimVelocity, vector::zero)
     )
 );
+// Relatation velocity (relax to this velocity in sponge region)
+const dimensionedVector Urelax
+(
+    envProperties.lookupOrDefault<dimensionedVector>
+    (
+        "Urelax",
+        dimensionedVector("Urelax", dimVelocity, vector::zero)
+    )
+);
 
 dimensionedScalar diffusionCoeff
 (

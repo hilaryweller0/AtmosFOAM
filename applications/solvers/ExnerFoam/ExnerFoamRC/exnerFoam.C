@@ -27,7 +27,8 @@ Application
 
 Description
     Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi
+    using a simultaneous solution of Exner, theta and phi. RC version uses
+    co-located Rhie and Chow discretisation
 
 \*---------------------------------------------------------------------------*/
 
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
     #include "createControl.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
+    dimensionedScalar nu(envProperties.lookup("nu"));
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
@@ -62,12 +64,11 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         #include "compressibleCourantNo.H"
-        #include "UEqn.H"
 
         while (pimple.loop())
         {
+            #include "UEqn.H"
             #include "rhoThetaEqn.H"
-
             // Exner and momentum equations
             #include "exnerEqn.H"
         }

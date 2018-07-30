@@ -89,6 +89,10 @@ int main(int argc, char *argv[])
     {
         x2SpongeLength = mag(x2SpongeCentre - x2SpongeEnd);
     }
+    const bool spongeOnCellCentres
+    (
+        envProperties.lookupOrDefault<bool>("spongeOnCellCentres", false)
+    );
         
     Info<< "Creating muSponge\n" << endl;
     surfaceScalarField muSponge
@@ -97,11 +101,51 @@ int main(int argc, char *argv[])
         mesh,
         dimensionedScalar("muSponge", dimless, scalar(0))
     );
+    volScalarField muSpongeC
+    (
+        IOobject("muSponge", runTime.constant(), mesh),
+        mesh,
+        dimensionedScalar("muSponge", dimless, scalar(0))
+    );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    // Loop over cells and set muSpongeC
+    if (spongeOnCellCentres) forAll(muSpongeC, celli)
+    {
+        // height of cell centre
+        const scalar z = -(mesh.C()[celli] & ghat.value());
+        // x distance to x sponge centre
+        const scalar xDist = mag(mesh.C()[celli].x() - xSpongeCentre);
+        const scalar x2Dist = mag(mesh.C()[celli].x() - x2SpongeCentre);
+
+        // set the sponge value if the height is above sponge base
+        if (z > zB)
+        {
+            muSpongeC[celli] = muBar*sqr(Foam::sin(0.5*pi*(z-zB)/(zt-zB)));
+        }
+        else if (z > zt)
+        {
+            FatalErrorIn("createSpongeLayer") << "cell " << celli
+                << " has height " << z
+                << " but the sponge is defined to lie between " << zB
+                << " and " << zt << exit(FatalError);
+        }
+            
+        // set the sponge value if x is between xMin and xMax
+        if (xDist <= xSpongeLength)
+        {
+            muSpongeC[celli] += muBar
+                *sqr(Foam::sin(0.5*pi*(xSpongeLength-xDist)/xSpongeLength));
+        }
+        else if (x2Dist <= x2SpongeLength)
+        {
+            muSpongeC[celli] += muBar
+                *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
+        }
+    }   
     // Loop over all faces and set muSponge
-    forAll(muSponge, faceI)
+    else forAll(muSponge, faceI)
     {
         // First check if face has a vertical normal
         if(mag(mesh.Sf()[faceI] ^ ghat.value()) < mesh.magSf()[faceI]*1e-6)
@@ -136,9 +180,10 @@ int main(int argc, char *argv[])
                     *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
             }
         }
-    }   
+    }
 
-    muSponge.write();
+    if (spongeOnCellCentres) muSpongeC.write();
+    else muSponge.write();
 
     Info<< "End\n" << endl;
 

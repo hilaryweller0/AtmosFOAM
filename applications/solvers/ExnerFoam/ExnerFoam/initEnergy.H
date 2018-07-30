@@ -9,9 +9,8 @@ dimensionedScalar Vtot = sum(mesh.V());
 volScalarField KE
 (
     IOobject("KE", runTime.timeName(), mesh),
-    0.25*fvc::surfaceSum(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))/dimensionedScalar("V", dimVol, scalar(1))
+    0.25*fvc::surfaceIntegrate(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof))
 );
-KE.ref() /= mesh.V();
 volScalarField internalEnergy
 (
     IOobject("internalEnergy", runTime.timeName(), mesh),
@@ -27,5 +26,6 @@ const dimensionedScalar KEInitTot = fvc::domainIntegrate(KE)/Vtot;
 const dimensionedScalar internalInitTot = fvc::domainIntegrate(internalEnergy)/Vtot;
 const dimensionedScalar potentialInitTot = fvc::domainIntegrate(potentialEnergy)/Vtot;
 
-const dimensionedScalar energyInitTot = KEInitTot + internalInitTot + potentialInitTot;
+const dimensionedScalar energyInitTot
+     = KEInitTot + internalInitTot + potentialInitTot;
 

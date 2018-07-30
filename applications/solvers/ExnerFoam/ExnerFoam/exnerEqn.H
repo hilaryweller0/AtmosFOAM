@@ -1,5 +1,5 @@
 {
-    Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
+    Psi == pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
     rho = Exner*Psi;
     rhof = fvc::interpolate(rho);
 
@@ -15,7 +15,7 @@
     else
     {
         thetaf = fvc::interpolate(theta);
-        G = 1/G;
+        G == 1/G;
     }
 
     for (int corr=0; corr<nCorr; corr++)

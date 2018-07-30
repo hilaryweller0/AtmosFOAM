@@ -90,11 +90,9 @@ int main(int argc, char *argv[])
         // U predictor
         //U = fvc::reconstruct((phi.oldTime() + offCentre*dt*dPhidt)/rhof);
 
-        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
-
-            // Exner and momentum equations
             #include "exnerEqn.H"
         }
         

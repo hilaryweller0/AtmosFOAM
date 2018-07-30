@@ -59,9 +59,9 @@ surfaceScalarField thetaf
 thetaf.oldTime();
 
 // Reading in the sponge layer coefficients (if present)
-surfaceScalarField muSponge
+volScalarField muSponge
 (
-    surfaceScalarField
+    volScalarField
     (
         IOobject("muSponge", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
         mesh,

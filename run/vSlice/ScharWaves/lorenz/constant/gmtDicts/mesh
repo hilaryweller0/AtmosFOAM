@@ -1,0 +1,25 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/8c";
+projection2D XZ;
+patch front;
+
+FieldsToPlot
+1
+(
+    [none mesh "black"]
+);

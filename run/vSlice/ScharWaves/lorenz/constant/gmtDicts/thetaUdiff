@@ -1,0 +1,31 @@
+FoamFile
+{
+    version         1.4;
+    format          ascii;
+
+    root            "";
+    case            "";
+    instance        "constant";
+    local           "";
+
+    class           dictionary;
+    object          gmtDict;
+}
+
+// How to plot
+// Compulsory inputs
+projection "X18c/9c";
+projection2D XZ;
+
+FieldsToPlot
+(
+    [thetaDiff filledContours -1.05 1.05 0.1 "$GMTU/colours/red_white_blue.cpt"]
+    [UDiff vectors 500 1 "black"]
+    [none mesh "grey"]
+);
+annotate "minMax 0.01 -0.005";
+
+region "-6e3/6e3/0/6e3";
+boundaryMarks "2e3/2e3";
+//separateLegend true;
+
