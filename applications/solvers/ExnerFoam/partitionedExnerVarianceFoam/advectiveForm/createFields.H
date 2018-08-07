@@ -47,6 +47,11 @@ partitionedVolScalarField theta
     "theta", partNames, mesh, runTime.timeName(), sigmaRho
 );
 
+partitionedVolScalarField thetaVar
+(
+    "thetaVar", partNames, mesh, runTime.timeName(), sigmaRho
+);
+
 Info << "Calculating density and density in each partition and density weighted theta sum\n" << endl;
 for(label ip = 0; ip < partNames.size(); ip++)
 {
