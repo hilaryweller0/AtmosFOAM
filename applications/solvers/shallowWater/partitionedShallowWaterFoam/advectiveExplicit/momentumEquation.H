@@ -18,7 +18,7 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
             (
                 ( Uf[ip] & fvc::interpolate( fvc::grad(Uf[ip]) ) ) & mesh.Sf()
             )
-          + (1-offCentre)*g*fvc::snGrad(h.oldTime())*mesh.magSf()
+          + (1-offCentre)*gravity*fvc::snGrad(h.oldTime())*mesh.magSf()
         );
         
         if (useCoriolis) { volFlux[ip] += -dt*((twoOmegaf^Uf[ip]) & mesh.Sf()); }
@@ -31,7 +31,6 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
                 buoyancyMagnitude*fvc::interpolate(momentumSource[ip])*(yNorm & mesh.Sf())
             ); 
         }
-        if (useGravity)  { volFlux[ip] += -dt*fvc::interpolate(gravity)*(yNorm & mesh.Sf()); }
         
         flux[ip] = fvc::interpolate(sigmah[ip])*volFlux[ip];
         
@@ -48,13 +47,13 @@ for (int ucorr = 0; ucorr < nUCorr; ucorr++)
         (
             fvm::ddt(h)
           + fvc::div(flux.sum())
-          - fvm::laplacian(offCentre*dt*g*h.oldTime(), h)
+          - fvm::laplacian(offCentre*dt*gravity*h.oldTime(), h)
         );
         hEqn.solve();
     }
     for(label ip = 0; ip < nParts; ip++)
     {
-        volFlux[ip] += -offCentre*dt*g*fvc::snGrad(h)*mesh.magSf();
+        volFlux[ip] += -offCentre*dt*gravity*fvc::snGrad(h)*mesh.magSf();
     }
     
     for(label ip = 0; ip < nParts; ip++)
