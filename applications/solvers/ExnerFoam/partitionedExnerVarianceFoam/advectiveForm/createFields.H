@@ -125,6 +125,7 @@ for(label ip = 1; ip < partNames.size(); ip++)
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.storeTime();
 theta.storeTime();
+thetaVar.storeTime();
 sigmaRho.storeTime();
 flux.sum().oldTime();
 flux.storeTime();
