@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
-            #include "UEqn.H"
+//            #include "UEqn.H"
 
             // Exner and momentum equations
             #include "exnerEqn.H"

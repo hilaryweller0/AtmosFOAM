@@ -1,9 +1,5 @@
 {
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
-    rho = Exner*Psi;
-    rhof = fvc::interpolate(rho);
-
-    thetaf = fvc::interpolate(theta);
 
     for (int corr=0; corr<nCorr; corr++)
     {
@@ -12,8 +8,6 @@
         (
             fvc::div(phi, U)
           + ((turbulence->divDevRhoReff(U)) & U)
-          + 2*rho*(Omega^(U-Ug))
-          - muSponge*rho*(sqr(ghat) & U)
         );
 
         // phiU is the flux without g or dpdz (to get the BCs right)
@@ -49,7 +43,6 @@
                 phi -= dt/(1+ocCoeff)*Cp*rhof*thetaf*fvc::snGrad(Exner)
                      *mesh.magSf();
                 U = fvc::reconstruct(phi/rhof);
-                Uf = fvc::interpolate(U);
             }
         }
         // Update the pressure and temperature based on the new Exner

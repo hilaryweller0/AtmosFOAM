@@ -14,7 +14,7 @@
        << ((internalTot-internalInitTot)/energyInitTot).value() << "  "
        << ((potentialTot-potentialInitTot)/energyInitTot).value() << "  "
        << energyDiffNorm.value() << "  "
-       << max(Uf.component(vector::Z)).value() << "  "
+       << max(U.component(vector::Z)).value() << "  "
        << max(theta).value() << endl;
 }
 
