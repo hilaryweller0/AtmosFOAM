@@ -27,7 +27,11 @@ Application
 
 Description
     Create a damping layer for verticaly pointing faces near the top of an 
-    atmospheric model (optionaly also sponge at the inlet)
+    atmospheric model. muSponge is a surfaceScalarField.
+    This is generalised to all boundaries - damping can be imposed for faces
+    parallel to any boundary. 
+    For co-located models, a diagonal volTensorField is created, muSpongeC.
+    All boundaries are assumed to be in the x, y or z planes
 
 \*---------------------------------------------------------------------------*/
 
@@ -43,57 +47,6 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     
-    Info << "\nReading environmentalProperties" << endl;
-
-    IOdictionary envProperties
-    (
-        IOobject
-        (
-            "environmentalProperties",
-            runTime.constant(),
-            mesh,
-            IOobject::MUST_READ
-        )
-    );
-
-    dimensionedVector g(envProperties.lookup("g"));
-    dimensionedVector ghat = g/mag(g);
-
-    Info << "Reading in sponge layer coefficients\n" << endl;
-    const scalar zB(readScalar(envProperties.lookup("spongeBase")));
-    const scalar zt(readScalar(envProperties.lookup("spongeTop")));
-    const scalar muBar(readScalar(envProperties.lookup("spongeMean")));
-    const scalar xSpongeCentre
-    (
-        envProperties.lookupOrDefault<scalar>("xSpongeCentre", scalar(0))
-    );
-    const scalar xSpongeEnd
-    (
-        envProperties.lookupOrDefault<scalar>("xSpongeEnd", scalar(0))
-    );
-    scalar xSpongeLength = -1;
-    if (mag(xSpongeCentre) > SMALL || mag(xSpongeEnd) > SMALL)
-    {
-        xSpongeLength = mag(xSpongeCentre - xSpongeEnd);
-    }
-    const scalar x2SpongeCentre
-    (
-        envProperties.lookupOrDefault<scalar>("x2SpongeCentre", scalar(0))
-    );
-    const scalar x2SpongeEnd
-    (
-        envProperties.lookupOrDefault<scalar>("x2SpongeEnd", scalar(0))
-    );
-    scalar x2SpongeLength = -1;
-    if (mag(x2SpongeCentre) > SMALL || mag(x2SpongeEnd) > SMALL)
-    {
-        x2SpongeLength = mag(x2SpongeCentre - x2SpongeEnd);
-    }
-    const bool spongeOnCellCentres
-    (
-        envProperties.lookupOrDefault<bool>("spongeOnCellCentres", false)
-    );
-        
     Info<< "Creating muSponge\n" << endl;
     surfaceScalarField muSponge
     (
@@ -101,83 +54,86 @@ int main(int argc, char *argv[])
         mesh,
         dimensionedScalar("muSponge", dimless, scalar(0))
     );
-    volScalarField muSpongeC
+    volTensorField muSpongeC
     (
         IOobject("muSponge", runTime.constant(), mesh),
         mesh,
-        dimensionedScalar("muSponge", dimless, scalar(0))
+        dimensionedTensor("muSponge", dimless, tensor::zero)
     );
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    Info << "\nReading environmentalProperties" << endl;
 
-    // Loop over cells and set muSpongeC
-    if (spongeOnCellCentres) forAll(muSpongeC, celli)
-    {
-        // height of cell centre
-        const scalar z = -(mesh.C()[celli] & ghat.value());
-        // x distance to x sponge centre
-        const scalar xDist = mag(mesh.C()[celli].x() - xSpongeCentre);
-        const scalar x2Dist = mag(mesh.C()[celli].x() - x2SpongeCentre);
+    IOdictionary envProperties
+    (
+        IOobject
+        (
+            "environmentalProperties",
+            runTime.system(),
+            mesh,
+            IOobject::MUST_READ
+        )
+    );
 
-        // set the sponge value if the height is above sponge base
-        if (z > zB)
-        {
-            muSpongeC[celli] = muBar*sqr(Foam::sin(0.5*pi*(z-zB)/(zt-zB)));
-        }
-        else if (z > zt)
-        {
-            FatalErrorIn("createSpongeLayer") << "cell " << celli
-                << " has height " << z
-                << " but the sponge is defined to lie between " << zB
-                << " and " << zt << exit(FatalError);
-        }
-            
-        // set the sponge value if x is between xMin and xMax
-        if (xDist <= xSpongeLength)
-        {
-            muSpongeC[celli] += muBar
-                *sqr(Foam::sin(0.5*pi*(xSpongeLength-xDist)/xSpongeLength));
-        }
-        else if (x2Dist <= x2SpongeLength)
-        {
-            muSpongeC[celli] += muBar
-                *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
-        }
-    }   
-    // Loop over all faces and set muSponge
-    else forAll(muSponge, faceI)
+    const bool spongeOnCellCentres
+    (
+        readBool(envProperties.lookup("spongeOnCellCentres"))
+    );
+
+    const label nSponges(readLabel(envProperties.lookup("nSponges")));
+
+    // Read in and set sponge coefficients for each sponge
+    for(label iSponge = 0; iSponge < nSponges; iSponge++)
     {
-        // First check if face has a vertical normal
-        if(mag(mesh.Sf()[faceI] ^ ghat.value()) < mesh.magSf()[faceI]*1e-6)
+        Info << "Reading in coefficients for sponge " << iSponge << endl;
+        
+        const vector spongeCentre
+        (
+            envProperties.lookup(word("spongeCentre"+std::to_string(iSponge)))
+        );
+
+        const vector spongeLength
+        (
+            envProperties.lookup(word("spongeLength"+std::to_string(iSponge)))
+        );
+        const vector spongeDir = spongeLength/(mag(spongeLength)+VSMALL);
+        
+        const scalar spongeMax(readScalar
+        (
+            envProperties.lookup(word("spongeMax"+std::to_string(iSponge)))
+        ));
+        
+
+        // Add coefficients for this sponge for each sponge type
+
+        // Loop over cells and set muSpongeC
+        if (spongeOnCellCentres) forAll(muSpongeC, celli)
         {
-            // height of face centre
-            const scalar z = -(mesh.Cf()[faceI] & ghat.value());
-            // x distance to x sponge centre
-            const scalar xDist = mag(mesh.Cf()[faceI].x() - xSpongeCentre);
-            const scalar x2Dist = mag(mesh.Cf()[faceI].x() - x2SpongeCentre);
+            // Vector to sponge centre
+            vector d = mesh.C()[celli] - spongeCentre;
             
-            // set the sponge value if the height is above sponge base
-            if (z > zB)
+            // Add sponge coeff if point close to spongeCentre in direction
+            scalar dist = mag(d & spongeLength)/(spongeLength & spongeLength);
+            if (dist < 1)
             {
-                muSponge[faceI] = muBar*sqr(Foam::sin(0.5*pi*(z-zB)/(zt-zB)));
+                vector mu = spongeDir*spongeMax*sqr(Foam::cos(0.5*pi*dist));
+                muSpongeC[celli] += tensor(mu.x(),0,0,0,mu.y(),0,0,0,mu.z());
             }
-            else if (z > zt)
+        }
+        // Loop over all faces and set muSponge
+        else forAll(muSponge, faceI)
+        {
+            // First check if face has a normal in direction spongeLength
+            if(mag(mesh.Sf()[faceI] ^ spongeDir) < mesh.magSf()[faceI]*1e-6)
             {
-                FatalErrorIn("createSpongeLayer") << "face " << faceI
-                    << " has height " << z
-                    << " but the sponge is defined to lie between " << zB
-                    << " and " << zt << exit(FatalError);
-            }
+                // Vector to sponge centre
+                vector d = mesh.Cf()[faceI] - spongeCentre;
             
-            // set the sponge value if x is between xMin and xMax
-            if (xDist <= xSpongeLength)
-            {
-                muSponge[faceI] += muBar
-                    *sqr(Foam::sin(0.5*pi*(xSpongeLength-xDist)/xSpongeLength));
-            } else if (x2Dist <= x2SpongeLength)
-            {
-                muSponge[faceI] += muBar
-                    *sqr(Foam::sin(0.5*pi*(x2SpongeLength-x2Dist)/x2SpongeLength));
+                // Add sponge coeff if point close to spongeCentre in direction
+                scalar dist = mag(d & spongeLength)/(spongeLength & spongeLength);
+                if (dist < 1)
+                {
+                    muSponge[faceI] += spongeMax*sqr(Foam::cos(0.5*pi*dist));
+                }
             }
         }
     }
