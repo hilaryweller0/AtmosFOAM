@@ -5,8 +5,7 @@ fvVectorMatrix UEqn
   + fvc::div(phi, U)
   + (2*rho*(Omega^(U-Ug)))
   - nu*fvm::laplacian(rho, U)
-  + fvm::Sp(rho*muSponge, U)
-  - rho*muSponge*Urelax
+  + rho/runTime.deltaT()*(muSponge&U)
 );
 
 if (pimple.momentumPredictor())

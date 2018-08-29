@@ -1,6 +1,7 @@
 noAdvection.C
 tracerField/arakawaKonorRadiation.C
 tracerField/arakawaKonorStripes.C
+tracerField/rampsTracerField.C
 tracerField/gaussianTracerField.C
 tracerField/cosineTracerField.C
 tracerField/coneTracerField.C

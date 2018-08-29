@@ -58,18 +58,23 @@ surfaceScalarField thetaf
 );
 thetaf.oldTime();
 
-// Reading in the sponge layer coefficients (if present)
-volScalarField muSponge
+Info << "Reading in sponge tensor, muSponge, if defined\n" << endl;
+volTensorField muSponge
 (
-    volScalarField
+    IOobject
     (
-        IOobject("muSponge", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+        "muSponge",
+        runTime.timeName(),
         mesh,
-        dimensionedScalar("muSponge", dimless, scalar(0))
-    )/dt
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    mesh,
+    dimensionedTensor("muSponge", dimless, tensor::zero)
 );
-Info << "Maximum sponge value = " << max(muSponge).value()*dt.value()
-     << endl;
+
+Info << "muSponge goes from " << min(mag(muSponge)) << " to "
+     << max(mag(muSponge)) << endl;
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
