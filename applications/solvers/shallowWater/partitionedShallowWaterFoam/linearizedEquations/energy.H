@@ -1,19 +1,18 @@
 {
     // Potential energy
-    volScalarField energyField("energyField", 0.5*gravity*sqr(h));
-    
-    energyField *= 0;
-    energyField += 0.5*gravity*sqr(sigmah[0] + sigmah[1]);
+    energy *= 0;
+    energy += 0.5*gravity*sqr(sigmah[0] + sigmah[1]);
+    // Kinetic energy
     for(label ip = 0; ip < nParts; ip++)
     {
-        energyField += 0.5*SIGMAH[ip]*magSqr(u[ip]);
-        energyField +=     sigmah[ip]*(U[ip] & u[ip]);
+        energy += 0.5*SIGMAH[ip]*magSqr(u[ip]);
+        energy +=     sigmah[ip]*(U[ip] & u[ip]);
     }
 
-    energy = fvc::domainIntegrate(energyField)/Vtot;
+    energyTot = fvc::domainIntegrate(energy)/Vtot;
 
-    normalEnergyChange = ((energy - energy0)/energy0).value();
-    deltaNormalEnergyChange = ((energy - energy_old)/energy0).value();
+    normalEnergyChange = ((energyTot - energyTot0)/energyTot0).value();
+    deltaNormalEnergyChange = ((energyTot - energy_old)/energyTot0).value();
     
     os << runTime.timeName() << " " << normalEnergyChange << endl;
        
@@ -21,5 +20,5 @@
     {
         osPos << runTime.timeName() << " " << deltaNormalEnergyChange << endl;
     }
-    energy_old = energy;
+    energy_old = energyTot;
 }

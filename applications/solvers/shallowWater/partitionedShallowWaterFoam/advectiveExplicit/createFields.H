@@ -201,8 +201,23 @@ volScalarField delta_ke_centre
     0.*sigmah[0]*magSqr(u[0])
 );
 
+volScalarField energy
+(
+    IOobject
+    (
+        "energy",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    0.5*sigmah[0]*magSqr(u[0]) + 0.5*sigmah[1]*magSqr(u[1]) + 0.5*gravity*sqr(h)
+);
+
 // Store old time levels for some partitionedFields
 sigmah.storeTime();
 volFlux.storeTime();
 Uf.storeTime();
 
+sigmah.write();
+energy.write();
