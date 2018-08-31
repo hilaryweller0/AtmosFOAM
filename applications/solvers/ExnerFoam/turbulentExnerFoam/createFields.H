@@ -7,21 +7,6 @@ autoPtr<fluidThermo> pThermo
 fluidThermo& thermo = pThermo();
 thermo.validate(args.executable(), "h", "e");
 
-// Read in prognostic variables
-Info<< "Reading field Uf\n" << endl;
-surfaceVectorField Uf
-(
-    IOobject
-    (
-        "Uf",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-
 // Cell centre velocity
 volVectorField U
 (
@@ -35,7 +20,6 @@ volVectorField U
     ),
     mesh
 );
-U = fvc::reconstruct(Uf & mesh.Sf());
 
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
@@ -104,12 +88,7 @@ wordList phiUBCs(mesh.boundaryMesh().size(), "calculated");
 forAll(mesh.boundaryMesh(), patchi)
 {
     const word btype = mesh.boundaryMesh()[patchi].type();
-    const word utype = Uf.boundaryField()[patchi].type();
-    if
-    (
-        btype == "wall" || btype == "symmetryPlane" || btype == "empty"
-     || utype == "fixedValue"
-    )
+    if(btype == "wall" || btype == "symmetryPlane" || btype == "empty")
     {
         phiUBCs[patchi] = "fixedValue";
     }
@@ -123,10 +102,10 @@ surfaceScalarField phi
        "phi",
         runTime.timeName(),
         mesh,
-        IOobject::NO_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    rhof*(Uf & mesh.Sf())
+    rhof*(linearInterpolate(U) & mesh.Sf())
 //    phiUBCs
 );
 phi.oldTime();

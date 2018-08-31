@@ -23,11 +23,12 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamTurbulence
+    turbulentExnerFoam
 
 Description
-    Transient Solver for buoyant, inviscid, incompressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi
+    Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
+    using a simultaneous solution of Exner, theta and phi. 
+    Optional turbulence modelling.
 
 \*---------------------------------------------------------------------------*/
 
@@ -37,7 +38,6 @@ Description
 #include "ExnerTheta.H"
 #include "OFstream.H"
 #include "rhoThermo.H"
-#include "fvOptions.H"
 #include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
         mesh,
         mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
     );
-    const scalar offCentre = 1-0.5*drhoUdt.ocCoeff();
+    const scalar ocCoeff = drhoUdt.ocCoeff();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
-            #include "UEqn.H"
+//            #include "UEqn.H"
 
             // Exner and momentum equations
             #include "exnerEqn.H"

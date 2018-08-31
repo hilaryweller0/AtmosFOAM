@@ -1,9 +1,5 @@
 {
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
-    rho = Exner*Psi;
-    rhof = fvc::interpolate(rho);
-
-    thetaf = fvc::interpolate(theta);
 
     for (int corr=0; corr<nCorr; corr++)
     {
@@ -11,18 +7,20 @@
         dPhidt = -mesh.Sf() & fvc::interpolate
         (
             fvc::div(phi, U)
-//          + ((turbulence->divDevRhoReff(U)) & U)
-          + 2*rho*(Omega^(U-Ug))
-          - muSponge*rho*(sqr(ghat) & U)
+            + ((turbulence->divDevRhoReff(U)) & U)
+//            + 2*rho*(Omega^(U-Ug))
+//            - muSponge*rho*(sqr(ghat) & U)
         );
 
         // phiU is the flux without g or dpdz (to get the BCs right)
-        phiU = phi.oldTime()
-             + (1-offCentre)*dt*dPhidt.oldTime()
-             + offCentre*dt*dPhidt;
+        phiU = phi.oldTime() + dt/(1+ocCoeff)*
+        (
+             dPhidt
+           + ocCoeff*dPhidt.oldTime()
+        );
 
-        // add the gravity terms
-        phi = phiU + offCentre*dt*rhof*gSf;
+        // add the gravity terms (and the non-orthogonal grad Exner terms)
+        phi = phiU + dt/(1+ocCoeff)*rhof*gSf;
 
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
@@ -30,7 +28,7 @@
             (
                 fvm::ddt(Psi, Exner)
               + fvc::div(phi)
-              - fvm::laplacian(Cp*rhof*thetaf*offCentre*dt, Exner)
+              - fvm::laplacian(dt/(1+ocCoeff)*Cp*rhof*thetaf, Exner)
             );
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
@@ -44,11 +42,9 @@
 
             if (nonOrth == nNonOrthCorr)
             {
-                phi -= offCentre*dt*Cp*rhof*thetaf*fvc::snGrad(Exner)*mesh.magSf();
-                //phi += ExnerEqn.flux()/offCentre;
-                //U = H.reconstruct(phi/rhof);
+                phi -= dt/(1+ocCoeff)*Cp*rhof*thetaf*fvc::snGrad(Exner)
+                     *mesh.magSf();
                 U = fvc::reconstruct(phi/rhof);
-                Uf = fvc::interpolate(U);
             }
         }
         // Update the pressure and temperature based on the new Exner
