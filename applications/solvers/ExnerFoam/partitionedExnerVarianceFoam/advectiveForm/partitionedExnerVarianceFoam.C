@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
         #include "compressibleContinuityErrs.H"
         #include "correctContinuityErrs.H"
         #include "calcDiags.H"
+        u.updateSum();
+        theta.updateSum();
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
