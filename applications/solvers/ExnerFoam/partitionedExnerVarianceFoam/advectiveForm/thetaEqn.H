@@ -1,7 +1,9 @@
 // advective form theta equation
 for(label ip = 0; ip < nParts; ip++)
 {
-    theta.ddt()[ip] =-fvc::div(volFlux[ip], theta[ip], "theta")
+    
+    
+    /*theta.ddt()[ip] =-fvc::div(volFlux[ip], theta[ip], "theta")
                     + theta[ip]*fvc::div(volFlux[ip]);
 
     // Update theta according to the rate of change
@@ -9,7 +11,17 @@ for(label ip = 0; ip < nParts; ip++)
     (
         (1-offCentre)*theta.ddt()[ip].oldTime()
       + offCentre*theta.ddt()[ip]
+    );*/
+    
+    fvScalarMatrix thetaEqn
+    (
+        fvm::ddt(theta[ip])
+      - fvc::div(volFlux[ip], theta[ip], "theta")
+      + theta[ip]*fvc::div(volFlux[ip])
     );
+    
+    theta[ip].correctBoundaryConditions();
+    thetaEqn.solve();
 }
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
