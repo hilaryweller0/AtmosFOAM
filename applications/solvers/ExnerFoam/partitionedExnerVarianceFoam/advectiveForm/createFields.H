@@ -61,6 +61,7 @@ rho.updateSum();
 sigmaRho = rho.timesSigma();
 sigmaRho.updateSum();
 theta.updateSum();
+theta.write();
 
 Info << "Initialising sigmaRhof and sigmaf - values on the faces\n" << endl;
 partitionedSurfaceScalarField sigmaRhof
