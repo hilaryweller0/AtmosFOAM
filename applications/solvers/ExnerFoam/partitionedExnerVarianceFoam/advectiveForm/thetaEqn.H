@@ -1,7 +1,7 @@
 // advective form theta equation
 for(label ip = 0; ip < nParts; ip++)
 {
-    //theta[ip].correctBoundaryConditions();
+    
     
     theta.ddt()[ip] =-fvc::div(volFlux[ip], theta[ip], "theta")
                     + theta[ip]*fvc::div(volFlux[ip]);

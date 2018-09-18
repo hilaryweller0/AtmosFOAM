@@ -56,6 +56,7 @@ Info << "Calculating density and density in each partition and density weighted 
 for(label ip = 0; ip < partNames.size(); ip++)
 {
     rho[ip] = pRef/(R*theta[ip])*pow(Exner, (1-kappa)/kappa);
+    theta[ip].correctBoundaryConditions();
 }
 rho.updateSum();
 sigmaRho = rho.timesSigma();
