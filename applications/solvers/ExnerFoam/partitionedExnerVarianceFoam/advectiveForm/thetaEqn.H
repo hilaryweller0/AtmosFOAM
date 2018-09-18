@@ -22,6 +22,8 @@ for(label ip = 0; ip < nParts; ip++)
     
     theta[ip].correctBoundaryConditions();
     thetaEqn.solve();*/
+
+    theta[ip] += dt*thetaSource[ip];
 }
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
