@@ -63,7 +63,7 @@ partitionedVolScalarField thetaSource
             runTime.timeName(), 
             mesh,
             IOobject::NO_READ, 
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("thetaSource",dimensionSet(0,0,-1,1,0),scalar(0))
@@ -80,13 +80,42 @@ for(label ip = 0; ip < partNames.size(); ip++)
             runTime.timeName(), 
             mesh,
             IOobject::READ_IF_PRESENT, 
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
         mesh,
         dimensionedScalar("thetaSource",dimensionSet(0,0,-1,1,0),scalar(0))
     );
 }
 
+if (heatSource)
+{
+    for(label ip = 0; ip < partNames.size(); ip++)
+    {
+        forAll(theta[0], celli)
+        {
+            dimensionedScalar xcelli = 0.5*M_PI *
+                ( mesh.C()[celli] & heatSourceDirection ) /
+                heatSourceRadius;
+
+            dimensionedScalar xcelliConst = 0.5*M_PI *
+                ( heatSourceCentre & heatSourceDirection ) /
+                heatSourceRadius;
+            
+            scalar spacialFactor = sqr
+            (
+                Foam::cos( xcelli.value() - xcelliConst.value() )
+            );
+            thetaSource[ip][celli] *= spacialFactor*heatSourceMax.value();
+            /*if (thetaSource[ip][celli] != scalar(0))
+            {
+                Info << "Spacial factor: " << thetaSource[ip] 
+                    << " " << spacialFactor
+                    << " " << heatSourceMax
+                    << endl;
+            } */       
+        }
+    }
+}
 
 Info << "Calculating density and density in each partition and density weighted theta sum\n" << endl;
 for(label ip = 0; ip < partNames.size(); ip++)

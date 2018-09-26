@@ -1,3 +1,7 @@
+for(label ip = 0; ip < nParts; ip++)
+{
+    Info << "sigmaRho" << ip << " before: " << min(sigmaRho[ip]) << endl;
+}
 // update rhoSigma according to the continuity equation (without transfers)
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -21,4 +25,8 @@ for(label ip = 0; ip < nParts; ip++)
 flux.updateSum();
 sigmaRho.updateSum();
 sigmaRhof.updateSum();
+for(label ip = 0; ip < nParts; ip++)
+{
+    Info << "sigmaRho" << ip << " after: " << min(sigmaRho[ip]) << endl;
+}
 

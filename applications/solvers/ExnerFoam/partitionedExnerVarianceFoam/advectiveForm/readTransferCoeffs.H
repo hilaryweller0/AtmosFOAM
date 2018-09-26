@@ -34,3 +34,29 @@ const dimensionedScalar thetaTransferDiffusivity
 
 // Minimum sigmaRho for each partition
 const scalar minSigma = readScalar(transferProps.lookup("minSigma"));
+
+const Switch heatSource(transferProps.lookup("heatSource"));
+const dimensionedScalar heatSourceMax
+(
+    transferProps.lookup("heatSourceMax")
+);
+const dimensionedScalar heatSourceRadius
+(
+    transferProps.lookup("heatSourceRadius")
+);
+const dimensionedScalar heatSourceDuration
+(
+    transferProps.lookup("heatSourceDuration")
+);
+const dimensionedVector heatSourceCentre
+(
+    transferProps.lookup("heatSourceCentre")
+);
+const dimensionedVector heatSourceHeight
+(
+    transferProps.lookup("heatSourceHeight")
+);
+const dimensionedVector heatSourceDirection
+(
+    transferProps.lookup("heatSourceDirection")
+);
