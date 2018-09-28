@@ -84,8 +84,12 @@ int main(int argc, char *argv[])
         phi = hf*(Uf & mesh.Sf());
         
         surfaceScalarField phiTmp = -dt*fvc::flux(fvc::div(phi,U))
-                                    -dt*g*hf*fvc::snGrad(h0)*mesh.magSf()
                                     -dt*hf*fvc::flux(twoOmega ^ U);
+        
+        if (withMountain)
+        {
+            phiTmp -= dt*g*hf*fvc::snGrad(h0)*mesh.magSf();
+        }
         
         fvScalarMatrix hEqn
         (

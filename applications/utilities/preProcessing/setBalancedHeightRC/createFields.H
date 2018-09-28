@@ -35,6 +35,7 @@ volScalarField h0
 );
 Info << "h0 goes from " << min(h0).value() << " to " << max(h0).value()
      << endl;
+const Switch withMountain = max(h0).value() - min(h0).value() > SMALL;
 
 // h interpolated on to faces
 surfaceScalarField hf
