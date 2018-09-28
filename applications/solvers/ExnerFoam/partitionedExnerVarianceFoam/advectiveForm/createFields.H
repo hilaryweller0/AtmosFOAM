@@ -66,7 +66,7 @@ partitionedVolScalarField thetaSource
             IOobject::AUTO_WRITE
         ),
         mesh,
-        dimensionedScalar("thetaSource",dimensionSet(0,0,-1,1,0),scalar(0))
+        dimensionedScalar("thetaSource",dimensionSet(1,-1,-2,0,0),scalar(0))
     )
 );
 
@@ -83,17 +83,30 @@ for(label ip = 0; ip < partNames.size(); ip++)
             IOobject::AUTO_WRITE
         ),
         mesh,
-        dimensionedScalar("thetaSource",dimensionSet(0,0,-1,1,0),scalar(0))
+        dimensionedScalar("thetaSource",dimensionSet(1,-1,-2,0,0),scalar(0))
     );
 }
 
 if (heatSource)
 {
+    //Get dx
+    const surfaceVectorField deltas = mesh.delta();
+    //dimensionedScalar deltax = dimensionedScalar("",dimensionSet(0,1,0,0,0),scalar(0));
+    scalar deltax = scalar(0);
+    forAll(deltas,celli)
+    {
+        if (deltas[celli].x() > scalar(0))
+        {
+            deltax = deltas[celli].x();
+            break;
+        }
+    }
+    
     for(label ip = 0; ip < partNames.size(); ip++)
     {
         forAll(theta[0], celli)
         {
-            dimensionedScalar xcelli = 0.5*M_PI *
+            /*dimensionedScalar xcelli = 0.5*M_PI *
                 ( mesh.C()[celli] & heatSourceDirection ) /
                 heatSourceRadius;
 
@@ -105,14 +118,23 @@ if (heatSource)
             (
                 Foam::cos( xcelli.value() - xcelliConst.value() )
             );
-            thetaSource[ip][celli] *= spacialFactor*heatSourceMax.value();
-            /*if (thetaSource[ip][celli] != scalar(0))
+            thetaSource[ip][celli] *= spacialFactor*heatSourceMax.value();*/
+
+            scalar x1 = ( mesh.C()[celli] & heatSourceDirection ).value() - deltax/2.;
+            scalar x2 = ( mesh.C()[celli] & heatSourceDirection ).value() + deltax/2.;
+            thetaSource[ip][celli] *= heatSourceMax.value() *
+            (
+                0.5*(x2-x1)
+              + heatSourceRadius.value() / (2*M_PI) *
+                (
+                  - Foam::sin(M_PI/heatSourceRadius.value() * x1)
+                  + Foam::sin(M_PI/heatSourceRadius.value() * x2)
+                )
+            );
+            if (thetaSource[ip][celli] < scalar(0))
             {
-                Info << "Spacial factor: " << thetaSource[ip] 
-                    << " " << spacialFactor
-                    << " " << heatSourceMax
-                    << endl;
-            } */       
+                Info << "NEGATIVE SOURCE: " << thetaSource[ip][celli] << endl;
+            }
         }
     }
 }

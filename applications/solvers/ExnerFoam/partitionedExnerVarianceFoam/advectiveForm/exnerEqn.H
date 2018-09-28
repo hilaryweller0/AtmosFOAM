@@ -1,14 +1,4 @@
 {
-    if ( runTime.time().value() > 1000 )
-    {
-        forAll(sigmaRho[0], celli)
-        {
-            Info << "Infoooo: " << sigmaRho.sum()[celli] << " " << R/pRef*theta.sum()[celli]/sigmaRho.sum()[celli] << endl;
-            Info << "Infooo2: " << pow(sigmaRho.sum()[celli],(2*kappa-1)/(kappa-1)) << endl;
-            Info << "Infooo3: " << pow(R/pRef*theta.sum()[celli]/sigmaRho.sum()[celli], kappa/(kappa-1)) << endl;
-        }
-    }
-
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
          *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
     
