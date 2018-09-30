@@ -122,7 +122,9 @@ if (heatSource)
 
             scalar x1 = ( mesh.C()[celli] & heatSourceDirection ).value() - deltax/2.;
             scalar x2 = ( mesh.C()[celli] & heatSourceDirection ).value() + deltax/2.;
-            thetaSource[ip][celli] *= heatSourceMax.value() *
+            x1 = max(x1,-heatSourceRadius.value());
+            x2 = min(x2, heatSourceRadius.value());
+            thetaSource[ip][celli] *= heatSourceMax.value() / mesh.V()[celli] *
             (
                 0.5*(x2-x1)
               + heatSourceRadius.value() / (2*M_PI) *
@@ -131,10 +133,6 @@ if (heatSource)
                   + Foam::sin(M_PI/heatSourceRadius.value() * x2)
                 )
             );
-            if (thetaSource[ip][celli] < scalar(0))
-            {
-                Info << "NEGATIVE SOURCE: " << thetaSource[ip][celli] << endl;
-            }
         }
     }
 }

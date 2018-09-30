@@ -16,17 +16,12 @@ if ((heatSource) and (runTime.time().value() <= heatSourceDuration.value()))
 
     for(label ip = 0; ip < partNames.size(); ip++)
     {
-        volScalarField deltaTheta = timeFactor * thetaSource[ip] / (Cv*sigmaRho[ip]*Exner);
-        forAll(theta[0], celli)
-        {
-            if (deltaTheta[celli] < scalar(0))
-            {
-                Info << "NEGATIVE SOURCE, timefactor: " << timeFactor << endl;
-                Info << "NEGATIVE SOURCE, sigmarho: " << sigmaRho[ip][celli] << endl;
-                Info << "NEGATIVE SOURCE, exner: " << Exner[celli] << endl;
-            }
-        }
-
-        theta[ip] += timeFactor * thetaSource[ip] / (Cv*sigmaRho[ip]*Exner);
+        theta[ip] += timeFactor * thetaSource[ip] / 
+        (
+            Cv * Exner * max
+            (
+                sigmaRho[ip], dimensionedScalar("",dimensionSet(1,-3,0,0,0),scalar(1e-16))
+            ) 
+        );
     }
 }
