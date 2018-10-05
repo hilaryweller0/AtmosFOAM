@@ -10,7 +10,7 @@ fvScalarMatrix thetaEqn
 (
     fvm::ddt(rho, theta)
   + fvm::div(phi, theta)
-//  - fvm::laplacian(turbulence->alphaEff(), theta)
+  - fvm::laplacian(turbulence->alphaEff(), theta)
 );
 
 theta.correctBoundaryConditions();
