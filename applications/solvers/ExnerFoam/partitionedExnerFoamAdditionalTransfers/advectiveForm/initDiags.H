@@ -52,3 +52,14 @@ Info << "Initial KE = " << KEsumInit << endl;
 Info << "Initial PE = " << PEsumInit << endl;
 Info << "Initial IE = " << IEsumInit << endl;
 
+Info << "Initialising diagnostics file transferDiags.dat\n" << endl;
+
+OFstream transferDiags(args.rootPath() / args.caseName()/"transferDiags.dat");
+transferDiags << "#time   deltaTotalEnergy deltaKEsum deltaPEsum deltaIEsum" 
+              << endl;
+              
+scalar KEsumPreTransfer = 0;
+scalar PEsumPreTransfer = 0;
+scalar IEsumPreTransfer = 0;
+scalar energyTotPreTransfer = 0;
+

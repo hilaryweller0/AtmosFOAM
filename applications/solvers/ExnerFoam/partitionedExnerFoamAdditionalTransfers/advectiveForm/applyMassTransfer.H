@@ -118,4 +118,24 @@ for(label ip = 0; ip < nParts; ip++)
 //Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
 
+//Theta transfer
+theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
+           /(1+transfer[0][1]+transfer[1][0]);
+theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
+theta.updateSum();
+
+transferf[0][1] = fvc::interpolate(transfer[0][1], "massTransfer");
+transferf[1][0] = fvc::interpolate(transfer[1][0], "massTransfer");
+transferf[0].updateSum();
+transferf[1].updateSum();
+
+//Velocity transfer
+volFlux[0] =
+(
+    (1+transferf[0][1])*volFlux[0] + transferf[1][0]*volFlux[1]
+)/(1+transferf[0][1]+transferf[1][0]);
+volFlux[1] = (volFlux[1] + transferf[0][1]*volFlux[0])
+            /(1+transferf[0][1]);
+
+volFlux.updateSum();
 }

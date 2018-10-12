@@ -75,13 +75,17 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
+            transfer[0][1] = 0;
+            transfer[1][0] = 0;
             #include "rhoSigmaEqn.H"
-            #include "massTransfers.H"
+            //#include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
+        #include "calcDiagsPreTransfer.H"
+        #include "massTransfers.H"
         
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;

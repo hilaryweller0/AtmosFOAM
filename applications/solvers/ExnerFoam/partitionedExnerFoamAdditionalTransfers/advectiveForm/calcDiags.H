@@ -40,4 +40,11 @@ diags << runTime.timeName() << "  "
       << (KEsum - KEsumInit)/energyInitTot << "  "
       << (PEsum - PEsumInit)/energyInitTot << "  "
       << (IEsum - IEsumInit)/energyInitTot << endl;
+      
+transferDiags 
+      << runTime.timeName() << "  "
+      << (energyTot - energyTotPreTransfer) << "  "
+      << (KEsum - KEsumPreTransfer) << "  "
+      << (PEsum - PEsumPreTransfer) << "  "
+      << (IEsum - IEsumPreTransfer) << endl;
 }
