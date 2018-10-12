@@ -215,6 +215,18 @@ partitionedSurfaceScalarField transferf
     )
 );
 
+partitionedVolScalarField Stransfer
+(
+    "Stransfer",
+    partNames,
+    volScalarField
+    (
+        IOobject("Stransfer", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimless, scalar(0))
+    )
+);
+
 partitionedVolScalarField divu
 (
     "divu",

@@ -20,9 +20,19 @@ if (nParts != 2)
         << nParts << exit(FatalError);
 }
 
-theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
-           /(1+transfer.sum());
-theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
+theta[0] =
+(
+    (1+transfer[0])*(theta[0] - thetat*(transfer[1] + Stransfer[0]))
+   + transfer[1]*(theta[1] + thetat*(transfer[0] + Stransfer[1]))
+)
+/(1+transfer.sum());
+
+theta[1] =
+(
+    theta[1]
+  + thetat*(transfer[0] + Stransfer[1])
+  + transfer[0]*theta[0]
+)/(1+transfer[0]);
 
 // Update the sum
 theta.updateSum();

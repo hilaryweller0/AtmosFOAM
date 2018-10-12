@@ -1,13 +1,4 @@
 {
-// Limit and apply the mass transfer and add the mass transfer to the sum for 
-// other variables
-
-//Info << "Before limiting"
-//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
-//     << " to " << max(massTransfer[0][1]).value()
-//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
-//     << " to " << max(massTransfer[1][0]).value() << endl;
-
 // Constraint to keep sigmaRho > 0
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -30,17 +21,11 @@ for(label ip = 0; ip < nParts; ip++)
 
 // Transfer terms for other variables
 const scalar minSigmaDiv = max(minSigma, VSMALL);
-transfer[0] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
-transfer[1] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
+transfer[0] = dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
+transfer[1] = dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 
-//Info << "Before mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
-//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value()
-//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
-//     << " to " << max(massTransfer[0][1]).value()
-//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
-//     << " to " << max(massTransfer[1][0]).value()
-//     << "\nmin(rho[0]) = " << min(rho[0]).value() 
-//     << "\nmin(rho[1]) = " << min(rho[1]).value() << endl;
+Stransfer[0] = dt*massTransfer[0][1]/max(sigmaRho[0], minSigmaDiv*rho[0]);
+Stransfer[1] = dt*massTransfer[1][0]/max(sigmaRho[1], minSigmaDiv*rho[1]);
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -56,8 +41,5 @@ for(label ip = 0; ip < nParts; ip++)
     // Update the face values
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
 }
-
-//Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
-//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
 
 }
