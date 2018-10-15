@@ -148,15 +148,11 @@ surfaceScalarField dragCommon = -dragCoeff*sigmaRhof.sum()/cloudRadius
 
 #include "calculateDrag.H"
 
-Info << "Initialising the mass transfer between partitions\n" << endl;
+
 // Temporary mass and heat transfer fields (for calculations)
 const dimensionedScalar transferZero
 (
     "transferZero", dimless, scalar(0)
-);
-const dimensionedScalar massTransferZero
-(
-    "massTransferZero", dimensionSet(1,-3,-1,0,0), scalar(0)
 );
 const dimensionedScalar dimlessZero
 (
@@ -173,6 +169,12 @@ const dimensionedScalar densityZero
 const dimensionedScalar zeroTemp
 (
     "zeroTemp", dimensionSet(0,0,0,1,0), scalar(0)
+);
+
+Info << "Initialising the mass transfer between partitions\n" << endl;
+const dimensionedScalar massTransferZero
+(
+    "massTransferZero", dimensionSet(1,-3,-1,0,0), scalar(0)
 );
 volScalarField massTransferTmp
 (
@@ -194,6 +196,82 @@ for(label jp = 0; jp < nParts; jp++)
     );
 }
 
+Info << "Initialising the theta transfer between partitions\n" << endl;
+const dimensionedScalar thetaTransferTermZero
+(
+    "thetaTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+volScalarField thetaTransferTermTmp
+(
+    IOobject("thetaTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    thetaTransferTermZero
+);
+PtrList<partitionedVolScalarField> thetaTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    thetaTransferTerm.set
+    (
+        jp, 
+        new partitionedVolScalarField
+        (
+            partNames[jp]+'.'+"thetaTransferTerm", partNames, thetaTransferTermTmp
+        )
+    );
+}
+
+Info << "Initialising the theta transfer between partitions\n" << endl;
+const dimensionedScalar volFluxTransferTermZero
+(
+    "volFluxTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+surfaceScalarField volFluxTransferTermTmp
+(
+    IOobject("volFluxTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    volFluxTransferTermZero
+);
+PtrList<partitionedSurfaceScalarField> volFluxTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    volFluxTransferTerm.set
+    (
+        jp, 
+        new partitionedSurfaceScalarField
+        (
+            partNames[jp]+'.'+"volFluxTransferTerm", partNames, volFluxTransferTermTmp
+        )
+    );
+}
+
+Info << "Initialising the velocity transfer between partitions\n" << endl;
+const dimensionedVector velocityTransferTermZero
+(
+    "velocityTransferTermZero", dimensionSet(0,-2,-2,0,0), vector(scalar(0),scalar(0),scalar(0))
+);
+volVectorField velocityTransferTermTmp
+(
+    IOobject("velocityTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    velocityTransferTermZero
+);
+PtrList<partitionedVolVectorField> velocityTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    velocityTransferTerm.set
+    (
+        jp, 
+        new partitionedVolVectorField
+        (
+            partNames[jp]+'.'+"velocityTransferTerm", partNames, velocityTransferTermTmp
+        )
+    );
+}
+
+Info << "Initialising the transfer term between partitions\n" << endl;
 volScalarField transferTmp
 (
     IOobject("transfer", runTime.timeName(), mesh,

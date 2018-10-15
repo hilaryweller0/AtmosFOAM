@@ -2,6 +2,9 @@
 // Limit and apply the mass transfer and add the mass transfer to the sum for 
 // other variables
 
+partitionedVolScalarField sigmaRhoPreTransfer = sigmaRho;
+partitionedSurfaceScalarField sigmaRhofPreTransfer = sigmaRhof;
+
 //Info << "Before limiting"
 //     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
 //     << " to " << max(massTransfer[0][1]).value()
@@ -33,8 +36,8 @@ if (alphaM == scalar(0))
 
 // Transfer terms for other variables
 const scalar minSigmaDiv = max(minSigma, VSMALL);
-transfer[0][1] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
-transfer[1][0] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
+//transfer[0][1] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
+//transfer[1][0] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=0; jp < nParts; jp++)
@@ -45,6 +48,7 @@ for(label ip = 0; ip < nParts; ip++)
             (
                 sigmaRho[ip], minSigmaDiv*rho[ip]
             );
+            transferf[ip][jp] = fvc::interpolate(transfer[ip][jp], "massTransfer");
         }
     }
 }
@@ -78,7 +82,7 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-for(label ip = 0; ip < nParts; ip++)
+/*for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=0; jp < nParts; jp++)
     {
@@ -95,7 +99,7 @@ for(label ip = 0; ip < nParts; ip++)
             );
         }
     }
-}
+}*/
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -118,11 +122,76 @@ for(label ip = 0; ip < nParts; ip++)
 //Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
 
+//Conditions for the treatment of sigmaRho in the transfer terms.
+partitionedVolScalarField sigmaRhoNumerator = sigmaRho;
+partitionedVolScalarField sigmaRhoDenominator = sigmaRho;
+partitionedSurfaceScalarField sigmaRhofNumerator = sigmaRhof;
+partitionedSurfaceScalarField sigmaRhofDenominator = sigmaRhof;
+if (transferNumeratorOld)
+{
+    sigmaRhoNumerator = sigmaRhoPreTransfer;
+}
+if (transferDenominatorOld)
+{
+    sigmaRhoDenominator = sigmaRhoPreTransfer;
+}
+
+//Ensure denominator not zero
+for(label ip = 0; ip < nParts; ip++)
+{
+    sigmaRhoNumerator[ip] = max(sigmaRhoNumerator[ip], minSigmaDiv*rho[ip]);
+    sigmaRhoDenominator[ip] = max(sigmaRhoDenominator[ip], minSigmaDiv*rho[ip]);
+    sigmaRhofNumerator[ip] = fvc::interpolate
+    (
+        sigmaRhoNumerator[ip], "massTransfer"
+    );
+    sigmaRhofDenominator[ip] = fvc::interpolate
+    (
+        sigmaRhoDenominator[ip], "massTransfer"
+    );
+}
+
 //Theta transfer
-theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
+#include "applyThetaTransfer.H"
+/*for(label ip = 0; ip < nParts; ip++)
+{
+    for(label jp=0; jp < nParts; jp++)
+    {
+        if (ip != jp)
+        {
+            transferf[ip][jp] = fvc::interpolate
+            (
+                transfer[ip][jp]*sigmaRhoNumerator[ip]/sigmaRhoDenominator[jp], 
+                "massTransfer"
+            );
+        }
+    }
+}*/
+#include "applyVelocityTransfer.H"
+
+/*theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
            /(1+transfer[0][1]+transfer[1][0]);
 theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
 theta.updateSum();
+
+for(label ip = 0; ip < nParts; ip++)
+{
+    for(label jp=0; jp < nParts; jp++)
+    {
+        if (ip != jp)
+        {
+            transfer[ip][jp] = transfer[ip][jp]*
+            max
+            (
+                sigmaRhoPreTransfer[ip], minSigmaDiv*rho[ip]
+            ) /
+            max
+            (
+                sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
+            );
+        }
+    }
+}
 
 transferf[0][1] = fvc::interpolate(transfer[0][1], "massTransfer");
 transferf[1][0] = fvc::interpolate(transfer[1][0], "massTransfer");
@@ -137,5 +206,6 @@ volFlux[0] =
 volFlux[1] = (volFlux[1] + transferf[0][1]*volFlux[0])
             /(1+transferf[0][1]);
 
-volFlux.updateSum();
+volFlux.updateSum();*/
+
 }

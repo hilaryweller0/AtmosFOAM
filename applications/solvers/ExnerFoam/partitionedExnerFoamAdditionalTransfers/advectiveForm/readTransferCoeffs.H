@@ -48,3 +48,13 @@ const scalar alphaT = readScalar
 (
     transferProps.lookup("thetaTransferImplicit")
 );
+
+// Use old or new mass in numerator/denominator of theta and velocity transfers
+const Switch transferNumeratorOld
+(
+    transferProps.lookup("transferNumeratorOld")
+);
+const Switch transferDenominatorOld
+(
+    transferProps.lookup("transferDenominatorOld")
+);
