@@ -35,12 +35,19 @@ const dimensionedScalar thetaTransferDiffusivity
 // Minimum sigmaRho for each partition
 const scalar minSigma = readScalar(transferProps.lookup("minSigma"));
 
-// Temperature perturbation - the difference in temperature of the transferred
-// variable. thetat[0] > 0 and thetat[1] < 0
-const dimensionedScalar thetat
+// Max and min temperature perturbation - the difference in temperature of
+// the transferred variable. thetat[0] > 0 and thetat[1] < 0
+const dimensionedScalar thetatMin
 (
-    "thetat",
+    "thetatMin",
     dimTemperature,
-    readScalar(transferProps.lookup("thetat"))
+    readScalar(transferProps.lookup("thetatMin"))
 );
+const dimensionedScalar thetatMax
+(
+    "thetatMax",
+    dimTemperature,
+    readScalar(transferProps.lookup("thetatMax"))
+);
+
 

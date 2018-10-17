@@ -240,3 +240,16 @@ for(label ip = 1; ip < partNames.size(); ip++)
     divu[ip] = fvc::div(volFlux[ip]);
 }
 
+// Temperature of the transferred fluid
+partitionedVolScalarField thetat
+(
+    "thetat",
+    partNames,
+    volScalarField
+    (
+        IOobject("thetat", runTime.timeName(), mesh),
+        mesh,
+        thetatMin
+    )
+);
+thetat[1] *= 0;
