@@ -69,12 +69,12 @@ if (thetaTransfer)
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
 
-/*    massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*max
+    massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*max
     (
         fvc::laplacian(theta[1])/theta[1],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
-*/
+
 }
 
 #include "applyMassTransfer.H"
