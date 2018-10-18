@@ -249,7 +249,7 @@ partitionedVolScalarField thetat
     (
         IOobject("thetat", runTime.timeName(), mesh),
         mesh,
-        thetatMin
+        dimensionedScalar("", dimTemperature, scalar(0))
     )
 );
-thetat[1] *= 0;
+

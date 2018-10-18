@@ -20,6 +20,17 @@ if (nParts != 2)
         << nParts << exit(FatalError);
 }
 
+thetat[0] = max
+(
+    min(-thetaTransferDiffusivity*dt*fvc::laplacian(theta[0]), thetatMax),
+    thetatMin
+);
+/*thetat[1] = max
+(
+    min(thetaTransferDiffusivity*dt*fvc::laplacian(theta[1]), thetatMax),
+    thetatMin
+);*/
+
 theta[0] =
 (
     (1+transfer[0])*(theta[0] - transfer[1]*thetat[1] - Stransfer[0]*thetat[0])

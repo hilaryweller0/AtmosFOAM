@@ -63,20 +63,15 @@ if (wTransfer)
 // Mass transfer based on buoyancy
 if (thetaTransfer)
 {
-    thetat[0] = max
-    (
-        min(-thetaTransferDiffusivity*dt*fvc::laplacian(theta[0]), thetatMax),
-        thetatMin
-    );
-
     massTransfer[0][1] -= sigmaRho[0]*thetaTransferDiffusivity*min
     (
-        fvc::laplacian(theta[0])/thetat[0],
+        fvc::laplacian(theta[0])/theta[0],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
+
 /*    massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*max
     (
-        fvc::laplacian(theta[1])/thetat,
+        fvc::laplacian(theta[1])/theta[1],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
 */
