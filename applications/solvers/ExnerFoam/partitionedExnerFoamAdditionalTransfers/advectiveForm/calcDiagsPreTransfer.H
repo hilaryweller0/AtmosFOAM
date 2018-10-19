@@ -5,6 +5,7 @@ scalarList energy(nParts, scalar(0));
 scalarList KE(nParts, scalar(0));
 scalarList PE(nParts, scalar(0));
 scalarList IE(nParts, scalar(0));
+totalFluxPreTransfer *= 0;
 
 // Caclulate the initial energy in each partition
 for(label ip = 0; ip < partNames.size(); ip++)
@@ -19,6 +20,8 @@ for(label ip = 0; ip < partNames.size(); ip++)
     IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energy[ip] = KE[ip] + PE[ip] + IE[ip];
+    
+    totalFluxPreTransfer += linearInterpolate(sigmaRho[ip])*volFlux[ip];
 }
 
 KEsumPreTransfer = sum(KE);

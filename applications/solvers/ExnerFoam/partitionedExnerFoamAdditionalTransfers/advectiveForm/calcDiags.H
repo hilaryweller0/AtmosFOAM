@@ -5,6 +5,7 @@ scalarList energy(nParts, scalar(0));
 scalarList KE(nParts, scalar(0));
 scalarList PE(nParts, scalar(0));
 scalarList IE(nParts, scalar(0));
+totalFlux *= 0;
 
 // Caclulate the initial energy in each partition
 for(label ip = 0; ip < partNames.size(); ip++)
@@ -19,6 +20,8 @@ for(label ip = 0; ip < partNames.size(); ip++)
     IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energy[ip] = KE[ip] + PE[ip] + IE[ip];
+    
+    totalFlux += linearInterpolate(sigmaRho[ip])*volFlux[ip];
 }
 
 scalar KEsum = sum(KE);
@@ -41,6 +44,15 @@ diags << runTime.timeName() << "  "
       << (PEsum - PEsumInit)/energyInitTot << "  "
       << (IEsum - IEsumInit)/energyInitTot << endl;
       
+scalar fluxChange = sum(totalFlux - totalFluxPreTransfer).value();
+scalar fluxTotal = sum(totalFlux).value();
+Info    << "Transfer energy change: " 
+        << (energyTot - energyTotPreTransfer) << endl;
+Info    << "Momentum change: " 
+        << fluxChange << endl;
+Info    << "Momentum total: " 
+        << fluxTotal << endl;
+
 transferDiags 
       << runTime.timeName() << "  "
       << (energyTot - energyTotPreTransfer) << "  "

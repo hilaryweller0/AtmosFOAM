@@ -63,3 +63,6 @@ scalar PEsumPreTransfer = 0;
 scalar IEsumPreTransfer = 0;
 scalar energyTotPreTransfer = 0;
 
+surfaceScalarField totalFluxPreTransfer = 0*flux[0];
+surfaceScalarField totalFlux = 0*flux[0];
+

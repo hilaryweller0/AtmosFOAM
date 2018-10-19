@@ -82,25 +82,6 @@ for(label ip = 0; ip < nParts; ip++)
     }
 }
 
-/*for(label ip = 0; ip < nParts; ip++)
-{
-    for(label jp=0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            transfer[ip][jp] = transfer[ip][jp]*
-            max
-            (
-                sigmaRho[ip], minSigmaDiv*rho[ip]
-            ) /
-            max
-            (
-                sigmaRho[jp], minSigmaDiv*rho[jp]
-            );
-        }
-    }
-}*/
-
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -151,28 +132,14 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
-//Theta transfer
-#include "applyThetaTransfer.H"
-/*for(label ip = 0; ip < nParts; ip++)
+if (1)
 {
-    for(label jp=0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            transferf[ip][jp] = fvc::interpolate
-            (
-                transfer[ip][jp]*sigmaRhoNumerator[ip]/sigmaRhoDenominator[jp], 
-                "massTransfer"
-            );
-        }
-    }
-}*/
-#include "applyVelocityTransfer.H"
-
-/*theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
-           /(1+transfer[0][1]+transfer[1][0]);
-theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
-theta.updateSum();
+    #include "applyThetaTransfer.H"
+}
+if (1)
+{
+    #include "applyVelocityTransfer.H"
+}
 
 for(label ip = 0; ip < nParts; ip++)
 {
@@ -189,23 +156,47 @@ for(label ip = 0; ip < nParts; ip++)
             (
                 sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
             );
+            transferf[ip][jp] = fvc::interpolate(transfer[ip][jp], "massTransfer");
         }
     }
 }
 
-transferf[0][1] = fvc::interpolate(transfer[0][1], "massTransfer");
-transferf[1][0] = fvc::interpolate(transfer[1][0], "massTransfer");
-transferf[0].updateSum();
-transferf[1].updateSum();
+if (0)
+{
+    theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
+               /(1+transfer[0][1]+transfer[1][0]);
+    theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
+    theta.updateSum();
+}
+if (0)
+{
+    volFlux[0] =
+    (
+        (1+transferf[0][1])*volFlux[0] + transferf[1][0]*volFlux[1]
+    ) / 
+    (
+        1 + transferf[0][1] + transferf[1][0]
+    );
+    volFlux[1] = 
+    (
+        volFlux[1] + transferf[0][1]*volFlux[0]
+    ) / 
+    (
+        1+transferf[0][1]
+    );
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
+        u[ip] = fvc::reconstruct(volFlux[ip]);
+        Uf[ip] = fvc::interpolate(u[ip], "Uf");
+    }
+}
 
-//Velocity transfer
-volFlux[0] =
-(
-    (1+transferf[0][1])*volFlux[0] + transferf[1][0]*volFlux[1]
-)/(1+transferf[0][1]+transferf[1][0]);
-volFlux[1] = (volFlux[1] + transferf[0][1]*volFlux[0])
-            /(1+transferf[0][1]);
 
-volFlux.updateSum();*/
+//transferf[0][1] = fvc::interpolate(transfer[0][1], "massTransfer");
+//transferf[1][0] = fvc::interpolate(transfer[1][0], "massTransfer");
+//transferf[0].updateSum();
+//transferf[1].updateSum();
+
 
 }
