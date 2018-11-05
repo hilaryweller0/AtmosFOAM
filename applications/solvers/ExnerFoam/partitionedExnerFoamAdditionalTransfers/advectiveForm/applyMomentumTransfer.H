@@ -1,4 +1,8 @@
-partitionedVolVectorField velocityPreTransfer = u;
+for(label ip = 0; ip < nParts; ip++)
+{
+    momentum[ip] = sigmaRhoPreTransfer[ip]*u[ip];
+}
+partitionedVolVectorField momentumPreTransfer = momentum;
 
 // Set theta transfer terms to be either explicit or implicit based on alphaT
 for(label ip = 0; ip < nParts; ip++)
@@ -7,22 +11,9 @@ for(label ip = 0; ip < nParts; ip++)
     {
         if (ip != jp)
         {
-            velocityTransferTerm[ip][jp] = 1/dt * transfer[ip][jp] *
+            momentumTransferTerm[ip][jp] = 1/dt * transfer[ip][jp] /
             (
-                sigmaRhoNumerator[ip] / sigmaRhoDenominator[jp]
-            ) /
-            (
-                1 + alphaV *
-                (
-                    transfer[ip][jp] * 
-                    (
-                        sigmaRhoNumerator[ip] / sigmaRhoDenominator[jp]
-                    )
-                  + transfer[jp][ip] * 
-                    (
-                        sigmaRhoNumerator[jp] / sigmaRhoDenominator[ip]
-                    )
-                )
+                1 + alphaV*(transfer[ip][jp] + transfer[jp][ip])
             );
         }
     }
@@ -35,10 +26,10 @@ for(label ip = 0; ip < nParts; ip++)
     {
         if (ip != jp)
         {
-            u[ip] += dt * velocityTransferTerm[jp][ip] * 
+            momentum[ip] += dt *  
             (
-                velocityPreTransfer[jp]
-              - velocityPreTransfer[ip]
+                momentumPreTransfer[jp] * momentumTransferTerm[jp][ip]
+              - momentumPreTransfer[ip] * momentumTransferTerm[ip][jp]
             );
         }
     }
@@ -47,6 +38,11 @@ for(label ip = 0; ip < nParts; ip++)
 // Update mass flux and velocities based on the flux
 for(label ip = 0; ip < nParts; ip++)
 {
+    u[ip] = momentum[ip] / max
+    (
+        sigmaRho[ip], 
+        minSigmaDiv*rho[ip]
+    );
     Uf[ip] = fvc::interpolate(u[ip], "Uf");
     volFlux[ip] = (Uf[ip] & mesh.Sf());
     sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];

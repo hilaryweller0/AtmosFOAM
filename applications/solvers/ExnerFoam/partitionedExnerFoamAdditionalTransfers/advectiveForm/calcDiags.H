@@ -6,22 +6,28 @@ scalarList KE(nParts, scalar(0));
 scalarList PE(nParts, scalar(0));
 scalarList IE(nParts, scalar(0));
 totalFlux *= 0;
+totalMomentum *= 0;
+energyField *= 0;
 
 // Caclulate the initial energy in each partition
 for(label ip = 0; ip < partNames.size(); ip++)
 {
     volScalarField energyTmp = 0.5*sigmaRho[ip]*magSqr(u[ip]);
+    energyField += energyTmp;
     KE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energyTmp = - sigmaRho[ip]*(g & mesh.C());
+    energyField += energyTmp;
     PE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energyTmp = sigmaRho[ip]*theta[ip]*sigmaRho.sum()/Psi*Cv;
+    energyField += energyTmp;
     IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energy[ip] = KE[ip] + PE[ip] + IE[ip];
     
     totalFlux += linearInterpolate(sigmaRho[ip])*volFlux[ip];
+    totalMomentum += sigmaRho[ip]*u[ip];
 }
 
 scalar KEsum = sum(KE);
@@ -44,19 +50,40 @@ diags << runTime.timeName() << "  "
       << (PEsum - PEsumInit)/energyInitTot << "  "
       << (IEsum - IEsumInit)/energyInitTot << endl;
       
-scalar fluxChange = sum(totalFlux - totalFluxPreTransfer).value();
-scalar fluxTotal = sum(totalFlux).value();
+scalar fluxChange = sum
+(
+    (totalFlux - totalFluxPreTransfer) /
+    (totalFluxPreTransfer + dimensionedScalar("",totalFlux.dimensions(),scalar(1e-16)))
+).value();
+scalar momentumChange = 
+(
+    mag
+    (
+        fvc::domainIntegrate
+        (
+            totalMomentum - totalMomentumPreTransfer
+        )
+    ).value() / 
+    (mag
+    (
+        fvc::domainIntegrate(totalMomentum)
+    ).value() + 1e-16)
+);
+
 Info    << "Transfer energy change: " 
         << (energyTot - energyTotPreTransfer) << endl;
 Info    << "Momentum change: " 
         << fluxChange << endl;
-Info    << "Momentum total: " 
-        << fluxTotal << endl;
 
 transferDiags 
       << runTime.timeName() << "  "
       << (energyTot - energyTotPreTransfer) << "  "
       << (KEsum - KEsumPreTransfer) << "  "
       << (PEsum - PEsumPreTransfer) << "  "
-      << (IEsum - IEsumPreTransfer) << endl;
+      << (IEsum - IEsumPreTransfer) << " "
+      << momentumChange << " "
+      << fluxChange << " "
+      << min(energyField - energyFieldPreTransfer).value() << " "
+      << max(energyField - energyFieldPreTransfer).value()
+      << endl;
 }

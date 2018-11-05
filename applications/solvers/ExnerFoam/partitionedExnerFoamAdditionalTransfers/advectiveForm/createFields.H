@@ -117,6 +117,16 @@ for(label ip = 1; ip < partNames.size(); ip++)
     u[ip] = fvc::reconstruct(volFlux[ip]);
 }
 
+Info << "Calculating the cell centre momentum, in each partition\n" << endl;
+partitionedVolVectorField momentum
+(
+    "momentum", partNames, sigmaRho[0]*u[0], sigmaRho
+);
+for(label ip = 1; ip < partNames.size(); ip++)
+{
+    momentum[ip] = sigmaRho[ip]*u[ip];
+}
+
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.storeTime();
 theta.storeTime();
@@ -221,7 +231,7 @@ for(label jp = 0; jp < nParts; jp++)
     );
 }
 
-Info << "Initialising the theta transfer between partitions\n" << endl;
+Info << "Initialising volFlux transfer between partitions\n" << endl;
 const dimensionedScalar volFluxTransferTermZero
 (
     "volFluxTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
@@ -246,7 +256,85 @@ for(label jp = 0; jp < nParts; jp++)
     );
 }
 
-Info << "Initialising the velocity transfer between partitions\n" << endl;
+
+Info << "Initialising flux transfer between partitions\n" << endl;
+const dimensionedScalar fluxTransferTermZero
+(
+    "fluxTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+surfaceScalarField fluxTransferTermTmp
+(
+    IOobject("fluxTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    fluxTransferTermZero
+);
+PtrList<partitionedSurfaceScalarField> fluxTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    fluxTransferTerm.set
+    (
+        jp, 
+        new partitionedSurfaceScalarField
+        (
+            partNames[jp]+'.'+"fluxTransferTerm", partNames, fluxTransferTermTmp
+        )
+    );
+}
+
+
+Info << "Initialising velocity transfer between partitions\n" << endl;
+const dimensionedScalar velocityTransferTermZero
+(
+    "velocityTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+volScalarField velocityTransferTermTmp
+(
+    IOobject("velocityTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    velocityTransferTermZero
+);
+PtrList<partitionedVolScalarField> velocityTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    velocityTransferTerm.set
+    (
+        jp, 
+        new partitionedVolScalarField
+        (
+            partNames[jp]+'.'+"velocityTransferTerm", partNames, velocityTransferTermTmp
+        )
+    );
+}
+
+
+Info << "Initialising momentum transfer between partitions\n" << endl;
+const dimensionedScalar momentumTransferTermZero
+(
+    "momentumTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+volScalarField momentumTransferTermTmp
+(
+    IOobject("momentumTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    momentumTransferTermZero
+);
+PtrList<partitionedVolScalarField> momentumTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    momentumTransferTerm.set
+    (
+        jp, 
+        new partitionedVolScalarField
+        (
+            partNames[jp]+'.'+"momentumTransferTerm", partNames, momentumTransferTermTmp
+        )
+    );
+}
+
+/*Info << "Initialising the velocity transfer between partitions\n" << endl;
 const dimensionedVector velocityTransferTermZero
 (
     "velocityTransferTermZero", dimensionSet(0,-2,-2,0,0), vector(scalar(0),scalar(0),scalar(0))
@@ -269,7 +357,7 @@ for(label jp = 0; jp < nParts; jp++)
             partNames[jp]+'.'+"velocityTransferTerm", partNames, velocityTransferTermTmp
         )
     );
-}
+}*/
 
 Info << "Initialising the transfer term between partitions\n" << endl;
 volScalarField transferTmp

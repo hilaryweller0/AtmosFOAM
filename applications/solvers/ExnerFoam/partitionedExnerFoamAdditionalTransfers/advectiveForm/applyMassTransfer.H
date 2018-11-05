@@ -100,8 +100,8 @@ for(label ip = 0; ip < nParts; ip++)
 
 
 
-//Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
-//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
+Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
+     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
 
 //Conditions for the treatment of sigmaRho in the transfer terms.
 partitionedVolScalarField sigmaRhoNumerator = sigmaRho;
@@ -138,7 +138,10 @@ if (1)
 }
 if (1)
 {
-    #include "applyVelocityTransfer.H"
+    //#include "applyVelocityTransfer.H"
+    //#include "applyVolFluxTransfer.H"
+    //#include "applyFluxTransfer.H"
+    #include "applyMomentumTransfer.H"
 }
 
 for(label ip = 0; ip < nParts; ip++)
@@ -147,6 +150,7 @@ for(label ip = 0; ip < nParts; ip++)
     {
         if (ip != jp)
         {
+            transferf[ip][jp] = fvc::interpolate(transfer[ip][jp], "massTransfer");
             transfer[ip][jp] = transfer[ip][jp]*
             max
             (
@@ -156,21 +160,58 @@ for(label ip = 0; ip < nParts; ip++)
             (
                 sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
             );
-            transferf[ip][jp] = fvc::interpolate(transfer[ip][jp], "massTransfer");
+            transferf[ip][jp] *= fvc::interpolate
+            (
+                max
+                (
+                    sigmaRhoPreTransfer[ip], minSigmaDiv*rho[ip]
+                ),
+                "massTransfer"
+            );
+            transferf[ip][jp] /= fvc::interpolate
+            (
+                max
+                (
+                    sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
+                ),
+                "massTransfer"
+            );
         }
     }
 }
 
 if (0)
 {
-    theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
+    partitionedVolScalarField thetaPreTransfer = theta;
+        
+    theta[0] += (-transfer[1][0]*thetaPreTransfer[0] + transfer[1][0]*thetaPreTransfer[1])
                /(1+transfer[0][1]+transfer[1][0]);
-    theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
+    theta[1] += (-transfer[0][1]*thetaPreTransfer[1] + transfer[0][1]*thetaPreTransfer[0])
+               /(1+transfer[0][1]+transfer[1][0]);
+    //theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
+    //           /(1+transfer[0][1]+transfer[1][0]);
+    //theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
     theta.updateSum();
 }
 if (0)
 {
-    volFlux[0] =
+    partitionedSurfaceScalarField volFluxPreTransfer = volFlux;
+    
+    volFlux[0] +=
+    (
+        -transferf[1][0]*volFluxPreTransfer[0] + transferf[1][0]*volFluxPreTransfer[1]
+    ) / 
+    (
+        1 + transferf[0][1] + transferf[1][0]
+    );
+    volFlux[1] +=
+    (
+        -transferf[0][1]*volFluxPreTransfer[1] + transferf[0][1]*volFluxPreTransfer[0]
+    ) / 
+    (
+        1 + transferf[0][1] + transferf[1][0]
+    );
+    /*volFlux[0] =
     (
         (1+transferf[0][1])*volFlux[0] + transferf[1][0]*volFlux[1]
     ) / 
@@ -183,7 +224,8 @@ if (0)
     ) / 
     (
         1+transferf[0][1]
-    );
+    );*/
+    volFlux.updateSum();
     for(label ip = 0; ip < nParts; ip++)
     {
         sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];

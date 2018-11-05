@@ -55,7 +55,8 @@ Info << "Initial IE = " << IEsumInit << endl;
 Info << "Initialising diagnostics file transferDiags.dat\n" << endl;
 
 OFstream transferDiags(args.rootPath() / args.caseName()/"transferDiags.dat");
-transferDiags << "#time   deltaTotalEnergy deltaKEsum deltaPEsum deltaIEsum" 
+transferDiags << "#time   deltaTotalEnergy deltaKEsum deltaPEsum deltaIEsum"
+              << " deltaMomentum deltaFlux minEnergyChange maxEnergyChange" 
               << endl;
               
 scalar KEsumPreTransfer = 0;
@@ -65,4 +66,8 @@ scalar energyTotPreTransfer = 0;
 
 surfaceScalarField totalFluxPreTransfer = 0*flux[0];
 surfaceScalarField totalFlux = 0*flux[0];
+volVectorField totalMomentumPreTransfer = 0*sigmaRho[0]*u[0];
+volVectorField totalMomentum = 0*sigmaRho[0]*u[0];
+volScalarField energyFieldPreTransfer = 0*sigmaRho[0]*magSqr(u[0]);
+volScalarField energyField = 0*sigmaRho[0]*magSqr(u[0]);
 
