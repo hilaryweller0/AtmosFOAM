@@ -45,6 +45,8 @@
                 phi -= dt/(1+ocCoeff)*Cp*rhof*thetaf*fvc::snGrad(Exner)
                      *mesh.magSf();
                 U = fvc::reconstruct(phi/rhof);
+                Uf = fvc::interpolate(U);
+                Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
             }
         }
         // Update the pressure and temperature based on the new Exner

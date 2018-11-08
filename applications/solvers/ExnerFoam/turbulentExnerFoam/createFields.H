@@ -21,6 +21,20 @@ volVectorField U
     mesh
 );
 
+// Cell face velocity
+surfaceVectorField Uf
+(
+    IOobject
+    (
+        "Uf",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
+    fvc::interpolate(U)
+);
+
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
 (
