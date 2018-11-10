@@ -132,113 +132,30 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
-if (1)
+if (useAdvectiveThetaTransfer)
 {
     #include "applyThetaTransfer.H"
 }
-if (1)
+else if (useFluxThetaTransfer)
 {
-    //#include "applyVelocityTransfer.H"
-    //#include "applyVolFluxTransfer.H"
-    //#include "applyFluxTransfer.H"
+    #include "applyThetaFluxTransfer.H"
+}
+
+if (useVelocityTransfer)
+{
+    #include "applyVelocityTransfer.H"
+}
+else if (useVolFluxTransfer)
+{
+    #include "applyVolFluxTransfer.H"
+}
+else if (useMomentumTransfer)
+{
     #include "applyMomentumTransfer.H"
 }
-
-for(label ip = 0; ip < nParts; ip++)
+else if (useFluxTransfer)
 {
-    for(label jp=0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            transferf[ip][jp] = fvc::interpolate(transfer[ip][jp], "massTransfer");
-            transfer[ip][jp] = transfer[ip][jp]*
-            max
-            (
-                sigmaRhoPreTransfer[ip], minSigmaDiv*rho[ip]
-            ) /
-            max
-            (
-                sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
-            );
-            transferf[ip][jp] *= fvc::interpolate
-            (
-                max
-                (
-                    sigmaRhoPreTransfer[ip], minSigmaDiv*rho[ip]
-                ),
-                "massTransfer"
-            );
-            transferf[ip][jp] /= fvc::interpolate
-            (
-                max
-                (
-                    sigmaRhoPreTransfer[jp], minSigmaDiv*rho[jp]
-                ),
-                "massTransfer"
-            );
-        }
-    }
+    #include "applyFluxTransfer.H"
 }
-
-if (0)
-{
-    partitionedVolScalarField thetaPreTransfer = theta;
-        
-    theta[0] += (-transfer[1][0]*thetaPreTransfer[0] + transfer[1][0]*thetaPreTransfer[1])
-               /(1+transfer[0][1]+transfer[1][0]);
-    theta[1] += (-transfer[0][1]*thetaPreTransfer[1] + transfer[0][1]*thetaPreTransfer[0])
-               /(1+transfer[0][1]+transfer[1][0]);
-    //theta[0] = ((1+transfer[0][1])*theta[0] + transfer[1][0]*theta[1])
-    //           /(1+transfer[0][1]+transfer[1][0]);
-    //theta[1] = (theta[1] + transfer[0][1]*theta[0])/(1+transfer[0][1]);
-    theta.updateSum();
-}
-if (0)
-{
-    partitionedSurfaceScalarField volFluxPreTransfer = volFlux;
-    
-    volFlux[0] +=
-    (
-        -transferf[1][0]*volFluxPreTransfer[0] + transferf[1][0]*volFluxPreTransfer[1]
-    ) / 
-    (
-        1 + transferf[0][1] + transferf[1][0]
-    );
-    volFlux[1] +=
-    (
-        -transferf[0][1]*volFluxPreTransfer[1] + transferf[0][1]*volFluxPreTransfer[0]
-    ) / 
-    (
-        1 + transferf[0][1] + transferf[1][0]
-    );
-    /*volFlux[0] =
-    (
-        (1+transferf[0][1])*volFlux[0] + transferf[1][0]*volFlux[1]
-    ) / 
-    (
-        1 + transferf[0][1] + transferf[1][0]
-    );
-    volFlux[1] = 
-    (
-        volFlux[1] + transferf[0][1]*volFlux[0]
-    ) / 
-    (
-        1+transferf[0][1]
-    );*/
-    volFlux.updateSum();
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
-        u[ip] = fvc::reconstruct(volFlux[ip]);
-        Uf[ip] = fvc::interpolate(u[ip], "Uf");
-    }
-}
-
-
-//transferf[0][1] = fvc::interpolate(transfer[0][1], "massTransfer");
-//transferf[1][0] = fvc::interpolate(transfer[1][0], "massTransfer");
-//transferf[0].updateSum();
-//transferf[1].updateSum();
-
 
 }

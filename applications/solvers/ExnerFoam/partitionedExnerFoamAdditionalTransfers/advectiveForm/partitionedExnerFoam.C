@@ -84,6 +84,7 @@ int main(int argc, char *argv[])
             #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
+        
         #include "calcDiagsPreTransfer.H"
         #include "massTransfers.H"
         

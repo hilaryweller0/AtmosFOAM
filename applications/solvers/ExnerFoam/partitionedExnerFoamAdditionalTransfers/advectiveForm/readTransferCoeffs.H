@@ -58,3 +58,33 @@ const Switch transferDenominatorOld
 (
     transferProps.lookup("transferDenominatorOld")
 );
+
+// Choose scheme for transfers in momentum equation.
+// Velocity and momentum at cell centers.
+// VolFlux and flux at faces.
+const Switch useVelocityTransfer
+(
+    transferProps.lookup("useVelocityTransfer")
+);
+const Switch useVolFluxTransfer
+(
+    transferProps.lookup("useVolFluxTransfer")
+);
+const Switch useMomentumTransfer
+(
+    transferProps.lookup("useMomentumTransfer")
+);
+const Switch useFluxTransfer
+(
+    transferProps.lookup("useFluxTransfer")
+);
+
+// Choose scheme for transfers in temperature equation.
+const Switch useAdvectiveThetaTransfer
+(
+    transferProps.lookup("useAdvectiveThetaTransfer")
+);
+const Switch useFluxThetaTransfer
+(
+    transferProps.lookup("useFluxThetaTransfer")
+);
