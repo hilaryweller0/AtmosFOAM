@@ -5,12 +5,6 @@
 partitionedVolScalarField sigmaRhoPreTransfer = sigmaRho;
 partitionedSurfaceScalarField sigmaRhofPreTransfer = sigmaRhof;
 
-//Info << "Before limiting"
-//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
-//     << " to " << max(massTransfer[0][1]).value()
-//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
-//     << " to " << max(massTransfer[1][0]).value() << endl;
-
 if (alphaM == scalar(0))
 {
     // Constraint to keep sigmaRho > 0
@@ -36,8 +30,6 @@ if (alphaM == scalar(0))
 
 // Transfer terms for other variables
 const scalar minSigmaDiv = max(minSigma, VSMALL);
-//transfer[0][1] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
-//transfer[1][0] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
 for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=0; jp < nParts; jp++)
@@ -52,15 +44,6 @@ for(label ip = 0; ip < nParts; ip++)
         }
     }
 }
-
-//Info << "Before mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
-//     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value()
-//     << "\nmassTransfer[0][1] goes from " << min(massTransfer[0][1]).value()
-//     << " to " << max(massTransfer[0][1]).value()
-//     << "\nmassTransfer[1][0] goes from " << min(massTransfer[1][0]).value()
-//     << " to " << max(massTransfer[1][0]).value()
-//     << "\nmin(rho[0]) = " << min(rho[0]).value() 
-//     << "\nmin(rho[1]) = " << min(rho[1]).value() << endl;
 
 // Update mass transfer terms to be either explicit or implicit depending on alphaC
 for(label ip = 0; ip < nParts; ip++)
@@ -132,6 +115,7 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
+//Transfer theta 
 if (useAdvectiveThetaTransfer)
 {
     #include "applyThetaTransfer.H"
@@ -141,6 +125,7 @@ else if (useFluxThetaTransfer)
     #include "applyThetaFluxTransfer.H"
 }
 
+//Transfer velocity
 if (useVelocityTransfer)
 {
     #include "applyVelocityTransfer.H"

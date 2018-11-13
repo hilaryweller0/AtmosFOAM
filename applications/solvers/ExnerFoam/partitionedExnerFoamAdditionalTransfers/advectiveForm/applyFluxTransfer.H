@@ -7,7 +7,7 @@ for(label ip = 0; ip < nParts; ip++)
 }
 partitionedSurfaceScalarField fluxPreTransfer = flux;
 
-// Set theta transfer terms to be either explicit or implicit based on alphaT
+// Set flux transfer terms to be either explicit or implicit based on alphaV
 for(label ip = 0; ip < nParts; ip++)
 {
     for(label jp=0; jp < nParts; jp++)
