@@ -26,10 +26,13 @@ for(label ip = 0; ip < nParts; ip++)
     {
         if (ip != jp)
         {
-            theta[ip] += dt *
-            (
-                sigmaRhoPreTransfer[jp] * thetaPreTransfer[jp] * thetaTransferTerm[jp][ip]
-              - sigmaRhoPreTransfer[ip] * thetaPreTransfer[ip] * thetaTransferTerm[ip][jp]
+            theta[ip] = 
+            ( 
+                sigmaRhoPreTransfer[ip] * thetaPreTransfer[ip] + dt *
+                (
+                    sigmaRhoPreTransfer[jp] * thetaPreTransfer[jp] * thetaTransferTerm[jp][ip]
+                  - sigmaRhoPreTransfer[ip] * thetaPreTransfer[ip] * thetaTransferTerm[ip][jp]
+                )
             ) / max(sigmaRho[ip], minSigmaDiv*rho[ip]);
         }
     }

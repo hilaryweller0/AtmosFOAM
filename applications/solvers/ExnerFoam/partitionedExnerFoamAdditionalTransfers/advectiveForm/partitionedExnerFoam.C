@@ -87,6 +87,7 @@ int main(int argc, char *argv[])
         
         #include "calcDiagsPreTransfer.H"
         #include "massTransfers.H"
+        #include "sigma.H"
         
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
