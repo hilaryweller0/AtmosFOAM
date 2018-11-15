@@ -1,6 +1,6 @@
 {
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
+         *pow(R/pRef*theta.mean(), kappa/(kappa-1));
     
     gradPcoeffSum = Cp*fvc::interpolate(theta.sum(), "theta");
 
