@@ -71,23 +71,27 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        #include "partitionedCourantNo.H"
-
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             transfer[0][1] = 0;
             transfer[1][0] = 0;
+            #include "partitionedCourantNo.H"
+            #include "sigma.H"
+            
             #include "rhoSigmaEqn.H"
-            //#include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                Info << "Min sigmaRho now " << ip << ": " << min(sigmaRho[ip]).value() << endl;
+            }
         }
         
         #include "calcDiagsPreTransfer.H"
         #include "massTransfers.H"
-        #include "sigma.H"
+        //#include "sigma.H"
         
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;

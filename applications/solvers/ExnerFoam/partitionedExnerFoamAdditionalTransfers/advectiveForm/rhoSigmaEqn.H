@@ -14,7 +14,7 @@ for(label ip = 0; ip < nParts; ip++)
 
     // Update sigmaRho based on the rate of change
     sigmaRho[ip] = sigmaRho[ip].oldTime() + dt*sigmaRho.ddt()[ip];
-    sigmaRho[ip].correctBoundaryConditions();
+    //sigmaRho[ip].correctBoundaryConditions();
     
     Info << "Min sigmaRho after " << ip << ": " << min(sigmaRho[ip]).value() << endl;
     

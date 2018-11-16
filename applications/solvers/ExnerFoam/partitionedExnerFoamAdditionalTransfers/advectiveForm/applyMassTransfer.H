@@ -52,11 +52,15 @@ for(label ip = 0; ip < nParts; ip++)
     {
         if (ip != jp)
         {
+            Info << "Transfer min: " << min(transfer[ip][jp]).value() << endl;
+            Info << "Transfer max: " << max(transfer[ip][jp]).value() << endl;
             massTransfer[ip][jp] = 1/dt * transfer[ip][jp] * 
-            max
-            (
-                sigmaRho[ip], minSigmaDiv*rho[ip]
-            ) /
+            //max
+            //(
+                sigmaRho[ip]
+            //    , minSigmaDiv*rho[ip]
+            //) 
+            /
             (
                 1 + alphaM*(transfer[ip][jp] + transfer[jp][ip])
             );
@@ -68,6 +72,7 @@ for(label ip = 0; ip < nParts; ip++)
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
 {
+    Info << "Min before transfer sigmaRho " << ip << ": " << min(sigmaRho[ip]).value() << endl;
     for(label jp=0; jp < nParts; jp++)
     {
         if (ip != jp)
@@ -75,7 +80,7 @@ for(label ip = 0; ip < nParts; ip++)
             sigmaRho[ip] += dt*(massTransfer[jp][ip] - massTransfer[ip][jp]);
         }
     }
-    Info << "Min sigmaRho " << ip << ": " << min(sigmaRho[ip]).value() << endl;
+    Info << "Min after transfer sigmaRho " << ip << ": " << min(sigmaRho[ip]).value() << endl;
 
     // Update the face values
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");

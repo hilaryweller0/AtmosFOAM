@@ -105,6 +105,16 @@ for(label ip = 1; ip < volFlux.size(); ip++)
 }
 flux.updateSum();
 
+partitionedSurfaceScalarField massFlux
+(
+    "massFlux", partNames, linearInterpolate(sigmaRho[0])*volFlux[0], sigmaf
+);
+for(label ip = 1; ip < massFlux.size(); ip++)
+{
+    massFlux[ip] = linearInterpolate(sigmaRho[ip])*volFlux[ip];
+}
+massFlux.updateSum();
+
 partitionedSurfaceScalarField sigmaFlux = volFlux.timesSigma();
 
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
@@ -257,27 +267,27 @@ for(label jp = 0; jp < nParts; jp++)
 }
 
 
-Info << "Initialising flux transfer between partitions\n" << endl;
-const dimensionedScalar fluxTransferTermZero
+Info << "Initialising mass flux transfer between partitions\n" << endl;
+const dimensionedScalar massFluxTransferTermZero
 (
-    "fluxTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+    "massFluxTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
 );
-surfaceScalarField fluxTransferTermTmp
+surfaceScalarField massFluxTransferTermTmp
 (
-    IOobject("fluxTransferTerm", runTime.timeName(), mesh,
+    IOobject("massFluxTransferTerm", runTime.timeName(), mesh,
              IOobject::NO_READ, IOobject::NO_WRITE),
     mesh,
-    fluxTransferTermZero
+    massFluxTransferTermZero
 );
-PtrList<partitionedSurfaceScalarField> fluxTransferTerm(nParts);
+PtrList<partitionedSurfaceScalarField> massFluxTransferTerm(nParts);
 for(label jp = 0; jp < nParts; jp++)
 {
-    fluxTransferTerm.set
+    massFluxTransferTerm.set
     (
         jp, 
         new partitionedSurfaceScalarField
         (
-            partNames[jp]+'.'+"fluxTransferTerm", partNames, fluxTransferTermTmp
+            partNames[jp]+'.'+"massFluxTransferTerm", partNames, massFluxTransferTermTmp
         )
     );
 }
