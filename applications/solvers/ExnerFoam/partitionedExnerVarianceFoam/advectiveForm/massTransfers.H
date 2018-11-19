@@ -27,8 +27,6 @@ if (Ksigma.value() > SMALL)
             massTransfer[jp][ip] = -min(massTransferTmp, massTransferZero);
         }
     }
-
-    #include "applyMassTransfer.H"
 }
 
 // Mass transfer to avoid changes in sigmaRho due to partition divergence
@@ -38,8 +36,6 @@ if (divTransfer)
                      + sigmaRho.ddt()[1] + (u[1] & fvc::grad(sigmaRho[1], "advectSigmaRho1"));
     massTransfer[0][1] = -0.5*min(T, massTransferZero);
     massTransfer[1][0] = 0.5*max(T, massTransferZero);
-
-    #include "applyMassTransfer.H"
 }
 
 // Mass transfer based on vertical velocity and horizontal divergence
@@ -58,8 +54,6 @@ if (wTransfer)
         fvc::div(sigmaFlux[1] - sigmaRhof[1]*((Uf[1] & ghat)*ghatSf)),
         massTransferZero
     );
-
-    #include "applyMassTransfer.H"
 }
 
 // Mass transfer based on buoyancy
@@ -75,8 +69,13 @@ if (thetaTransfer)
         fvc::laplacian(theta[1]+sqrt(thetaVar[1]))/(theta[1]+sqrt(thetaVar[1])),
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
+}
 
-    #include "applyMassTransfer.H"
+#include "applyMassTransfer.H"
+
+if (thetaVarTransfer)
+{
+    #include "applyThetaVarTransfer.H"
 }
 
 // Update the sums

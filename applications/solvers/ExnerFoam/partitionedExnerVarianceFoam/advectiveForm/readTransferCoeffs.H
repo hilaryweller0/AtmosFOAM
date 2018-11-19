@@ -61,4 +61,11 @@ const dimensionedVector heatSourceDirection
     transferProps.lookup("heatSourceDirection")
 );
 
+//Read terms for transfers based on variance
+const Switch thetaVarTransfer(transferProps.lookup("thetaVarTransfer"));
+const dimensionedScalar thetaVarTimescale
+(
+    transferProps.lookup("thetaVarTimescale")
+);
+
 

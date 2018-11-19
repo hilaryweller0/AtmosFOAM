@@ -76,9 +76,17 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-            #include "massTransfers.H"
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                Info << "theta" << ip << " post heat source: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
+            }
+            for(label ip = 0; ip < nParts; ip++)
+            {
+                Info << "thetaVar" << ip << " post heat source: [" << min(thetaVar[ip]).value() << ", " << max(thetaVar[ip]).value() << "]" << endl;
+            }
             #include "thetaVarEqn.H"
             #include "thetaEqn.H"
+            #include "massTransfers.H"
             #include "sigma.H"
             #include "calculateDrag.H"
             #include "exnerEqn.H"

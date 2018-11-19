@@ -308,6 +308,43 @@ partitionedSurfaceScalarField transferf
     )
 );
 
+Info << "Initialising the theta transfer between partitions\n" << endl;
+const dimensionedScalar thetaTransferTermZero
+(
+    "thetaTransferTermZero", dimensionSet(0,0,-1,0,0), scalar(0)
+);
+volScalarField thetaTransferTermTmp
+(
+    IOobject("thetaTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    thetaTransferTermZero
+);
+PtrList<partitionedVolScalarField> thetaTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    thetaTransferTerm.set
+    (
+        jp, 
+        new partitionedVolScalarField
+        (
+            partNames[jp]+'.'+"thetaTransferTerm", partNames, thetaTransferTermTmp
+        )
+    );
+}
+PtrList<partitionedVolScalarField> thetaVarTransferTerm(nParts);
+for(label jp = 0; jp < nParts; jp++)
+{
+    thetaVarTransferTerm.set
+    (
+        jp, 
+        new partitionedVolScalarField
+        (
+            partNames[jp]+'.'+"thetaTransferTerm", partNames, thetaTransferTermTmp
+        )
+    );
+}
+
 partitionedVolScalarField divu
 (
     "divu",
