@@ -79,5 +79,8 @@ makeRASModel(kEpsilon);
 #include "multiFluidBuoyantKEpsilon.H"
 makeRASModel(multiFluidBuoyantKEpsilon);
 
+#include "multiFluidThetaBuoyantKEpsilon.H"
+makeRASModel(multiFluidThetaBuoyantKEpsilon);
+
 
 // ************************************************************************* //
