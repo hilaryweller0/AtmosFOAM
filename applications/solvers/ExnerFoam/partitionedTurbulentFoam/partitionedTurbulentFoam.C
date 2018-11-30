@@ -94,7 +94,6 @@ int main(int argc, char *argv[])
             #include "thetaEqn.H"
             #include "sigma.H"
             #include "calculateDrag.H"
-            #include "UEqn.H"
             #include "exnerEqn.H"
         }
         #include "rhoSigmaEqn.H"

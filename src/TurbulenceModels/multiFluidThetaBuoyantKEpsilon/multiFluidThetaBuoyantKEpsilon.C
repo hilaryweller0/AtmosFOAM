@@ -109,7 +109,7 @@ multiFluidThetaBuoyantKEpsilon<BasicTurbulenceModel>::Gcoef() const
     const volScalarField& T = this->transport_.T();
     const volScalarField& rho = this->rho_;
 
-    return
+    return 
         (Cg_*this->Cmu_)*this->alpha_*rho*this->k_*
         (
             g &
@@ -130,8 +130,14 @@ multiFluidThetaBuoyantKEpsilon<BasicTurbulenceModel>::kSource() const
         this->mesh_.objectRegistry::template
         lookupObject<uniformDimensionedVectorField>("g");
 
-Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>::New
+    const 
+     Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>&
+       turbulence =
+       Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>::New
        (this->mesh_);
+
+    Info << "From turbulence " << this->k_.name()
+         << " Turbulence partNames = " << turbulence.partNames() << endl;
 
     if (mag(g.value()) > small)
     {
