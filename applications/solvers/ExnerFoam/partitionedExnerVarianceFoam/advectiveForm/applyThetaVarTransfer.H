@@ -34,9 +34,9 @@ massTransfer[0][1] = sigmaRho[0]/thetaVarTimescale * 0.5 *
 
 massTransfer[1][0] = sigmaRho[1]/thetaVarTimescale * 0.5 *
 (
-    1 - Foam::erf
+    1 + Foam::erf
     (
-        (theta[0] - theta[1]) /
+        (theta[1] - theta[0]) /
         max
         (
             thetaMin, 
@@ -123,52 +123,60 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 //Theta transfer based on mean theta
-theta[0] -= dt*thetaTransferTerm[0][1]*thetaPreTransfer[0];
+theta[0] -= dt*thetaTransferTerm[0][1]*thetaPreTransfer[0] * 
+    sigmaRhoPreTransfer[1] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
 theta[1] += dt*thetaTransferTerm[0][1]*thetaPreTransfer[0] * 
-    sigmaRhoPreTransfer[0] / max(sigmaRho[1], minSigmaDiv*rho[1]);
+    sigmaRhoPreTransfer[0] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
 
-theta[0] -= dt*thetaTransferTerm[1][0]*thetaPreTransfer[1] *
-    sigmaRhoPreTransfer[1] / max(sigmaRho[0], minSigmaDiv*rho[0]);
-theta[1] += dt*thetaTransferTerm[1][0]*thetaPreTransfer[1];
+theta[0] += dt*thetaTransferTerm[1][0]*thetaPreTransfer[1] *
+    sigmaRhoPreTransfer[1] / max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+theta[1] -= dt*thetaTransferTerm[1][0]*thetaPreTransfer[1];
 
 //Theta transfer based on theta variance
 theta[0] -= dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]);
-//theta[1] += dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]) * 
-//    sigmaRhoPreTransfer[0] / max(sigmaRho[1], minSigmaDiv*rho[1]);
+theta[1] += dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]) * 
+    sigmaRhoPreTransfer[0] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
 
-//theta[0] += dt*thetaVarTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]) *
-//    sigmaRhoPreTransfer[1] / max(sigmaRho[0], minSigmaDiv*rho[0]);
-theta[1] -= dt*thetaVarTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]);
+theta[0] -= dt*thetaVarTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]) *
+    sigmaRhoPreTransfer[1] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+theta[1] += dt*thetaVarTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]);
 
-//Theta variance transfer terms
-for(label ip = 0; ip < nParts; ip++)
-{
-    for(label jp=0; jp < nParts; jp++)
-    {
-        if (ip != jp)
-        {
-            thetaVar[ip] -= dt*thetaTransferTerm[ip][jp]*thetaVarPreTransfer[ip];
-            thetaVar[ip] += dt*thetaTransferTerm[jp][ip]*thetaVarPreTransfer[jp] *
-                sigmaRhoPreTransfer[jp] / max(sigmaRho[ip], minSigmaDiv*rho[ip]);
-            thetaVar[ip] -= dt/thetaVarTimescale * (scalar(1) - thetaVarTimescale*thetaTransferTerm[ip][jp]) * sqr(theta[ip] - thetaPreTransfer[ip]);
-            
-            thetaVar[ip] -= dt * sqrt(thetaVarPreTransfer[ip]) * thetaVarTransferTerm[0][1] *
-            (
-                thetaPreTransfer[ip] - theta[ip] + (theta[jp] - theta[ip]) * 
-                thetaVarPreTransfer[ip]/max(thetaVarMin, thetaVarPreTransfer[ip] + thetaVarPreTransfer[jp])
-            );
-            
-            thetaVar[ip] = max(thetaVar[ip], 0*thetaVar[ip]);
-        }
-    }
-}
+
+//Theta variance transfer based on mean theta
+thetaVar[0] -= dt*thetaTransferTerm[0][1]*thetaVarPreTransfer[0];
+thetaVar[1] += dt*thetaTransferTerm[0][1]*thetaVarPreTransfer[0] * 
+    sigmaRhoPreTransfer[0] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+
+thetaVar[0] += dt*thetaTransferTerm[1][0]*thetaVarPreTransfer[1] *
+    sigmaRhoPreTransfer[1] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+thetaVar[1] -= dt*thetaTransferTerm[1][0]*thetaVarPreTransfer[1];
+
+//Theta variance transfer based on theta variance
+thetaVar[0] -= dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]) *
+    (theta[1] - theta[0]) *
+    thetaVar[0]/max(thetaVar[0] + thetaVar[1], thetaVarMin);
+thetaVar[1] += dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]) * 
+    (theta[1] - theta[0]) *
+    thetaVar[0]/max(thetaVar[0] + thetaVar[1], thetaVarMin) *
+    sigmaRhoPreTransfer[0] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+
+thetaVar[0] += dt*thetaTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]) *
+    (theta[1] - theta[0]) *
+    thetaVar[1]/max(thetaVar[0] + thetaVar[1], thetaVarMin) *
+    sigmaRhoPreTransfer[1] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
+thetaVar[1] -= dt*thetaTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]) * 
+    (theta[1] - theta[0]) *
+    thetaVar[1]/max(thetaVar[0] + thetaVar[1], thetaVarMin);
+
 
 // Update the sum
+sigmaRho.updateSum();
 theta.updateSum();
 
 for(label ip = 0; ip < nParts; ip++)
 {
     Info << "theta" << ip << " post Var transfer: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
+    Info << "Total theta" << ip << ": " << sum(theta.sum()).value();
 }
 for(label ip = 0; ip < nParts; ip++)
 {
