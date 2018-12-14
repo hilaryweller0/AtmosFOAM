@@ -130,7 +130,8 @@ theta[1] += dt*thetaTransferTerm[0][1]*thetaPreTransfer[0] *
 
 theta[0] += dt*thetaTransferTerm[1][0]*thetaPreTransfer[1] *
     sigmaRhoPreTransfer[1] / max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
-theta[1] -= dt*thetaTransferTerm[1][0]*thetaPreTransfer[1];
+theta[1] -= dt*thetaTransferTerm[1][0]*thetaPreTransfer[1] * 
+    sigmaRhoPreTransfer[0] /  max(sigmaRho.sum(), minSigmaDiv*(rho[0]+rho[1]));
 
 //Theta transfer based on theta variance
 theta[0] -= dt*thetaVarTransferTerm[0][1]*sqrt(thetaVarPreTransfer[0]);
