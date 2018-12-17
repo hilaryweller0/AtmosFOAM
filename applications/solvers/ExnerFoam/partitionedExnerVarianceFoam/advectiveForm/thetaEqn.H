@@ -14,16 +14,8 @@ for(label ip = 0; ip < nParts; ip++)
     );
 }
 
-for(label ip = 0; ip < nParts; ip++)
-{
-    Info << "theta" << ip << " before: " << min(theta[ip]) << endl;
-    Info << "sigmaRho" << ip << ": " << min(sigmaRho[ip]) << endl;
-}
 #include "updateHeatSource.H"
 for(label ip = 0; ip < nParts; ip++)
-{
-    Info << "theta" << ip << " after: " << min(theta[ip]) << endl;
-}
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
 if (nParts != 2)

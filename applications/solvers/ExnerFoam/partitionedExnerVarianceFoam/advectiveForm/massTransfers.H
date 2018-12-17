@@ -73,11 +73,6 @@ if (thetaTransfer)
 
 #include "applyMassTransfer.H"
 
-if (thetaVarTransfer)
-{
-    #include "applyThetaVarTransfer.H"
-}
-
 // Update the sums
 sigmaRho.updateSum();
 transfer.updateSum();

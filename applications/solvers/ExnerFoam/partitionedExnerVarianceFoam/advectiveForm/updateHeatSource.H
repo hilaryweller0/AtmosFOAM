@@ -2,11 +2,11 @@ if ((heatSource) and (runTime.time().value() <= heatSourceDuration.value()))
 {
     for(label ip = 0; ip < nParts; ip++)
     {
-        Info << "theta" << ip << " pre heat source: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
+        //Info << "theta" << ip << " pre heat source: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
     }
     for(label ip = 0; ip < nParts; ip++)
     {
-        Info << "thetaVar" << ip << " pre heat source: [" << min(thetaVar[ip]).value() << ", " << max(thetaVar[ip]).value() << "]" << endl;
+        //Info << "thetaVar" << ip << " pre heat source: [" << min(thetaVar[ip]).value() << ", " << max(thetaVar[ip]).value() << "]" << endl;
     }
 
     /*dimensionedScalar timeRatio = runTime.time()/heatSourceDuration;    
@@ -47,10 +47,10 @@ if ((heatSource) and (runTime.time().value() <= heatSourceDuration.value()))
     
     for(label ip = 0; ip < nParts; ip++)
     {
-        Info << "theta" << ip << " post heat source: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
+        //Info << "theta" << ip << " post heat source: [" << min(theta[ip]).value() << ", " << max(theta[ip]).value() << "]" << endl;
     }
     for(label ip = 0; ip < nParts; ip++)
     {
-        Info << "thetaVar" << ip << " post heat source: [" << min(thetaVar[ip]).value() << ", " << max(thetaVar[ip]).value() << "]" << endl;
+        //Info << "thetaVar" << ip << " post heat source: [" << min(thetaVar[ip]).value() << ", " << max(thetaVar[ip]).value() << "]" << endl;
     }
 }
