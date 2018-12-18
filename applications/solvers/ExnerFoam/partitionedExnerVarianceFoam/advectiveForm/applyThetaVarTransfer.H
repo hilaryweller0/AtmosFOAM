@@ -256,10 +256,10 @@ thetaVar[1] -= dt*thetaTransferTerm[1][0]*sqrt(thetaVarPreTransfer[1]) *
 
 // Update the sum
 theta.updateSum();
-thetaVar[0] = max(thetaVar[0], 0*thetaVar[0]);
-thetaVar[1] = max(thetaVar[1], 0*thetaVar[1]);
-//thetaVar[0] = mag(thetaVar[0]);
-//thetaVar[1] = mag(thetaVar[1]);
+//thetaVar[0] = max(thetaVar[0], 0*thetaVar[0]);
+//thetaVar[1] = max(thetaVar[1], 0*thetaVar[1]);
+thetaVar[0] = mag(thetaVar[0]);
+thetaVar[1] = mag(thetaVar[1]);
 
 Info << "thetaTransfer01: [" << min(thetaTransferTerm[0][1]).value() << ", " << max(thetaTransferTerm[0][1]).value() << "]" << endl;
 Info << "thetaTransfer10: [" << min(thetaTransferTerm[1][0]).value() << ", " << max(thetaTransferTerm[1][0]).value() << "]" << endl;
