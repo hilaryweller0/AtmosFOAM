@@ -68,6 +68,12 @@ int main(int argc, char *argv[])
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
+    // Validate turbulence fields after construction and update derived fields
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        turbulence[ip].validate();
+    }
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
