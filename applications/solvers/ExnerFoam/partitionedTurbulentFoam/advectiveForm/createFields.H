@@ -12,6 +12,7 @@ volScalarField Exner
     ),
     mesh
 );
+Exner.oldTime();
 
 // The partition names
 const label nParts = 2;
@@ -138,7 +139,7 @@ partitionedSurfaceScalarField sigmaFlux = volFlux.timesSigma();
 Info << "Calculating the cell centre velocity, u, in each partition\n" << endl;
 partitionedVolVectorField u
 (
-    "u", partNames, mesh, runTime.timeName(), sigmaRho
+    "u", partNames, fvc::reconstruct(volFlux[0]), sigmaRho
 );
 for(label ip = 1; ip < partNames.size(); ip++)
 {
@@ -147,8 +148,11 @@ for(label ip = 1; ip < partNames.size(); ip++)
 
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.storeTime();
+theta.storeTime();
 sigmaRho.storeTime();
+flux.sum().oldTime();
 flux.storeTime();
+rho.storeTime();
 sigma.storeTime();
 sigmaFlux.storeTime();
 
@@ -240,6 +244,18 @@ partitionedSurfaceScalarField transferf
     )
 );
 
+partitionedVolScalarField Stransfer
+(
+    "Stransfer",
+    partNames,
+    volScalarField
+    (
+        IOobject("Stransfer", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimless, scalar(0))
+    )
+);
+
 partitionedVolScalarField divu
 (
     "divu",
@@ -252,6 +268,19 @@ for(label ip = 1; ip < partNames.size(); ip++)
 {
     divu[ip] = fvc::div(volFlux[ip]);
 }
+
+// Temperature of the transferred fluid
+partitionedVolScalarField thetat
+(
+    "thetat",
+    partNames,
+    volScalarField
+    (
+        IOobject("thetat", runTime.timeName(), mesh),
+        mesh,
+        dimensionedScalar("", dimTemperature, scalar(0))
+    )
+);
 
 Info << "Initialising turbulence in each partition\n" << endl;
 Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>
@@ -267,4 +296,3 @@ for(label ip = 0; ip < nParts; ip++)
         )
     );
 }
-

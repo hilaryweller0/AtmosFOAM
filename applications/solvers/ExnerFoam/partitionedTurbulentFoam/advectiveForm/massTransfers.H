@@ -6,9 +6,15 @@ if (nParts != 2)
         << nParts << exit(FatalError);
 }
 
-// Zero the transfer terms then calculate and apply mass
-massTransfer[0][1] = massTransferZero;
-massTransfer[1][0] = massTransferZero;
+// Set all mass transfers to zero
+for(label ip = 0; ip < nParts; ip++)
+{
+    for(label jp=ip+1; jp < nParts; jp++)
+    {
+        massTransfer[ip][jp] == massTransferZero;
+        massTransfer[jp][ip] == massTransferZero;
+    }
+}
 
 // Mass tranfer terms as diffusion between partitions
 if (Ksigma.value() > SMALL)
@@ -62,11 +68,13 @@ if (thetaTransfer)
         fvc::laplacian(theta[0])/theta[0],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
+
     massTransfer[1][0] += sigmaRho[1]*thetaTransferDiffusivity*max
     (
         fvc::laplacian(theta[1])/theta[1],
         dimensionedScalar("", dimensionSet(0,-2,0,0,0), scalar(0))
     );
+
 }
 
 #include "applyMassTransfer.H"

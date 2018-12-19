@@ -1,8 +1,8 @@
 {
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
+         *pow(R/pRef*theta.mean(), kappa/(kappa-1));
     
-    gradPcoeffSum = Cp*thetaf.sum();
+    gradPcoeffSum = Cp*fvc::interpolate(theta.sum(), "theta");
 
     for (int corr=0; corr<nCorr; corr++)
     {
@@ -15,24 +15,28 @@
               -fvc::interpolate
                (
                    fvc::div(volFlux[ip], u[ip], "u")
-                 - u[ip] * fvc::div(volFlux[ip]),
-//                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/sigmaRho[ip],
+                 - u[ip] * fvc::div(volFlux[ip])
+                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/sigmaRho[ip],
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])
             );
             
             // Flux with gravity
-            volFlux[ip] = volFlux[ip].oldTime() + dt/(1+ocCoeff)*
+            volFlux[ip] = volFlux[ip].oldTime() + dt*
             (
-                (volFlux.ddt()[ip] + gSf)
-              + ocCoeff*volFlux.ddt()[ip].oldTime()
+                (1-offCentre)*volFlux.ddt()[ip].oldTime()
+              + offCentre*(volFlux.ddt()[ip] + gSf)
             );
             sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
         }
         sigmaFlux.updateSum();
         // Needed for Exner boundary conditions
-        surfaceScalarField rhog("rhog", sigmaRhof.sum()*gSf);
+        surfaceScalarField rhog
+        (
+            "rhog",
+            fvc::interpolate(sigmaRho.sum(), "rho")*gSf
+        );
 
         // Helmholtz equation
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
@@ -40,8 +44,9 @@
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              + fvc::div(sigmaFlux.sum())
-              - fvm::laplacian(dt/(1+ocCoeff)*gradPcoeffSum, Exner)
+              + (1-offCentre)*fvc::div(sigmaFlux.sum().oldTime())
+              + offCentre*fvc::div(sigmaFlux.sum())
+              - fvm::laplacian(sqr(offCentre)*dt*gradPcoeffSum, Exner)
             );
 
             if(ucorr==nOuterCorr-1 && nonOrth==nNonOrthCorr && corr==nCorr-1)
@@ -58,22 +63,24 @@
             {
                 for(label ip = 0; ip < nParts; ip++)
                 {
-                    volFlux[ip] -= dt/(1+ocCoeff)*Cp*thetaf[ip]
+                    surfaceScalarField thetaf = fvc::interpolate
+                    (
+                        theta[ip], "theta"
+                    );
+                    volFlux[ip] -= offCentre*dt*Cp*thetaf
                                    *fvc::snGrad(Exner)*mesh.magSf();
 
-                    volFlux.ddt()[ip] += gSf - Cp*thetaf[ip]
+                    volFlux.ddt()[ip] += gSf - Cp*thetaf
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
 
                 // Include the mass transfer and drag implicitly (for nParts=2)
-                transferf[0]
-                    = fvc::interpolate(transfer[0], "massTransfer")
-                    + dt*dragCommon
-                     *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
-                transferf[1]
-                    = fvc::interpolate(transfer[1], "massTransfer")
-                    + dt*dragCommon
-                      *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
+                transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
+                             + dt*dragCommon
+                             *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
+                transferf[1] = fvc::interpolate(transfer[1], "massTransfer")
+                             + dt*dragCommon
+                             *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
                 transferf.updateSum();
                 
                 volFlux[0] =
@@ -94,16 +101,6 @@
                 volFlux.updateSum();
             }
         }
-        // Update the pressure and temperature based on the new Exner
-        for(label ip = 0; ip < nParts; ip++)
-        {
-            thermos[ip].p() = pRef*pow(Exner, 1/kappa);
-            thermos[ip].T() = theta[ip]*Exner;
-            thermos[ip].he() == thermos[ip].he(thermos[ip].p(),thermos[ip].T());
-            thermos[ip].correct();
-        }
     }
 }
-u.updateSum();
-Uf.updateSum();
 

@@ -23,24 +23,25 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedTurbulentFoam
+    partitionedExnerFoamAdv
 
 Description
-    Transient Solver for dry,buoyant, inviscid, incompressible, non-hydrostatic
-    partitioned flow, advective form momentum equation with bouyantkEpsilon
-    turbulence model
+    Transient Solver for dry, buoyant, compressible, non-hydrostatic
+    partitioned flow, advective form momentum equation, with optional turbulence
+    modelling.
 
 \*---------------------------------------------------------------------------*/
 
 #include "HodgeOps.H"
 #include "fvCFD.H"
-#include "turbulentFluidThermoModel.H"
-#include "PhaseCompressibleTurbulenceModel.H"
 #include "ExnerTheta.H"
-#include "rhoThermo.H"
 #include "Partitioned.H"
 #include "PartitionedFields.H"
-#include "CrankNicolsonDdtScheme.H"
+#include "moreListOps.H"
+#include "unitVectors.H"
+#include "turbulentFluidThermoModel.H"
+#include "PhaseCompressibleTurbulenceModel.H"
+#include "rhoThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
     #include "readThermoProperties.H"
     #include "readTransferCoeffs.H"
     HodgeOps H(mesh);
+    surfaceScalarField gd("gd", g & H.delta());
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
@@ -64,18 +66,7 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    fv::CrankNicolsonDdtScheme<vector> drhoUdt
-    (
-        mesh,
-        mesh.schemesDict().subDict("ddtSchemes").lookup("volFlux_CN")
-    );
-    const scalar ocCoeff = drhoUdt.ocCoeff();
-
-    // Validate turbulence fields after construction and update derived fields
-    for(label ip = 0; ip < nParts; ip++)
-    {
-        turbulence[ip].validate();
-    }
+    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -90,21 +81,19 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-            #include "massTransfers.H"
+            //#include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
-            #include "calculateDrag.H"
+            //#include "calculateDrag.H"
             #include "exnerEqn.H"
         }
-        #include "rhoSigmaEqn.H"
-        #include "massTransfers.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
         for(label ip = 0; ip < nParts; ip++)
         {
             turbulence[ip].correct();
         }
-
+        
         Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
              << max(sigma[0]).value() << endl;
 
