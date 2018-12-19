@@ -9,6 +9,15 @@
         // Explicit part of velocity for each partition (without mass tranfers)
         for(label ip = 0; ip < nParts; ip++)
         {
+            // Turbulent diffusion of u
+            volVectorField turbDiff
+            (
+                "turbDiff",
+                ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])// /sigmaRho[ip]
+            );
+            turbDiff.write();
+            exit(FatalError);
+        
             // Rate of change of flux without gravity
             volFlux.ddt()[ip] = mesh.Sf() &
             (
@@ -16,7 +25,7 @@
                (
                    fvc::div(volFlux[ip], u[ip], "u")
                  - u[ip] * fvc::div(volFlux[ip])
-                 + ((turbulence[ip].divDevRhoReff(u[ip])) & u[ip])/sigmaRho[ip],
+                 + turbDiff,
                    "convection"
                )
              - 2*(Omega ^ Uf[ip])

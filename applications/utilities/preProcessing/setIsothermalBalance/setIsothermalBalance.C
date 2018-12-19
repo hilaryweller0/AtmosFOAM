@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
                 )
             );
             innerConverged = 
-                ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
+                ExnerEqn.solve(Exner.name()).nIterations() == 0;
         }
         outerConverged = (mag(1-Exner.boundaryField()[groundBC][0])< BCtol);
 

@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
               - fvm::laplacian(gradPcoeff, Exner)
             );
             innerConverged
-                = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
+                = ExnerEqn.solve((Exner.name())).nIterations() == 0;
 
             // More inner iterations for moisture variables
             p = air.pFromExner(Exner);

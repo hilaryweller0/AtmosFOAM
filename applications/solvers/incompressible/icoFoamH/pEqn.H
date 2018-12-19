@@ -44,11 +44,11 @@ if (uPredictor)
 
             if(nonOrth == nNonOrthCorr && corr == nCorr-1)
             {
-                pEqn.solve(mesh.solver(p.name() + "Final"));
+                pEqn.solve((p.name() + "Final"));
             }
             else
             {
-                pEqn.solve(mesh.solver(p.name()));
+                pEqn.solve((p.name()));
             }
 
             if (nonOrth == nNonOrthCorr)

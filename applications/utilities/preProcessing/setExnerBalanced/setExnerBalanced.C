@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
                 fvc::div(phi)
               - fvm::laplacian(Cp*thetaf, Exner)
             );
-            innerConverged = ExnerEqn.solve(mesh.solver(Exner.name())).nIterations() == 0;
+            innerConverged = ExnerEqn.solve(Exner.name()).nIterations() == 0;
     	}
     	scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
         outerConverged = (mag(1-maxGroundExner)< BCtol);

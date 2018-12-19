@@ -27,7 +27,7 @@ while (pimple.correct())
           + fvc::div(rhof*rhorAUf*gSf)
         );
 
-        ExnerEqn.solve(mesh.solver(Exner.select(pimple.finalInnerIter())));
+        ExnerEqn.solve((Exner.select(pimple.finalInnerIter())));
 
         if (pimple.finalNonOrthogonalIter())
         {

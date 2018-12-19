@@ -96,7 +96,7 @@ int main(int argc, char *argv[])
             fvc::div(phiTmp) - fvm::laplacian(dt*g*hf, h, "laplacian(h)")
         );
         hEqn.setReference(0, h[0]);
-        converged = hEqn.solve(mesh.solver(h.name())).nIterations() == 0;
+        converged = hEqn.solve(h.name()).nIterations() == 0;
 
         // Ensure the domain contains the correct mean h
         dimensionedScalar hMeanTmp = fvc::domainIntegrate(h)/meshVol;

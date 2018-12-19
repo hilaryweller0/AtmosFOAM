@@ -69,11 +69,11 @@
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
             {
-                ExnerEqn.solve(mesh.solver(Exner.name() + "Final"));
+                ExnerEqn.solve((Exner.name() + "Final"));
             }
             else
             {
-                ExnerEqn.solve(mesh.solver(Exner.name()));
+                ExnerEqn.solve((Exner.name()));
             }
 
             // Back-substitutions

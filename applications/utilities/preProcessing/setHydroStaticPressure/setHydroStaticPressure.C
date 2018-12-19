@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
                 fvc::div(phi)
               - fvm::laplacian(p_rgh)
             );
-            innerConverged = p_rghEqn.solve(mesh.solver(p_rgh.name()))
+            innerConverged = p_rghEqn.solve(p_rgh.name())
                     .nIterations() == 0;
 
         }
