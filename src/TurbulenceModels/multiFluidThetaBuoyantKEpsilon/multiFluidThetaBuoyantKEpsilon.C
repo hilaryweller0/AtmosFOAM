@@ -162,14 +162,15 @@ multiFluidThetaBuoyantKEpsilon<BasicTurbulenceModel>::epsilonSource() const
     {
         vector gHat(g.value()/mag(g.value()));
 
-        volScalarField v(gHat & this->U_);
-        volScalarField u
+/*        volScalarField w(gHat & this->U_);
+        volScalarField uh
         (
-            mag(this->U_ - gHat*v)
+            mag(this->U_ - gHat*w)
           + dimensionedScalar("small", dimVelocity, small)
         );
 
-        return -fvm::SuSp(this->C1_*tanh(mag(v)/u)*Gcoef(), this->epsilon_);
+        return -fvm::SuSp(this->C1_*tanh(mag(w)/uh)*Gcoef(), this->epsilon_);
+*/        return -fvm::SuSp(this->C1_*Gcoef(), this->epsilon_);
     }
     else
     {
