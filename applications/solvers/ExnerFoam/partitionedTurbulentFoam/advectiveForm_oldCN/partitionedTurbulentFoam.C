@@ -91,6 +91,9 @@ int main(int argc, char *argv[])
             #include "thetaEqn.H"
             #include "sigma.H"
             //#include "calculateDrag.H"
+            theta.write();
+            sigma.write();
+            FatalErrorIn("") << exit(FatalError);
             #include "exnerEqn.H"
         }
         
@@ -99,9 +102,6 @@ int main(int argc, char *argv[])
         {
             turbulence[ip].correct();
         }
-        
-        Info << "sigma[0] goes from " << min(sigma[0]).value() << " to "
-             << max(sigma[0]).value() << endl;
 
         #include "compressibleContinuityErrs.H"
         #include "correctContinuityErrs.H"

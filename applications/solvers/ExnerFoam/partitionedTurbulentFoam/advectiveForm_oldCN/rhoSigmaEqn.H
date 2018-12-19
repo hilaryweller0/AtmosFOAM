@@ -17,7 +17,11 @@ for(label ip = 0; ip < nParts; ip++)
     
     // Update the sums and face values
     sigmaRhof[ip] = fvc::interpolate(sigmaRho[ip], "sigmaRho");
+    
+    Info << "sigmaRho["  << ip << "] goes from " << min(sigmaRho[ip]).value()
+         << " to " << max(sigmaRho[ip]).value() << endl;
 }
+
 flux.updateSum();
 sigmaRho.updateSum();
 sigmaRhof.updateSum();

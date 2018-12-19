@@ -21,8 +21,6 @@ for(label ip = 0; ip < nParts; ip++)
     Info << "sigmaRho["  << ip << "] goes from " << min(sigmaRho[ip]).value()
          << " to " << max(sigmaRho[ip]).value() << endl;
 }
-//sigmaRho.write();
-//FatalErrorIn("") << exit(FatalError);
 
 flux.updateSum();
 sigmaRho.updateSum();
