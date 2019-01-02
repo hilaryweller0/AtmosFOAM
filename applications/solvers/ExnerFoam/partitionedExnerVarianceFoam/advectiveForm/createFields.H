@@ -332,6 +332,18 @@ for(label jp = 0; jp < nParts; jp++)
         )
     );
 }
+
+const dimensionedScalar thetaVarTransferTermZero
+(
+    "thetaVarTransferTermZero", dimensionSet(0,0,-1,-1,0), scalar(0)
+);
+volScalarField thetaVarTransferTermTmp
+(
+    IOobject("thetaVarTransferTerm", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::NO_WRITE),
+    mesh,
+    thetaVarTransferTermZero
+);
 PtrList<partitionedVolScalarField> thetaVarTransferTerm(nParts);
 for(label jp = 0; jp < nParts; jp++)
 {
@@ -340,7 +352,7 @@ for(label jp = 0; jp < nParts; jp++)
         jp, 
         new partitionedVolScalarField
         (
-            partNames[jp]+'.'+"thetaTransferTerm", partNames, thetaTransferTermTmp
+            partNames[jp]+'.'+"thetaVarTransferTerm", partNames, thetaVarTransferTermTmp
         )
     );
 }
