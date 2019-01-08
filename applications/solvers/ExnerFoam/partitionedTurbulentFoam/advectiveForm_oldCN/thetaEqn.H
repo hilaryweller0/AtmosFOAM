@@ -13,7 +13,7 @@ for(label ip = 0; ip < nParts; ip++)
     );
     
     // correct BCs
-    theta[ip].correctBoundaryConditions();
+    //theta[ip].correctBoundaryConditions();
 }
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
