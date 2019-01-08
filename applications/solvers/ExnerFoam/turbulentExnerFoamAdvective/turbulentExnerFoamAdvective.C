@@ -92,8 +92,6 @@ int main(int argc, char *argv[])
             #include "exnerEqn.H"
         }
         
-        #include "rhoThetaEqn.H"
-        
         // Update rates of change for next time step
         dvolFluxdt += gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner);
         

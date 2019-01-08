@@ -11,7 +11,7 @@
         dvolFluxdt = -mesh.Sf() & fvc::interpolate
         (
             fvc::div(volFlux, U)
-	  - U*fvc::div(volFlux)
+          - U*fvc::div(volFlux)
           + ((turbulence->divDevRhoReff(U)) & U)/rho
 //            + 2*rho*(Omega^(U-Ug))
 //            - muSponge*rho*(sqr(ghat) & U)
@@ -19,7 +19,7 @@
 
         // volFluxU is the flux without g or dpdz (to get the BCs right)
         volFluxU = volFlux.oldTime()
-	         + dt/(1+ocCoeff)*
+                 + dt/(1+ocCoeff)*
                  (
                      dvolFluxdt
                    + ocCoeff*dvolFluxdt.oldTime()
@@ -51,7 +51,7 @@
             {
                 volFlux -= dt/(1+ocCoeff)*Cp*thetaf*fvc::snGrad(Exner)
                      *mesh.magSf();
-		phi = volFlux*rhof;
+                phi = volFlux*rhof;
                 U = fvc::reconstruct(volFlux);
                 Uf = fvc::interpolate(U);
                 Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
