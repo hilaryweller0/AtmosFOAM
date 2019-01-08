@@ -23,16 +23,16 @@ if ((heatSource) and (runTime.time().value() <= heatSourceDuration.value()))
       - Foam::sin(2*M_PI * t2.value())
     );
 
-    for(label ip = 0; ip < partNames.size(); ip++)
-    {
-        theta[ip] += timeFactor * thetaSource[ip] / 
+    //for(label ip = 0; ip < partNames.size(); ip++)
+    //{
+        theta[0] += timeFactor * thetaSource[0] / 
         (
             Cv * Exner * max
             (
-                sigmaRho[ip], dimensionedScalar("",dimensionSet(1,-3,0,0,0),scalar(1e-16))
+                sigmaRho[0], dimensionedScalar("",dimensionSet(1,-3,0,0,0),scalar(1e-16))
             ) 
         );
-    }
+    //}
     
     /*thetaVar[0] += sqr
     (
