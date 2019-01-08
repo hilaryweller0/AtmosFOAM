@@ -93,10 +93,10 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoSigmaEqn.H"
-            #include "massTransfers.H"
+            //#include "massTransfers.H"
             #include "thetaEqn.H"
             #include "sigma.H"
-            #include "calculateDrag.H"
+            //#include "calculateDrag.H"
             theta.write();
             sigma.write();
             FatalErrorIn("") << exit(FatalError);
