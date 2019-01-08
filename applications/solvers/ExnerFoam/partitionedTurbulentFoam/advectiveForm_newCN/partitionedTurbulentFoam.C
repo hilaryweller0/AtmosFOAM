@@ -23,12 +23,15 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedTurbulentFoam
+    partitionedExnerFoamAdv_newCN
 
 Description
-    Transient Solver for dry,buoyant, inviscid, incompressible, non-hydrostatic
-    partitioned flow, advective form momentum equation with bouyantkEpsilon
-    turbulence model
+    Transient Solver for dry, buoyant, compressible, non-hydrostatic
+    partitioned flow, advective form momentum equation, with optional turbulence
+    modelling.
+    Uses OpenFOAM's in-built functionality for Crank-Nicholson timestepping 
+    rather than the top-level timestepping usually utilised in AtmosFOAM, hence
+    "newCN".
 
 \*---------------------------------------------------------------------------*/
 

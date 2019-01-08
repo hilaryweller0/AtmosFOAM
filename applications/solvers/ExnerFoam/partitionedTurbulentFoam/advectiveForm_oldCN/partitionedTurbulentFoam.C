@@ -23,12 +23,14 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    partitionedExnerFoamAdv
+    partitionedExnerFoamAdv_oldCN
 
 Description
     Transient Solver for dry, buoyant, compressible, non-hydrostatic
     partitioned flow, advective form momentum equation, with optional turbulence
     modelling.
+    Uses AtmosFOAM's Crank-Nicholson timestepping rather than using OpenFOAM's
+    in-house libraries, hence "oldCN".
 
 \*---------------------------------------------------------------------------*/
 
