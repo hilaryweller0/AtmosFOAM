@@ -11,6 +11,9 @@ for(label ip = 0; ip < nParts; ip++)
         (1-offCentre)*theta.ddt()[ip].oldTime()
       + offCentre*theta.ddt()[ip]
     );
+    
+    // correct BCs
+    theta[ip].correctBoundaryConditions();
 }
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution

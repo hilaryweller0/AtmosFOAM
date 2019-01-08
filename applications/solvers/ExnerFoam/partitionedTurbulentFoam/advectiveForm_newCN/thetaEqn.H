@@ -8,6 +8,7 @@ for(label ip = 0; ip < nParts; ip++)
       - fvm::Sp(fvc::div(volFlux[ip]), theta[ip])
       - fvm::laplacian(turbulence[ip].alphaEff()/sigmaRho[ip], theta[ip])
     );
+    // theta.correctBoundaryConditions();
     thetaEqn.solve();
 }
 
