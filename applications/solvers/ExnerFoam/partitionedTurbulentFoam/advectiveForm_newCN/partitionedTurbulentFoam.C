@@ -97,10 +97,7 @@ int main(int argc, char *argv[])
             #include "thetaEqn.H"
             #include "sigma.H"
             //#include "calculateDrag.H"
-            #include "exnerEqn.H"/*
-            theta.write();
-            sigma.write();
-            FatalErrorIn("") << exit(FatalError);*/
+            #include "exnerEqn.H"
         }
         
         //- Solve the turbulence equations and correct the turbulence viscosity
@@ -110,7 +107,7 @@ int main(int argc, char *argv[])
         }
 
         #include "compressibleContinuityErrs.H"
-        //#include "correctContinuityErrs.H"
+        #include "correctContinuityErrs.H"
         #include "calcDiags.H"
         runTime.write();
 

@@ -33,7 +33,17 @@ Description
 {
     Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
          *pow(R/pRef*theta.mean(), kappa/(kappa-1));
-    Exner = sigmaRho.sum()/Psi;
+
+    volScalarField ExnerCorrection
+    (
+        "ExnerCorrection",
+        sigmaRho.sum()/Psi - Exner
+    );
+    ExnerCorrection.write();
+    sigmaRho.ddt()[0].write();
+    sigmaRho.ddt()[1].write();
+    rho.write();
+    //Exner = sigmaRho.sum()/Psi;
 }
 
 // ************************************************************************* //

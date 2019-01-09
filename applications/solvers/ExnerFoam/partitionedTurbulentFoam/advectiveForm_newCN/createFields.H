@@ -66,6 +66,8 @@ rho.updateSum();
 sigmaRho = rho.timesSigma();
 sigmaRho.updateSum();
 theta.updateSum();
+theta.write();
+rho.write();
 
 // Set pressure and temperature for the thermodynamics in each partition
 for(label ip = 0; ip < nParts; ip++)
@@ -153,8 +155,14 @@ sigma.storeTime();
 sigmaFlux.storeTime();
 
 Info << "Initialising the compressibility\n" << endl;
-volScalarField Psi("Psi", sigmaRho.sum()/Exner);
+volScalarField Psi
+(
+    "Psi",
+    pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
+    *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1))
+);
 Psi.oldTime();
+Psi.write();
 
 surfaceScalarField gradPcoeffSum
 (
@@ -239,19 +247,6 @@ partitionedSurfaceScalarField transferf
         dimensionedScalar("", dimless, scalar(0))
     )
 );
-
-partitionedVolScalarField divu
-(
-    "divu",
-    partNames,
-    fvc::div(volFlux[0]),
-    sigmaRho
-);
-
-for(label ip = 1; ip < partNames.size(); ip++)
-{
-    divu[ip] = fvc::div(volFlux[ip]);
-}
 
 Info << "Initialising turbulence in each partition\n" << endl;
 Partitioned<ThermalDiffusivity<PhaseCompressibleTurbulenceModel<fluidThermo>>>
