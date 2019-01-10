@@ -66,8 +66,6 @@ rho.updateSum();
 sigmaRho = rho.timesSigma();
 sigmaRho.updateSum();
 theta.updateSum();
-theta.write();
-rho.write();
 
 // Set pressure and temperature for the thermodynamics in each partition
 for(label ip = 0; ip < nParts; ip++)
@@ -170,7 +168,6 @@ for (label ip = 1; ip < nParts; ip++)
 }
 Psi.updateSum();
 Psi.sum().oldTime();
-Psi.write();
 
 surfaceScalarField gradPcoeffSum
 (
