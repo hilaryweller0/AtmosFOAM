@@ -155,13 +155,21 @@ sigma.storeTime();
 sigmaFlux.storeTime();
 
 Info << "Initialising the compressibility\n" << endl;
-volScalarField Psi
+partitionedVolScalarField Psi
 (
     "Psi",
-    pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-    *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1))
+    partNames,
+    pow(rho[0],(2*kappa-1)/(kappa-1))
+    *pow(R/pRef*theta[0], kappa/(kappa-1)),
+    sigma
 );
-Psi.oldTime();
+for (label ip = 1; ip < nParts; ip++)
+{
+    Psi[ip] = pow(rho[ip],(2*kappa-1)/(kappa-1))
+             *pow(R/pRef*theta[ip], kappa/(kappa-1));
+}
+Psi.updateSum();
+Psi.sum().oldTime();
 Psi.write();
 
 surfaceScalarField gradPcoeffSum

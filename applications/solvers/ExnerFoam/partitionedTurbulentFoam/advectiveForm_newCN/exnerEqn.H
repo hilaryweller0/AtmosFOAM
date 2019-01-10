@@ -1,6 +1,10 @@
 {
-    Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.sum()/sigmaRho.sum(), kappa/(kappa-1));
+    for(label ip = 0; ip < nParts; ip++)
+    {
+        Psi[ip] = pow(rho[ip],(2*kappa-1)/(kappa-1))
+                 *pow(R/pRef*theta[ip], kappa/(kappa-1));
+    }
+    Psi.updateSum();
     
     gradPcoeffSum = Cp*thetaf.sum();
 
@@ -39,7 +43,7 @@
         {
             fvScalarMatrix ExnerEqn
             (
-                fvm::ddt(Psi, Exner)
+                fvm::ddt(Psi.sum(), Exner)
               + fvc::div(sigmaFlux.sum())
               - fvm::laplacian(dt/(1+ocCoeff)*gradPcoeffSum, Exner)
             );

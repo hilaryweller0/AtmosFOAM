@@ -33,7 +33,7 @@ Description
 {
     dimensionedScalar totalMass = fvc::domainIntegrate(rho.sum());
 
-    volScalarField rhoDiff = rho.sum() - Psi*Exner;
+    volScalarField rhoDiff = rho.sum() - Psi.sum()*Exner;
 
     scalar sumLocalContErr =
     (
