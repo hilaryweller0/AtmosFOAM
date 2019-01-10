@@ -110,7 +110,6 @@ int main(int argc, char *argv[])
         }
 
         #include "compressibleContinuityErrs.H"
-        //#include "correctContinuityErrs.H"
         #include "calcDiags.H"
         runTime.write();
 
