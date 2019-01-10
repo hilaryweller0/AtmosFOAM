@@ -31,19 +31,25 @@ Description
 \*---------------------------------------------------------------------------*/
 
 {
-    Psi = pow(sigmaRho.sum(),(2*kappa-1)/(kappa-1))
-         *pow(R/pRef*theta.mean(), kappa/(kappa-1));
+    // Correct rho to be consistent with theta and Exner
+    for(label ip = 0; ip < partNames.size(); ip++)
+    {
+        rho[ip] = Psi[ip]*Exner;
+    }
+    rho.updateSum();
+    sigmaRho = rho.timesSigma();
+    sigmaRho.updateSum();
 
     volScalarField ExnerCorrection
     (
         "ExnerCorrection",
-        sigmaRho.sum()/Psi - Exner
+        sigmaRho.sum()/Psi.sum() - Exner
     );
     ExnerCorrection.write();
     sigmaRho.ddt()[0].write();
     sigmaRho.ddt()[1].write();
     rho.write();
-    //Exner = sigmaRho.sum()/Psi;
+    Exner = sigmaRho.sum()/Psi.sum();
 }
 
 // ************************************************************************* //

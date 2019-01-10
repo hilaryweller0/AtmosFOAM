@@ -15,7 +15,7 @@ for(label ip = 0; ip < partNames.size(); ip++)
     energyTmp = - sigmaRho[ip]*(g & mesh.C());
     PE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
-    energyTmp = sigmaRho[ip]*theta[ip]*sigmaRho.sum()/Psi*Cv;
+    energyTmp = sigmaRho[ip]*theta[ip]*Exner*Cv;
     IE[ip] = (fvc::domainIntegrate(energyTmp)/Vtot).value();
     
     energy[ip] = KE[ip] + PE[ip] + IE[ip];
