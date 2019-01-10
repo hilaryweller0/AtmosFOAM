@@ -102,9 +102,6 @@ int main(int argc, char *argv[])
                 #include "exnerEqn.H"
             }
         }
-        #include "rhoSigmaEqn.H"
-        #include "thetaEqn.H"
-        #include "sigma.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
         for(label ip = 0; ip < nParts; ip++)
