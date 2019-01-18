@@ -1,4 +1,7 @@
 // advective form theta equation
+
+dimensionedScalar alpha("alpha", nu/Pr);
+
 for(label ip = 0; ip < nParts; ip++)
 {
     fvScalarMatrix thetaEqn
@@ -6,7 +9,8 @@ for(label ip = 0; ip < nParts; ip++)
         fvm::ddt(theta[ip])
       + fvm::div(volFlux[ip], theta[ip], "theta")
       - fvm::Sp(fvc::div(volFlux[ip]), theta[ip])
-      - fvm::laplacian(turbulence[ip].alphaEff()/sigmaRho[ip], theta[ip])
+      //+ fvm::laplacian(thermos[ip].alphaEff()/sigmRho[ip], theta[ip])
+      - alpha*fvm::laplacian(theta[ip])
     );
     theta[ip].correctBoundaryConditions();
     thetaEqn.solve();
