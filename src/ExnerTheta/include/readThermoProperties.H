@@ -20,6 +20,18 @@ const dimensionedScalar pRef
 (
     "pRef", dimPressure, readScalar(thermoDict.lookup("pRef"))
 );
+const dimensionedScalar nu
+(
+    "nu", 
+    dimViscosity, 
+    readScalar(thermoDict.subDict("mixture").subDict("transport").lookup("nu"))
+);
+const dimensionedScalar Pr
+(
+    "Pr", 
+    dimensionSet(0,0,0,0,0,0,0), 
+    readScalar(thermoDict.subDict("mixture").subDict("transport").lookup("Pr"))
+);
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
@@ -39,6 +51,6 @@ const dimensionedScalar speedSound("speedSound", sqrt(gamma*R*T0));
 Info << "Cp = " << Cp.value() << " speedSound = " << speedSound << " kappa = "
      << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv << endl;
 
-Info << "Maximum acousitic Courant number = "
+Info << "Maximum acoustic Courant number = "
      << max(mesh.deltaCoeffs())*runTime.deltaT()*speedSound << endl;
 
