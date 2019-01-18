@@ -1,0 +1,3 @@
+turbulentExnerFoam.C
+
+EXE = $(FOAM_USER_APPBIN)/turbulentExnerFoamAdvective_alt

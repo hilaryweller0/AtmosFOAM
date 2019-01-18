@@ -15,7 +15,7 @@ fvScalarMatrix thetaEqn
   + fvm::div(volFlux, theta)
   - fvm::Sp(fvc::div(volFlux), theta)
   //- fvm::laplacian(turbulence->alphaEff()/rho, theta)
-  //- alpha*fvm::laplacian(theta)
+  - alpha*fvm::laplacian(theta)
 );
 
 theta.correctBoundaryConditions();

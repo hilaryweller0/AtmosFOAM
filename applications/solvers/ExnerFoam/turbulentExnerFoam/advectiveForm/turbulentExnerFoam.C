@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
+        
         #include "rhoThetaEqn.H"
         
         // Update rates of change for next time step
