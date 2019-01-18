@@ -108,3 +108,9 @@ debian/files
 debian/atmosfoam.debhelper.log
 debian/atmosfoam.substvars
 debian/atmosfoam
+
+# paraFoam files
+#########################
+*.foam
+*.obj
+*.blockMesh
