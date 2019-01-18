@@ -6,12 +6,16 @@ solve
 rhof = fvc::interpolate(rho);
 
 // theta equation
+
+dimensionedScalar alpha("alpha", nu/Pr);
+
 fvScalarMatrix thetaEqn
 (
     fvm::ddt(theta)
   + fvm::div(volFlux, theta)
   - fvm::Sp(fvc::div(volFlux), theta)
-  - fvm::laplacian(turbulence->alphaEff()/rho, theta)
+  //- fvm::laplacian(turbulence->alphaEff()/rho, theta)
+  //- alpha*fvm::laplacian(theta)
 );
 
 theta.correctBoundaryConditions();

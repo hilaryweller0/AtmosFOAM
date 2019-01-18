@@ -12,7 +12,8 @@
         (
             fvc::div(volFlux, U)
           - U*fvc::div(volFlux)
-          + ((turbulence->divDevRhoReff(U)) & U)/rho
+          //+ ((turbulence->divDevRhoReff(U)) & U)/rho
+          - nu*fvc::laplacian(U)
 //            + 2*rho*(Omega^(U-Ug))
 //            - muSponge*rho*(sqr(ghat) & U)
         );
