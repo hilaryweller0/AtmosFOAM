@@ -47,7 +47,6 @@ int main(int argc, char *argv[])
     #include "createControl.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
-    dimensionedScalar nu(envProperties.lookup("nu"));
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
