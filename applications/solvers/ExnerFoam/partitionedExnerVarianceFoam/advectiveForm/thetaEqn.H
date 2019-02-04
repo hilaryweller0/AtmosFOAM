@@ -15,7 +15,7 @@ for(label ip = 0; ip < nParts; ip++)
 }
 
 #include "updateHeatSource.H"
-for(label ip = 0; ip < nParts; ip++)
+//for(label ip = 0; ip < nParts; ip++)
 
 // Mass transfer terms (for nParts = 2 only) block implicit solution
 if (nParts != 2)

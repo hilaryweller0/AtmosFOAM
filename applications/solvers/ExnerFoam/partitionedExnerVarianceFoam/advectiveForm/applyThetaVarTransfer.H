@@ -71,6 +71,11 @@ for(label ip = 0; ip < nParts; ip++)
         }
     }
 }
+//Factor which prevents change in mass fractions.
+massTransfer[0][1] *= sigmaRhoPreTransfer[1] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
+massTransfer[1][0] *= sigmaRhoPreTransfer[0] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
 
 // Apply mass transfer terms (operator split) to sigmaRho equation
 for(label ip = 0; ip < nParts; ip++)
@@ -130,6 +135,12 @@ thetaTransferTerm[0][1] = 1./thetaVarTimescale * 0.5 *
 );
 thetaTransferTerm[1][0] = thetaTransferTerm[0][1];
 
+//Factor which prevents change in mass fractions.
+thetaTransferTerm[0][1] *= sigmaRhoPreTransfer[1] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
+thetaTransferTerm[1][0] *= sigmaRhoPreTransfer[0] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
+
 thetaVarTransferTerm[0][1] = 1./thetaVarTimescale / Foam::sqrt
 ( 
     2*M_PI * max( thetaVarMin, thetaVar[0] + thetaVar[1] ) 
@@ -140,6 +151,12 @@ Foam::exp
     max(thetaVarMin, thetaVar[0] + thetaVar[1])  
 );
 thetaVarTransferTerm[1][0] = thetaVarTransferTerm[0][1];
+
+//Factor which prevents change in mass fractions.
+thetaVarTransferTerm[0][1] *= sigmaRhoPreTransfer[1] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
+thetaVarTransferTerm[1][0] *= sigmaRhoPreTransfer[0] / 
+    max(sigmaRhoPreTransfer[0]+sigmaRhoPreTransfer[1], minSigmaDiv*(rho[0]+rho[1]));
 
 
 theta[0] *= sigmaRhoPreTransfer[0] / max(sigmaRho[0], minSigmaDiv*rho[0]);
