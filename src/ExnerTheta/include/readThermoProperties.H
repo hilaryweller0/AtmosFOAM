@@ -33,6 +33,8 @@ const dimensionedScalar Pr
     readScalar(thermoDict.subDict("mixture").subDict("transport").lookup("Pr"))
 );
 
+const dimensionedScalar alpha("alpha", nu/Pr);
+
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
     thermoDict.subDict("mixture")

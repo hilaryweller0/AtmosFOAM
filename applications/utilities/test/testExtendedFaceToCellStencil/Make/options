@@ -1,10 +1,10 @@
 EXE_INC = \
-    -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude \
+    -I$(ATMOSFOAM_TOOLS_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolumeAtmos \
+    -lfiniteVolumeAtmosFOAMtools \
     -lfiniteVolume \
     -lmeshTools

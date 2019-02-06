@@ -8,5 +8,5 @@ EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lshallowWater \
     -lmeshTools \
-    -lfiniteVolumeAtmos \
+    -lfiniteVolumeAtmosFOAMtools \
     -lfiniteVolume

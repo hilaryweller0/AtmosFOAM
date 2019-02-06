@@ -12,5 +12,5 @@ EXE_LIBS = \
     -lExnerTheta \
     -lspecie \
     -lmeshTools \
-    -lfiniteVolumeAtmos \
+    -lfiniteVolumeAtmosFOAMtools \
     -lfiniteVolume

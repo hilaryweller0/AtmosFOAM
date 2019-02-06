@@ -1,2 +1,0 @@
-Replaces parts of primitiveMesh (in $WM_PROJECT_DIR/src/OpenFOAM/meshes/primitiveMesh) to specify geometries for cells on a sphere.
-See Appendix B in https://doi.org/ccqh

@@ -1,4 +1,0 @@
-interpolation/surfaceInterpolation/schemes/analytic/analyticSurfaceInterpolationScheme.C
-
-LIB = $(FOAM_USER_LIBBIN)/libinterpolation
-
