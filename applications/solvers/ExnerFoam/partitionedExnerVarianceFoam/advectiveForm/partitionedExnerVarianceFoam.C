@@ -78,11 +78,13 @@ int main(int argc, char *argv[])
             #include "rhoSigmaEqn.H"
             #include "thetaVarEqn.H"
             #include "thetaEqn.H"
-            #include "massTransfers.H"
             #include "sigma.H"
-            #include "calculateDrag.H"
             #include "exnerEqn.H"
         }
+        
+        #include "calculateDrag.H"
+        #include "massTransfers.H"
+        #include "sigma.H"
         
         if (thetaVarTransfer)
         {

@@ -32,6 +32,15 @@ for(label ip = 0; ip < nParts; ip++)
 const scalar minSigmaDiv = max(minSigma, VSMALL);
 transfer[0] += dt*massTransfer[0][1]/max(sigmaRho[1], minSigmaDiv*rho[1]);
 transfer[1] += dt*massTransfer[1][0]/max(sigmaRho[0], minSigmaDiv*rho[0]);
+transfer.updateSum();
+
+transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
+             + dt*dragCommon
+             *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
+transferf[1] = fvc::interpolate(transfer[1], "massTransfer")
+             + dt*dragCommon
+             *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
+transferf.updateSum();
 
 //Info << "Before mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value()
@@ -59,5 +68,35 @@ for(label ip = 0; ip < nParts; ip++)
 
 //Info << "After mass transfer min(sigmaRho[0]) = " << min(sigmaRho[0]).value()
 //     << " and min(sigmaRho[1]) = " << min(sigmaRho[1]).value() << endl;
+
+theta[0] = ((1+transfer[0])*theta[0] + transfer[1]*theta[1])
+           /(1+transfer.sum());
+theta[1] = (theta[1] + transfer[0]*theta[0])/(1+transfer[0]);
+
+thetaVar[0] = ((1+transfer[0])*thetaVar[0] + transfer[1]*thetaVar[1])
+           /(1+transfer.sum());
+thetaVar[1] = (thetaVar[1] + transfer[0]*thetaVar[0])/(1+transfer[0]);
+
+volFlux[0] =
+(
+    (1+transferf[0])*volFlux[0] + transferf[1]*volFlux[1]
+)/(1+transferf.sum());
+volFlux[1] = (volFlux[1] + transferf[0]*volFlux[0])
+            /(1+transferf[0]);
+
+
+// Update mass flux and velocities based on the flux
+for(label ip = 0; ip < nParts; ip++)
+{
+    sigmaFlux[ip] = sigmaRhof[ip]*volFlux[ip];
+    u[ip] = fvc::reconstruct(volFlux[ip]);
+    Uf[ip] = fvc::interpolate(u[ip], "Uf");
+}
+
+sigmaRho.updateSum();
+theta.updateSum();
+thetaVar.updateSum();
+sigmaFlux.updateSum();
+volFlux.updateSum();
 
 }

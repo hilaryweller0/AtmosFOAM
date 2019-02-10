@@ -42,7 +42,7 @@ if (divTransfer)
     volScalarField T =-sigmaRho.ddt()[0] - (u[0] & fvc::grad(sigmaRho[0], "advectSigmaRho0"))
                      + sigmaRho.ddt()[1] + (u[1] & fvc::grad(sigmaRho[1], "advectSigmaRho1"));
     massTransfer[0][1] += -0.5*min(T, massTransferZero);
-    massTransfer[1][0] += 0.5*max(T, massTransferZero);
+    massTransfer[1][0] +=  0.5*max(T, massTransferZero);
 }
 
 // Mass transfer based on vertical velocity and horizontal divergence

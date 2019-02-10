@@ -20,10 +20,6 @@ if (nParts != 2)
         << nParts << exit(FatalError);
 }
 
-thetaVar[0] = ((1+transfer[0])*thetaVar[0] + transfer[1]*thetaVar[1])
-           /(1+transfer.sum());
-thetaVar[1] = (thetaVar[1] + transfer[0]*thetaVar[0])/(1+transfer[0]);
-
 // Update the sum
 thetaVar.updateSum();
 

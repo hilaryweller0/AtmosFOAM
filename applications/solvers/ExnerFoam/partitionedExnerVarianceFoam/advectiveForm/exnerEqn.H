@@ -73,22 +73,6 @@
                                         *fvc::snGrad(Exner)*mesh.magSf();
                 }
 
-                // Include the mass transfer and drag implicitly (for nParts=2)
-                transferf[0] = fvc::interpolate(transfer[0], "massTransfer")
-                             + dt*dragCommon
-                             *fvc::interpolate(sigma[0]/rho[1], "massTransfer");
-                transferf[1] = fvc::interpolate(transfer[1], "massTransfer")
-                             + dt*dragCommon
-                             *fvc::interpolate(sigma[1]/rho[0], "massTransfer");
-                transferf.updateSum();
-                
-                volFlux[0] =
-                (
-                    (1+transferf[0])*volFlux[0] + transferf[1]*volFlux[1]
-                )/(1+transferf.sum());
-                volFlux[1] = (volFlux[1] + transferf[0]*volFlux[0])
-                            /(1+transferf[0]);
-
                 // Update mass flux and velocities based on the flux
                 for(label ip = 0; ip < nParts; ip++)
                 {
