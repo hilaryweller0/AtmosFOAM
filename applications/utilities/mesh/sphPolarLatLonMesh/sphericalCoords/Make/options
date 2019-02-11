@@ -1,6 +1,0 @@
-EXE_INC = -ggdb3 -O0  -DFULLDEBUG
-
-/* EXE_INC = -I$(LIB_SRC)/cfdTools/lnInclude */
-/* EXE_LIBS = -lcfdTools */
-
-EXE_LIBS = -L$(FOAM_USER_LIBBIN)

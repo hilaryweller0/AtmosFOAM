@@ -20,5 +20,4 @@ set -e
 
 src/Allwmake $targetType $*
 applications/Allwmake $targetType $*
-wmake unittest
-testAtmosFOAM
+

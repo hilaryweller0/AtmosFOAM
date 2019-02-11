@@ -12,16 +12,8 @@ set -e
     exit 1
 }
 
-wmake $makeType meshTools
 wmake $makeType ExnerTheta
-wmake $makeType prescribedFields
-wmake $makeType orography
-wmake $makeType thermalFields
-wmake $makeType interpolation
-wmake $makeType sphericalGeometry
-wmake $makeType finiteVolume
 wmake $makeType CharneyPhillips
-wmake $makeType ghostMesh
 wmake $makeType shallowWater
-wmake $makeType TurbulenceModels
+wmake $makeType thermalFields
 
