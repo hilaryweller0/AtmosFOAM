@@ -32,6 +32,7 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
+#include "HodgeOps.H"
 #include "fvCFD.H"
 #include "ExnerTheta.H"
 
@@ -39,12 +40,12 @@ Description
 
 int main(int argc, char *argv[])
 {
+    // Allow running solver with -postProcess option
+    #include "postProcess.H"
+    
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "readEnvironmentalProperties.H"
-    #include "readThermoProperties.H"
-    #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
     

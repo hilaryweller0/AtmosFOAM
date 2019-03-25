@@ -22,7 +22,7 @@
         // Viscous term
         if (nu.value() > VSMALL)
         {
-            dVolFluxDt+= mesh.Sf() & fvc::interpolate
+            dVolFluxDt += mesh.Sf() & fvc::interpolate
             (
                 nu * fvc::laplacian(u), "convection"
             );
