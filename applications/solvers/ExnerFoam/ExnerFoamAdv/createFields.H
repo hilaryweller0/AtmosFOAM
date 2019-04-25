@@ -1,3 +1,9 @@
+// So postProcess can run properly
+#include "readEnvironmentalProperties.H"
+#include "readThermoProperties.H"
+HodgeOps H(mesh);
+#define dt runTime.deltaT()
+
 // Read in prognostic variables
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
@@ -44,7 +50,7 @@ volScalarField rho
         runTime.timeName(),
         mesh,
         IOobject::NO_READ,
-        IOobject::NO_WRITE
+        IOobject::AUTO_WRITE
     ),
     pRef/(R*theta)*pow(Exner, (1-kappa)/kappa)
 );
@@ -85,25 +91,45 @@ forAll(mesh.boundaryMesh(), patchi)
 Info << "Calculating the mass flux and volume flux\n"<<endl;
 surfaceScalarField volFlux
 (
-    IOobject("volFlux", runTime.timeName(), mesh),
+    IOobject
+    (
+       "volFlux",
+        runTime.timeName(),
+        mesh,
+        IOobject::NO_READ,
+        IOobject::AUTO_WRITE
+    ),
     Uf & mesh.Sf(),
     fluxBCs
 );
 surfaceScalarField flux
 (
-    IOobject("flux", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::NO_WRITE),
+    IOobject
+    (
+        "flux", 
+        runTime.timeName(), 
+        mesh,
+        IOobject::NO_READ, 
+        IOobject::AUTO_WRITE
+    ),
     linearInterpolate(rho)*volFlux
 );
 
-Info << "Setting cell centre velocity, u\n" << endl;
+// Cell centre velocity
+Info << "Reading in BCs and calculating the cell centre velocity, u\n" << endl;
 volVectorField u
 (
-    IOobject("u", runTime.timeName(), mesh,
-             IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
-    fvc::reconstruct(volFlux),
-    uBCs
+    IOobject
+    (
+        "u", 
+        runTime.timeName(), 
+        mesh,
+        IOobject::MUST_READ, 
+        IOobject::AUTO_WRITE
+    ),
+    mesh
 );
+u = fvc::reconstruct(volFlux);
 
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.oldTime();

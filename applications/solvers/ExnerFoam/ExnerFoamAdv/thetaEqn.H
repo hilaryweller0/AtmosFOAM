@@ -1,5 +1,5 @@
 // advective form theta equation
-dThetaDt = -fvc::div(volFlux, theta) + theta*fvc::div(volFlux);
+dThetaDt = -fvc::div(volFlux, theta, "theta") + theta*fvc::div(volFlux);
 
 // Viscous term
 if (alpha.value() > VSMALL)

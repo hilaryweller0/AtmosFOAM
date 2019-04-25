@@ -1,5 +1,6 @@
 EXE_INC = \
     -DFULLDEBUG -g -O0 \
+    -I$(ATMOSFOAM_TOOLS_SRC)/HodgeOps/lnInclude \
     -I$(ATMOSFOAM_TOOLS_SRC)/OpenFOAM/lnInclude \
     -I$(ATMOSFOAM_TOOLS_SRC)/finiteVolume/lnInclude \
     -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
@@ -9,6 +10,7 @@ EXE_INC = \
 
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
+    -lHodgeOps \
     -lExnerTheta \
     -lspecie \
     -lmeshTools \
