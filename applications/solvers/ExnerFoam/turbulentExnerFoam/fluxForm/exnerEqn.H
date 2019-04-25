@@ -8,7 +8,7 @@
         (
             fvc::div(phi, U)
             + ((turbulence->divDevRhoReff(U)) & U)
-//            + 2*rho*(Omega^(U-Ug))
+            + 2*rho*(Omega^(U-Ug))
 //            - muSponge*rho*(sqr(ghat) & U)
         );
 

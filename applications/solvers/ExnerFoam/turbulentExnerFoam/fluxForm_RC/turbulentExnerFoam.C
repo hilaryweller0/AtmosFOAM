@@ -38,7 +38,6 @@ Description
 #include "ExnerTheta.H"
 #include "OFstream.H"
 #include "rhoThermo.H"
-#include "fvOptions.H"
 #include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
     fv::CrankNicolsonDdtScheme<vector> drhoUdt
     (
         mesh,
-        mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(U)_CN")
+        mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
     );
     const scalar ocCoeff = drhoUdt.ocCoeff();
     
@@ -86,7 +85,7 @@ int main(int argc, char *argv[])
         for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
-//            #include "UEqn.H"
+            #include "UEqn.H"
 
             // Exner and momentum equations
             #include "exnerEqn.H"
@@ -95,7 +94,7 @@ int main(int argc, char *argv[])
         #include "rhoThetaEqn.H"
         
         // Update rates of change for next time step
-        dvolFluxdt += gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner);
+        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner));
         
         #include "compressibleContinuityErrs.H"
 

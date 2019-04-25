@@ -134,7 +134,7 @@ void fixedFluxBuoyantExnerFvPatchScalarField::updateCoeffs()
 void fixedFluxBuoyantExnerFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
-    writeEntry("value", os);
+    writeEntry(os, "value", *this);
 }
 
 

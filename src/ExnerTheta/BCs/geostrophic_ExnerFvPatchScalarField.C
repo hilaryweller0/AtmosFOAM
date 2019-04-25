@@ -149,6 +149,7 @@ void geostrophic_ExnerFvPatchScalarField::updateCoeffs()
 void geostrophic_ExnerFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
+    writeEntry(os, "value", *this);
     os << "        geostrophicVelocity " << Ug_ << ';' << endl;
     os << "        Omega               " << Omega_ << ';' << endl;
 }

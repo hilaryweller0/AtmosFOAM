@@ -131,7 +131,7 @@ void hydrostaticFvPatchScalarField::updateCoeffs()
 void hydrostaticFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
-    writeEntry("value", os);
+    writeEntry(os, "value", *this);
     Foam::writeEntry(os, "gradPcoeffName", gradPcoeffName_);
     Foam::writeEntry(os, "buoyancyName", buoyancyName_);
 }
