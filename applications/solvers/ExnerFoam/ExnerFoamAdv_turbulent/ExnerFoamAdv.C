@@ -34,7 +34,11 @@ Description
 
 #include "HodgeOps.H"
 #include "fvCFD.H"
+#include "turbulentFluidThermoModel.H"
 #include "ExnerTheta.H"
+#include "OFstream.H"
+#include "rhoThermo.H"
+#include "fvOptions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

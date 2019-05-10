@@ -12,21 +12,13 @@
             (
               -fvc::interpolate
                (
-                   fvc::div(volFlux, u, "u") - u * fvc::div(volFlux),
+                   fvc::div(volFlux, u, "u") - u * fvc::div(volFlux)
+                   - ((turbulence->divDevRhoReff(u)) & u)/rho,
                    "convection"
                )
             )
         )
         + gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf();
-        
-        // Viscous term
-        if (mu.value() > VSMALL)
-        {
-            dVolFluxDt += mesh.Sf() & fvc::interpolate
-            (
-                ((turbulence->divDevRhoReff(U)) & U)/rho, "convection"
-            );
-        }
         
         // Coriolis term
         if (magSqr(Omega.value()) > VSMALL)

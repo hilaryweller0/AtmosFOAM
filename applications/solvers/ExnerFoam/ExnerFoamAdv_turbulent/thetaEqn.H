@@ -4,7 +4,7 @@ dThetaDt = -fvc::div(volFlux, theta, "theta") + theta*fvc::div(volFlux);
 // Viscous term
 if (alpha.value() > VSMALL)
 {
-    dThetaDt += fvm::laplacian(turbulence->alphaEff(), theta)/rho;
+    dThetaDt += (1/rho)*fvc::laplacian(turbulence->alphaEff(), theta);
 }
 
 // Update theta according to the rate of change

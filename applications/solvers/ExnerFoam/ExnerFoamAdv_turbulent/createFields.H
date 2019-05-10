@@ -150,7 +150,7 @@ autoPtr<compressible::turbulenceModel> turbulence
     (
         rho,
         u,
-        phi,
+        flux,
         thermo
     )
 );
