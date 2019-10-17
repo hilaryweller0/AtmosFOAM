@@ -12,6 +12,7 @@ if (implicitAdvection)
 else
 {
     b = (bEqn.H() - Q)/bEqn.A();
+    b.correctBoundaryConditions();
 }
 
 // Bouyancy on the faces in the z direction

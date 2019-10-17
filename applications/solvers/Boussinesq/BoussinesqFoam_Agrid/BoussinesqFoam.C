@@ -59,12 +59,12 @@ int main(int argc, char *argv[])
             fvm::ddt(U)
           + fvm::div(phi, U)
           - fvm::laplacian(nu, U)
-          - b*kdir
+          //- b*kdir
         );
         
         if (implicitAdvection)
         {
-            solve(UEqn == /*b*kdir*/ - fvc::grad(p));
+            solve(UEqn == b*kdir - fvc::grad(p));
         }
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
