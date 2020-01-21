@@ -1,14 +1,16 @@
+#!/bin/bash -e
 
+rm -rf constant/polyMesh 0
 
 blockMesh
 #setFields
-setInitialVelocityField
-setAnalyticTracerField -constant
-#cp 0/T_analytic 0/T
+mkdir 0
+setAnalyticTracerField
 setVelocityField
+cp 0/T_analytic 0/T
 
 #scalarTransportFoamCN 
-jwscalarTransportFoam -FE
+jwScalarTransportFoam -CN
 #paraFoam
 
 #-help can be used to see the options
