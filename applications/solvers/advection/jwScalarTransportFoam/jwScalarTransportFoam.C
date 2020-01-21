@@ -86,9 +86,11 @@ int main(int argc, char *argv[])
                 fvScalarMatrix TEqn
                 (
                     fvm::ddt(T)
-                  + 0.5*divPhiT.oldTime()/* why not fvc::div(phi,T)*/
+                  + 0.5*divPhiT.oldTime()
 	          + 0.5*fvm::div(phi, T)
-	          //+ 0.5*fvc::div(phi, T, "highOrder")
+
+
+	         //+ 0.5*fvc::div(phi, T, "highOrder")
 	         // - 0.5*fvc::div(phi, T, "lowOrder")*offCenter*1/offCenter
                 );
                 TEqn.solve();
@@ -133,13 +135,14 @@ int main(int argc, char *argv[])
             }
 	}
         if (BDF2)
-        {
+        {       // I havent done this yet, but should be a BE solve first
                 fvScalarMatrix TEqn
                 (
                     fvm::ddt(T)
                   + 1*fvm::div(phi,T)
                 );
 	        TEqn.solve();
+		// then we have implementation of bdf2
             for (int corr = 0; corr < nCorr; corr++)
             {
                 fvScalarMatrix TEqn
@@ -167,9 +170,10 @@ int main(int argc, char *argv[])
             converged = sp.nIterations() <= 1;
         }
 */
-        //divPhiThi = fvc::div(phi, T, "highOrder");
+        divPhiThi = fvc::div(phi, T, "highOrder");
+	divPhiTlo = fvc::div(phi, T, "lowOrder");
 	divPhiT = fvc::div(phi, T);
-	//divPhiT = fvc::div(phi, T, "correction");
+	divPhiTcorr = fvc::div(phi, T, "correction");
 
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << nl << endl;
