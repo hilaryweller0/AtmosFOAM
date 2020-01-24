@@ -15,9 +15,15 @@ dVolFluxDt =
 // Viscous term
 // Compact vector Laplacian of the velocity
 Uf = linearInterpolate(u);
+//surfaceScalarField laplacianU
+//    = fvc::snGrad(fvc::div(volFlux))*mesh.magSf()
+//    - (linearInterpolate(fvc::curl(fvc::curl(Uf))) & mesh.Sf());
+
 surfaceScalarField laplacianU
-    = fvc::snGrad(fvc::div(volFlux))*mesh.magSf()
-    - (linearInterpolate(fvc::curl(fvc::curl(Uf))) & mesh.Sf());
+    = fvc::interpolate(fvc::laplacian(u)) & mesh.Sf();
+laplacianU += fvc::snGrad(fvc::div(volFlux))*mesh.magSf()
+            - fvc::snGrad(fvc::div(Uf & mesh.Sf()))*mesh.magSf();
+
 if (nu.value() > VSMALL)
 {
     dVolFluxDt += nu*laplacianU;
