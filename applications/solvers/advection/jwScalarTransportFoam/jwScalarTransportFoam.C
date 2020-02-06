@@ -37,19 +37,7 @@ Description
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption("RK2", "Run RK2 explicitly");
-    Foam::argList::addBoolOption("CN", "Run CN implicitly");
-    Foam::argList::addBoolOption("FE", "Run FE explicitly");
-    Foam::argList::addBoolOption("BE", "Run BE implicitly");
-    Foam::argList::addBoolOption("BDF2", "Run BDF2 implicitly");
     #include "setRootCase.H"
-    /* J */
-    const Switch RK2 = args.options().found("RK2");
-    const Switch CN = args.options().found("CN");
-    const Switch FE = args.options().found("FE");
-    const Switch BE = args.options().found("BE");
-    const Switch BDF2 = args.options().found("BDF2");
-    
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
@@ -58,20 +46,114 @@ int main(int argc, char *argv[])
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
     //Read a scalar stored in the schemes dictionary.
-    //const dictionary& schemesDict = mesh.schemesDict();
-    //const scalar offCenter = readScalar(schemesDict.lookup("offCenter"));
+    const dictionary& schemesDict = mesh.schemesDict();
+    const string timeScheme = schemesDict.lookup("timeScheme");
+    const scalar offCenter = readScalar(schemesDict.lookup("offCenter"));
    // const dictionary& controlDict = mesh.schemesDict();
    // const scalar deltaT = readScalar(schemesDict.lookup("offCenter"));
 
 //   const dictionary& SchemesDict = mesh.schemesDict().subDict("divSchemes");
 //    const string lowOrder = readLabel(SchemesDict.lookup("lowOrder"));
   //  const string hiOrder = readLabel(SchemesDict.lookup("hiOrder"));
-//    const string correction = readLabel(SchemesDict.lookup("correction")); this isnt needed
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nCalculating scalar transport\n" << endl;
-
     #include "CourantNo.H"
+
+
+
+if (timeScheme == "MPDATA")     // if (timeScheme == "FElowsweeps")
+{
+    while (runTime.loop())
+    {
+        Info<< "Time = " << runTime.timeName() << endl;
+        fvScalarMatrix TEqn
+        (
+            fvm::ddt(T)
+          + fvc::div(phi, T, "lowOrder")
+        );
+        TEqn.solve();
+        
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            surfaceScalarField antiD = 0.5*fvc::snGrad(T)/linearInterpolate(T)*
+            (//the above is incorrect as the derivative should be in the x direction
+                mag(phi)/mesh.deltaCoeffs() - sqr(phi)*runTime.deltaT()/mesh.magSf()
+            );
+            
+            fvScalarMatrix TEqn
+            (
+                fvm::ddt(T)
+              + fvc::div(antiD, T, "lowOrder")
+            );
+            TEqn.solve();
+	    }
+
+        Info << " T goes from " << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << nl << endl;
+
+        runTime.write();
+    }
+}
+
+if (FElowsweeps)     // if (timeScheme == "FElowsweeps")
+{
+    while (runTime.loop())
+    {
+        Info<< "Time = " << runTime.timeName() << endl;
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+	    T = 0;
+            fvScalarMatrix TEqn
+            (
+                fvm::ddt(T)
+              + divPhiTlo.oldTime()/10
+            );
+            TEqn.solve();
+            T.oldTime() = T;
+	    }
+	    divPhiThi = fvc::div(phi, T, "highOrder");
+   	    divPhiTlo = fvc::div(phi, T, "lowOrder");
+        divPhiT = fvc::div(phi, T);
+        divPhiTcorr = fvc::div(phi, T, "correction");
+
+        Info << " T goes from " << min(T.internalField()) << " to "
+             << max(T.internalField()) << nl << endl;
+
+        runTime.write();
+    }
+}
+
+if (CNlowsweeps)
+{
+    while (runTime.loop())
+    {Info<< "Time = " << runTime.timeName() << endl;
+
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+
+
+            fvScalarMatrix TEqn
+            (
+                fvm::ddt(T)
+              + 0.5*divPhiTlo.oldTime()
+	      + 0.5*fvm::div(phi, T, "lowOrder")
+
+
+            );
+            TEqn.solve();
+        T.oldTime() = T;/* this doesnt seem to work */
+	}
+    divPhiThi = fvc::div(phi, T, "highOrder");
+    divPhiTlo = fvc::div(phi, T, "lowOrder");
+    divPhiT = fvc::div(phi, T);
+    divPhiTcorr = fvc::div(phi, T, "correction");
+
+    Info << " T goes from " << min(T.internalField()) << " to "
+         << max(T.internalField()) << nl << endl;
+    runTime.write();
+    }
+}
 
     while (runTime.loop())
     {
@@ -79,19 +161,66 @@ int main(int argc, char *argv[])
 
         // Fixed number of iterations per time-step version
 
-        if (CN)
+        if (timeScheme =="CNlow")
         {
             for (int corr = 0; corr < nCorr; corr++)
             {
                 fvScalarMatrix TEqn
                 (
                     fvm::ddt(T)
-                  + 0.5*divPhiT.oldTime()
-	          + 0.5*fvm::div(phi, T)
+                  + 0.5*divPhiTlo.oldTime()
+	          + 0.5*fvm::div(phi, T, "lowOrder")
 
 
-	         //+ 0.5*fvc::div(phi, T, "highOrder")
-	         // - 0.5*fvc::div(phi, T, "lowOrder")*offCenter*1/offCenter
+                );
+                TEqn.solve();
+            }
+        }
+
+        if (CNcorr)
+        {
+            for (int corr = 0; corr < nCorr; corr++)
+            {
+                fvScalarMatrix TEqn
+                (
+                    fvm::ddt(T)
+                  + 0.5*divPhiTcorr.oldTime()
+	          + 0.5*fvm::div(phi, T, "correction")
+  			
+
+                );
+                TEqn.solve();
+            }
+        }
+        if (timeScheme == "CNhigh")
+        {
+            for (int corr = 0; corr < nCorr; corr++)
+            {
+                fvScalarMatrix TEqn
+                ( 
+                    fvm::ddt(T)
+                  + 0.5*0.5*divPhiTlo.oldTime()
+                  + 0.5*0.5*divPhiTcorr.oldTime()
+		
+	          + 0.5*0.5*fvm::div(phi, T, "lowOrder")
+	          + 0.5*0.5*fvm::div(phi, T, "correction")
+	
+                );
+                TEqn.solve();
+		cout << "CNhigh implemented";
+            }
+        }
+        if (CN_implicit_low_explicit_corr)
+        {
+            for (int corr = 0; corr < nCorr; corr++)
+            {
+                fvScalarMatrix TEqn
+                (
+                    fvm::ddt(T)
+                  + 0.5*divPhiThi.oldTime()
+	              + 0.5*fvm::div(phi, T, "lowOrder")
+	              + 0.5*fvc::div(phi, T, "highOrder")
+	              - 0.5*fvc::div(phi, T, "lowOrder")
                 );
                 TEqn.solve();
             }
@@ -110,7 +239,7 @@ int main(int argc, char *argv[])
             }
 	}
 
-        if (FE)
+        if (timeScheme == "FE")
         {
             for (int corr = 0; corr < nCorr; corr++)
             {
@@ -122,7 +251,8 @@ int main(int argc, char *argv[])
 	        TEqn.solve();
             }
 	}
-        if (BE)
+	
+        if (timeScheme == "BE")
         {
             for (int corr = 0; corr < nCorr; corr++)
             {
@@ -135,22 +265,15 @@ int main(int argc, char *argv[])
             }
 	}
         if (BDF2)
-        {       // I havent done this yet, but should be a BE solve first
-                fvScalarMatrix TEqn
-                (
-                    fvm::ddt(T)
-                  + 1*fvm::div(phi,T)
-                );
-	        TEqn.solve();
-		// then we have implementation of bdf2
+        {
             for (int corr = 0; corr < nCorr; corr++)
             {
                 fvScalarMatrix TEqn
                 (
                     fvm::ddt(T)
-                  - 1/(3*runTime.deltaTValue())*T.oldTime()
-		  + 1/(3*runTime.deltaTValue())*T.oldTime().oldTime()
-		  + (2/3)*divPhiT.oldTime()
+                  - 1/(3*runTime.deltaT())*T.oldTime()
+		  + 1/(3*runTime.deltaT())*T.oldTime().oldTime()
+                  + 2/3.*fvm::div(phi,T)
                 );
 	        TEqn.solve();
             }
@@ -169,11 +292,11 @@ int main(int argc, char *argv[])
             solverPerformance sp = TEqn.solve();
             converged = sp.nIterations() <= 1;
         }
-*/
+*/    
         divPhiThi = fvc::div(phi, T, "highOrder");
-	divPhiTlo = fvc::div(phi, T, "lowOrder");
-	divPhiT = fvc::div(phi, T);
-	divPhiTcorr = fvc::div(phi, T, "correction");
+        divPhiTlo = fvc::div(phi, T, "lowOrder");
+        divPhiT = fvc::div(phi, T);
+        divPhiTcorr = fvc::div(phi, T, "correction");
 
         Info << " T goes from " << min(T.internalField()) << " to "
              << max(T.internalField()) << nl << endl;

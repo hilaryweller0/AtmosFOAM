@@ -1,0 +1,20 @@
+#!/bin/bash -e
+
+rm -rf constant/polyMesh [0-9]*
+
+blockMesh
+#setFields
+mkdir 0
+cp constant/Tsave constant/T_analytic_init 
+setAnalyticTracerField
+setVelocityField
+
+cp 0/T_analytic 0/T
+
+#scalarTransportFoamCN 
+jwScalarTransportFoam -CN_implicit_low_explicit_corr >& log& #lowsweeps
+sleep 0.5
+tail -f log
+paraFoam &
+
+#-help can be used to see the options
