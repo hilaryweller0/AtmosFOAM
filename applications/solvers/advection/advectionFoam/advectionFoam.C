@@ -43,6 +43,7 @@ int main(int argc, char *argv[])
     Foam::argList::addBoolOption("rk3", "Third-order Runge-Kutta scheme used by Skamarock & Gassmann 2011");
     Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("forwardEuler", "");
+    Foam::argList::addBoolOption("forwardBackward", "");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
     #include "setRootCase.H"
@@ -95,6 +96,11 @@ int main(int argc, char *argv[])
         {
             T = T.oldTime() - dt*fvc::div(phi,T);
         }
+        if (args.options().found("forwardBackward"))
+        {
+            T = T.oldTime() - dt*fvc::div(phi,T);
+            T = T.oldTime() - dt*fvc::div(phi,T);
+        }
         else if (args.options().found("leapfrog"))
         {
             T = T.oldTime().oldTime() - 2*dt*fvc::div(phi,T);
@@ -128,8 +134,8 @@ int main(int argc, char *argv[])
 
         T.correctBoundaryConditions();
         
-        Info << " T goes from " << min(T.internalField()) << " to "
-             << max(T.internalField()) << endl;
+        Info << " T goes from " << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << endl;
         runTime.write();
 
         #include "energy.H"
