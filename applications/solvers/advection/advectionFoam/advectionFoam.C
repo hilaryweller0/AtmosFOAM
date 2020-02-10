@@ -38,14 +38,16 @@ Description
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption("leapfrog", "use leapfrog timestepping scheme rather than RK2");
-    Foam::argList::addBoolOption("heun2", "two-stage second-order Heun");
+    Foam::argList::addBoolOption("leapfrog", "leapfrog timestepping");
+    Foam::argList::addBoolOption("rk2", "2nd order rk time stepping with nCorr iterations. Use nCorr = 2 or 3 (in fvSolution)");
     Foam::argList::addBoolOption("rk3", "Third-order Runge-Kutta scheme used by Skamarock & Gassmann 2011");
     Foam::argList::addBoolOption("rk4", "the classical Runge-Kutta scheme");
     Foam::argList::addBoolOption("forwardEuler", "");
     Foam::argList::addBoolOption("forwardBackward", "");
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
+    Foam::argList::addBoolOption("backwardEuler", "Euler implicit");
+    Foam::argList::addBoolOption("implicitWhereNeeded", "implicit where Co > 1");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -53,6 +55,10 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "initEnergy.H"
     #include "energy.H"
+
+    // Read the number of iterations each time-step
+    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const int nCorr = itsDict.lookupOrDefault<label>("nCorr", label(2));
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -88,7 +94,8 @@ int main(int argc, char *argv[])
         if (CoNum > maxCoNum) maxCoNum = CoNum;
         if (explicitTimestepping && CoNum > 1.0)
         {
-            FatalErrorInFunction << "Max Courant number > 1" << exit(FatalError);
+            FatalErrorInFunction << "Max Courant number > 1"
+                 << exit(FatalError);
         }
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
@@ -96,7 +103,7 @@ int main(int argc, char *argv[])
         {
             T = T.oldTime() - dt*fvc::div(phi,T);
         }
-        if (args.options().found("forwardBackward"))
+        else if (args.options().found("forwardBackward"))
         {
             T = T.oldTime() - dt*fvc::div(phi,T);
             T = T.oldTime() - dt*fvc::div(phi,T);
@@ -119,17 +126,55 @@ int main(int argc, char *argv[])
             k4 = -fvc::div(phi, T.oldTime() + dt * k3, "div(phi,T)");
             T = T.oldTime() + dt/6 * (k1 + 2*k2 + 2*k3 + k4);
         }
-        else
+        else if (args.options().found("backwardEuler"))
         {
-            int corrSteps = args.options().found("heun2") ? 2 : 3;
+            for(label corr = 0; corr < nCorr; corr++)
+            {
+                fvScalarMatrix TEqn
+                (
+                    fvm::ddt(T)
+                  + fvm::div(phi, T)
+                );
+                TEqn.solve();
+            }
+        }
+        else if (args.options().found("implicitWhereNeeded"))
+        {
+            // Split the flux into the large part and the smaller part
+            surfaceScalarField phiSmall 
+                     = min(phi, 0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+            phiSmall = max(phiSmall, -0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+            surfaceScalarField phiBig = phi - phiSmall;
+            Info << "phiBig goes from " << min(phiBig).value() << " to "
+                 << max(phiBig).value() << endl;
 
-            for (int corr=0; corr < corrSteps; corr++)
+            for(label corr = 0; corr < nCorr; corr++)
+            {
+                fvScalarMatrix TEqn
+                (
+                    fvm::ddt(T)
+                  + fvc::div(phiSmall, T)
+                  + fvm::div(phiBig, T)
+                );
+                TEqn.solve();
+            }
+        }
+        else if (args.options().found("rk2"))
+        {
+            for (int corr=0; corr < nCorr; corr++)
             {
                 T = T.oldTime() - 0.5*dt*
                 (
                     fvc::div(phi, T) + fvc::div(phi, T.oldTime())
                 );
             }
+        }
+        else
+        {
+            FatalErrorIn("advectionFoam") 
+                << " no recognised time stepping scheme in options. "
+                << "See advectionFoam -help for valid options" 
+                << exit(FatalError);
         }
 
         T.correctBoundaryConditions();
