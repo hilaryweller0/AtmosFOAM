@@ -72,7 +72,7 @@ surfaceScalarField volFlux
        "volFlux",
         runTime.timeName(),
         mesh,
-        IOobject::NO_READ,
+        IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
     linearInterpolate(u) & mesh.Sf(),
@@ -90,9 +90,8 @@ surfaceVectorField Uf
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    mesh
+    linearInterpolate(u)
 );
-Uf = linearInterpolate(u);
 Uf.write();
 
 // Surface scalar fields for hydrostatic boundary conditions
@@ -149,5 +148,15 @@ volScalarField dbdt
 );
 dbdt.oldTime();
 
-surfaceScalarField dVolFluxDt("dVolFluxDt", volFlux/dt);
+surfaceScalarField dVolFluxDt
+(
+    "dVolFluxDt",
+    -(mesh.Sf() & (fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")))
+  + bf 
+  - fvc::snGrad(P)*mesh.magSf()
+);
+if (magSqr(Omega.value()) > VSMALL)
+{
+    dVolFluxDt -= mesh.Sf() & (2*(Omega ^ Uf));
+}
 dVolFluxDt.oldTime();
