@@ -21,7 +21,6 @@ FieldsToPlot
     [T rawValues -1.025 1.025 0.05 "$GMTU/colours/red_white_blue.cpt"]
     [T contours 0.025 1.025 0.05 "1,black"]
     [T contours -1.025 -0.025  0.05 "1,black,5_5,:0"]
-    [antiDv vectors 10 1 "black"]
 );
 
 //region "0e3/450e3/0/30e3";
