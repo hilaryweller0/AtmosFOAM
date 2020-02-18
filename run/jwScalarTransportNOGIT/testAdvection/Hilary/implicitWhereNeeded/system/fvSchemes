@@ -27,7 +27,10 @@ gradSchemes
 
 divSchemes
 {
-    default         Gauss upwind; //vanLeer;
+    default         none; //Gauss vanLeer;
+    div(phi,T)      Gauss upwind;
+    explicit        Gauss vanLeer;
+    implicit        Gauss upwind;
 }
 
 laplacianSchemes

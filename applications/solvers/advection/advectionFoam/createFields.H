@@ -112,3 +112,32 @@ volScalarField k4
 // Calculate divU for checking divergence free
 volScalarField divU("divU", fvc::div(phi));
 divU.write();
+
+// Courant numbers to write out
+volScalarField Co
+(
+    IOobject("Co", runTime.timeName(), mesh),
+    CourantNo(phi, dt)
+);
+Co.write();
+if (args.options().found("implicitWhereNeeded"))
+{
+    // Split the flux into the large part and the smaller part
+    surfaceScalarField phiSmall 
+        = min(phi, 0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+    phiSmall = max(phiSmall, -0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+    surfaceScalarField phiBig = phi - phiSmall;
+
+    volScalarField CoExp
+    (
+        IOobject("CoExp", runTime.timeName(), mesh),
+        CourantNo(phiSmall, dt)
+    );
+    CoExp.write();
+    volScalarField CoImp
+    (
+        IOobject("CoImp", runTime.timeName(), mesh),
+        CourantNo(phiBig, dt)
+    );
+    CoImp.write();
+}

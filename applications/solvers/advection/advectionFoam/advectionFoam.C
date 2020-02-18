@@ -33,6 +33,7 @@ Description
 #include "fvCFD.H"
 #include "OFstream.H"
 #include "velocityField.H"
+#include "CourandNoFunc.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -90,14 +91,15 @@ int main(int argc, char *argv[])
 
     while (runTime.loop())
     {
+        Info<< "\nTime = " << runTime.timeName() << endl;
         #include "CourantNo.H"
+
         if (CoNum > maxCoNum) maxCoNum = CoNum;
         if (explicitTimestepping && CoNum > 1.0)
         {
             FatalErrorInFunction << "Max Courant number > 1"
                  << exit(FatalError);
         }
-        Info<< "Time = " << runTime.timeName() << nl << endl;
 
         if (args.options().found("forwardEuler"))
         {
@@ -141,20 +143,19 @@ int main(int argc, char *argv[])
         else if (args.options().found("implicitWhereNeeded"))
         {
             // Split the flux into the large part and the smaller part
+            const scalar CoLimit = 0.5;
             surfaceScalarField phiSmall 
-                     = min(phi, 0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
-            phiSmall = max(phiSmall, -0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+                     = min(phi, CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt);
+            phiSmall = max(phiSmall, -CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt);
             surfaceScalarField phiBig = phi - phiSmall;
-            Info << "phiBig goes from " << min(phiBig).value() << " to "
-                 << max(phiBig).value() << endl;
 
             for(label corr = 0; corr < nCorr; corr++)
             {
                 fvScalarMatrix TEqn
                 (
                     fvm::ddt(T)
-                  + fvc::div(phiSmall, T)
-                  + fvm::div(phiBig, T)
+                  + fvc::div(phiSmall, T, "explicit")
+                  + fvm::div(phiBig, T, "implicit")
                 );
                 TEqn.solve();
             }
