@@ -53,6 +53,7 @@ int main(int argc, char *argv[])
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    label pRefCell = mesh.solutionDict().lookupOrDefault<label>("pRefCell", 0);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

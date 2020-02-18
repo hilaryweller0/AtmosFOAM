@@ -43,7 +43,7 @@ for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
       + offCentre*dt*fvc::div(bf)
       - offCentre*dt*fvm::laplacian(P)
     );
-    PEqn.setReference(0,0);
+    PEqn.setReference(pRefCell,0);
     PEqn.solve();
 }
 
