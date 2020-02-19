@@ -13,7 +13,7 @@ cp 0/T_analytic 0/T
 #gmtFoam -time 0 UT
 #gv 0/UT.pdf &
 
-advectionFoam -implicitWhereNeeded >& log & sleep 0.01; tail -f log
+implicitExplicitAdvectionFoam >& log & sleep 0.01; tail -f log
 
 time=600
 gmtFoam -time $time T

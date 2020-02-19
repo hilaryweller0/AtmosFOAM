@@ -19,6 +19,8 @@ ddtSchemes
 {
     default         Euler;
 }
+offCentre 0.5;
+CoLimit   0.5; // Limit for explicit advection
 
 gradSchemes
 {
@@ -28,9 +30,8 @@ gradSchemes
 divSchemes
 {
     default         none; //Gauss vanLeer;
-    div(phi,T)      Gauss upwind;
-    explicit        Gauss vanLeer;
-    implicit        Gauss upwind;
+    explicit        Gauss linearUpwind linearUpwind;
+    implicit        Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes

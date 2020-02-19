@@ -48,7 +48,6 @@ int main(int argc, char *argv[])
     Foam::argList::addBoolOption("timeVaryingWind", "read the wind field (U/Uf/phi) at every timestep");
     Foam::argList::addBoolOption("explicitTimestepping", "halts if Co > 1");
     Foam::argList::addBoolOption("backwardEuler", "Euler implicit");
-    Foam::argList::addBoolOption("implicitWhereNeeded", "implicit where Co > 1");
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -136,26 +135,6 @@ int main(int argc, char *argv[])
                 (
                     fvm::ddt(T)
                   + fvm::div(phi, T)
-                );
-                TEqn.solve();
-            }
-        }
-        else if (args.options().found("implicitWhereNeeded"))
-        {
-            // Split the flux into the large part and the smaller part
-            const scalar CoLimit = 0.5;
-            surfaceScalarField phiSmall 
-                     = min(phi, CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt);
-            phiSmall = max(phiSmall, -CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt);
-            surfaceScalarField phiBig = phi - phiSmall;
-
-            for(label corr = 0; corr < nCorr; corr++)
-            {
-                fvScalarMatrix TEqn
-                (
-                    fvm::ddt(T)
-                  + fvc::div(phiSmall, T, "explicit")
-                  + fvm::div(phiBig, T, "implicit")
                 );
                 TEqn.solve();
             }
