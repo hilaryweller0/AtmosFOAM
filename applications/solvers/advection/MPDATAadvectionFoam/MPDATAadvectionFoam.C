@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     
     // The off-centering and the choice of anti-diffusive flux
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    const scalar limitAnteD = readScalar(mesh.schemesDict().lookup("limitAnteD"));
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -92,8 +93,8 @@ int main(int argc, char *argv[])
             CourantNo(antiD, dt);
 
             // Limit the anti-diffusive velocity so that Courant<1
-            antiD = min(antiD, 0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
-            antiD = max(antiD, -0.5*mesh.magSf()/mesh.deltaCoeffs()/dt);
+            antiD = min(antiD, 0.5*limitAnteD*mesh.magSf()/mesh.deltaCoeffs()/dt);
+            antiD = max(antiD, -0.5*limitAnteD*mesh.magSf()/mesh.deltaCoeffs()/dt);
 
             CourantNo(antiD, dt);
     

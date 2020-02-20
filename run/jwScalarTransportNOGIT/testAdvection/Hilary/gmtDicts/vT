@@ -24,3 +24,4 @@ FieldsToPlot
 
 //region "0e3/450e3/0/30e3";
 //boundaryMarks "100e3/10e3WSen";
+separateLegend true;

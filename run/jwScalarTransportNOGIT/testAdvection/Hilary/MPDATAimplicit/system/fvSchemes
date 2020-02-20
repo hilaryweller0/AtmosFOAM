@@ -20,6 +20,7 @@ ddtSchemes
     default         Euler;
 }
 offCentre 1;
+limitAnteD 1;
 
 gradSchemes
 {

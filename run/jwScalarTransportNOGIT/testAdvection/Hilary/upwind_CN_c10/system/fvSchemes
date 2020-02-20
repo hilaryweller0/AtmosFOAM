@@ -20,7 +20,7 @@ ddtSchemes
     default         Euler;
 }
 offCentre 0.5;
-limitAnteD 1;
+CoLimit 0;
 
 gradSchemes
 {
@@ -29,8 +29,7 @@ gradSchemes
 
 divSchemes
 {
-    default         none;
-    upwind      Gauss upwind;
+    default         Gauss upwind;
 }
 
 laplacianSchemes

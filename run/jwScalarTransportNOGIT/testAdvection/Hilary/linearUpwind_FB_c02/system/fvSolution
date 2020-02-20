@@ -11,42 +11,25 @@ FoamFile
     format      ascii;
     class       dictionary;
     location    "system";
-    object      fvSchemes;
+    object      fvSolution;
 }
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-ddtSchemes
+iterations
 {
-    default         Euler;
-}
-offCentre 0.5;
-limitAnteD 1;
-
-gradSchemes
-{
-    default         Gauss linear;
+    nCorr 2;
 }
 
-divSchemes
+solvers
 {
-    default         none;
-    upwind      Gauss upwind;
-}
 
-laplacianSchemes
-{
-    default         none;
+    T
+    {
+        solver          PBiCGStab;
+        preconditioner  DILU;
+        tolerance       1e-06;
+        relTol          0;
+    }
 }
-
-interpolationSchemes
-{
-    default         none;
-}
-
-snGradSchemes
-{
-    default         uncorrected;
-}
-
 
 // ************************************************************************* //

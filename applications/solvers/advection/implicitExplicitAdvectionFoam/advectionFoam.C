@@ -110,7 +110,9 @@ int main(int argc, char *argv[])
                 fvm::ddt(T)
               + (1-offCentre)*divPhiOld
               + offCentre*fvc::div(phiSmall, T, "explicit")
-              + offCentre*fvm::div(phiBig, T, "implicit")
+              + offCentre*fvm::div(phiBig, T, "upwind")
+              - offCentre*fvc::div(phiBig, T, "upwind")
+              + offCentre*fvc::div(phiBig, T, "implicit")
             );
             TEqn.solve();
         }

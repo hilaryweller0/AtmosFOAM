@@ -20,7 +20,8 @@ ddtSchemes
     default         Euler;
 }
 offCentre 0.5;
-limitAnteD 1;
+CoLimit 1;
+
 
 gradSchemes
 {
@@ -29,8 +30,7 @@ gradSchemes
 
 divSchemes
 {
-    default         none;
-    upwind      Gauss upwind;
+    default         Gauss linearUpwind linearUpwind;
 }
 
 laplacianSchemes
@@ -45,7 +45,7 @@ interpolationSchemes
 
 snGradSchemes
 {
-    default         uncorrected;
+    default         none;
 }
 
 
