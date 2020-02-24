@@ -1,6 +1,6 @@
 ##!/bin/bash -e
 
-if [ "$#" -ne 1]
+if [ "$#" -ne 1 ]
 then
    echo usage: runOne.sh dirName
    exit

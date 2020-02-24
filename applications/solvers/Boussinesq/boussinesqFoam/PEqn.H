@@ -10,7 +10,6 @@ dVolFluxDt =
       - fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")
     )
 );
-//+ bf;
 
 // Viscous term
 // Compact vector Laplacian of the velocity
@@ -43,12 +42,10 @@ for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
       + offCentre*dt*fvc::div(bf)
       - offCentre*dt*fvm::laplacian(P)
     );
-    PEqn.setReference(pRefCell,0);
+    if (pRefCell >= 0) PEqn.setReference(pRefCell,0);
     PEqn.solve();
 }
 
 // Back-substitutions
-//dVolFluxDt -= fvc::snGrad(P)*mesh.magSf();
-//volFlux -= offCentre*dt*(fvc::snGrad(P)*mesh.magSf());
 dVolFluxDt += bf - fvc::snGrad(P)*mesh.magSf();
 volFlux += offCentre*dt*(bf - fvc::snGrad(P)*mesh.magSf());

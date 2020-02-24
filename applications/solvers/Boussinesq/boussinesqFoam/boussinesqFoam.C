@@ -38,6 +38,8 @@ Description
 
 int main(int argc, char *argv[])
 {
+    Foam::argList::addBoolOption("isoThermal", "do not solve buoyancy equation");
+
     // Allow running solver with -postProcess option
     #include "postProcess.H"
     
@@ -61,13 +63,16 @@ int main(int argc, char *argv[])
 
     while (runTime.loop())
     {
-        Info<< "Time = " << runTime.timeName() << nl << endl;
+        Info<< "Time = " << runTime.timeName() << endl;
 
         #include "courantNo.H"
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "bEqn.H"
+            if (!args.options().found("isoThermal"))
+            {
+                #include "bEqn.H"
+            }
             // Pressure and velocity updates
             for (int corr=0; corr<nCorr; corr++)
             {

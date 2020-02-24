@@ -1,1 +1,1 @@
-../advectionFoam/advectionFoam.C
+../advectionFoam_compareTime/advectionFoam.C

@@ -1,6 +1,5 @@
 // Advective form buoyancy equation
-dbdt = - fvc::div(volFlux, bBar + b, "b") 
-              + (bBar + b)*fvc::div(volFlux);
+dbdt = - fvc::div(volFlux,  b, "b") + b*fvc::div(volFlux);
 
 // Viscous term
 if (alpha.value() > VSMALL)

@@ -64,12 +64,18 @@ int main(int argc, char *argv[])
         fvScalarMatrix TEqn
         (
             fvm::ddt(T)
-          + (1-offCentre)*fvc::div(phi.oldTime(), T, "upwind")
-          + offCentre*fvm::div(phi, T, "upwind")
+          + (1-offCentre)*fvc::div(phi, T, "upwind")
         );
+        if (offCentre > SMALL)
+        {
+            TEqn += offCentre*fvm::div(phi, T, "upwind");
+        }
         TEqn.solve();
 
-        T.oldTime() = T;
+        antiD = phi;
+        antiDv = linearInterpolate(fvc::reconstruct(antiD));
+        antiDv += (antiD - (antiDv & mesh.Sf()))*mesh.Sf()
+            /sqr(mesh.magSf());
 
         // Fixed number of iterations per time-step version
         for (int corr = 0; corr < nCorr; corr++)
@@ -84,10 +90,11 @@ int main(int argc, char *argv[])
                 dimensionedScalar("", T.dimensions(), SMALL)
             );
 
+            scalar offCentre2 = corr == 0 ? offCentre : 0;
             antiD = 0.5/Tf*
             (
-                mag(phi)*fvc::snGrad(T)/mesh.deltaCoeffs()
-              - (1-2*offCentre)*phi*dt* (Uf & gradT)
+                mag(antiD)*fvc::snGrad(T)/mesh.deltaCoeffs()
+              - (1-2*offCentre2)*antiD*dt* (antiDv & gradT)
             );
             
             CourantNo(antiD, dt);
@@ -98,18 +105,17 @@ int main(int argc, char *argv[])
 
             CourantNo(antiD, dt);
     
-            // Ante-diffusive velocity to write out
+            // Full Ante-diffusive velocity to write out
             antiDv = linearInterpolate(fvc::reconstruct(antiD));
             antiDv += (antiD - (antiDv & mesh.Sf()))*mesh.Sf()
                 /sqr(mesh.magSf());
-            
-            // Apply the correction explicitly
-            T = T.oldTime() - dt*fvc::div(antiD, T, "upwind");
 
-            Info << "T goes from " << min(T).value() << " to "
-                 << max(T).value() << endl;
+            // Apply the correction explicitly
+            T -= dt*fvc::div(antiD, T, "upwind");
         }
 
+        Info << "T goes from " << min(T).value() << " to "
+             << max(T).value() << endl;
         runTime.write();
     }
 

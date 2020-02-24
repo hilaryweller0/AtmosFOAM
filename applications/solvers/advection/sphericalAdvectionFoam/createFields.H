@@ -1,1 +1,1 @@
-../advectionFoam/createFields.H
+../advectionFoam_compareTime/createFields.H

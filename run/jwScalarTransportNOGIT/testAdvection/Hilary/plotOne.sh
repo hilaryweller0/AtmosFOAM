@@ -2,7 +2,7 @@
 
 if [ "$#" -ne 2]
 then
-   echo usage: plotOne.sh dirName $time
+   echo usage: plotOne.sh dirName time
    exit
 fi
 

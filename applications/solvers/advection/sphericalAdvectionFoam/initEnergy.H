@@ -1,1 +1,1 @@
-../advectionFoam/initEnergy.H
+../advectionFoam_compareTime/initEnergy.H

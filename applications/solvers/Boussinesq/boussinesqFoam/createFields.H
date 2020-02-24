@@ -104,15 +104,6 @@ const surfaceScalarField gradPcoeff
 
 surfaceScalarField bf("bf", fvc::interpolate(b, "b")*mesh.Sf().component(2));
 
-// Background buoyancy field
-const volScalarField bBar
-(
-    IOobject("bBar", runTime.constant(), mesh, 
-             IOobject::READ_IF_PRESENT, IOobject::NO_WRITE),
-    mesh,
-    dimensionedScalar("bBar", b.dimensions(), scalar(0))
-);
-
 // Rate of change of b (eg for radiative cooling)
 volScalarField Q
 (
@@ -129,13 +120,6 @@ dimensionedScalar totalHeat0
 );
 totalHeat0 = fvc::domainIntegrate(b)/sum(mesh.V());
 
-surfaceScalarField dPdz
-(
-    IOobject("dPdz", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar("", dimensionSet(0,1,-2,0,0), scalar(0))
-);
-
 // Store old times and rates of change
 Info << "Storing necessary old times and rates of change\n" << endl;
 volFlux.oldTime();
@@ -144,7 +128,7 @@ b.oldTime();
 volScalarField dbdt
 (
     "dbdt",
-   -fvc::div(volFlux, bBar + b, "b") + (bBar + b)*fvc::div(volFlux)
+   -fvc::div(volFlux, b, "b") + b*fvc::div(volFlux)
 );
 dbdt.oldTime();
 
