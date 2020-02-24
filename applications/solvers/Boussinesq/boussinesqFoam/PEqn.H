@@ -3,23 +3,30 @@
 // Explicit part of velocity
 
 // Rate of change of flux without pressure gradient
-dVolFluxDt = 
-(
-    mesh.Sf() &
+if (!args.options().found("linear"))
+{
+    dVolFluxDt = dimensionedScalar("", dVolFluxDt.dimensions(), scalar(0));
+}
+else 
+{
+    dVolFluxDt = 
     (
-      - fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")
-    )
-);
+        mesh.Sf() &
+        (
+          - fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")
+        )
+    );
+}
 
 // Viscous term
 // Compact vector Laplacian of the velocity
 Uf = linearInterpolate(u);
-surfaceScalarField laplacianU
-    = (fvc::interpolate(fvc::laplacian(u)) & mesh.Sf())
-    + fvc::snGrad(fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();
 
 if (nu.value() > VSMALL)
 {
+    surfaceScalarField laplacianU
+        = (fvc::interpolate(fvc::laplacian(u)) & mesh.Sf())
+        + fvc::snGrad(fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();
     dVolFluxDt += nu*laplacianU;
 }
 

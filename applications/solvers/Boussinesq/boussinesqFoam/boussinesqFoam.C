@@ -39,6 +39,7 @@ Description
 int main(int argc, char *argv[])
 {
     Foam::argList::addBoolOption("isoThermal", "do not solve buoyancy equation");
+    Foam::argList::addBoolOption("linear", "do not include non-linear advection");
 
     // Allow running solver with -postProcess option
     #include "postProcess.H"

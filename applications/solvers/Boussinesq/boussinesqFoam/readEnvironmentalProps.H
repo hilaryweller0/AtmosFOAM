@@ -22,7 +22,7 @@ const dimensionedVector Omega
     envProps.lookupOrDefault<dimensionedVector>
     (
         "Omega",
-        dimensionedVector(dimVelocity/dimTime, vector(0,0,0))
+        dimensionedVector(dimless/dimTime, vector(0,0,0))
     )
 );
 
