@@ -3,7 +3,7 @@
 // Explicit part of velocity
 
 // Rate of change of flux without pressure gradient
-if (!args.options().found("linear"))
+if (args.options().found("linear"))
 {
     dVolFluxDt = dimensionedScalar("", dVolFluxDt.dimensions(), scalar(0));
 }
