@@ -134,13 +134,17 @@ dbdt.oldTime();
 
 surfaceScalarField dVolFluxDt
 (
-    "dVolFluxDt",
+    IOobject
+    (
+        "dVolFluxDt",
+        runTime.timeName(),
+        mesh, 
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
     -(mesh.Sf() & (fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")))
   + bf 
   - fvc::snGrad(P)*mesh.magSf()
+  - (mesh.Sf() & (2*(Omega ^ Uf)))
 );
-if (magSqr(Omega.value()) > VSMALL)
-{
-    dVolFluxDt -= mesh.Sf() & (2*(Omega ^ Uf));
-}
 dVolFluxDt.oldTime();
