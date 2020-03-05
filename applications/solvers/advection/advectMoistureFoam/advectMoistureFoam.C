@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         
             #include "calculateSource.H"
             //Operator Splitting, pre-advection step.
-            if (opSplit)
+            if ((opSplit) and !(implicitSource))
             {
                 rl -= dt*(1-opSplitOffCentre)*(Sl*rl_temp - Sv*(rv_temp-rvs));
                 rv += dt*(1-opSplitOffCentre)*(Sl*rl_temp - Sv*(rv_temp-rvs));
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
             
             
             //Operator Splitting, post-advection step.
-            if (opSplit)
+            if ((opSplit) and !(implicitSource))
             {
                 #include "calculateSource.H"
                 rl_temp = rl;
@@ -160,19 +160,20 @@ int main(int argc, char *argv[])
             
             rl_temp = rl;
             rv_temp = rv;
+            rt = rl + rv;
             
             
             //Diagnostic Method
             fvScalarMatrix rtEqn
             (
-                fvm::ddt(rt)
-                + (1-offCentre)*fvc::div(phi, rt.oldTime())
-                +     offCentre*fvc::div(phi, rt)
+                fvm::ddt(rt_diag)
+                + (1-offCentre)*fvc::div(phi, rt_diag.oldTime())
+                +     offCentre*fvc::div(phi, rt_diag)
             );
             rtEqn.solve();
             
-            rv_diag = min(rt,rvs);
-            rl_diag = rt - rv_diag;
+            rv_diag = min(rt_diag, rvs);
+            rl_diag = rt_diag - rv_diag;
         
             #include "analyticSolution.H" 
         }
