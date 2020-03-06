@@ -22,7 +22,8 @@ else
 // Compact vector Laplacian of the velocity
 Uf = linearInterpolate(u);
 
-if (maxNu.value() > VSMALL)
+//if (maxNu.value() > VSMALL)
+if (nu.value() > VSMALL)
 {
     dVolFluxDt += (fvc::interpolate(fvc::laplacian(nu,u)) & mesh.Sf())
            + fvc::snGrad(nu*fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();

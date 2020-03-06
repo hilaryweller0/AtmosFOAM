@@ -13,7 +13,7 @@ IOdictionary envProps
 );
 
 // Viscosity and thermal diffusivity
-//const dimensionedScalar nu(envProps.lookup("nu"));
+const dimensionedScalar nu(envProps.lookup("nu"));
 const dimensionedScalar alpha(envProps.lookup("alpha"));
 
 // Coriolis
