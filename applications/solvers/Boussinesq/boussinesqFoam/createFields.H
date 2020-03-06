@@ -104,6 +104,19 @@ const surfaceScalarField gradPcoeff
 
 surfaceScalarField bf("bf", fvc::interpolate(b, "b")*mesh.Sf().component(2));
 
+// Viscosity that may vary in space
+const volScalarField nu
+(
+    IOobject("nu", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
+    mesh,
+    envProps.lookupOrDefault<dimensionedScalar>
+    (
+        "nu",
+        dimensionedScalar("nu", dimensionSet(0,2,-1,0,0), scalar(0))
+    )
+);
+const dimensionedScalar maxNu = max(nu);
+
 // Rate of change of b (eg for radiative cooling)
 volScalarField Q
 (

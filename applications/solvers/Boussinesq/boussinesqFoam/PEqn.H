@@ -22,12 +22,10 @@ else
 // Compact vector Laplacian of the velocity
 Uf = linearInterpolate(u);
 
-if (nu.value() > VSMALL)
+if (maxNu.value() > VSMALL)
 {
-    surfaceScalarField laplacianU
-        = (fvc::interpolate(fvc::laplacian(u)) & mesh.Sf())
-        + fvc::snGrad(fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();
-    dVolFluxDt += nu*laplacianU;
+    dVolFluxDt += (fvc::interpolate(fvc::laplacian(nu,u)) & mesh.Sf())
+           + fvc::snGrad(nu*fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();
 }
 
 // Coriolis term
