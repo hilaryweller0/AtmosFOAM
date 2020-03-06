@@ -98,6 +98,19 @@ volScalarField rv_diag
     mesh
 );
 
+volScalarField rt_diag
+(
+    IOobject
+    (
+        "rt_diag",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
 Info << "Reading analytic moisture variables. " << endl;
 volScalarField rl_analytic
 (
