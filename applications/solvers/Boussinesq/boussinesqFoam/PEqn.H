@@ -25,8 +25,11 @@ Uf = linearInterpolate(u);
 //if (maxNu.value() > VSMALL)
 if (nu.value() > VSMALL)
 {
-    dVolFluxDt += (fvc::interpolate(fvc::laplacian(nu,u)) & mesh.Sf())
-           + fvc::snGrad(nu*fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf();
+    dVolFluxDt += nu*
+    (
+        (fvc::interpolate(fvc::laplacian(u)) & mesh.Sf())
+      + fvc::snGrad(fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf()
+    );
 }
 
 // Coriolis term
@@ -55,3 +58,4 @@ for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
 // Back-substitutions
 dVolFluxDt += bf - fvc::snGrad(P)*mesh.magSf();
 volFlux += offCentre*dt*(bf - fvc::snGrad(P)*mesh.magSf());
+

@@ -153,15 +153,20 @@ surfaceScalarField dVolFluxDt
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
-        IOobject::NO_WRITE
+        IOobject::AUTO_WRITE
     ),
-    -(mesh.Sf() & (fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")))
+    nu*
+    (
+        (fvc::interpolate(fvc::laplacian(u)) & mesh.Sf())
+      + fvc::snGrad(fvc::div(volFlux - (Uf & mesh.Sf())))*mesh.magSf()
+    )
+    -(!args.options().found("linear"))*
+    (
+        mesh.Sf() & (fvc::interpolate(fvc::div(volFlux, u, "u"), "convection"))
+    )
   + bf
   - fvc::snGrad(P)*mesh.magSf()
   - (mesh.Sf() & (2*(Omega ^ Uf)))
 );
-if (!args.options().found("linear"))
-{
-    dVolFluxDt -= (mesh.Sf() & (fvc::interpolate(fvc::div(volFlux, u, "u"), "convection")));
-}
 dVolFluxDt.oldTime();
+
