@@ -103,18 +103,6 @@ const surfaceScalarField gradPcoeff
 
 surfaceScalarField bf("bf", fvc::interpolate(b, "b")*mesh.Sf().component(2));
 
-// Calculate and write out initial pressure that is in hydrostatic-balance
-for (int nonOrth = 0; nonOrth <= nNonOrthCorr; nonOrth++)
-{
-    fvScalarMatrix PEqn
-    (
-      fvc::div(bf) - fvm::laplacian(P)
-    );
-    if (pRefCell >= 0) PEqn.setReference(pRefCell,0);
-    PEqn.solve();
-}
-P.write();
-
 /*// Viscosity that may vary in space
 const volScalarField nu
 (

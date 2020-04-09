@@ -41,10 +41,15 @@ int main(int argc, char *argv[])
     Foam::argList::addBoolOption("isoThermal", "do not solve buoyancy equation");
     Foam::argList::addBoolOption("linear", "do not include non-linear advection");
 
+    // Allow running solver with -postProcess option
+    #include "postProcess.H"
+
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
     #include "zeros.H"
+
+    #include "createFields.H"
 
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -54,12 +59,21 @@ int main(int argc, char *argv[])
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
     label pRefCell = mesh.solutionDict().lookupOrDefault<label>("pRefCell", 0);
 
-    // Allow running solver with -postProcess option
-    #include "postProcess.H"
-
-    #include "createFields.H"
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+    // Calculate and write out initial pressure that is in hydrostatic-balance
+    // ideally this would be somewhere else? But it can't be in createFields if 
+    // we want the "-postProcess" option to work
+    for (int nonOrth = 0; nonOrth <= nNonOrthCorr; nonOrth++)
+    {
+        fvScalarMatrix PEqn
+        (
+            fvc::div(bf) - fvm::laplacian(P)
+        );
+        if (pRefCell >= 0) PEqn.setReference(pRefCell,0);
+        PEqn.solve();
+    }
+P.write();
 
     Info<< "\nStarting time loop\n" << endl;
 
