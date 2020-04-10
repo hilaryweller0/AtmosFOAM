@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
         if (pRefCell >= 0) PEqn.setReference(pRefCell,0);
         PEqn.solve();
     }
-P.write();
+    P.write();
 
     Info<< "\nStarting time loop\n" << endl;
 
