@@ -61,20 +61,6 @@ int main(int argc, char *argv[])
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    // Calculate and write out initial pressure that is in hydrostatic-balance
-    // ideally this would be somewhere else? But it can't be in createFields if 
-    // we want the "-postProcess" option to work
-    for (int nonOrth = 0; nonOrth <= nNonOrthCorr; nonOrth++)
-    {
-        fvScalarMatrix PEqn
-        (
-            fvc::div(bf) - fvm::laplacian(P)
-        );
-        if (pRefCell >= 0) PEqn.setReference(pRefCell,0);
-        PEqn.solve();
-    }
-    P.write();
-
     Info<< "\nStarting time loop\n" << endl;
 
     while (runTime.loop())
