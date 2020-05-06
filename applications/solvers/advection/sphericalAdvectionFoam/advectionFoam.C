@@ -1,1 +1,1 @@
-../advectionFoam_compareTime/advectionFoam.C
+../advectionFoam_compareTimeSchemes/advectionFoam.C

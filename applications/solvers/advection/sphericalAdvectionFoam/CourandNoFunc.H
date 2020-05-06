@@ -1,1 +1,1 @@
-../advectionFoam_compareTime/CourandNoFunc.H
+../advectionFoam_compareTimeSchemes/CourandNoFunc.H
