@@ -41,10 +41,15 @@ int main(int argc, char *argv[])
     Foam::argList::addBoolOption("isoThermal", "do not solve buoyancy equation");
     Foam::argList::addBoolOption("linear", "do not include non-linear advection");
 
+    // Allow running solver with -postProcess option
+    #include "postProcess.H"
+
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
     #include "zeros.H"
+
+    #include "createFields.H"
 
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -53,11 +58,6 @@ int main(int argc, char *argv[])
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
     label pRefCell = mesh.solutionDict().lookupOrDefault<label>("pRefCell", 0);
-
-    // Allow running solver with -postProcess option
-    #include "postProcess.H"
-
-    #include "createFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
