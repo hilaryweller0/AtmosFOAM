@@ -1,0 +1,28 @@
+FoamFile {
+        version         1.4;
+        format          ascii;
+
+        root            "";
+        case            "";
+        instance        "constant";
+        local           "";
+
+        class           dictionary;
+        object          gmtDict;
+}
+
+projection "X18c/18c";
+projection2D XY;
+separateLegend false;
+plotBoundaryDots false;
+
+FieldsToPlot
+(
+    [T rawValues -1.025 1.025 0.05 "$GMTU/colours/red_white_blue.cpt"]
+    [T contours 0.025 1.025 0.05 "1,black"]
+    [T contours -1.025 -0.025  0.05 "1,black,5_5:0"]
+);
+
+//region "0e3/450e3/0/30e3";
+//boundaryMarks "100e3/10e3WSen";
+separateLegend true;
