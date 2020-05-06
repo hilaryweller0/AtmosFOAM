@@ -37,9 +37,7 @@ Description
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption("explicit", "Run RK2 explicitly");
     #include "setRootCase.H"
-    const Switch implicit = !args.options().found("explicit");
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
@@ -47,6 +45,8 @@ int main(int argc, char *argv[])
     // Read the number of iterations each time-step
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
+    const Switch implicit = mesh.schemesDict().lookup("implicit");
+    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -59,25 +59,23 @@ int main(int argc, char *argv[])
         Info<< "Time = " << runTime.timeName() << endl;
 
         // Fixed number of iterations per time-step version
-        for (int corr = 0; corr < nCorr; corr++)
+        for (int corr = 0; corr <= nCorr; corr++)
         {
             fvScalarMatrix TEqn
             (
                 fvm::ddt(T)
-              + 0.5*divPhiT.oldTime()
+              + (1 - offCentre)*divPhiT.oldTime()
             );
             if (implicit)
             {
-                TEqn += 0.5*fvm::div(phi, T);
+                TEqn += offCentre*fvm::div(phi, T);
             }
             else
             {
-                TEqn += 0.5*fvc::div(phi, T);
+                TEqn += offCentre*fvc::div(phi, T);
             }
             TEqn.solve();
         }
-        
-        Info << "Max T = " << max(T) << " min T = " << min(T) << endl;
 
 /*        // Keep doing iterations until converged version
         for(bool converged = false; !converged;)
@@ -94,8 +92,8 @@ int main(int argc, char *argv[])
 */
         divPhiT = fvc::div(phi, T);
 
-        Info << " T goes from " << min(T.internalField()) << " to "
-             << max(T.internalField()) << nl << endl;
+        Info << "T goes from " << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << nl << endl;
         runTime.write();
     }
 
