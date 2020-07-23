@@ -33,7 +33,7 @@ Description
 #include "fvCFD.H"
 #include "OFstream.H"
 #include "velocityField.H"
-#include "CourandNoFunc.H"
+#include "CourantNoFunc.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -50,6 +50,11 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<label>("nCorr", label(2));
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
     const scalar CoLimit = readScalar(mesh.schemesDict().lookup("CoLimit"));
+
+
+    // Output file to write error measures each time step
+    OFstream os("errorMeasures.dat");
+    os << "#Time minT maxT sumT TV" << endl;
 
     #include "createFields.H"
 
@@ -119,8 +124,17 @@ int main(int argc, char *argv[])
         divPhiOld = fvc::div(phiSmall, T, "explicit")
                   + fvc::div(phiBig, T, "implicit");
         
-        Info << " T goes from " << min(T.internalField()).value() << " to "
-             << max(T.internalField()).value() << endl;
+        scalarField TV = 0.25*fvc::surfaceSum
+        (
+            mag(fvc::snGrad(T))/mesh.deltaCoeffs()
+        )().primitiveField();
+        const scalarField& V = mesh.V().field();
+
+        os << runTime.timeName() << " " << min(T.internalField()).value() << " "
+           << max(T.internalField()).value() << " "
+           << gSum(T.primitiveField()*V)/gSum(V) << " "
+           << gSum(TV) << endl;
+
         runTime.write();
 
     }
