@@ -71,8 +71,10 @@ forAll(phi, faceI)
 {
     if (mag(phi[faceI]) > phiLimit[faceI])
     {
-        phiSmall[faceI] = 0;
-        phiBig[faceI] = phi[faceI];
+        phiSmall[faceI] = sign(phi[faceI])*phiLimit[faceI];
+        phiBig[faceI] = phi[faceI] - phiSmall[faceI];
+//        phiSmall[faceI] = 0;
+//        phiBig[faceI] = phi[faceI];
     }
 }
 

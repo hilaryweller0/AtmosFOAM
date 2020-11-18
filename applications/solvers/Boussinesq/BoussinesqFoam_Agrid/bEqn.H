@@ -11,7 +11,9 @@ if (implicitAdvection)
 }
 else
 {
-    b = (bEqn.H() - Q)/bEqn.A();
+    b = (bEqn.H() + Q)/bEqn.A();
+    b.correctBoundaryConditions();
+    b = (bEqn.H() + Q)/bEqn.A();
     b.correctBoundaryConditions();
 }
 

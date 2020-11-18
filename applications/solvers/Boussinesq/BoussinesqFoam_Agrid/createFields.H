@@ -82,3 +82,12 @@ surfaceScalarField bf
     fvc::interpolate(b)*mesh.Sf().component(2)*dt
 );
 
+// Surface scalar fields for hydrostatic boundary conditions
+surfaceScalarField gradPcoeff
+(
+    IOobject("gradPcoeff", runTime.timeName(), mesh),
+    mesh,
+    dt
+);
+
+

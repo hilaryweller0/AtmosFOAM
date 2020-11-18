@@ -1,3 +1,3 @@
-BoussinesqFoam.C
+boussinesqFoam.C
 
-EXE = $(FOAM_USER_APPBIN)/BoussinesqFoam_Agrid
+EXE = $(FOAM_USER_APPBIN)/boussinesqFoam_Agrid

@@ -118,6 +118,7 @@ int main(int argc, char *argv[])
               + offCentre*fvm::div(phiBig, T, "upwind")
               - offCentre*fvc::div(phiBig, T, "upwind")
               + offCentre*fvc::div(phiBig, T, "implicit")
+//                + offCentre*fvm::div(phiBig, T, "implicit")
             );
             TEqn.solve();
         }
