@@ -40,9 +40,11 @@ Description
 
 int main(int argc, char *argv[])
 {
-    #include "setRootCase.H"
+    #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
+    #include "createControl.H"
+    #include "createTimeControls.H"
 
     #include "createFields.H"
 
@@ -64,7 +66,7 @@ int main(int argc, char *argv[])
     autoPtr<velocityField> v;
     if(dict.size() > 0)
     {
-        Info << "Time varying wind" << endl;
+        Info << "Setting wind from dictionary" << endl;
         timeVaryingWind = bool(dict.lookup("timeVaryingWind"));
         v = velocityField::New(dict);
         v->applyTo(phi);
@@ -80,25 +82,41 @@ int main(int argc, char *argv[])
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
     
-    while (runTime.loop())
+    #include "CourantNo.H"
+    #include "setInitialDeltaT.H"
+
+    while (runTime.run())
     {
+        #include "readTimeControls.H"
+        #include "CourantNo.H"
+        #include "setDeltaT.H"
+        runTime++;
         Info<< "\nTime = " << runTime.timeName() << endl;
+        
         if (timeVaryingWind)
         {
+            runTime.setTime
+            (
+                runTime.timeOutputValue() - 0.5*runTime.deltaTValue(),
+                runTime.timeIndex()
+            );
             v->applyTo(phi);
+            runTime.setTime
+            (
+                runTime.timeOutputValue() + 0.5*runTime.deltaTValue(),
+                runTime.timeIndex()
+            );
 
             U = fvc::reconstruct(phi);
 //            Uf = linearInterpolate(U);
 //            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
-        #include "CourantNo.H"
-
         // Implicit advection
         fvScalarMatrix TEqn
         (
             fvm::ddt(T)
-          + fvm::div(0.5*(phi+phi.oldTime()), T)
+          + fvm::div(phi, T)
         );
         TEqn.solve();
         
