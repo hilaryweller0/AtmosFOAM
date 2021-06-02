@@ -2,18 +2,21 @@
 #
 
 # Clear out old stuff
-rm -rf [0-9]* constant cubeMesh/constant cubeMesh/[0-9]*
+rm -rf [0-9]* constant [0-9]*
 
 # Choose the resolution
 NX=6
-sed 's/NX/'$NX'/g' cubeMesh/system/blockMeshDictTmp > cubeMesh/system/blockMeshDict
+sed 's/NX/'$NX'/g' system/blockMeshDictTmp > system/blockMeshDict
 
 # Create a cube mesh
-blockMesh -case cubeMesh
+blockMesh
 
 # Take the tangent of the points so that when they are expanded 
 # out onto the sphere, it is an equal angle cubed sphere
-tanPoints -case cubeMesh
+tanPoints
 
 # Extrude out the inner patch into a cubed sphere mesh
 extrudeMesh
+
+# Create obj file
+writeMeshObj -patchEdges -patchFaces

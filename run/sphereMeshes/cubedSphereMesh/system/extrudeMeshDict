@@ -40,8 +40,8 @@ expansionRatio      1.0;
 
 linearRadialCoeffs
 {
-    R        6372320;
-    Rsurface 6370220;
+    R        1;
+    Rsurface 1.1;
 }
 //radialCoeffs
 //{

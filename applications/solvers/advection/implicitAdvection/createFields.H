@@ -58,7 +58,8 @@ phi.oldTime();
 // Courant numbers to write out
 volScalarField Co
 (
-    IOobject("Co", runTime.timeName(), mesh),
+    IOobject("Co", runTime.timeName(), mesh,
+    IOobject::NO_READ, IOobject::AUTO_WRITE),
     CourantNo(phi, runTime.deltaT())
 );
 Co.write();

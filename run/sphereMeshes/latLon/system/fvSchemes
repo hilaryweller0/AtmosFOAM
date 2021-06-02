@@ -24,17 +24,18 @@ FoamFile
 
 ddtSchemes
 {
-    default none;
+    default Euler;
 }
 
 gradSchemes
 {
-    default         none;
+    default         Gauss linear;
 }
 
 divSchemes
 {
     default             none;
+    div(phi,T)          SCHEME;
 }
 
 laplacianSchemes
@@ -49,12 +50,7 @@ interpolationSchemes
 
 snGradSchemes
 {
-    default         none;
-}
-
-fluxRequired
-{
-    default         no;
+    default         uncorrected;
 }
 
 

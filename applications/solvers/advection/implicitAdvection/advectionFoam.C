@@ -34,7 +34,6 @@ Description
 #include "OFstream.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
-//#include "totalVariation.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -55,7 +54,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "velocityFieldDict",
-            mesh.time().system(),
+            runTime.system(),
             mesh,
             IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE
@@ -125,6 +124,7 @@ int main(int argc, char *argv[])
              << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;//" TV = " << TV << endl;
 
+        if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
         runTime.write();
     }
 

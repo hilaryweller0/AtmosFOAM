@@ -46,7 +46,7 @@ writeInterval   432000;
 
 cycleWrite      0;
 
-writeFormat     binary;
+writeFormat     ascii;
 
 writePrecision  6;
 
