@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
     const Switch implicit = mesh.schemesDict().lookup("implicit");
     const dictionary& divSchemesDict = mesh.schemesDict().subDict("divSchemes");
-    const Switch FCT = mesh.schemesDict().lookup("fluxCorrectedTransport");
+    //const Switch FCT = mesh.schemesDict().lookup("fluxCorrectedTransport");
 
     // Create the class for the deformational flow
     deformationalFlow defFlow
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
         // High order flux
         surfaceScalarField fluxCorr
              = timeFlux*divScheme.interpolate(timeFlux, T.oldTime());
-        if (FCT && implicit)
+        if (/*FCT && */implicit)
         {
             // Low order update
             fvScalarMatrix TEqn
@@ -107,16 +107,16 @@ int main(int argc, char *argv[])
             // High order correction
             fluxCorr -= timeFlux*upwind.interpolate(timeFlux, T);
         }
-        else if (FCT)
+        /*else if (FCT)
         {
             // Low-order update
             T = T.oldTime() - upwind.fvcDiv(timeFlux, T.oldTime());
             // High-order correction
             fluxCorr -= timeFlux*upwind.interpolate(timeFlux, T.oldTime());
-        }
+        }*/
         
         // Limit and apply the correction
-        if (FCT) fvc::fluxLimit(fluxCorr, T, T.oldTime());
+        //if (FCT) fvc::fluxLimit(fluxCorr, T, T.oldTime());
         T -= fvc::div(fluxCorr);
         
         // New T and timeFlux for the rest of the time step
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
                 fluxCorr -= timeFlux*upwind.interpolate(timeFlux, T.oldTime());
             }
             // Limit and apply the correction
-            if (FCT) fvc::fluxLimit(fluxCorr, T, T.oldTime());
+            //if (FCT) fvc::fluxLimit(fluxCorr, T, T.oldTime());
             T -= fvc::div(fluxCorr);
         }
 
