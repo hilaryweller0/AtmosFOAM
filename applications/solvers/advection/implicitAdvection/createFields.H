@@ -40,7 +40,7 @@ surfaceVectorField Uf
     ),
     linearInterpolate(U)
 );
-
+//surfaceScalarField phiTmp("phiTmp", (Uf & mesh.Sf()));
 surfaceScalarField phi
 (
     IOobject
@@ -53,6 +53,7 @@ surfaceScalarField phi
     ),
     Uf & mesh.Sf()
 );
+phi.write();
 phi.oldTime();
 
 // Courant numbers to write out
@@ -63,3 +64,4 @@ volScalarField Co
     CourantNo(phi, runTime.deltaT())
 );
 Co.write();
+fvc::div(phi, T);
