@@ -42,7 +42,7 @@ makeBaseTurbulenceModel
 // RAS models
 // -------------------------------------------------------------------------- //
 
-#include "thetaBuoyantKEpsilon.H"
-makeRASModel(thetaBuoyantKEpsilon);
+#include "stratifiedRealizableKE.H"
+makeRASModel(stratifiedRealizableKE);
 
 // ************************************************************************* //

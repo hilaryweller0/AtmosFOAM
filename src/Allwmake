@@ -16,4 +16,5 @@ wmake $makeType ExnerTheta
 wmake $makeType CharneyPhillips
 wmake $makeType shallowWater
 wmake $makeType thermalFields
+wmake $makeType TurbulenceModels
 
