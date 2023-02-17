@@ -43,7 +43,8 @@ Description
 #include "wallFvPatch.H"
 #include "wallDist.H"
 #include "makeGraph.H"
-//#include "quaternion.H"
+#include "bound.H"
+#include "fvcSmooth.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -58,6 +59,8 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "createFields.H"
     #include "interrogateWallPatches.H"
+    const label ncorr
+         = readLabel(mesh.solutionDict().lookup("momentumIterations"));
 
     turbulence->validate();
 
@@ -66,24 +69,26 @@ int main(int argc, char *argv[])
     // Write initial conditions
     #include "makeGraphs.H"
     makeGraph(z, dbdz, "dbdz", gFormat);
-
+    
     Info<< "\nStarting time loop\n" << endl;
 
+        
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
         fvVectorMatrix divR(turbulence->divDevReff(U));
-        
-        fvVectorMatrix UEqn
-        (
-            fvm::ddt(U) + divR
-         == (Coriolisf ^ (geostrophicWind - U)) + fvOptions(U)
-        );
-        UEqn.relax();
-        fvOptions.constrain(UEqn);
-        UEqn.solve();
-        fvOptions.correct(U);
+
+        for(label it = 0; it < ncorr; it++)
+        {
+            fvVectorMatrix UEqn
+            (
+                fvm::ddt(U) + divR
+             == (Coriolisf ^ (geostrophicWind - U)) + fvOptions(U)
+            );
+            UEqn.solve();
+            fvOptions.correct(U);
+        }
 
         laminarTransport.correct();
         turbulence->correct();

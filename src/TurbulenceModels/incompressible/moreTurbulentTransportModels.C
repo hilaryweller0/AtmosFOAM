@@ -34,4 +34,7 @@ License
 #include "stratifiedRealizableKE.H"
 makeRASModel(stratifiedRealizableKE);
 
+#include "stratifiedRealizableLogKE.H"
+makeRASModel(stratifiedRealizableLogKE);
+
 // ************************************************************************* //

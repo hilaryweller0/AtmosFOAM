@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "stratifiedRealizableKE.H"
+#include "stratifiedRealizableLogKE.H"
 #include "fvOptions.H"
 #include "bound.H"
 
@@ -37,7 +37,7 @@ namespace RASModels
 // * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
-tmp<volScalarField> stratifiedRealizableKE<BasicTurbulenceModel>::rCmu
+tmp<volScalarField> stratifiedRealizableLogKE<BasicTurbulenceModel>::rCmu
 (
     const volTensorField& gradU,
     const volScalarField& S2,
@@ -65,12 +65,12 @@ tmp<volScalarField> stratifiedRealizableKE<BasicTurbulenceModel>::rCmu
     volScalarField As(sqrt(6.0)*cos(phis));
     volScalarField Us(sqrt(S2/2.0 + magSqr(skew(gradU))));
 
-    return 1.0/(A0_ + As*Us*k_/epsilon_);
+    return 1.0/(A0_ + As*Us*k1/eps1*exp(lnk_-lnepsilon_));
 }
 
 
 template<class BasicTurbulenceModel>
-void stratifiedRealizableKE<BasicTurbulenceModel>::correctNut
+void stratifiedRealizableLogKE<BasicTurbulenceModel>::correctNut
 (
     const volTensorField& gradU,
     const volScalarField& S2,
@@ -78,7 +78,7 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correctNut
 )
 {
     Cmu_ = rCmu(gradU, S2, magS);
-    this->nut_ = Cmu_*sqr(k_)/epsilon_;
+    this->nut_ = Cmu_*sqr(k1)/eps1*exp(2*lnk_ - lnepsilon_);
     this->nut_.correctBoundaryConditions();
     fv::options::New(this->mesh_).correct(this->nut_);
 
@@ -87,7 +87,7 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correctNut
 
 
 template<class BasicTurbulenceModel>
-void stratifiedRealizableKE<BasicTurbulenceModel>::correctNut()
+void stratifiedRealizableLogKE<BasicTurbulenceModel>::correctNut()
 {
     tmp<volTensorField> tgradU = fvc::grad(this->U_);
 
@@ -104,40 +104,10 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correctNut()
 }
 
 
-template<class BasicTurbulenceModel>
-tmp<fvScalarMatrix> stratifiedRealizableKE<BasicTurbulenceModel>::kSource() const
-{
-    return tmp<fvScalarMatrix>
-    (
-        new fvScalarMatrix
-        (
-            k_,
-            dimVolume*this->rho_.dimensions()*k_.dimensions()
-            /dimTime
-        )
-    );
-}
-
-
-template<class BasicTurbulenceModel>
-tmp<fvScalarMatrix> stratifiedRealizableKE<BasicTurbulenceModel>::epsilonSource() const
-{
-    return tmp<fvScalarMatrix>
-    (
-        new fvScalarMatrix
-        (
-            epsilon_,
-            dimVolume*this->rho_.dimensions()*epsilon_.dimensions()
-            /dimTime
-        )
-    );
-}
-
-
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
-stratifiedRealizableKE<BasicTurbulenceModel>::stratifiedRealizableKE
+stratifiedRealizableLogKE<BasicTurbulenceModel>::stratifiedRealizableLogKE
 (
     const alphaField& alpha,
     const rhoField& rho,
@@ -256,6 +226,28 @@ stratifiedRealizableKE<BasicTurbulenceModel>::stratifiedRealizableKE
         ),
         this->mesh_
     ),
+    lnk_
+    (
+        IOobject("lnk", this->runTime_.timeName(),this->mesh_),
+        log(k_/k1),
+        swapWords
+        (
+            k_.boundaryField().types(),
+            "kqRWallFunction",
+            "zeroGradient"
+        )
+    ),
+    lnepsilon_
+    (
+        IOobject("lnepsilon", this->runTime_.timeName(),this->mesh_),
+        log(epsilon_/eps1),
+        swapWords
+        (
+            epsilon_.boundaryField().types(),
+            "epsilonCmuWallFunction",
+            "lnepsilonCmuWallFunction"
+        )
+    ),
     N2_
     (
         IOobject("N2", this->runTime_.timeName(),this->mesh_),
@@ -275,23 +267,21 @@ stratifiedRealizableKE<BasicTurbulenceModel>::stratifiedRealizableKE
         dimensionedScalar("Cmu", dimless, scalar(0.09))
     )
 {
-    bound(k_, this->kMin_);
-    bound(epsilon_, this->epsilonMin_);
-
     if (type == typeName)
     {
         this->printCoeffs(type);
     }
-    N2_.writeOpt() = IOobject::AUTO_WRITE;
     Ri_.writeOpt() = IOobject::AUTO_WRITE;
     Cmu_.writeOpt() = IOobject::AUTO_WRITE;
+    lnk_.writeOpt() = IOobject::AUTO_WRITE;
+    lnepsilon_.writeOpt() = IOobject::AUTO_WRITE;
 }
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class BasicTurbulenceModel>
-bool stratifiedRealizableKE<BasicTurbulenceModel>::read()
+bool stratifiedRealizableLogKE<BasicTurbulenceModel>::read()
 {
     if (eddyViscosity<RASModel<BasicTurbulenceModel>>::read())
     {
@@ -314,7 +304,7 @@ bool stratifiedRealizableKE<BasicTurbulenceModel>::read()
 
 
 template<class BasicTurbulenceModel>
-void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
+void stratifiedRealizableLogKE<BasicTurbulenceModel>::correct()
 {
     if (!this->turbulence_)
     {
@@ -345,14 +335,12 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
     surfaceScalarField S2f(2*magSqr(dev(symm(gradUf))));
     volScalarField S2 = fvc::average(S2f);
 
-    //volScalarField S2(2*magSqr(dev(symm(tgradU()))));
     volScalarField magS(sqrt(S2));
     Cmu_ = rCmu(tgradU(), S2, magS);
 
-    volScalarField eta(magS*k_/epsilon_);
+    volScalarField eta(magS*k1/eps1*exp(lnk_ - lnepsilon_));
     volScalarField C1(max(eta/(scalar(5) + eta), scalar(0.43)));
 
-    //volScalarField G(this->GName(), nut*(tgradU() && dev(twoSymm(tgradU()))));
     volScalarField G(this->GName(), nut*S2);
 
     // Brunt-Vaisala frequency squared
@@ -370,66 +358,75 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
         dimensionedScalar("", dbdz.dimensions(), VSMALL)
     );
     
-    // Update epsilon and G at the wall
-    epsilon_.boundaryFieldRef().updateCoeffs();
-/*
-    volScalarField epsDiffusion
+    // Update lnepsilon, epsilon and G at the wall
+    lnepsilon_.boundaryFieldRef().updateCoeffs();
+    
+    surfaceScalarField snGradlnepsilon
+    (
+        IOobject("snGradlnepsilon", this->runTime_.timeName(),this->mesh_),
+        fvc::snGrad(lnepsilon_)
+    );
+/*    volScalarField epsDiffusion
     (
         "epsDiffusion",
-        fvc::laplacian(alpha*rho*DepsilonEff(), epsilon_)/epsilon_
+        fvc::laplacian(DepsilonEff(), lnepsilon_)
+      + DepsilonEff()*magSqr(fvc::grad(lnepsilon_))
+//      + DepsilonEff()*fvc::average(magSqr(fvc::snGrad(lnepsilon_)))
+//      + DepsilonEff()*fvc::laplacian(lnepsilon_,lnepsilon_)
+//      - DepsilonEff()*lnepsilon_*fvc::laplacian(lnepsilon_)
     );
     epsDiffusion.write();
 */
     // Dissipation equation
     tmp<fvScalarMatrix> epsEqn
     (
-        fvm::ddt(alpha, rho, epsilon_)
-      + fvm::div(alphaRhoPhi, epsilon_)
-      - fvm::laplacian(alpha*rho*DepsilonEff(), epsilon_)
+        fvm::ddt(alpha, rho, lnepsilon_)
+      + fvm::div(alphaRhoPhi, lnepsilon_)
+      - fvm::laplacian(alpha*rho*DepsilonEff(), lnepsilon_)
+      - DepsilonEff()*magSqr(fvc::grad(lnepsilon_))
+//      - alpha*rho*DepsilonEff()*fvc::laplacian(lnepsilon_, lnepsilon_)
+//      + alpha*rho*DepsilonEff()*lnepsilon_*fvm::laplacian(lnepsilon_)
      ==
-        C1*alpha*rho*magS*epsilon_
-      - fvm::Sp
-        (
-            C2_*Cmu_*alpha*rho*k_/(this->nut_ + sqrt(this->nut_*this->nu())),
-            epsilon_
-        )
-      - C3_*Cmu_*N2_/sigmaTheta_*k_
-      + C4_*min(sqrt(Ri_/C5_), scalar(1))*sqrt(N2_)*epsilon_
-      + epsilonSource()
-      + fvOptions(alpha, rho, epsilon_)
+        C1*alpha*rho*magS
+      - C2_*Cmu_*alpha*rho*k_/(this->nut_ + sqrt(this->nut_*this->nu()))
+      - C3_*Cmu_*N2_/sigmaTheta_*k1/eps1*exp(lnk_-lnepsilon_)
+      + C4_*min(sqrt(Ri_/C5_), scalar(1))*sqrt(N2_)
+      + fvOptions(alpha, rho, lnepsilon_)
     );
 
-    epsEqn.ref().relax();
     fvOptions.constrain(epsEqn.ref());
-    epsEqn.ref().boundaryManipulate(epsilon_.boundaryFieldRef());
+    epsEqn.ref().boundaryManipulate(lnepsilon_.boundaryFieldRef());
     solve(epsEqn);
-    fvOptions.correct(epsilon_);
-    bound(epsilon_, this->epsilonMin_);
+    fvOptions.correct(lnepsilon_);
+    epsilon_ == eps1*exp(lnepsilon_);
 
     // Turbulent kinetic energy equation
+    surfaceScalarField snGradlnk
+    (
+        IOobject("snGradlnk", this->runTime_.timeName(),this->mesh_),
+        fvc::snGrad(lnk_)
+    );
     tmp<fvScalarMatrix> kEqn
     (
-        fvm::ddt(alpha, rho, k_)
-      + fvm::div(alphaRhoPhi, k_)
-      - fvm::laplacian(alpha*rho*DkEff(), k_)
+        fvm::ddt(alpha, rho, lnk_)
+      + fvm::div(alphaRhoPhi, lnk_)
+      - fvm::laplacian(alpha*rho*DkEff(), lnk_)
+      - DkEff()*magSqr(fvc::grad(lnk_))
+//      - alpha*rho*DkEff()*fvc::laplacian(lnk_, lnk_)
+//      + alpha*rho*DkEff()*lnk_*fvm::laplacian(lnk_)
      ==
-        alpha*rho*G
-      - fvm::SuSp(2.0/3.0*alpha*rho*divU, k_)
-      - fvm::Sp(alpha*rho*epsilon_/k_, k_)
-      - fvm::Sp
-        (
-            Cmu_*N2_/sigmaTheta_*k_/epsilon_,
-            k_
-        )
-      + kSource()
-      + fvOptions(alpha, rho, k_)
+        alpha*rho*G/k1*exp(-lnk_)
+      - 2.0/3.0*alpha*rho*divU
+      - alpha*rho*eps1/k1*exp(lnepsilon_ - lnk_)
+      //- this->nut_*N2_/(k1*sigmaTheta_)*exp(-lnk_)
+      - Cmu_*N2_/sigmaTheta_*k1/eps1*exp(lnk_ - lnepsilon_)
+      + fvOptions(alpha, rho, lnk_)
     );
 
-    kEqn.ref().relax();
     fvOptions.constrain(kEqn.ref());
     solve(kEqn);
-    fvOptions.correct(k_);
-    bound(k_, this->kMin_);
+    fvOptions.correct(lnk_);
+    k_ = k1*exp(lnk_);
 
     correctNut(tgradU(), S2, magS);
 }
@@ -438,6 +435,25 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace RASModels
+
+// Helper function
+wordList swapWords
+(
+    const wordList& words,
+    const word& oldWord,
+    const word& newWord
+)
+{
+    wordList newWords(words);
+    
+    forAll(newWords, i)
+    {
+        if (newWords[i] == oldWord) newWords[i] = newWord;
+    }
+
+    return newWords;
+}
+
 } // End namespace Foam
 
 // ************************************************************************* //

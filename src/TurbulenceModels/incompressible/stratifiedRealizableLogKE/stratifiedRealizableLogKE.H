@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::RASModels::stratifiedRealizableKE
+    Foam::RASModels::stratifiedRealizableLogKE
 
 Description
     k and epsilon model suitable for neutral and stratified flow from
@@ -33,10 +33,11 @@ Description
         A k − ε turbulence model for the stable atmosphere
         J. of Atmos Sci., 77(1):167–184, 2020
     \endverbatim
+    Solves for log k and log epsilon
 
     The model coefficients from ZWM20 are
     \verbatim
-        stratifiedRealizableKECoeffs
+        stratifiedRealizableLogKECoeffs
         {
             A0              4.0;
             C2              1.9;
@@ -60,12 +61,12 @@ See also
     Foam::RASModels::realizableKE
 
 SourceFiles
-    stratifiedRealizableKE.C
+    stratifiedRealizableLogKE.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef stratifiedRealizableKE_H
-#define stratifiedRealizableKE_H
+#ifndef stratifiedRealizableLogKE_H
+#define stratifiedRealizableLogKE_H
 
 #include "RASModel.H"
 #include "eddyViscosity.H"
@@ -77,12 +78,26 @@ namespace Foam
 namespace RASModels
 {
 
+static dimensionedScalar k1
+(
+    "k1",
+    dimensionSet(0,2,-2,0,0),
+    scalar(1)
+);
+
+static dimensionedScalar eps1
+(
+    "eps1",
+    dimensionSet(0,2,-3,0,0),
+    scalar(1)
+);
+
 /*---------------------------------------------------------------------------*\
-                           Class stratifiedRealizableKE Declaration
+                           Class stratifiedRealizableLogKE Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class BasicTurbulenceModel>
-class stratifiedRealizableKE
+class stratifiedRealizableLogKE
 :
     public eddyViscosity<RASModel<BasicTurbulenceModel>>
 {
@@ -105,6 +120,8 @@ protected:
         // Fields
             volScalarField k_;
             volScalarField epsilon_;
+            volScalarField lnk_;
+            volScalarField lnepsilon_;
 
             // Square of the Brunt-Vaisala frequency
             volScalarField N2_;
@@ -130,9 +147,6 @@ protected:
         );
 
         virtual void correctNut();
-        virtual tmp<fvScalarMatrix> kSource() const;
-        virtual tmp<fvScalarMatrix> epsilonSource() const;
-
 
 public:
 
@@ -140,15 +154,14 @@ public:
     typedef typename BasicTurbulenceModel::rhoField rhoField;
     typedef typename BasicTurbulenceModel::transportModel transportModel;
 
-
     //- Runtime type information
-    TypeName("stratifiedRealizableKE");
+    TypeName("stratifiedRealizableLogKE");
 
 
     // Constructors
 
         //- Construct from components
-        stratifiedRealizableKE
+        stratifiedRealizableLogKE
         (
             const alphaField& alpha,
             const rhoField& rho,
@@ -162,7 +175,7 @@ public:
 
 
     //- Destructor
-    virtual ~stratifiedRealizableKE()
+    virtual ~stratifiedRealizableLogKE()
     {}
 
 
@@ -226,12 +239,20 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace RASModels
+
+wordList swapWords
+(
+    const wordList& words,
+    const word& oldWord,
+    const word& newWord
+);
+
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-    #include "stratifiedRealizableKE.C"
+    #include "stratifiedRealizableLogKE.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
