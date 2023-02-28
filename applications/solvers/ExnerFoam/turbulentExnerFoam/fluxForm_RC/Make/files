@@ -1,3 +1,0 @@
-turbulentExnerFoam.C
-
-EXE = $(FOAM_USER_APPBIN)/turbulentExnerFoam_RC

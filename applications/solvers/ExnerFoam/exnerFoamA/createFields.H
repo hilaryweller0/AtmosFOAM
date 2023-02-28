@@ -21,20 +21,6 @@ volVectorField U
     mesh
 );
 
-// Cell face velocity
-surfaceVectorField Uf
-(
-    IOobject
-    (
-        "Uf",
-        runTime.timeName(),
-        mesh,
-        IOobject::NO_READ,
-        IOobject::AUTO_WRITE
-    ),
-    fvc::interpolate(U)
-);
-
 Info<< "Reading field Exner\n" << endl;
 volScalarField Exner
 (
@@ -97,17 +83,6 @@ surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 volScalarField Psi("Psi", rho/Exner);
 Psi.oldTime();
 
-// fixed flux boundary conditions
-wordList phiUBCs(mesh.boundaryMesh().size(), "calculated");
-forAll(mesh.boundaryMesh(), patchi)
-{
-    const word btype = mesh.boundaryMesh()[patchi].type();
-    if(btype == "wall" || btype == "symmetryPlane" || btype == "empty")
-    {
-        phiUBCs[patchi] = "fixedValue";
-    }
-}
-
 Info<< "Calculating face flux field phi\n" << endl;
 surfaceScalarField phi
 (
@@ -120,7 +95,6 @@ surfaceScalarField phi
         IOobject::AUTO_WRITE
     ),
     rhof*(linearInterpolate(U) & mesh.Sf())
-//    phiUBCs
 );
 phi.oldTime();
 
@@ -136,35 +110,4 @@ autoPtr<compressible::turbulenceModel> turbulence
         thermo
     )
 );
-
-// Temporary flux with fixed boundary conditions (without hydrostatic terms)
-surfaceScalarField phiU
-(
-    IOobject("phiU", runTime.timeName(), mesh),
-    phi,
-    phiUBCs
-);
-
-// Rates of change for Crank-Nicholson
-surfaceScalarField dPhidt
-(
-    IOobject("dPhidt", runTime.timeName(), mesh),
-    rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner)),
-    phiUBCs
-);
-
-// fix no flow boundaries
-forAll(phiU.boundaryField(), patchi)
-{
-    const word btype = mesh.boundaryMesh()[patchi].type();
-    const word utype = U.boundaryField()[patchi].type();
-    if
-    (
-        btype == "wall" || btype == "symmetryPlane" || btype == "empty"
-    )
-    {
-        phiU.boundaryFieldRef()[patchi] == 0;
-        dPhidt.boundaryFieldRef()[patchi] == 0;
-    }
-}
 

@@ -240,13 +240,6 @@ public:
 
 } // End namespace RASModels
 
-wordList swapWords
-(
-    const wordList& words,
-    const word& oldWord,
-    const word& newWord
-);
-
 } // End namespace Foam
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

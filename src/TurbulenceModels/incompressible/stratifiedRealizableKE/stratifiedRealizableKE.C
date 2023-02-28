@@ -380,6 +380,12 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
     );
     epsDiffusion.write();
 */
+    surfaceScalarField snGradEpsilon
+    (
+        IOobject("snGradEpsilon", this->runTime_.timeName(),this->mesh_),
+        fvc::snGrad(epsilon_)
+    );
+
     // Dissipation equation
     tmp<fvScalarMatrix> epsEqn
     (
@@ -405,6 +411,12 @@ void stratifiedRealizableKE<BasicTurbulenceModel>::correct()
     solve(epsEqn);
     fvOptions.correct(epsilon_);
     bound(epsilon_, this->epsilonMin_);
+
+    surfaceScalarField snGradk
+    (
+        IOobject("snGradk", this->runTime_.timeName(),this->mesh_),
+        fvc::snGrad(k_)
+    );
 
     // Turbulent kinetic energy equation
     tmp<fvScalarMatrix> kEqn

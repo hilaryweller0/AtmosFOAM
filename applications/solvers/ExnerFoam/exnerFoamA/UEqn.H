@@ -6,7 +6,7 @@ fvVectorMatrix UEqn
   + fvm::div(phi, U)
   + turbulence->divDevRhoReff(U)
   + 2*rho*(Omega^(U-Ug))
-//  - muSponge*rho*(sqr(ghat) & U)
+  - muSponge*rho*(sqr(ghat) & U)
 );
 
 solve

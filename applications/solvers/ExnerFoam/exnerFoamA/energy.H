@@ -1,5 +1,5 @@
 {
-    KE = 0.25*fvc::surfaceIntegrate(sqr(phi)/(mesh.magSf()*mesh.deltaCoeffs()*rhof));
+    KE = 0.5*rho*magSqr(U);
     internalEnergy = rho*theta*Exner*Cv;
     potentialEnergy = -rho*(g & mesh.C());
 

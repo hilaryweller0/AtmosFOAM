@@ -29,16 +29,16 @@ Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
     Optional turbulence modelling.
+    Need to include implicit gravity waves and implicit advection
 
 \*---------------------------------------------------------------------------*/
 
-#include "HodgeOps.H"
 #include "fvCFD.H"
+#include "fluidThermo.H"
 #include "turbulentFluidThermoModel.H"
 #include "ExnerTheta.H"
 #include "OFstream.H"
 #include "rhoThermo.H"
-#include "CrankNicolsonDdtScheme.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -49,7 +49,6 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermoProperties.H"
-    HodgeOps H(mesh);
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
@@ -62,12 +61,6 @@ int main(int argc, char *argv[])
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    fv::CrankNicolsonDdtScheme<vector> drhoUdt
-    (
-        mesh,
-        mesh.schemesDict().subDict("ddtSchemes").lookup("ddt(rho,U)_CN")
-    );
-    const scalar ocCoeff = drhoUdt.ocCoeff();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
@@ -92,9 +85,6 @@ int main(int argc, char *argv[])
         }
         
         #include "rhoThetaEqn.H"
-        
-        // Update rates of change for next time step
-        dPhidt += rhof*(gSf - mesh.magSf()*Cp*thetaf*fvc::snGrad(Exner));
         
         #include "compressibleContinuityErrs.H"
 

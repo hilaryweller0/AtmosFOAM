@@ -228,25 +228,25 @@ stratifiedRealizableLogKE<BasicTurbulenceModel>::stratifiedRealizableLogKE
     ),
     lnk_
     (
-        IOobject("lnk", this->runTime_.timeName(),this->mesh_),
-        log(k_/k1),
-        swapWords
+        IOobject
         (
-            k_.boundaryField().types(),
-            "kqRWallFunction",
-            "zeroGradient"
-        )
+            "lnk",
+            this->runTime_.timeName(),this->mesh_,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        this->mesh_
     ),
     lnepsilon_
     (
-        IOobject("lnepsilon", this->runTime_.timeName(),this->mesh_),
-        log(epsilon_/eps1),
-        swapWords
+        IOobject
         (
-            epsilon_.boundaryField().types(),
-            "epsilonCmuWallFunction",
-            "lnepsilonCmuWallFunction"
-        )
+            "lnepsilon",
+            this->runTime_.timeName(),this->mesh_,
+            IOobject::MUST_READ,
+            IOobject::AUTO_WRITE
+        ),
+        this->mesh_
     ),
     N2_
     (
@@ -273,8 +273,6 @@ stratifiedRealizableLogKE<BasicTurbulenceModel>::stratifiedRealizableLogKE
     }
     Ri_.writeOpt() = IOobject::AUTO_WRITE;
     Cmu_.writeOpt() = IOobject::AUTO_WRITE;
-    lnk_.writeOpt() = IOobject::AUTO_WRITE;
-    lnepsilon_.writeOpt() = IOobject::AUTO_WRITE;
 }
 
 
@@ -366,24 +364,37 @@ void stratifiedRealizableLogKE<BasicTurbulenceModel>::correct()
         IOobject("snGradlnepsilon", this->runTime_.timeName(),this->mesh_),
         fvc::snGrad(lnepsilon_)
     );
+
 /*    volScalarField epsDiffusion
     (
         "epsDiffusion",
         fvc::laplacian(DepsilonEff(), lnepsilon_)
-      + DepsilonEff()*magSqr(fvc::grad(lnepsilon_))
+      + min(DepsilonEff()*magSqr(fvc::grad(lnepsilon_)), 1/dt)
 //      + DepsilonEff()*fvc::average(magSqr(fvc::snGrad(lnepsilon_)))
 //      + DepsilonEff()*fvc::laplacian(lnepsilon_,lnepsilon_)
 //      - DepsilonEff()*lnepsilon_*fvc::laplacian(lnepsilon_)
     );
     epsDiffusion.write();
+    volScalarField epsSource
+    (
+        "epsSource",
+        C1*alpha*rho*magS
+      - C2_*Cmu_*alpha*rho*k_/(this->nut_ + sqrt(this->nut_*this->nu()))
+      - C3_*Cmu_*N2_/sigmaTheta_*k1/eps1*exp(lnk_-lnepsilon_)
+      + C4_*min(sqrt(Ri_/C5_), scalar(1))*sqrt(N2_)
+    );
+    epsSource.write();
 */
+    const dimensionedScalar& dt = this->runTime_.deltaT();
     // Dissipation equation
     tmp<fvScalarMatrix> epsEqn
     (
         fvm::ddt(alpha, rho, lnepsilon_)
       + fvm::div(alphaRhoPhi, lnepsilon_)
       - fvm::laplacian(alpha*rho*DepsilonEff(), lnepsilon_)
-      - DepsilonEff()*magSqr(fvc::grad(lnepsilon_))
+      - min(DepsilonEff()*magSqr(fvc::grad(lnepsilon_)), 1/dt)
+      //- min(DepsilonEff()*fvc::average(magSqr(fvc::snGrad(lnepsilon_))), 1/dt)
+      //- fvc::laplacian(alpha*rho*DepsilonEff(), epsilon_)/epsilon_
 //      - alpha*rho*DepsilonEff()*fvc::laplacian(lnepsilon_, lnepsilon_)
 //      + alpha*rho*DepsilonEff()*lnepsilon_*fvm::laplacian(lnepsilon_)
      ==
@@ -398,6 +409,7 @@ void stratifiedRealizableLogKE<BasicTurbulenceModel>::correct()
     epsEqn.ref().boundaryManipulate(lnepsilon_.boundaryFieldRef());
     solve(epsEqn);
     fvOptions.correct(lnepsilon_);
+    //bound(lnepsilon_, log(this->epsilonMin_/eps1));
     epsilon_ == eps1*exp(lnepsilon_);
 
     // Turbulent kinetic energy equation
@@ -406,14 +418,21 @@ void stratifiedRealizableLogKE<BasicTurbulenceModel>::correct()
         IOobject("snGradlnk", this->runTime_.timeName(),this->mesh_),
         fvc::snGrad(lnk_)
     );
+/*    volScalarField kDiffusion
+    (
+        "kDiffusion",
+        fvc::laplacian(DkEff(), lnk_)
+      + min(DkEff()*magSqr(fvc::grad(lnk_)), 1/dt)
+//      + min(DkEff()*fvc::average(magSqr(fvc::snGrad(lnk_))), 1/dt)
+    );
+    kDiffusion.write();*/
     tmp<fvScalarMatrix> kEqn
     (
         fvm::ddt(alpha, rho, lnk_)
       + fvm::div(alphaRhoPhi, lnk_)
       - fvm::laplacian(alpha*rho*DkEff(), lnk_)
-      - DkEff()*magSqr(fvc::grad(lnk_))
-//      - alpha*rho*DkEff()*fvc::laplacian(lnk_, lnk_)
-//      + alpha*rho*DkEff()*lnk_*fvm::laplacian(lnk_)
+      - min(DkEff()*magSqr(fvc::grad(lnk_)), 1/dt)
+      //- min(DkEff()*fvc::average(magSqr(fvc::snGrad(lnk_))), 1/dt)
      ==
         alpha*rho*G/k1*exp(-lnk_)
       - 2.0/3.0*alpha*rho*divU
@@ -426,6 +445,7 @@ void stratifiedRealizableLogKE<BasicTurbulenceModel>::correct()
     fvOptions.constrain(kEqn.ref());
     solve(kEqn);
     fvOptions.correct(lnk_);
+    //bound(lnk_, log(this->kMin_/k1));
     k_ = k1*exp(lnk_);
 
     correctNut(tgradU(), S2, magS);
