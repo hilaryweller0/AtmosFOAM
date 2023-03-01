@@ -1,5 +1,5 @@
 EXE_INC = \
-    -ggdb3 -O0 \
+    -ggdb3 -O0 -I.\
     -I$(ATMOSFOAM_TOOLS_SRC)/HodgeOps/lnInclude \
     -I$(ATMOSFOAM_SRC)/ExnerTheta/lnInclude \
     -I$(LIB_SRC)/thermophysicalModels/specie/lnInclude \

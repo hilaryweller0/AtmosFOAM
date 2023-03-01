@@ -1,13 +1,4 @@
-Info<< "Reading thermophysical properties\n" << endl;
-
-autoPtr<fluidThermo> pThermo
-(
-    fluidThermo::New(mesh)
-);
-fluidThermo& thermo = pThermo();
-thermo.validate(args.executable(), "h", "e");
-
-// Cell centre velocity
+Info<< "Reading U\n" << endl;
 volVectorField U
 (
     IOobject
@@ -21,7 +12,7 @@ volVectorField U
     mesh
 );
 
-Info<< "Reading field Exner\n" << endl;
+Info<< "Reading Exner\n" << endl;
 volScalarField Exner
 (
     IOobject
@@ -34,9 +25,10 @@ volScalarField Exner
     ),
     mesh
 );
+
 thermo.p() = pRef*pow(Exner, 1/kappa);
 
-Info<< "Reading field theta\n" << endl;
+Info<< "Reading theta\n" << endl;
 volScalarField theta
 (
     IOobject

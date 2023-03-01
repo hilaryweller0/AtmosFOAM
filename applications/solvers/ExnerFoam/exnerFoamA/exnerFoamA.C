@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
-    #include "readThermoProperties.H"
+    #include "readThermo.H"
     #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
@@ -83,13 +83,10 @@ int main(int argc, char *argv[])
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
-        
         #include "rhoThetaEqn.H"
-        
         #include "compressibleContinuityErrs.H"
 
-        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho)
-                                        - initHeat;
+        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
         Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
         #include "energy.H"
         

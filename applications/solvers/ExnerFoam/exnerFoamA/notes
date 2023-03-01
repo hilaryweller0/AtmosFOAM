@@ -1,14 +1,16 @@
 Think about:
-Exner-1?
+Exner-1?     not needed
 p - rho gH?
-741 to 740
-continuity error?
+741 to 740 Done. No oscillations
+continuity error? Fixed. Heat error due to BCs?
 UEqn RHS
 Psi?
 geopotential
-mu and nu?
+mu and nu?   fixed
 
-implicit gravity waves?
+implicit gravity waves? Try using T.H an T.A
+
+implicit Coriolis using quarternians
 
 
 Test case

@@ -37,13 +37,20 @@ surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
                 (
                     rhorAUf/rhof*(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf())
                 );
+                if(ucorr == nOuterCorr-1 && corr == nCorr-1)
+                {
+                    solve
+                    (
+                        fvm::ddt(Psi, Exner) + fvc::div(phi)
+                    );
+                }
             }
         }
         // Update the pressure and temperature based on the new Exner
-        thermo.p() = pRef*pow(Exner, 1/kappa);
-        thermo.T() = theta*Exner;
-        thermo.he() == thermo.he(thermo.p(),thermo.T());
-        thermo.correct();
+        //thermo.p() = pRef*pow(Exner, 1/kappa);
+        //thermo.T() = theta*Exner;
+        //thermo.he() == thermo.he(thermo.p(),thermo.T());
+        //thermo.correct();
     }
 }
 

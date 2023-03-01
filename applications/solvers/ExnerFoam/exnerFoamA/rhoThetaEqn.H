@@ -13,10 +13,24 @@ fvScalarMatrix thetaEqn
   - fvm::laplacian(turbulence->alphaEff(), theta)
 );
 
-theta.correctBoundaryConditions();
 thetaEqn.solve();
+
+/*volScalarField TH = thetaEqn.H();
+volScalarField TA = thetaEqn.A();
+
+volScalarField thetaDiff("thetaDiff", TH/TA);
+thetaDiff.correctBoundaryConditions();
+thetaDiff == theta - thetaDiff;
+thetaDiff.write();
+Info << "thetaDiff max = " << max(thetaDiff.internalField()).value()
+     << " thetaDiff min = " << min(thetaDiff.internalField()).value() << endl;
+*/
+solve
+(
+    fvm::ddt(rho, theta)
+  + fvc::div(phi, theta)
+  - fvc::laplacian(turbulence->alphaEff(), theta)
+);
+
 thetaf = fvc::interpolate(theta);
 
-thermo.T() = theta*Exner;
-//thermo.he() == thermo.he(thermo.p(),thermo.T());
-//thermo.correct();
