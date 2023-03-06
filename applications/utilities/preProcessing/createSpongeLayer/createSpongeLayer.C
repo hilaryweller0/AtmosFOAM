@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "environmentalProperties",
-            runTime.system(),
+            runTime.constant(),
             mesh,
             IOobject::MUST_READ
         )

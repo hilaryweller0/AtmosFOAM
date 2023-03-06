@@ -49,7 +49,6 @@ surfaceScalarField thetaf
     fvc::interpolate(theta)
 );
 thermo.T() = theta*Exner;
-thetaf.oldTime();
 
 // Reading in the sponge layer coefficients (if present)
 volScalarField muSponge
@@ -103,3 +102,10 @@ autoPtr<compressible::turbulenceModel> turbulence
     )
 );
 
+// G for implicit gravity waves
+surfaceScalarField G
+(
+    IOobject("G", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("G", dimless, scalar(1))
+);

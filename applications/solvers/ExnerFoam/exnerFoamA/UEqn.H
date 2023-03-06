@@ -11,7 +11,6 @@ fvVectorMatrix UEqn
 
 solve
 (
-    UEqn ==
-    fvc::reconstruct(rhof*(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()))
+    UEqn == rho*(g - Cp*theta*fvc::grad(Exner))
 );
 

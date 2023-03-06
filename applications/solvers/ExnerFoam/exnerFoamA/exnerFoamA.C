@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
     #include "initEnergy.H"
     #include "energy.H"
     
+    const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
     const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
@@ -85,6 +86,12 @@ int main(int argc, char *argv[])
         }
         #include "rhoThetaEqn.H"
         #include "compressibleContinuityErrs.H"
+
+        // Update the pressure and temperature based on the new Exner
+        thermo.p() = pRef*pow(Exner, 1/kappa);
+        thermo.T() = theta*Exner;
+        thermo.he() == thermo.he(thermo.p(),thermo.T());
+        thermo.correct();
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
         Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;

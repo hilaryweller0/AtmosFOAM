@@ -1,6 +1,17 @@
 volScalarField rAU(1.0/UEqn.A());
 surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
 
+if (SIgravityWaves)
+{
+    // Apply this only where grad Exner * grad theta <0
+    surfaceScalarField gradPT = fvc::snGrad(Exner)*fvc::snGrad(theta);
+    surfaceScalarField applySIg = max(-sign(gradPT), scalar(0));
+    thetaf += applySIg*phi*fvc::snGrad(theta)
+            /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
+    G = 1/(1 - applySIg*sqr(rhof)*Cp*gradPT
+                /fvc::interpolate(UEqn.A()*thetaEqn.A()));
+}
+
 {
     Psi = pow(rho,(2*kappa-1)/(kappa-1))*pow(R/pRef*theta, kappa/(kappa-1));
 
@@ -17,8 +28,8 @@ surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
             fvScalarMatrix ExnerEqn
             (
                 fvm::ddt(Psi, Exner)
-              + fvc::div(phi)
-              - fvm::laplacian(rhorAUf*Cp*thetaf, Exner)
+              + fvc::div(G*phi)
+              - fvm::laplacian(G*rhorAUf*Cp*thetaf, Exner)
             );
 
             if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
@@ -32,11 +43,8 @@ surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
 
             if (nonOrth == nNonOrthCorr)
             {
-                phi -= rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf();
-                U += fvc::reconstruct
-                (
-                    rhorAUf/rhof*(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf())
-                );
+                phi = G*(phi - rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf());
+                U += rAU*rho*(g - Cp*theta*fvc::grad(Exner));
                 if(ucorr == nOuterCorr-1 && corr == nCorr-1)
                 {
                     solve
@@ -46,11 +54,6 @@ surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
                 }
             }
         }
-        // Update the pressure and temperature based on the new Exner
-        //thermo.p() = pRef*pow(Exner, 1/kappa);
-        //thermo.T() = theta*Exner;
-        //thermo.he() == thermo.he(thermo.p(),thermo.T());
-        //thermo.correct();
     }
 }
 

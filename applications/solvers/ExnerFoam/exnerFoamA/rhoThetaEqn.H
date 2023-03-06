@@ -15,16 +15,6 @@ fvScalarMatrix thetaEqn
 
 thetaEqn.solve();
 
-/*volScalarField TH = thetaEqn.H();
-volScalarField TA = thetaEqn.A();
-
-volScalarField thetaDiff("thetaDiff", TH/TA);
-thetaDiff.correctBoundaryConditions();
-thetaDiff == theta - thetaDiff;
-thetaDiff.write();
-Info << "thetaDiff max = " << max(thetaDiff.internalField()).value()
-     << " thetaDiff min = " << min(thetaDiff.internalField()).value() << endl;
-*/
 solve
 (
     fvm::ddt(rho, theta)

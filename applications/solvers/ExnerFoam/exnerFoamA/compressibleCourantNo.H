@@ -49,7 +49,11 @@ if (mesh.nInternalFaces())
     volScalarField Ndt
     (
         "Ndt",
-        dt*Foam::sqrt(mag((g & fvc::grad(thetaf))/theta))
+        dt*Foam::sqrt(max
+        (
+            -(g & fvc::grad(thetaf))/theta,
+            dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
+        ))
     );
     maxNdt = gMax(Ndt);
 }
