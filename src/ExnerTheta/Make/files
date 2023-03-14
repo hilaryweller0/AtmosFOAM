@@ -1,5 +1,4 @@
 BCs/hydrostaticFvPatchScalarField.C
-BCs/fixedUniformInternalValueFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerMoistFvPatchScalarField.C
 BCs/hydrostaticExnerFvPatchScalarField.C

@@ -57,7 +57,7 @@ surfaceScalarField phi
 );
 
 // Solution optimisation
-const dictionary& solDict = mesh.solutionDict().subDict("solution");
+const dictionary& solDict = mesh.solution().subDict("solution");
 const Switch implicitAdvection = solDict.lookup("implicitAdvection");
 const int nOuterCorr = solDict.lookupOrDefault<int>("nOuterCorrectors", 2);
 const int nCorr = solDict.lookupOrDefault<int>("nCorrectors", 1);
@@ -66,7 +66,7 @@ const int nNonOrthCorr =
 label pRefCell = 0;
 scalar pRefValue = 0.0;
 setRefCell(p, solDict, pRefCell, pRefValue);
-mesh.setFluxRequired(p.name());
+//mesh.setFluxRequired(p.name());
 
 // Gravity direction
 const uniformDimensionedVectorField kdir

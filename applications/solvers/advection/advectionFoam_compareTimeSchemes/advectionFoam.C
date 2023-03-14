@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
     #include "energy.H"
 
     // Read the number of iterations each time-step
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<label>("nCorr", label(2));
 
     Info<< "\nCalculating advection\n" << endl;

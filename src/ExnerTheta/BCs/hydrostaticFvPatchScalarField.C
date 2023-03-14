@@ -85,18 +85,6 @@ hydrostaticFvPatchScalarField
 hydrostaticFvPatchScalarField::
 hydrostaticFvPatchScalarField
 (
-    const hydrostaticFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf),
-    gradPcoeffName_(wbppsf.gradPcoeffName_),
-    buoyancyName_(wbppsf.buoyancyName_)
-{}
-
-
-hydrostaticFvPatchScalarField::
-hydrostaticFvPatchScalarField
-(
     const hydrostaticFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )

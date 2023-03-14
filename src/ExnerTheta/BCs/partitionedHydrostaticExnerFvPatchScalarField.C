@@ -80,16 +80,6 @@ partitionedHydrostaticExnerFvPatchScalarField
 partitionedHydrostaticExnerFvPatchScalarField::
 partitionedHydrostaticExnerFvPatchScalarField
 (
-    const partitionedHydrostaticExnerFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf)
-{}
-
-
-partitionedHydrostaticExnerFvPatchScalarField::
-partitionedHydrostaticExnerFvPatchScalarField
-(
     const partitionedHydrostaticExnerFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )

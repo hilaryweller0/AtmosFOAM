@@ -1,0 +1,7 @@
+EXE_INC = \
+    -Wno-old-style-cast \
+    -IlnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude
+
+LIB_LIBS = \
+    -lOpenFOAM

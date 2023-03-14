@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 2);
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

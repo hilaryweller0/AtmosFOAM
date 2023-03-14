@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     #include "createFields.H"
       
-    const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");
+    const dictionary& itsDict = mesh.solution().subDict("initialisation");
     const int maxIters = itsDict.lookupOrDefault<int>("maxIters", 100);
     const label refCell = readLabel(itsDict.lookup("refCell"));
     const scalar refExner = readScalar(itsDict.lookup("refExner"));

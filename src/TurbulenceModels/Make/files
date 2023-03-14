@@ -1,0 +1,8 @@
+incompressible/moreTurbulentTransportModels.C
+
+wallFunctions/nutkAtmRoughCmuWallFunction/nutkAtmRoughCmuWallFunctionFvPatchScalarField.C
+wallFunctions/epsilonCmuWallFunction/epsilonCmuWallFunctionFvPatchScalarField.C
+wallFunctions/lnepsilonCmuWallFunction/lnepsilonCmuWallFunctionFvPatchScalarField.C
+wallFunctions/fixInternalValue/fixInternalValueFvPatchFields.C
+
+LIB = $(FOAM_USER_LIBBIN)/libmoreTurbulence

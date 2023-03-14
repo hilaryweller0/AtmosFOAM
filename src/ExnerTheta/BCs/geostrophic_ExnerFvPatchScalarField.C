@@ -97,18 +97,6 @@ geostrophic_ExnerFvPatchScalarField
 geostrophic_ExnerFvPatchScalarField::
 geostrophic_ExnerFvPatchScalarField
 (
-    const geostrophic_ExnerFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf),
-    Ug_(wbppsf.Ug_),
-    Omega_(wbppsf.Omega_)
-{}
-
-
-geostrophic_ExnerFvPatchScalarField::
-geostrophic_ExnerFvPatchScalarField
-(
     const geostrophic_ExnerFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )

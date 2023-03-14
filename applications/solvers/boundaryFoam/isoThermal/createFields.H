@@ -29,20 +29,20 @@ surfaceScalarField phi
 );
 
 
-singlePhaseTransportModel laminarTransport(U, phi);
+autoPtr<viscosityModel> viscosity(viscosityModel::New(mesh));
 
-autoPtr<incompressible::turbulenceModel> turbulence
+autoPtr<incompressible::momentumTransportModel> turbulence
 (
-    incompressible::turbulenceModel::New(U, phi, laminarTransport)
+    incompressible::momentumTransportModel::New(U, phi, viscosity)
 );
 
-dimensionedVector Ubar("Ubar", dimVelocity, laminarTransport);
+dimensionedVector Ubar("Ubar", dimVelocity, viscosity);
 
 dimensionedVector gradP
 (
     "gradP",
     dimensionSet(0, 1, -2, 0, 0),
-    laminarTransport
+    viscosity
 );
 
 const bool fixUbar = magSqr(Ubar.value()) != 0;
@@ -57,4 +57,5 @@ vector flowDirection = fixUbar ? (Ubar/mag(Ubar)).value()
                                :(gradP/mag(gradP)).value();
 tensor flowMask = sqr(flowDirection);
 
-#include "createFvOptions.H"
+#include "createFvModels.H"
+#include "createFvConstraints.H"

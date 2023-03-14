@@ -1,7 +1,7 @@
 Info << "Butcher Tableau\n" << endl;
 const butcherTableau Bt
 (
-    mesh.schemesDict().subDict("ddtSchemes").lookup
+    mesh.schemes().subDict("ddtSchemes").lookup
     (
         "butcherTableau"
     )

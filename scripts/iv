@@ -1,0 +1,30 @@
+#!/bin/bash -e
+#
+if [ "$#" -lt 2 ]
+then
+   echo usage: iv timeDirs filename.pdf
+   exit
+fi
+
+times=''
+while [ "$#" -ne 1 ]
+do
+   times="$times $1"
+   shift
+done
+
+filename=$1
+shift
+
+# sort times
+times=`echo $times | sort -n`
+
+# get list of all file names
+allFiles=''
+for t in $times; do
+    allFiles="$allFiles $t/$filename"
+done
+echo $allFiles
+
+impressive -T0 -f $allFiles &
+

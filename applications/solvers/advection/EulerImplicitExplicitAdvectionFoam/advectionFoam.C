@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
 
     // Read the Courant number limit for explicit advection
-    const scalar CoLimit = readScalar(mesh.schemesDict().lookup("CoLimit"));
+    const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
 
     #include "createFields.H"
 

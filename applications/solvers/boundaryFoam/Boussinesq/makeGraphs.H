@@ -8,7 +8,7 @@ volSymmTensorField R
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    turbulence->R()
+    turbulence->sigma()
 );
 
 // Lookup Cmu corresponding to the turbulence model selected
@@ -24,49 +24,49 @@ volScalarField mixingLength
 
 runTime.write();
 
-const word& gFormat = runTime.graphFormat();
-
-makeGraph(y, flowDirection & U, "U", gFormat);
-
-makeGraph(y, turbulence->nut(), gFormat);
-makeGraph(y, turbulence->k(), gFormat);
-makeGraph(y, turbulence->epsilon(), gFormat);
-//makeGraph(y, turbulence->omega(), gFormat);
-
-makeGraph(y, flowDirection & R & flowDirection, "Rff", gFormat);
-makeGraph(y, wallNormal & R & wallNormal, "Rww", gFormat);
-makeGraph(y, flowDirection & R & wallNormal, "Rfw", gFormat);
-
-makeGraph(y, sqrt(mag(R.component(symmTensor::XX))), "u", gFormat);
-makeGraph(y, sqrt(mag(R.component(symmTensor::YY))), "v", gFormat);
-makeGraph(y, sqrt(mag(R.component(symmTensor::ZZ))), "w", gFormat);
-makeGraph(y, R.component(symmTensor::XY), "uv", gFormat);
-
-makeGraph(y, mag(fvc::grad(U)), "gammaDot", gFormat);
-makeGraph(y, mixingLength, "lm", gFormat);
-
-makeGraph(y, magSqr(fvc::grad(U))*turbulence->nut(), "TKEproduction", gFormat);
-makeGraph
+setWriter::New(runTime.graphFormat())->write
 (
-    y,
+    runTime.globalPath()
+   /functionObjects::writeFile::outputPrefix
+   /args.executable()
+   /runTime.timeName(),
+
+    args.executable(),
+
+    coordSet(true, "y", y),
+
+    "U", (flowDirection & U)().primitiveField(),
+
+    "nu", turbulence->nu()().primitiveField(),
+    "k", turbulence->nu()().primitiveField(),
+    "epsilon", turbulence->nu()().primitiveField(),
+
+    "Rff", (flowDirection & R & flowDirection)().primitiveField(),
+    "Rww", (wallNormal & R & wallNormal)().primitiveField(),
+    "Rfw", (flowDirection & R & wallNormal)().primitiveField(),
+
+    "u", sqrt(mag(R.component(symmTensor::XX)))().primitiveField(),
+    "v", sqrt(mag(R.component(symmTensor::YY)))().primitiveField(),
+    "w", sqrt(mag(R.component(symmTensor::ZZ)))().primitiveField(),
+    "uy", R.component(symmTensor::XY)().primitiveField(),
+
+    "gammaDot", mag(fvc::grad(U))().primitiveField(),
+    "lm", mixingLength.primitiveField(),
+
+    "TKEproduction", (magSqr(fvc::grad(U))*turbulence->nut())().primitiveField(),
+    
+    "TKEturbulentTransport",
     fvc::laplacian
     (
-        turbulence->nut()/turbulence->coeffDict().lookupOrDefault<scalar>("ksigma",1),
+        turbulence->nut()
+            /turbulence->coeffDict().lookupOrDefault<scalar>("ksigma",1),
         turbulence->k()
-    ),
-    "TKEturbulentTransport",
-    gFormat
-);
-
-makeGraph
-(
-    y,
-    fvc::laplacian(turbulence->nu(), turbulence->k()),
+    )().primitiveField(),
+    
     "TKEviscousTransport",
-    gFormat
+    fvc::laplacian(turbulence->nu(), turbulence->k())().primitiveField(),
+    
+    "b", b.primitiveField(),
+    "heatFlux", (Prandtl*turbulence->nut()*fvc::grad(b))().primitiveField()
 );
-
-makeGraph(y, b, "b", gFormat);
-volVectorField heatFlux("heatFlux", Prandtlt*turbulence->nut()*fvc::grad(b));
-makeGraph(y, heatFlux & wallNormal, "turbHeatFlux", gFormat);
 

@@ -5,16 +5,14 @@ A collection of OpenFOAM computational fluid dynamics applications and libraries
 
 ### From source
 
-* Install [OpenFOAM dev](https://github.com/OpenFOAM/OpenFOAM-dev).
-* Ensure [AtmosFOAM-tools](https://github.com/AtmosFOAM/AtmosFOAM-tools/) is installed
+* Install [OpenFOAM 10](https://github.com/OpenFOAM/OpenFOAM-10).
 * Go to directory
 cd $WM_PROJECT_USER_DIR
 and download AtmosFOAM using:
 git clone https://github.com/AtmosFOAM/AtmosFOAM.git
 * Export environment variables `~/.bashrc` file:
 
-       export ATMOSFOAM_TOOLS_SRC=/path/to/AtmosFOAM-tools/src
-       export GMTU=/path/to/AtmosFOAM-tools/gmtUser
+       export GMTU=/path/to/AtmosFOAM/gmtUser
        export ATMOSFOAM_SRC=/path/to/AtmosFOAM/src
 
 * Compile all AtmosFOAM applications and libraries:

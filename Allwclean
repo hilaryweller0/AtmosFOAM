@@ -6,4 +6,3 @@ cd ${0%/*} || exit 1    # run from this directory
     exit 1
 }
 
-debian/override_dh_auto_clean.sh

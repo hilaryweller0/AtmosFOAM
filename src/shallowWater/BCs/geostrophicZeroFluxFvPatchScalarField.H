@@ -87,20 +87,11 @@ public:
             const fvPatchFieldMapper&
         );
 
-        //- Construct as copy
+        //- Construct as copy not allowed
         geostrophicZeroFluxFvPatchScalarField
         (
             const geostrophicZeroFluxFvPatchScalarField&
-        );
-
-        //- Construct and return a clone
-        virtual tmp<fvPatchScalarField> clone() const
-        {
-            return tmp<fvPatchScalarField>
-            (
-                new geostrophicZeroFluxFvPatchScalarField(*this)
-            );
-        }
+        ) = delete;
 
         //- Construct as copy setting internal field reference
         geostrophicZeroFluxFvPatchScalarField

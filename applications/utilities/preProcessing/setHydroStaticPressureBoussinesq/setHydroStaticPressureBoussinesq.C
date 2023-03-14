@@ -69,10 +69,10 @@ int main(int argc, char *argv[])
     #include INCLUDE_FILE(CREATE_CONTROL)
     #endif
     
-    const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");
+    const dictionary& itsDict = mesh.solution().subDict("initialisation");
     const int maxIters = itsDict.lookupOrDefault<int>("maxIters", 100);
     //const scalar Ptol = itsDict.lookupOrDefault<scalar>("initPtol", SMALL);
-    label pRefCell = mesh.solutionDict().lookupOrDefault<label>("pRefCell", 0);
+    label pRefCell = mesh.solution().lookupOrDefault<label>("pRefCell", 0);
     
     // Read in pressure and buoyancy
     Info<< "Reading field P\n" << endl;

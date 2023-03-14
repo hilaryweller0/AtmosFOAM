@@ -10,16 +10,16 @@ thermo.validate(args.executable(), "h", "e");
 // Use of Exner needs reference T and p and a single value of R, Cp and Cv
 const dimensionedScalar Tref
 (
-    "Tref", dimTemperature, readScalar(thermo.lookup("Tref"))
+    "Tref", dimTemperature, readScalar(thermo.properties().lookup("Tref"))
 );
 const dimensionedScalar pRef
 (
-    "pRef", dimPressure, readScalar(thermo.lookup("pRef"))
+    "pRef", dimPressure, readScalar(thermo.properties().lookup("pRef"))
 );
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
-    thermo.subDict("mixture")
+    thermo.properties().subDict("mixture")
 );
 
 const dimensionedScalar R("R", dimGasConstant, air.R());

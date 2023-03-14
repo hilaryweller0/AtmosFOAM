@@ -1,8 +1,0 @@
-moreTurbulentTransportModels.C
-nutkAtmRough2WallFunction/nutkAtmRough2WallFunctionFvPatchScalarField.C
-nutkAtmRoughCmuWallFunction/nutkAtmRoughCmuWallFunctionFvPatchScalarField.C
-epsilonCmuWallFunction/epsilonCmuWallFunctionFvPatchScalarField.C
-lnepsilonCmuWallFunction/lnepsilonCmuWallFunctionFvPatchScalarField.C
-fixInternalValue/fixInternalValueFvPatchFields.C
-
-LIB = $(FOAM_USER_LIBBIN)/libmoreincompressibleTurbulence

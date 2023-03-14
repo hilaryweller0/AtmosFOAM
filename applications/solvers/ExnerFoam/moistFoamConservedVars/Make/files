@@ -1,3 +1,0 @@
-moistFoamConservedVars.C
-
-EXE = $(FOAM_USER_APPBIN)/moistFoamConservedVars

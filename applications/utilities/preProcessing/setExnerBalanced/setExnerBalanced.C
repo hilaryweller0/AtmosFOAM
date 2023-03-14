@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     #include "readThermoProperties.H"
     #include "createFields.H"
       
-    const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");
+    const dictionary& itsDict = mesh.solution().subDict("initialisation");
     const int maxIters = itsDict.lookupOrDefault<int>("maxIters", 100);
     const int BCiters  = itsDict.lookupOrDefault<int>("BCiters", 10);
     const scalar BCtol = itsDict.lookupOrDefault<scalar>("BCtol", SMALL);

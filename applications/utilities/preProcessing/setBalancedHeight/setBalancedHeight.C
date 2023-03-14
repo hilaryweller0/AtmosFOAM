@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
     #include "readEnvironmentalProperties.H"
     #include "createFields.H"
 
-    const dictionary& itsDict = mesh.solutionDict().subDict("initialisation");
+    const dictionary& itsDict = mesh.solution().subDict("initialisation");
     const int maxIters = itsDict.lookupOrDefault<int>("maxIters", 100);
    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

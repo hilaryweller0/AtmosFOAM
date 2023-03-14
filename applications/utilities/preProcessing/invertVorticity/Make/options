@@ -1,0 +1,12 @@
+EXE_INC = \
+    -ggdb3 -O0 -DFULLDEBUG \
+    -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lfiniteVolume \
+    -lmeshTools \
+    -L$(FOAM_USER_LIBBIN) -lfiniteVolumeAtmosFOAM
+

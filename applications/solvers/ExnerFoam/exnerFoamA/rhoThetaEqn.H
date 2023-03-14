@@ -10,17 +10,10 @@ fvScalarMatrix thetaEqn
 (
     fvm::ddt(rho, theta)
   + fvm::div(phi, theta)
-  - fvm::laplacian(turbulence->alphaEff(), theta)
+  - fvm::laplacian(thermophysicalTransport->kappaEff(), theta)
 );
 
 thetaEqn.solve();
-
-solve
-(
-    fvm::ddt(rho, theta)
-  + fvc::div(phi, theta)
-  - fvc::laplacian(turbulence->alphaEff(), theta)
-);
 
 thetaf = fvc::interpolate(theta);
 

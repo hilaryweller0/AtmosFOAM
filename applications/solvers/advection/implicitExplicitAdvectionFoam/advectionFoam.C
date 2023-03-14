@@ -46,10 +46,10 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
 
     // Read the number of iterations each time-step
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = itsDict.lookupOrDefault<label>("nCorr", label(2));
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
-    const scalar CoLimit = readScalar(mesh.schemesDict().lookup("CoLimit"));
+    const scalar offCentre = readScalar(mesh.schemes().lookup("offCentre"));
+    const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
 
 
     // Output file to write error measures each time step

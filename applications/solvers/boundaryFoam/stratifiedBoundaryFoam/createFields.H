@@ -41,24 +41,25 @@ volScalarField dbdz
     mesh
 );
 
-singlePhaseTransportModel laminarTransport(U, phi);
+autoPtr<viscosityModel> viscosity(viscosityModel::New(mesh));
 
-autoPtr<incompressible::turbulenceModel> turbulence
+autoPtr<incompressible::momentumTransportModel> turbulence
 (
-    incompressible::turbulenceModel::New(U, phi, laminarTransport)
+    incompressible::momentumTransportModel::New(U, phi, viscosity)
 );
 
 dimensionedVector geostrophicWind
 (
     "geostrophicWind",
     dimVelocity,
-    laminarTransport
+    viscosity
 );
 
-const dimensionedVector Coriolisf("Coriolisf", dimless/dimTime, laminarTransport);
+const dimensionedVector Coriolisf("Coriolisf", dimless/dimTime, viscosity);
 //const quaternion CoriolisF(Coriolisf.value());
 //const tensor invF(inv(sphericalTensor::I + dt.value()*CoriolisF.R()));
 
 //const scalar Prandtlt = readScalar(laminarTransport.lookup("Prandtlt"));
 
-#include "createFvOptions.H"
+#include "createFvModels.H"
+#include "createFvConstraints.H"

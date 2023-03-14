@@ -36,12 +36,14 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
-#include "singlePhaseTransportModel.H"
-#include "turbulentTransportModel.H"
-#include "fvOptions.H"
+#include "viscosityModel.H"
+#include "incompressibleMomentumTransportModels.H"
+#include "fvModels.H"
+#include "fvConstraints.H"
 #include "wallFvPatch.H"
 #include "wallDist.H"
-#include "makeGraph.H"
+#include "setWriter.H"
+#include "writeFile.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -60,27 +62,27 @@ int main(int argc, char *argv[])
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    #include "makeGraphs.H"
+
     Info<< "\nStarting time loop\n" << endl;
 
     while (runTime.loop())
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        fvVectorMatrix divR(turbulence->divDevReff(U));
-        divR.source() = flowMask & divR.source();
+        fvModels.correct();
+
+        fvVectorMatrix divR(turbulence->divDevSigma(U));
 
         fvVectorMatrix UEqn
         (
-            divR == gradP + fvOptions(U)
+            divR == gradP + fvModels.source(U)
         );
 
         UEqn.relax();
-
-        fvOptions.constrain(UEqn);
-
+        fvConstraints.constrain(UEqn);
         UEqn.solve();
-
-        fvOptions.correct(U);
+        fvConstraints.constrain(U);
 
 
         // Correct driving force for a constant volume flow rate
@@ -92,7 +94,7 @@ int main(int argc, char *argv[])
             gradP += (Ubar - UbarStar)/(1.0/UEqn.A())().weightedAverage(mesh.V());
         }
 
-        laminarTransport.correct();
+        viscosity->correct();
         turbulence->correct();
 
         Info<< "Uncorrected Ubar = " << (flowDirection & UbarStar.value())

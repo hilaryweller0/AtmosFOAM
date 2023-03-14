@@ -1,3 +1,0 @@
-testPow.C
-
-EXE = $(FOAM_USER_APPBIN)/testPow

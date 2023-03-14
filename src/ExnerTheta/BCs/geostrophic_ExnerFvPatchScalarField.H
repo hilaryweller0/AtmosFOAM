@@ -94,20 +94,11 @@ public:
             const fvPatchFieldMapper&
         );
 
-        //- Construct as copy
+        //- Disallow copy without setting internal field reference
         geostrophic_ExnerFvPatchScalarField
         (
             const geostrophic_ExnerFvPatchScalarField&
-        );
-
-        //- Construct and return a clone
-        virtual tmp<fvPatchScalarField> clone() const
-        {
-            return tmp<fvPatchScalarField>
-            (
-                new geostrophic_ExnerFvPatchScalarField(*this)
-            );
-        }
+        ) = delete;
 
         //- Construct as copy setting internal field reference
         geostrophic_ExnerFvPatchScalarField

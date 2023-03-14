@@ -1,3 +1,0 @@
-moreTurbulentFluidThermoModels.C
-
-LIB = $(FOAM_USER_LIBBIN)/libmoreTurbulence

@@ -35,8 +35,14 @@ Description
 
 #include "fvCFD.H"
 #include "fluidThermo.H"
-#include "turbulentFluidThermoModel.H"
-#include "ExnerTheta.H"
+#include "compressibleMomentumTransportModels.H"
+#include "fluidThermophysicalTransportModel.H"
+#include "physicalProperties.H"
+#include "fundamentalConstants.H"
+#include "specie.H"
+#include "perfectGas.H"
+#include "hConstThermo.H"
+#include "constTransport.H"
 #include "OFstream.H"
 #include "rhoThermo.H"
 
@@ -56,8 +62,8 @@ int main(int argc, char *argv[])
     #include "initEnergy.H"
     #include "energy.H"
     
-    const Switch SIgravityWaves(mesh.schemesDict().lookup("SIgravityWaves"));
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =

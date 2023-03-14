@@ -34,6 +34,7 @@ Description
 #include "OFstream.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
+#include "fvModels.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,6 +44,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "createControl.H"
+    #include "createFvModels.H"
     #include "createTimeControls.H"
 
     #include "createFields.H"
@@ -87,6 +89,7 @@ int main(int argc, char *argv[])
     while (runTime.run())
     {
         #include "readTimeControls.H"
+        fvModels.correct();
         #include "CourantNo.H"
         #include "setDeltaT.H"
         runTime++;
@@ -96,13 +99,13 @@ int main(int argc, char *argv[])
         {
             runTime.setTime
             (
-                runTime.timeOutputValue() - 0.5*runTime.deltaTValue(),
+                runTime.time().value() - 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
             v->applyTo(phi);
             runTime.setTime
             (
-                runTime.timeOutputValue() + 0.5*runTime.deltaTValue(),
+                runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
 

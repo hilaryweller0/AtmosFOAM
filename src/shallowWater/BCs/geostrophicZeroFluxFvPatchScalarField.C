@@ -79,16 +79,6 @@ geostrophicZeroFluxFvPatchScalarField
 geostrophicZeroFluxFvPatchScalarField::
 geostrophicZeroFluxFvPatchScalarField
 (
-    const geostrophicZeroFluxFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf)
-{}
-
-
-geostrophicZeroFluxFvPatchScalarField::
-geostrophicZeroFluxFvPatchScalarField
-(
     const geostrophicZeroFluxFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )
@@ -114,17 +104,15 @@ void geostrophicZeroFluxFvPatchScalarField::updateCoeffs()
     const dimensionedScalar f0(environmentalProperties.lookup("f0"));
     const vector OmegaHat(environmentalProperties.lookup("OmegaHat"));
 
-    const surfaceVectorField& Uf
-        = db().lookupObject<surfaceVectorField>("Uf");
-    const fvsPatchField<vector> Ufp
-        = patch().patchField<surfaceVectorField, vector>(Uf);
+    const fvsPatchField<vector>& Uf = patch().lookupPatchField
+    <
+        surfaceVectorField, vector
+    >("Uf");
 
-    const surfaceVectorField& Cf = Uf.mesh().Cf();
-    fvsPatchField<vector> Cfp =
-        patch().patchField<surfaceVectorField, vector>(Cf);
+    const vectorField& Cf = this->patch().Cf();
 
-    gradient() = -(f0.value() + beta.value()*Cfp.component(vector::Y))*
-                 ((OmegaHat ^ Ufp) & patch().nf())/g.value();
+    gradient() = -(f0.value() + beta.value()*Cf.component(vector::Y))*
+                 ((OmegaHat ^ Uf) & patch().nf())/g.value();
     
     fixedGradientFvPatchScalarField::updateCoeffs();
 }

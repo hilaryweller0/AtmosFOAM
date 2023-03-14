@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     // Read the number of iterations each time-step
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
 
     // Create the ghost mesh

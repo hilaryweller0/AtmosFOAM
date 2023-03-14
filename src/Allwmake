@@ -13,8 +13,16 @@ set -e
 }
 
 wmake $makeType ExnerTheta
-wmake $makeType CharneyPhillips
 wmake $makeType shallowWater
 wmake $makeType thermalFields
 wmake $makeType TurbulenceModels
+wmake $makeType OpenFOAM
+wmake $makeType finiteVolume
+wmake $makeType HodgeOps
+wmake $makeType sampling
+wmake $makeType geometry
+wmake $makeType sphericalGeometry
+wmake $makeType prescribedFields
+wmake $makeType orography
+wmake $makeType ghostMesh
 

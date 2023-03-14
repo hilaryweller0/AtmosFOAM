@@ -87,20 +87,11 @@ public:
             const fvPatchFieldMapper&
         );
 
-        //- Construct as copy
+        //- Disallow copy without setting internal field reference
         hydrostaticExnerFvPatchScalarField
         (
             const hydrostaticExnerFvPatchScalarField&
-        );
-
-        //- Construct and return a clone
-        virtual tmp<fvPatchScalarField> clone() const
-        {
-            return tmp<fvPatchScalarField>
-            (
-                new hydrostaticExnerFvPatchScalarField(*this)
-            );
-        }
+        ) = delete;
 
         //- Construct as copy setting internal field reference
         hydrostaticExnerFvPatchScalarField

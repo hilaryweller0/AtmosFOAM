@@ -8,7 +8,7 @@ volSymmTensorField R
         IOobject::NO_READ,
         IOobject::AUTO_WRITE
     ),
-    turbulence->R()
+    turbulence->sigma()
 );
 
 runTime.write();
@@ -41,19 +41,34 @@ volScalarField mixingLength
     "mixingLength", sign(turbulence->nut())*sqrt(mag(turbulence->nut())/magS)
 );
 
-const word& gFormat = runTime.graphFormat();
+setWriter::New(runTime.graphFormat())->write
+(
+    runTime.globalPath()
+   /functionObjects::writeFile::outputPrefix
+   /args.executable()
+   /runTime.timeName(),
 
-makeGraph(z, U.component(0), "Ux", gFormat);
-makeGraph(z, U.component(1), "Uy", gFormat);
-makeGraph(z, turbulence->nut()/scalar(1), "nut", gFormat);
-makeGraph(z, turbulence->k()/scalar(1), "k", gFormat);
-makeGraph(z, turbulence->epsilon()/scalar(1), "epsilon", gFormat);
-makeGraph(z, magS, "magS", gFormat);
-makeGraph(z, eta, gFormat);
-makeGraph(z, mixingLength, "lm", gFormat);
-makeGraph(z, mesh.lookupObject<const volScalarField>("Cmu"), "Cmu", gFormat);
-makeGraph(z, mag(gradU), "magGradU", gFormat);
-makeGraph(z, Us, "Us", gFormat);
-makeGraph(z, C1, "C1", gFormat);
-makeGraph(z, mesh.lookupObject<const volScalarField>("Ri"), "Ri", gFormat);
+    args.executable(),
+
+    coordSet(true, "z", z),
+
+    "Ux", (U.component(0))().primitiveField(),
+    "Uy", (U.component(1))().primitiveField(),
+
+    "nu", turbulence->nu()().primitiveField(),
+    "k", turbulence->nu()().primitiveField(),
+    "epsilon", turbulence->nu()().primitiveField(),
+
+    "magS", magS.primitiveField(),
+    "eta", eta.primitiveField(),
+    "Cmu", (mesh.lookupObject<const volScalarField>("Cmu")).primitiveField(),
+
+    "gammaDot", mag(fvc::grad(U))().primitiveField(),
+    "lm", mixingLength.primitiveField(),
+
+    "Us", Us.primitiveField(),
+    "C1", C1.primitiveField(),
+    "Ri", mesh.lookupObject<const volScalarField>("Ri").primitiveField(),
+    "dbdz", dbdz.primitiveField()
+);
 

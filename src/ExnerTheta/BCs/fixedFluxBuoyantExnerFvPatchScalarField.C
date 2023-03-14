@@ -80,16 +80,6 @@ fixedFluxBuoyantExnerFvPatchScalarField
 fixedFluxBuoyantExnerFvPatchScalarField::
 fixedFluxBuoyantExnerFvPatchScalarField
 (
-    const fixedFluxBuoyantExnerFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf)
-{}
-
-
-fixedFluxBuoyantExnerFvPatchScalarField::
-fixedFluxBuoyantExnerFvPatchScalarField
-(
     const fixedFluxBuoyantExnerFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )

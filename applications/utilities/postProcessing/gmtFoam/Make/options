@@ -1,0 +1,10 @@
+EXE_INC = \
+    -ggdb3 -O0 -DFULLDEBUG -Wdeprecated-copy \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(ATMOSFOAM_SRC)/geometry/lnInclude
+
+EXE_LIBS = \
+    -lmeshTools \
+    -lfiniteVolume
+

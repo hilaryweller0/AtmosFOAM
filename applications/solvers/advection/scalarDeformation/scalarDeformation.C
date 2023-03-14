@@ -46,12 +46,12 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #define dt runTime.deltaT()
     // Read the number of iterations each time-step
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
-    const Switch implicit = mesh.schemesDict().lookup("implicit");
-    const dictionary& divSchemesDict = mesh.schemesDict().subDict("divSchemes");
-    //const Switch FCT = mesh.schemesDict().lookup("fluxCorrectedTransport");
+    const scalar offCentre = readScalar(mesh.schemes().lookup("offCentre"));
+    const Switch implicit = mesh.schemes().lookup("implicit");
+    const dictionary& divSchemesDict = mesh.schemes().subDict("divSchemes");
+    //const Switch FCT = mesh.schemes().lookup("fluxCorrectedTransport");
 
     // Create the class for the deformational flow
     deformationalFlow defFlow

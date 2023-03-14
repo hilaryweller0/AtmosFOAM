@@ -46,31 +46,31 @@ int main(int argc, char *argv[])
     #include "readDicts.H"
     #include "createFields.H"
 
-    bool implicitSource = mesh.solutionDict().lookupOrDefault<bool>
+    bool implicitSource = mesh.solution().lookupOrDefault<bool>
     (
         "implicitSource", false
     );
-    const bool implicitConservation = mesh.solutionDict().lookupOrDefault<bool>
+    const bool implicitConservation = mesh.solution().lookupOrDefault<bool>
     (
         "implicitConservation", false
     );
-    double offCentre = mesh.solutionDict().lookupOrDefault<double>
+    double offCentre = mesh.solution().lookupOrDefault<double>
     (
         "CrankNicolsonAlpha", 0.5
     );
-    const int numberOfCorrectors = mesh.solutionDict().lookupOrDefault<int>
+    const int numberOfCorrectors = mesh.solution().lookupOrDefault<int>
     (
         "numberOfCorrectors", 3
     );
-    const int opSplit = mesh.solutionDict().lookupOrDefault<int>
+    const int opSplit = mesh.solution().lookupOrDefault<int>
     (
         "operatorSplitting", 0
     );
-    const double opSplitOffCentre = mesh.solutionDict().lookupOrDefault<double>
+    const double opSplitOffCentre = mesh.solution().lookupOrDefault<double>
     (
         "opSplitOffCenterCoefficient", 0
     );
-    const double timeScale = mesh.solutionDict().lookupOrDefault<double>
+    const double timeScale = mesh.solution().lookupOrDefault<double>
     (
         "timeScale", 1.
     );

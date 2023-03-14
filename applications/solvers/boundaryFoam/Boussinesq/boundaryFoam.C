@@ -36,12 +36,13 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "fvCFD.H"
-#include "singlePhaseTransportModel.H"
-#include "turbulentTransportModel.H"
-#include "fvOptions.H"
+#include "viscosityModel.H"
+#include "incompressibleMomentumTransportModels.H"
+#include "fvModels.H"
+#include "fvConstraints.H"
 #include "wallFvPatch.H"
-#include "wallDist.H"
-#include "makeGraph.H"
+#include "setWriter.H"
+#include "writeFile.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -70,29 +71,31 @@ int main(int argc, char *argv[])
     {
         Info<< "Time = " << runTime.timeName() << nl << endl;
 
-        fvVectorMatrix divR(turbulence->divDevReff(U));
+        fvModels.correct();
+
+        fvVectorMatrix divR(turbulence->divDevSigma(U));
 
         fvVectorMatrix UEqn
         (
             fvm::ddt(U) + divR
          == (Coriolisf ^ (U - geostrophicWind))
-          + fvOptions(U)
+          + fvModels.source(U)
         );
-        fvOptions.constrain(UEqn);
+        fvConstraints.constrain(UEqn);
         UEqn.solve();
-        fvOptions.correct(U);
+        fvConstraints.constrain(U);
         flowDirection = U[cellId]/mag(U[cellId]);
 
         fvScalarMatrix bEqn
         (
-            fvm::ddt(b) - fvc::laplacian(Prandtlt*turbulence->nut(), b)
-            == fvOptions(b)
+            fvm::ddt(b) - fvc::laplacian(Prandtl*turbulence->nut(), b)
+            == fvModels.source(b)
         );
-        fvOptions.constrain(bEqn);
-        UEqn.solve();
-        fvOptions.correct(b);
+        fvConstraints.constrain(bEqn);
+        bEqn.solve();
+        fvConstraints.constrain(b);
 
-        laminarTransport.correct();
+        viscosity->correct();
         turbulence->correct();
 
         #include "evaluateNearWall.H"

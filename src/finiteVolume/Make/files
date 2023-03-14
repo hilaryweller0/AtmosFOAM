@@ -1,0 +1,17 @@
+convectionSchemes/MPDATA/MPDATAs.C
+convectionSchemes/LaxWendroff/LaxWendroffs.C
+convectionSchemes/MPDATA_RK2/MPDATA_RK2s.C
+convectionSchemes/fluxCorrectedTransport/fvcFluxLimit.C
+convectionSchemes/fluxCorrectedTransport/fvcLocalMinMax.C
+
+fvc/fvcCurlf.C
+fvc/fvcCof.C
+fvc/fvcPosDefCof.C
+fvc/fvcDet.C
+
+
+finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C
+finiteVolume/sGradSchemes/interpGrad/interpGrads.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeAtmosFOAM
+

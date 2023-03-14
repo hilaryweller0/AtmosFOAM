@@ -41,27 +41,28 @@ volScalarField b
     mesh
 );
 
-singlePhaseTransportModel laminarTransport(U, phi);
+autoPtr<viscosityModel> viscosity(viscosityModel::New(mesh));
 
-autoPtr<incompressible::turbulenceModel> turbulence
+autoPtr<incompressible::momentumTransportModel> turbulence
 (
-    incompressible::turbulenceModel::New(U, phi, laminarTransport)
+    incompressible::momentumTransportModel::New(U, phi, viscosity)
 );
 
 dimensionedVector geostrophicWind
 (
     "geostrophicWind",
     dimVelocity,
-    laminarTransport
+    viscosity
 );
 
 dimensionedVector Coriolisf
 (
     "Coriolisf",
     dimensionSet(0, 0, -1, 0, 0),
-    laminarTransport
+    viscosity
 );
 
-const scalar Prandtlt = readScalar(laminarTransport.lookup("Prandtlt"));
+const scalar Prandtl = readScalar(viscosity->lookup("Prandtl"));
 
-#include "createFvOptions.H"
+#include "createFvModels.H"
+#include "createFvConstraints.H"

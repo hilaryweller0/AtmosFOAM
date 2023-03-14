@@ -80,16 +80,6 @@ hydrostaticExnerFvPatchScalarField
 hydrostaticExnerFvPatchScalarField::
 hydrostaticExnerFvPatchScalarField
 (
-    const hydrostaticExnerFvPatchScalarField& wbppsf
-)
-:
-    fixedGradientFvPatchScalarField(wbppsf)
-{}
-
-
-hydrostaticExnerFvPatchScalarField::
-hydrostaticExnerFvPatchScalarField
-(
     const hydrostaticExnerFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )

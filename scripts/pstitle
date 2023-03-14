@@ -1,0 +1,31 @@
+#!/bin/bash -e
+#
+
+if [ "$#" -eq 1 ]; then
+    tit=$1
+    file=$1
+else if [ "$#" -ne 2 ]; then
+   echo usage: pstitle newTitle postScriptFile
+   exit
+else
+    tit=$1
+    file=$2
+fi; fi
+
+ln=`grep -n Title $file | head -1 | cut -d: -f1`
+let ln0=$ln+0
+if [ $ln != $ln0 ]; then
+    exit 0
+fi
+
+let ln=$ln-1
+head -$ln $file > .tmp.pstitle
+echo %%Title: $tit >> .tmp.pstitle
+
+nl=`cat $file | wc -l`
+let nl="${nl}-${ln}"-1
+
+tail -$nl $file >> .tmp.pstitle
+
+\mv .tmp.pstitle $file
+

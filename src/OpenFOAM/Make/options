@@ -1,0 +1,7 @@
+EXE_INC = \
+    -ggdb3 -O0 \
+    -Wno-old-style-cast \
+    -IlnInclude
+
+LIB_LIBS = \
+    -lOpenFOAM

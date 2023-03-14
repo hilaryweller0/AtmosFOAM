@@ -43,10 +43,10 @@ int main(int argc, char *argv[])
     #define dt runTime.deltaT()
     #include "createFields.H"
     // Read the number of iterations each time-step
-    const dictionary& itsDict = mesh.solutionDict().subDict("iterations");
+    const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nCorr = readLabel(itsDict.lookup("nCorr"));
-    const Switch implicit = mesh.schemesDict().lookup("implicit");
-    const scalar offCentre = readScalar(mesh.schemesDict().lookup("offCentre"));
+    const Switch implicit = mesh.schemes().lookup("implicit");
+    const scalar offCentre = readScalar(mesh.schemes().lookup("offCentre"));
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
