@@ -120,7 +120,7 @@ void geostrophic_ExnerFvPatchScalarField::updateCoeffs()
          = patch().lookupPatchField<surfaceScalarField, scalar>("thetaf");
 
     const dictionary& thermoProperties
-        = db().lookupObject<IOdictionary>("thermophysicalProperties");
+        = db().lookupObject<IOdictionary>("physicalProperties");
 
     const constTransport<hConstThermo<perfectGas<specie> > > air
     (

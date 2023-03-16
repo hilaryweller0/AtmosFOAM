@@ -1,5 +1,6 @@
 BCs/hydrostaticFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerFvPatchScalarField.C
+BCs/fixedFluxBuoyantlnExnerFvPatchScalarField.C
 BCs/fixedFluxBuoyantExnerMoistFvPatchScalarField.C
 BCs/hydrostaticExnerFvPatchScalarField.C
 BCs/geostrophic_ExnerFvPatchScalarField.C

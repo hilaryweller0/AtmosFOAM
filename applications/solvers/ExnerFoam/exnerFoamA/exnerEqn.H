@@ -1,15 +1,20 @@
 volScalarField rAU(1.0/UEqn.A());
-surfaceScalarField rhorAUf("rhorAUf", fvc::interpolate(sqr(rho)*rAU));
+surfaceScalarField rhorAUf("rhorAUf", rhof*fvc::interpolate(rho*rAU));
+thetaf = fvc::interpolate(theta);
 
 if (SIgravityWaves)
 {
     // Apply this only where grad Exner * grad theta <0
     surfaceScalarField gradPT = fvc::snGrad(Exner)*fvc::snGrad(theta);
-    surfaceScalarField applySIg = max(-sign(gradPT), scalar(0));
+    applySIg = max(-sign(gradPT), scalar(0))*mag(gUnitNormal);
     thetaf += applySIg*phi*fvc::snGrad(theta)
             /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
-    G = 1/(1 - applySIg*sqr(rhof)*Cp*gradPT
-                /fvc::interpolate(UEqn.A()*thetaEqn.A()));
+    G = 1/(1 + rhorAUf*muSpongef/rhof - applySIg*sqr(rhof)*Cp*gradPT
+                                /fvc::interpolate(UEqn.A()*thetaEqn.A()));
+}
+else
+{
+    G = 1/(1 + rhorAUf*muSpongef/rhof);
 }
 
 {
@@ -44,7 +49,18 @@ if (SIgravityWaves)
             if (nonOrth == nNonOrthCorr)
             {
                 phi = G*(phi - rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf());
-                U += rAU*rho*(g - Cp*theta*fvc::grad(Exner));
+                if (SIgravityWaves)
+                {
+                    thetaf -= applySIg*phi*fvc::snGrad(theta)
+                                /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
+                }
+                U += rAU*rho*fvc::reconstruct
+                (
+                    gSf
+                  - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                );
+                U = inv(tensor::I + rAU*rho*muSponge*spongeT) & U;
+                // Final explicit solve for mass conservation
                 if(ucorr == nOuterCorr-1 && corr == nCorr-1)
                 {
                     solve

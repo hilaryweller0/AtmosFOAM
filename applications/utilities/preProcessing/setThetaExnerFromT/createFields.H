@@ -1,11 +1,11 @@
 // Read in prognostic variables
 
-Info<< "Reading Exner and ExnerInit\n" << endl;
-volScalarField ExnerInit
+Info<< "Reading Exner and lnExner\n" << endl;
+volScalarField lnExner
 (
     IOobject
     (
-        "ExnerInit",
+        "lnExner",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -26,7 +26,6 @@ volScalarField Exner
     mesh
 );
 
-thermo.p() = pRef*pow(ExnerInit, 1/kappa);
 
 Info<< "Reading theta\n" << endl;
 volScalarField theta

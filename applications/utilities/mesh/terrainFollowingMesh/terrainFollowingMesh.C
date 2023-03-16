@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             "mountainDict",
-            mesh.time().system(),
+            runTime.constant(),
             mesh,
             IOobject::MUST_READ,
             IOobject::NO_WRITE

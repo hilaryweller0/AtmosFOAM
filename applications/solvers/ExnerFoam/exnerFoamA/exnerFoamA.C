@@ -53,9 +53,9 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    //#include "createSponge.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
-    #define dt runTime.deltaT()
     #include "createFields.H"
     #include "initContinuityErrs.H"
     const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
@@ -86,7 +86,6 @@ int main(int argc, char *argv[])
         {
             #include "rhoThetaEqn.H"
             #include "UEqn.H"
-
             // Exner and momentum equations
             #include "exnerEqn.H"
         }

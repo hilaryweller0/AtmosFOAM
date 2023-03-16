@@ -50,19 +50,6 @@ surfaceScalarField thetaf
 );
 thermo.T() = theta*Exner;
 
-// Reading in the sponge layer coefficients (if present)
-volScalarField muSponge
-(
-    volScalarField
-    (
-        IOobject("muSponge", runTime.constant(), mesh, IOobject::READ_IF_PRESENT),
-        mesh,
-        dimensionedScalar("muSponge", dimless, scalar(0))
-    )/dt
-);
-Info << "Maximum sponge value = " << max(muSponge).value()*dt.value()
-     << endl;
-
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
@@ -108,10 +95,43 @@ autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
     fluidThermophysicalTransportModel::New(turbulence(), thermo)
 );
 
-// G for implicit gravity waves
+// Reading in the sponge layer coefficients (if present)
+const volScalarField muSponge
+(
+    volScalarField
+    (
+        IOobject
+        (
+            "muSponge",
+            runTime.constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT
+        ),
+        mesh,
+        dimensionedScalar("muSponge", dimless, scalar(0))
+       )/runTime.deltaT()
+);
+const tensor spongeT(envProperties.lookup("spongeOrientation"));
+
+const surfaceScalarField muSpongef
+(
+    "muSpongef",
+    (spongeT*fvc::interpolate(muSponge)) && sqr(mesh.Sf()/mesh.magSf())
+);
+Info << "Maximum sponge value = " << max(muSpongef).value() << endl;
+
+// Used for implicit gravity waves
+surfaceScalarField applySIg
+(
+    IOobject("applySIg", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("applySIg", dimless, scalar(0))
+
+);
 surfaceScalarField G
 (
     IOobject("G", runTime.timeName(), mesh),
     mesh,
     dimensionedScalar("G", dimless, scalar(1))
 );
+

@@ -9,13 +9,13 @@ int main(int argc, char *argv[])
     (
         "tracerDict",
         "dictName",
-        "specify non-default dictionary name for the tracer (in system)"
+        "specify non-default dictionary name for the tracer (in constant)"
     );
     Foam::argList::addOption
     (
         "velocityDict",
         "dictName",
-        "specify non-default dictionary name for the velocity (in system)"
+        "specify non-default dictionary name for the velocity (in constant)"
     );
     Foam::argList::addOption
     (
@@ -53,24 +53,18 @@ int main(int argc, char *argv[])
                               args.optionRead<word>("name") :
                               "T_analytic";
 
-    Info << "Reading " << tracerName << "_init" << endl;
-    volScalarField T_init
+    Info << "Reading " << tracerName << endl;
+    volScalarField T
     (
         IOobject
         (
-            tracerName+"_init",
-            runTime.constant(),
+            tracerName,
+            runTime.timeName(),
             mesh,
-            IOobject::MUST_READ
+            IOobject::READ_IF_PRESENT
         ),
-        mesh
-    );
-
-    Info << "Creating tracer field " << tracerName << endl;
-    volScalarField T
-    (
-        IOobject(tracerName, runTime.timeName(), mesh, IOobject::NO_READ),
-        T_init
+        mesh,
+        dimensionedScalar(tracerName, dimless, scalar(0))
     );
 
     const word tracerDictName = args.optionFound("tracerDict") ?
@@ -83,7 +77,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             tracerDictName,
-            mesh.time().system(),
+            runTime.constant(),
             mesh,
             IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE
@@ -99,7 +93,7 @@ int main(int argc, char *argv[])
         IOobject
         (
             velocityDictName,
-            mesh.time().system(),
+            runTime.constant(),
             mesh,
             IOobject::READ_IF_PRESENT,
             IOobject::NO_WRITE
@@ -117,24 +111,17 @@ int main(int argc, char *argv[])
         )
     );
 
-    Info << "Reading or creating tracer field Tf_init" << endl;
-    surfaceScalarField Tf_init
+    Info << "Reading or creating tracer field " << tracerName << "f" << endl;
+    surfaceScalarField Tf
     (
         IOobject
         (
-            tracerName+"f_init",
-            runTime.constant(),
+            tracerName+"f",
+            runTime.timeName(),
             mesh,
             IOobject::READ_IF_PRESENT
         ),
-        linearInterpolate(T_init)
-    );
-
-    Info << "Creating Tf_analytic" << endl;
-    surfaceScalarField Tf
-    (
-        IOobject(tracerName+"f_analytic", runTime.timeName(), mesh),
-        Tf_init
+        linearInterpolate(T)
     );
 
     forAll(timeDirs, timeI)
@@ -145,7 +132,7 @@ int main(int argc, char *argv[])
         tracer->applyTo(T);
         T.write();
 
-        Info << "writing " << tracerName << "f_analytic for time "
+        Info << "writing " << tracerName << "f for time "
              << runTime.timeName() << endl;
         tracer->applyTo(Tf);
         Tf.write();

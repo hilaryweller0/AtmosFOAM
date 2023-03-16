@@ -13,8 +13,11 @@ IOdictionary envProperties
 );
 
 dimensionedVector g(envProperties.lookup("g"));
-dimensionedScalar magg(mag(g));
-dimensionedVector ghat = g/mag(g);
+dimensionedScalar magg
+(
+    max(mag(g), dimensionedScalar("", dimensionSet(0,1,-2,0,0), SMALL))
+);
+dimensionedVector ghat = g/magg;
 dimensionedVector Omega(envProperties.lookup("Omega"));
 const surfaceScalarField gSf("gSf", g & mesh.Sf());
 const surfaceScalarField ghatSf("ghatSf", ghat & mesh.Sf());

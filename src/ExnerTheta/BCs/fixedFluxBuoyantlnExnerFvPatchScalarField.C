@@ -24,7 +24,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "fixedFluxBuoyantExnerFvPatchScalarField.H"
+#include "fixedFluxBuoyantlnExnerFvPatchScalarField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvPatchFieldMapper.H"
 #include "volFields.H"
@@ -38,8 +38,8 @@ namespace Foam
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-fixedFluxBuoyantExnerFvPatchScalarField::
-fixedFluxBuoyantExnerFvPatchScalarField
+fixedFluxBuoyantlnExnerFvPatchScalarField::
+fixedFluxBuoyantlnExnerFvPatchScalarField
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF
@@ -49,10 +49,10 @@ fixedFluxBuoyantExnerFvPatchScalarField
 {}
 
 
-fixedFluxBuoyantExnerFvPatchScalarField::
-fixedFluxBuoyantExnerFvPatchScalarField
+fixedFluxBuoyantlnExnerFvPatchScalarField::
+fixedFluxBuoyantlnExnerFvPatchScalarField
 (
-    const fixedFluxBuoyantExnerFvPatchScalarField& ptf,
+    const fixedFluxBuoyantlnExnerFvPatchScalarField& ptf,
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
     const fvPatchFieldMapper& mapper
@@ -62,8 +62,8 @@ fixedFluxBuoyantExnerFvPatchScalarField
 {}
 
 
-fixedFluxBuoyantExnerFvPatchScalarField::
-fixedFluxBuoyantExnerFvPatchScalarField
+fixedFluxBuoyantlnExnerFvPatchScalarField::
+fixedFluxBuoyantlnExnerFvPatchScalarField
 (
     const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
@@ -77,10 +77,10 @@ fixedFluxBuoyantExnerFvPatchScalarField
 }
 
 
-fixedFluxBuoyantExnerFvPatchScalarField::
-fixedFluxBuoyantExnerFvPatchScalarField
+fixedFluxBuoyantlnExnerFvPatchScalarField::
+fixedFluxBuoyantlnExnerFvPatchScalarField
 (
-    const fixedFluxBuoyantExnerFvPatchScalarField& wbppsf,
+    const fixedFluxBuoyantlnExnerFvPatchScalarField& wbppsf,
     const DimensionedField<scalar, volMesh>& iF
 )
 :
@@ -90,7 +90,7 @@ fixedFluxBuoyantExnerFvPatchScalarField
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void fixedFluxBuoyantExnerFvPatchScalarField::updateCoeffs()
+void fixedFluxBuoyantlnExnerFvPatchScalarField::updateCoeffs()
 {
     if (updated())
     {
@@ -112,16 +112,16 @@ void fixedFluxBuoyantExnerFvPatchScalarField::updateCoeffs()
 
     const dimensionedScalar Cp("Cp", dimGasConstant, air.Cp(0,0));
 
-    const fvsPatchField<scalar>& thetaf =
-        patch().lookupPatchField<surfaceScalarField, scalar>("thetaf");
+    const fvPatchField<scalar>& T =
+        patch().lookupPatchField<volScalarField, scalar>("T");
 
-    gradient() = (g.value() & patch().nf())/(Cp.value()*thetaf);
+    gradient() = (g.value() & patch().nf())/(Cp.value()*T);
     
     fixedGradientFvPatchScalarField::updateCoeffs();
 }
 
 
-void fixedFluxBuoyantExnerFvPatchScalarField::write(Ostream& os) const
+void fixedFluxBuoyantlnExnerFvPatchScalarField::write(Ostream& os) const
 {
     fixedGradientFvPatchScalarField::write(os);
     writeEntry(os, "value", *this);
@@ -133,7 +133,7 @@ void fixedFluxBuoyantExnerFvPatchScalarField::write(Ostream& os) const
 makePatchTypeField
 (
     fvPatchScalarField,
-    fixedFluxBuoyantExnerFvPatchScalarField
+    fixedFluxBuoyantlnExnerFvPatchScalarField
 );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

@@ -49,7 +49,7 @@ if (mesh.nInternalFaces())
     volScalarField Ndt
     (
         "Ndt",
-        dt*Foam::sqrt(max
+        runTime.deltaT()*Foam::sqrt(max
         (
             -(g & fvc::grad(thetaf))/theta,
             dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))

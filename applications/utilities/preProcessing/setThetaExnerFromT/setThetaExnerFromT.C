@@ -58,25 +58,24 @@ int main(int argc, char *argv[])
     {
         Info << "Iteration " << iter << endl;
         
-        theta == T/ExnerInit;
-        thetaf = fvc::interpolate(theta);
+        //theta == T/ExnerInit;
+        //thetaf = fvc::interpolate(theta);
 
         fvScalarMatrix ExnerEqn
         (
-            fvm::laplacian(Cp*thetaf, ExnerInit) == fvc::div(gSf)
+            fvm::laplacian(Cp*T, lnExner) == fvc::div(gSf)
         );
-        ExnerEqn.setReference(refCell, refExner);
-        converged = ExnerEqn.solve(Exner.name()).nIterations() == 0;
-        
-        Info << "Exner[" << refCell << "] = " << ExnerInit[refCell] << endl;
-        Info << "T[" << refCell << "] = " << T[refCell] << endl;
-        Info << "theta[" << refCell << "] = " << theta[refCell] << endl;
+        ExnerEqn.setReference(refCell, Foam::log(refExner));
+        converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
+        Info << "Exner[" << refCell << "] = " << Foam::exp(lnExner[refCell]) << endl;
     }
-    theta.write();
-    
-    Exner == ExnerInit;
-    Exner.boundaryFieldRef() = ExnerInit.boundaryField();
+    Exner == exp(lnExner);
+    Exner.boundaryFieldRef() = exp(lnExner.boundaryField());
     Exner.write();
+    theta == T/Exner;
+    theta.write();
+    volScalarField p("p", pRef*pow(Exner, 1/kappa));
+    p.write();
 
     Info<< "End\n" << endl;
 
