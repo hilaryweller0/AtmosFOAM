@@ -114,7 +114,7 @@ public:
         FieldToPlot(Istream&);
 
         //- Construct as copy
-        FieldToPlot(const FieldToPlot&);
+        //FieldToPlot(const FieldToPlot&);
 
 
     // Destructor

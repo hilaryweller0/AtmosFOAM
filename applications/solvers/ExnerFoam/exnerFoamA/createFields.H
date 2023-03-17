@@ -118,7 +118,8 @@ const surfaceScalarField muSpongef
     "muSpongef",
     (spongeT*fvc::interpolate(muSponge)) && sqr(mesh.Sf()/mesh.magSf())
 );
-Info << "Maximum sponge value = " << max(muSpongef).value() << endl;
+Info << "Maximum sponge value = " << (max(muSpongef)*runTime.deltaT()).value()
+     << endl;
 
 // Used for implicit gravity waves
 surfaceScalarField applySIg

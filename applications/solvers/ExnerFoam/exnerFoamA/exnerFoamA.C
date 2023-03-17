@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
+    const Switch impU(mesh.schemes().lookup("implicitU"));
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
@@ -105,7 +106,13 @@ int main(int argc, char *argv[])
         //- Solve the turbulence equations and correct the turbulence viscosity
         turbulence->correct(); 
 
-        runTime.write();
+        if (runTime.writeTime())
+        {
+            runTime.write();
+            surfaceVectorField Uf("Uf", linearInterpolate(U));
+            Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+            Uf.write();
+        }
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

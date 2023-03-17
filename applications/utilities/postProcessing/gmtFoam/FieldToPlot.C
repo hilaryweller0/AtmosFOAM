@@ -66,7 +66,7 @@ Foam::FieldToPlot::FieldToPlot(Istream& is)
     operator>>(is, *this);
 }
 
-Foam::FieldToPlot::FieldToPlot(const FieldToPlot& ftp)
+/*Foam::FieldToPlot::FieldToPlot(const FieldToPlot& ftp)
 :
     name_(ftp.name_),
     plotType_(ftp.plotType_),
@@ -74,7 +74,7 @@ Foam::FieldToPlot::FieldToPlot(const FieldToPlot& ftp)
     colourScale_(ftp.colourScale_),
     vectorDir_(ftp.vectorDir_)
 {}
-
+*/
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 

@@ -7,17 +7,18 @@ fvVectorMatrix UEqn
   + turbulence->divDevTau(U)
   + 2*rho*(Omega^(U-Ug))
 );
-/*solve
-(
-    UEqn == rho*
+if (impU)
+{
+    solve
     (
-        fvc::reconstruct
+        UEqn == rho*
         (
-            gSf
-          - Cp*fvc::interpolate(theta)*fvc::snGrad(Exner)*mesh.magSf()
+            fvc::reconstruct
+            (
+                gSf
+              - Cp*fvc::interpolate(theta)*fvc::snGrad(Exner)*mesh.magSf()
+            )
+          - muSponge*(spongeT & U)
         )
-      - muSponge*(spongeT & U)
-    )
-);
-*/
-
+    );
+}

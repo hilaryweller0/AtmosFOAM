@@ -6,12 +6,12 @@ void systemVerbose(const string call)
 //     }
 //     else
 //     {
-//         Info << call << endl;
-        bool err = system(call.c_str());
-        if (err)
-        {
-            FatalErrorIn(call) << exit(FatalError);
-        }
+         Info << call << endl;
+         bool err = system(call.c_str());
+         if (err)
+         {
+             FatalErrorIn(call) << exit(FatalError);
+         }
 //     }
 }
 
