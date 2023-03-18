@@ -18,7 +18,7 @@ if (impU)
                 gSf
               - Cp*fvc::interpolate(theta)*fvc::snGrad(Exner)*mesh.magSf()
             )
-          - muSponge*(spongeT & U)
+          //- muSponge*(spongeT & U)
         )
     );
 }

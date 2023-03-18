@@ -53,14 +53,11 @@ int main(int argc, char *argv[])
    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    // Iterate lnExner to convergence (should take one out iteration)
     bool converged = false;
     for(label iter = 0; iter < maxIters && !converged; iter++)
     {
-        Info << "Iteration " << iter << endl;
-        
-        //theta == T/ExnerInit;
-        //thetaf = fvc::interpolate(theta);
-
+        Info << "lnExner iteration " << iter << endl;
         fvScalarMatrix ExnerEqn
         (
             fvm::laplacian(Cp*T, lnExner) == fvc::div(gSf)
@@ -69,8 +66,27 @@ int main(int argc, char *argv[])
         converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
         Info << "Exner[" << refCell << "] = " << Foam::exp(lnExner[refCell]) << endl;
     }
+
+    // Iterate Exner to convergence (slow to converge)
     Exner == exp(lnExner);
     Exner.boundaryFieldRef() = exp(lnExner.boundaryField());
+    converged = false;
+    for(label iter = 0; iter < maxIters && !converged; iter++)
+    {
+        Info << "Exner Iteration " << iter << endl;
+        
+        theta == T/Exner;
+        thetaf = fvc::interpolate(theta);
+
+        fvScalarMatrix ExnerEqn
+        (
+            fvm::laplacian(Cp*theta, Exner) == fvc::div(gSf)
+        );
+        ExnerEqn.setReference(refCell, refExner);
+        converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
+        Info << "Exner[" << refCell << "] = " << Exner[refCell] << endl;
+    }
+
     Exner.write();
     theta == T/Exner;
     theta.write();
