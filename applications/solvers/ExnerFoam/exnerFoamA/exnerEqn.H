@@ -27,6 +27,11 @@ else
         
         // Flux without pressure gradient
         phi = fvc::flux(rho*U) + rhorAUf*gSf;
+        // Staggered version
+        if (stagger)
+        {
+            phi += phi.oldTime() - fvc::flux(rho.oldTime()*U.oldTime());
+        }
         
         for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
         {
@@ -54,12 +59,20 @@ else
                     thetaf -= applySIg*phi*fvc::snGrad(theta)
                                 /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
                 }
-                U += rAU*rho*fvc::reconstruct
-                (
-                    gSf
-                  - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
-                );
-                U = inv(tensor::I + rAU*rho*muSponge*spongeT) & U;
+                if (stagger)
+                {
+                    // Full staggered version
+                    U = fvc::reconstruct(phi)/rho;
+                }
+                else
+                {
+                    U += rAU*rho*fvc::reconstruct
+                    (
+                        gSf
+                      - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                    );
+                    U = inv(tensor::I + rAU*rho*muSponge*spongeT) & U;
+                }
                 // Final explicit solve for mass conservation
                 if(ucorr == nOuterCorr-1 && corr == nCorr-1)
                 {

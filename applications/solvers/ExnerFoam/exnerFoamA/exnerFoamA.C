@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch impU(mesh.schemes().lookup("implicitU"));
+    const Switch stagger(mesh.schemes().lookup("stagger"));
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
