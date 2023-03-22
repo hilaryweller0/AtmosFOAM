@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2005 OpenCFD Ltd.
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,11 +19,10 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
-    Calulate the face centres and areas.
+    Calculate the face centres and areas for spherical geometry.
 
     Calculate the centre by breaking the face into triangles using the face
     centre and area-weighted averaging their centres.  This method copes with
@@ -36,20 +35,17 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "primitiveMesh.H"
-#include "IFstream.H"
-#include "IOmanip.H"
+//#include "IFstream.H"
+//#include "IOmanip.H"
 #include "VectorSpaceFunctions.H"
-
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
 const scalar RS_TOL = 1e-7;
-
+}
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void primitiveMesh::calcFaceCentresAndAreas() const
+void Foam::primitiveMesh::calcFaceCentresAndAreas() const
 {
     //if (debug)
     {
@@ -61,11 +57,11 @@ void primitiveMesh::calcFaceCentresAndAreas() const
 
     // It is an error to attempt to recalculate faceCentres
     // if the pointer is already set
-    if (faceCentresPtr_ || faceAreasPtr_)
+    if (faceCentresPtr_ || faceAreasPtr_ || magFaceAreasPtr_)
     {
-        FatalErrorIn("primitiveMesh::calcFaceCentresAndAreas() const")
+        FatalErrorInFunction
             << "Face centres or face areas already calculated"
-            << exit(FatalError);
+            << abort(FatalError);
     }
 
     faceCentresPtr_ = new vectorField(nFaces());
@@ -74,7 +70,10 @@ void primitiveMesh::calcFaceCentresAndAreas() const
     faceAreasPtr_ = new vectorField(nFaces());
     vectorField& fAreas = *faceAreasPtr_;
 
-    makeFaceCentresAndAreas(points(), fCtrs, fAreas);
+    magFaceAreasPtr_ = new scalarField(nFaces());
+    scalarField& magfAreas = *magFaceAreasPtr_;
+
+    makeFaceCentresAndAreas(points(), fCtrs, fAreas, magfAreas);
 
     if (debug)
     {
@@ -85,11 +84,12 @@ void primitiveMesh::calcFaceCentresAndAreas() const
 }
 
 
-void primitiveMesh::makeFaceCentresAndAreas
+void Foam::primitiveMesh::makeFaceCentresAndAreas
 (
     const pointField& p,
     vectorField& fCtrs,
-    vectorField& fAreas
+    vectorField& fAreas,
+    scalarField& magfAreas
 ) const
 {
     // Loop through every face
@@ -168,8 +168,8 @@ void primitiveMesh::makeFaceCentresAndAreas
                 const vector rhat = (0.5*(rhat0 + rhat1))/mag(0.5*(rhat0 + rhat1));
                 fCtrs[facei] = 0.5*(r1 + r2)*rhat;
                 const vector idir = rhat ^ (rhat1 - rhat0);
-                const scalar A = 0.5*arcLength(rhat0, rhat1)*mag(r2S - r1S);
-                fAreas[facei] = A*idir/mag(idir);
+                magfAreas[facei] = 0.5*arcLength(rhat0, rhat1)*mag(r2S - r1S);
+                fAreas[facei] = magfAreas[facei]*idir/mag(idir);
                 const vector dir = (p[f[1]] - p[f[0]])^(p[f[2]] - p[f[0]]);
                 if ((dir & idir) < 0) fAreas[facei] = -fAreas[facei];
             }
@@ -231,8 +231,8 @@ void primitiveMesh::makeFaceCentresAndAreas
             sumR /= (2*omega);
             vector rhat = sumAc/mag(sumAc);
             fCtrs[facei] = rhat*sumR;
-            fAreas[facei] = sqr(sumR)*rhat*omega*sign(sumAn & rhat);
-            
+            magfAreas[facei] = sqr(sumR)*omega;
+            fAreas[facei] = magfAreas[facei]*sign(sumAn & rhat)*rhat;
         }
     }
 }
@@ -240,7 +240,7 @@ void primitiveMesh::makeFaceCentresAndAreas
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-const vectorField& primitiveMesh::faceCentres() const
+const Foam::vectorField& Foam::primitiveMesh::faceCentres() const
 {
     if (!faceCentresPtr_)
     {
@@ -268,7 +268,7 @@ void Foam::primitiveMesh::overrideFaceCentres(const pointField& newCf)
 }
 
 
-const vectorField& primitiveMesh::faceAreas() const
+const Foam::vectorField& Foam::primitiveMesh::faceAreas() const
 {
     if (!faceAreasPtr_)
     {
@@ -279,8 +279,15 @@ const vectorField& primitiveMesh::faceAreas() const
 }
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+const Foam::scalarField& Foam::primitiveMesh::magFaceAreas() const
+{
+    if (!magFaceAreasPtr_)
+    {
+        calcFaceCentresAndAreas();
+    }
 
-} // End namespace Foam
+    return *magFaceAreasPtr_;
+}
+
 
 // ************************************************************************* //

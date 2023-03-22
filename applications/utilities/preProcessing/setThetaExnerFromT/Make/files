@@ -1,3 +1,0 @@
-setThetaExnerFromT.C
-
-EXE = $(FOAM_USER_APPBIN)/setThetaExnerFromT

@@ -34,13 +34,12 @@ int main(int argc, char *argv[])
         )
     );
 
-    Info << "Creating flux field phi" << endl;
+    Info << "Creating flux field phi, U and Uf" << endl;
     surfaceScalarField phi
     (
         IOobject("phi", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
-        dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0)),
-       "fixedValue"
+        dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0))
     );
 
     volVectorField U
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
         fvc::reconstruct(phi)
     );
 
-    // Read Uf if present, otherwise create and write (not used)
+    // Read Uf if present, otherwise create and write
     surfaceVectorField Uf
     (
         IOobject
@@ -79,9 +78,9 @@ int main(int argc, char *argv[])
         IOobject
         (
             dictName,
-            mesh.time().system(),
+            runTime.constant(),
             mesh,
-            IOobject::READ_IF_PRESENT,
+            IOobject::MUST_READ,
             IOobject::NO_WRITE
         )
     );
@@ -99,6 +98,7 @@ int main(int argc, char *argv[])
         Uf = linearInterpolate(U);
         Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 
+        Info << "writing U and Uf for time " << runTime.timeName() << endl;
         U.write();
         Uf.write();
     }

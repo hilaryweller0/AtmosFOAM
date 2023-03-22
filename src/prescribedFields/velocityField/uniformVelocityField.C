@@ -1,15 +1,12 @@
 #include "uniformVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
-#include "polarPoint.H"
-#include "sphericalVector.H"
-
 defineTypeNameAndDebug(uniformVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, uniformVelocityField, dict);
 
 uniformVelocityField::uniformVelocityField(const dictionary& dict)
 :
-    v(dict.lookupOrDefault<vector>("velocity", vector::zero)),
+    v(dict.lookup("velocity")),
     acceleration(dict.lookupOrDefault<vector>("acceleration", vector::zero))
 {};
 

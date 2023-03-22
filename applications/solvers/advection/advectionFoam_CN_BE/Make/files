@@ -1,3 +1,0 @@
-advectionFoam_CN_BE.C
-
-EXE = $(FOAM_USER_APPBIN)/advectionFoam_CN_BE

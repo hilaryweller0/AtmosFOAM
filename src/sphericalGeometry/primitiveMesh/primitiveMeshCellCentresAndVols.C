@@ -1,17 +1,17 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2005 OpenCFD Ltd.
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2018 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,11 +19,7 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
-
-Class
-    primitiveMesh
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Description
     Efficient cell-centre calculation using face-addressing, face-centres and
@@ -33,21 +29,19 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "primitiveMesh.H"
-#include "IFstream.H"
-#include "IOmanip.H"
 #include "VectorSpaceFunctions.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
-
 const scalar RADIUS_TOL = 1e-5;
 const scalar ANGLE_TOL = 1e-5;
+}
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
-void primitiveMesh::calcCellCentresAndVols() const
+void Foam::primitiveMesh::calcCellCentresAndVols() const
 {
     //if (debug)
     {
@@ -60,9 +54,9 @@ void primitiveMesh::calcCellCentresAndVols() const
     // if the pointer is already set
     if (cellCentresPtr_ || cellVolumesPtr_)
     {
-        FatalErrorIn("primitiveMesh::calcCellCentresAndVols() const")
+        FatalErrorInFunction
             << "Cell centres or cell volumes already calculated"
-            << exit(FatalError);
+            << abort(FatalError);
     }
 
     // set the accumulated cell centre to zero vector
@@ -85,7 +79,7 @@ void primitiveMesh::calcCellCentresAndVols() const
 }
 
 
-void primitiveMesh::makeCellCentresAndVols
+void Foam::primitiveMesh::makeCellCentresAndVols
 (
     const vectorField& fCtrs,
     const vectorField& fAreas,
@@ -94,13 +88,13 @@ void primitiveMesh::makeCellCentresAndVols
 ) const
 {
     // Clear the fields for accumulation
-    cellCtrs = vector::zero;
+    cellCtrs = Zero;
     cellVols = 0.0;
-    
+
     const labelList& own = faceOwner();
     const labelList& nei = faceNeighbour();
 
-    // next calculate exact cell volume and centre
+    // Calculate exact cell volume and centre
 
     scalarField r1(nCells(), -1);
     scalarField r2(nCells(), -1);
@@ -113,7 +107,7 @@ void primitiveMesh::makeCellCentresAndVols
             cellCtrs[own[faceI]] += fCtrs[faceI];
             if (r1[own[faceI]] < 0)
             {
-                r1 = mag(fCtrs[faceI]);
+                r1[own[faceI]] = mag(fCtrs[faceI]);
             }
             else
             {
@@ -133,24 +127,13 @@ void primitiveMesh::makeCellCentresAndVols
 }
 
 
-// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
-bool primitiveMesh::isRadialFace
+bool Foam::primitiveMesh::isRadialFace
 (
     const vector Cf,
     const vector Sf
 ) const
 {
     return (sqr(Sf & Cf)/(magSqr(Sf)*magSqr(Cf))) < SMALL;
-}
-
-const vectorField& primitiveMesh::cellCentres() const
-{
-    if (!cellCentresPtr_)
-    {
-        calcCellCentresAndVols();
-    }
-
-    return *cellCentresPtr_;
 }
 
 
@@ -170,7 +153,20 @@ void Foam::primitiveMesh::overrideCellCentres(const pointField& newCellCtrs)
     }
 }
 
-const scalarField& primitiveMesh::cellVolumes() const
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+const Foam::vectorField& Foam::primitiveMesh::cellCentres() const
+{
+    if (!cellCentresPtr_)
+    {
+        calcCellCentresAndVols();
+    }
+
+    return *cellCentresPtr_;
+}
+
+
+const Foam::scalarField& Foam::primitiveMesh::cellVolumes() const
 {
     if (!cellVolumesPtr_)
     {
@@ -181,8 +177,5 @@ const scalarField& primitiveMesh::cellVolumes() const
 }
 
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-} // End namespace Foam
 
 // ************************************************************************* //

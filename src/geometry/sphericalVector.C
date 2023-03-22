@@ -50,3 +50,14 @@ Foam::tensor Foam::sphericalVector::unitTensor() const
     // TODO: use tmp<tensor>?
     return tensor(lonHat, latHat, rHat);
 }
+
+Foam::sphericalVector Foam::convertToLocal
+(
+    const point& pc,
+    const vector& v
+)
+{
+    sphericalVector p(pc);
+    return p.unitTensor() & v;
+}
+

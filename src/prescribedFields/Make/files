@@ -19,6 +19,8 @@ tracerField/temperatureGradientField.C
 tracerField/polynomialTracerField.C
 tracerField/radialDistance.C
 tracerField/tracerField.C
+tracerField/sphericalLayerTracerField.C
+tracerField/rhoIsothermalTracerField.C
 velocityField/velocityField.C
 velocityField/nonDivergentVelocityField.C
 velocityField/deformationalNonDivergentVelocityField.C
@@ -30,7 +32,9 @@ velocityField/geodesicDeformationalDivergentVelocityField.C
 velocityField/geodesicSolidBodyVelocityField.C
 velocityField/solidBodyRotationVelocityField.C
 velocityField/uniformVelocityField.C
+velocityField/zeroVelocityField.C
 velocityField/constructiveRotorsVelocityField.C
 velocityField/sinusoidalVelocityField.C
+velocityField/geodesicHadleyLikeVelocityField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libprescribedFields

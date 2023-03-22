@@ -26,14 +26,14 @@ Application
     setIsothermalBalance
 
 Description
-    Find discretely balanced theta and Exner profiles given a uniform
-    temperature profile
+    Find discretely balanced theta and Exner profiles given temperature
 
 \*---------------------------------------------------------------------------*/
 
-#include "HodgeOps.H"
 #include "fvCFD.H"
+#include "fluidThermo.H"
 #include "ExnerTheta.H"
+#include "rhoThermo.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -43,86 +43,55 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
-    #include "readThermoProperties.H"
-    HodgeOps H(mesh);
-    const surfaceScalarField gd("gd", g & H.delta());
+    #include "readThermo.H"
     #include "createFields.H"
       
     const dictionary& itsDict = mesh.solution().subDict("initialisation");
     const int maxIters = itsDict.lookupOrDefault<int>("maxIters", 100);
-    const int BCiters  = itsDict.lookupOrDefault<int>("BCiters", 10);
-    const scalar BCtol = itsDict.lookupOrDefault<scalar>("BCtol", SMALL);
-    const scalar boundaryRelaxation
-         = itsDict.lookupOrDefault<scalar>("boundaryRelaxation", 0.5);
+    const label refCell = readLabel(itsDict.lookup("refCell"));
+    const scalar refExner = readScalar(itsDict.lookup("refExner"));
    
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    bool innerConverged = false;
-    bool outerConverged = false;
-    scalar topBCval = Exner.boundaryField()[topBC][0];
-    for(label iter = 0; iter < maxIters && !(innerConverged && outerConverged); iter++)
+    // Iterate lnExner to convergence (should take one out iteration)
+    bool converged = false;
+    for(label iter = 0; iter < maxIters && !converged; iter++)
     {
-        Info << "Outer iteration " << iter << endl;
-        
-        // Inner iterations with fixed top boundary
-        innerConverged = false;
-        for(label BCiter = 0; BCiter < BCiters && !innerConverged; BCiter++)
-        {
-            theta == T0/Exner;
-            thetaf = fvc::interpolate(theta);
-            U = H.ddirToFlux(gd)
-              - H.ddirToFluxOffDiag(Cp*thetaf*H.magd()*fvc::snGrad(Exner));
-
-            fvScalarMatrix ExnerEqn
-            (
-                fvc::div(U)
-              - fvm::laplacian
-                (
-                    H.Hdiag()*Cp*thetaf*H.magd()/mesh.magSf(), Exner
-                )
-            );
-            innerConverged = 
-                ExnerEqn.solve(Exner.name()).nIterations() == 0;
-        }
-        outerConverged = (mag(1-Exner.boundaryField()[groundBC][0])< BCtol);
-
-        scalar maxGroundExner = max(Exner.boundaryField()[groundBC]);
-        outerConverged = (mag(1-maxGroundExner)< BCtol);
-        
-        // modify the top boundary condition
-        Info << "Exner ground value = " << maxGroundExner
-             << "  ground value minus one = "
-             << maxGroundExner-1
-             << " Exner top BC going from  = " << topBCval << " to ";
-
-        topBCval = (1-boundaryRelaxation)*topBCval
-                 + boundaryRelaxation*Exner.boundaryField()[topBC][0]
-                       /maxGroundExner;
-        topBCval = min(max(topBCval, scalar(0)), scalar(1));
-        Info << topBCval << endl;
-        Exner.boundaryFieldRef()[topBC] == topBCval;
+        Info << "lnExner iteration " << iter << endl;
+        fvScalarMatrix ExnerEqn
+        (
+            fvm::laplacian(Cp*T, lnExner) == fvc::div(gSf)
+        );
+        ExnerEqn.setReference(refCell, Foam::log(refExner));
+        converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
+        Info << "Exner[" << refCell << "] = " << Foam::exp(lnExner[refCell]) << endl;
     }
 
-    // Change the top boundary type to be fixedFluxBuoyantExner
-    Info << "Correcting top boundary conditions for Exner" << endl;
-    wordList ExnerBCs = Exner.boundaryField().types();
-    ExnerBCs[topBC] = "fixedFluxBuoyantExner";
-    volScalarField ExnerNew
-    (
-        IOobject("Exner", runTime.timeName(), mesh, IOobject::NO_READ),
-        Exner,
-        ExnerBCs
-    );
-    ExnerNew.correctBoundaryConditions();
-    ExnerNew.write();
+    // Iterate Exner to convergence (slow to converge)
+    Exner == exp(lnExner);
+    Exner.boundaryFieldRef() = exp(lnExner.boundaryField());
+    converged = false;
+    for(label iter = 0; iter < maxIters && !converged; iter++)
+    {
+        Info << "Exner Iteration " << iter << endl;
+        
+        theta == T/Exner;
+        thetaf = fvc::interpolate(theta);
 
-    Info << "Calculating and writing out the Brutvaissala frequency" << endl;
-    volScalarField BruntFreq
-    (
-        IOobject("BruntFreq", runTime.timeName(), mesh),
-        Foam::sqrt(-(g & fvc::grad(theta))/theta)
-    );
-    BruntFreq.write();
+        fvScalarMatrix ExnerEqn
+        (
+            fvm::laplacian(Cp*theta, Exner) == fvc::div(gSf)
+        );
+        ExnerEqn.setReference(refCell, refExner);
+        converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
+        Info << "Exner[" << refCell << "] = " << Exner[refCell] << endl;
+    }
+
+    Exner.write();
+    theta == T/Exner;
+    theta.write();
+    volScalarField p("p", pRef*pow(Exner, 1/kappa));
+    p.write();
 
     Info<< "End\n" << endl;
 

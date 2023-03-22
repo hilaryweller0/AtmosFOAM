@@ -41,8 +41,10 @@ namespace Foam
 class polarPoint
 :
     public VectorSpace<polarPoint, scalar, 3>
-//    public vector
 {
+    // Private data
+        // Earth radius
+        scalar a_;
 public:
 
     // Static data members
@@ -53,15 +55,17 @@ public:
     // Constructors
 
         //- Construct null
-        inline polarPoint():VectorSpace<polarPoint, scalar, 3>(){}
+        inline polarPoint():VectorSpace<polarPoint, scalar, 3>(),a_(0){}
 
         //- Construct given polarPoint
         inline polarPoint(const polarPoint& pp)
-            :VectorSpace<polarPoint, scalar, 3>(pp){}
+            :VectorSpace<polarPoint, scalar, 3>(pp),a_(pp.a_){}
 
-        //- Construct given three components
-        inline polarPoint(const scalar lon_,const scalar lat_,const scalar r_)
-            :VectorSpace<polarPoint, scalar, 3>()
+        //- Construct given three (or 4) components
+        inline polarPoint(const scalar lon_,const scalar lat_, const scalar r_,
+                          const scalar a__ = 0)
+            :VectorSpace<polarPoint, scalar, 3>(),
+             a_(a__)
         {
             lon() = lon_;
             lat() = lat_;
@@ -70,7 +74,7 @@ public:
 
         //- Construct from Istream
         inline polarPoint(Istream& is)
-            :VectorSpace<polarPoint, scalar, 3>(is){}
+            :VectorSpace<polarPoint, scalar, 3>(is), a_(readScalar(is)){}
 
     // Member Functions
 
@@ -85,6 +89,12 @@ public:
         inline const scalar& r() const { return component(2); }
         inline scalar& r() { return component(2); }
 
+        inline const scalar& a() const { return a_; }
+        inline scalar& a() { return a_; }
+
+        inline scalar Lon() const { return lon()*radToDeg; }
+        inline scalar Lat() const { return lat()*radToDeg; }
+        inline scalar Z() const { return r() - a(); }
 
         //- return the cartesian point
         inline point cartesian() const
@@ -130,7 +140,12 @@ public:
 // non-member functions
 
 //- convert cartesian point to polarPoint
-inline polarPoint convertToPolar(const point& pc, const scalar maxLon = 360.)
+inline polarPoint convertToPolar
+(
+    const point& pc,
+    const scalar maxLon = 360.,
+    const scalar a__ = 0
+)
 {
     using namespace constant::mathematical;
 
@@ -145,6 +160,8 @@ inline polarPoint convertToPolar(const point& pc, const scalar maxLon = 360.)
 
     while(pp.lon() > maxLonR) {pp.lon() -= 2*pi;}
     while(pp.lon() < maxLonR - 2*pi) {pp.lon() += 2*pi;}
+    
+    pp.a() = a__;
 
     return pp;
 }

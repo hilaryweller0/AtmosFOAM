@@ -24,10 +24,16 @@ class sphericalVector
     vector toCartesian(const sphericalVector& point) const;
     tensor unitTensor() const;
 
-    private:
+    //private:
     const vector v;
 };
 
-}
+//- convert Cartesian vector to local Cartesian
+sphericalVector convertToLocal
+(
+    const point& pc,
+    const vector& v
+);
 
+}
 #endif

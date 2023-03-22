@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------*\
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
-   \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 2011-2019 OpenFOAM Foundation
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2022 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -69,7 +69,7 @@ namespace Foam
 class PackedBoolList;
 
 /*---------------------------------------------------------------------------*\
-                      Class primitiveMesh Declaration
+                        Class primitiveMesh Declaration
 \*---------------------------------------------------------------------------*/
 
 class primitiveMesh
@@ -174,14 +174,8 @@ class primitiveMesh
             //- Face areas
             mutable vectorField* faceAreasPtr_;
 
-
-    // Private Member Functions
-
-        //- Disallow construct as copy
-        primitiveMesh(const primitiveMesh&);
-
-        //- Disallow default bitwise assignment
-        void operator=(const primitiveMesh&);
+            //- Face area magnitudes
+            mutable scalarField* magFaceAreasPtr_;
 
 
         // Topological calculations
@@ -226,7 +220,7 @@ class primitiveMesh
 
 protected:
 
-    // Static data members
+    // Static Data Members
 
         //- Static data to control mesh checking
 
@@ -251,15 +245,18 @@ protected:
 
             //- Calculate face centres and areas
             void calcFaceCentresAndAreas() const;
+
             void makeFaceCentresAndAreas
             (
                 const pointField& p,
                 vectorField& fCtrs,
-                vectorField& fAreas
+                vectorField& fAreas,
+                scalarField& magfAreas
             ) const;
 
             //- Calculate cell centres and volumes
             void calcCellCentresAndVols() const;
+
             void makeCellCentresAndVols
             (
                 const vectorField& fCtrs,
@@ -446,6 +443,9 @@ public:
             const label nCells
         );
 
+        //- Disallow default bitwise copy construction
+        primitiveMesh(const primitiveMesh&);
+
 
     //- Destructor
     virtual ~primitiveMesh();
@@ -501,8 +501,10 @@ public:
                     //- Internal edges (i.e. not on boundary face) using
                     //  no boundary point
                     inline label nInternal0Edges() const;
+
                     //- Internal edges using 0 or 1 boundary point
                     inline label nInternal1Edges() const;
+
                     //- Internal edges using 0,1 or 2 boundary points
                     inline label nInternalEdges() const;
 
@@ -523,6 +525,9 @@ public:
 
                 //- Return old points for mesh motion
                 virtual const pointField& oldPoints() const = 0;
+
+                //- Return old cell centres for mesh motion
+                virtual const pointField& oldCellCentres() const = 0;
 
 
             // Derived mesh data
@@ -585,6 +590,7 @@ public:
                 void overrideFaceCentres(const pointField&);
                 const scalarField& cellVolumes() const;
                 const vectorField& faceAreas() const;
+                const scalarField& magFaceAreas() const;
 
 
             // Mesh motion
@@ -891,6 +897,12 @@ public:
 
             //- Clear all geometry and addressing unnecessary for CFD
             void clearOut();
+
+
+    // Member Operators
+
+        //- Disallow default bitwise assignment
+        void operator=(const primitiveMesh&) = delete;
 
     private:
             bool isRadialFace
