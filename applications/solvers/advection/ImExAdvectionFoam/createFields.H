@@ -13,7 +13,7 @@ volScalarField T
     mesh
 );
 
-volVectorField U
+/*volVectorField U
 (
     IOobject
     (
@@ -40,7 +40,7 @@ surfaceVectorField Uf
     ),
     linearInterpolate(U)
 );
-
+*/
 surfaceScalarField phi
 (
     IOobject
@@ -48,10 +48,10 @@ surfaceScalarField phi
         "phi",
         runTime.timeName(),
         mesh,
-        IOobject::READ_IF_PRESENT,
+        IOobject::MUST_READ,
         IOobject::NO_WRITE
     ),
-    Uf & mesh.Sf()
+    mesh //Uf & mesh.Sf()
 );
 
 volScalarField rho

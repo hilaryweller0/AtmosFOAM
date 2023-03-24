@@ -76,8 +76,8 @@ int main(int argc, char *argv[])
         v = velocityField::New(dict);
         v->applyTo(phi);
         phi.oldTime() = phi;
-        U = fvc::reconstruct(phi);
-        U.write();
+        //U = fvc::reconstruct(phi);
+        //U.write();
         phi.write();
     }
 
@@ -118,9 +118,9 @@ int main(int argc, char *argv[])
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
-            U = fvc::reconstruct(phi);
-            Uf = linearInterpolate(U);
-            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+            //U = fvc::reconstruct(phi);
+            //Uf = linearInterpolate(U);
+            //Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
         for(label corr = 0; corr < nCorr; corr++)
@@ -128,9 +128,14 @@ int main(int argc, char *argv[])
             fvScalarMatrix TEqn
             (
                 fvm::ddt(rho, T)
-              + fvc::div(exp*phi*rhof, T, "explicit")
+              //+ fvc::div(exp*phi*rhof, T, "explicit")
               //+ fvm::div((1-exp)*phi*rhof, T, "implicit")
             );
+            if (CoLimit > SMALL)
+            {
+                Info << "Including explicit advection" << endl;
+                TEqn += fvc::div(exp*phi*rhof, T, "explicit");
+            }
             if (min(mag(exp)).value() < 0.5)
             {
                 Info << "Including implicit advection" << endl;
