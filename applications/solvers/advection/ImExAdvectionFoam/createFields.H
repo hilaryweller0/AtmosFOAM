@@ -71,31 +71,12 @@ volScalarField Co
 Co.write();
 
 // Split the flux into parts for implicit and explicit solution
-surfaceScalarField phiEx = 0*phi;
-
-const surfaceScalarField phiLimit = 0.5*CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt;
-if (CoLimit > SMALL) // Default is implicit with CoLimit = 0
-{
-   forAll(phi, faceI)
-    {
-        if (mag(phi[faceI]) < phiLimit[faceI])
-        {
-            phiEx[faceI] = phi[faceI];
-            phi[faceI] = 0;
-        }
-    }
-}
-
-volScalarField CoEx
-(
-    IOobject("CoEx", runTime.timeName(), mesh),
-    CourantNo(phiEx, dt)
-);
-CoEx.write();
-volScalarField CoIm
-(
-    IOobject("CoIm", runTime.timeName(), mesh),
-    CourantNo(phi, dt)
-);
-CoIm.write();
+const surfaceScalarField phiLimit = CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt;
+surfaceScalarField exp = 0.5*(sign(phiLimit - mag(phi)) + 1);
+Info << "phiLimit goes from " << min(phiLimit.internalField()).value()
+     << " to " << max(phiLimit.internalField()).value() << endl;
+Info << "phi goes from " << min(phi.internalField()).value()
+     << " to " << max(phi.internalField()).value() << endl;
+Info << "exp goes from " << min(exp.internalField()).value()
+     << " to " << max(exp.internalField()).value() << endl;
 

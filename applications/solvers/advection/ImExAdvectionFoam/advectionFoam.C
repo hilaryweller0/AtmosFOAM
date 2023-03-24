@@ -110,14 +110,7 @@ int main(int argc, char *argv[])
 
             if (CoLimit > SMALL)
             {
-                forAll(phi, faceI)
-                {
-                    if (mag(phi[faceI]) < phiLimit[faceI])
-                    {
-                        phiEx[faceI] = phi[faceI];
-                        phi[faceI] = 0;
-                    }
-                }
+                exp = 0.5*(sign(phiLimit - mag(phi)) + 1);
             }
 
             runTime.setTime
@@ -125,9 +118,9 @@ int main(int argc, char *argv[])
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
-            U = fvc::reconstruct(phi + phiEx);
+            U = fvc::reconstruct(phi);
             Uf = linearInterpolate(U);
-            Uf += (phi+phiEx - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
         for(label corr = 0; corr < nCorr; corr++)
@@ -135,25 +128,34 @@ int main(int argc, char *argv[])
             fvScalarMatrix TEqn
             (
                 fvm::ddt(rho, T)
-              + fvc::div(phiEx*rhof, T, "explicit")
-              + fvm::div(phi*rhof, T, "implicit")
+              + fvc::div(exp*phi*rhof, T, "explicit")
+              //+ fvm::div((1-exp)*phi*rhof, T, "implicit")
             );
+            if (min(mag(exp)).value() < 0.5)
+            {
+                Info << "Including implicit advection" << endl;
+                TEqn += fvScalarMatrix(fvm::div((1-exp)*phi*rhof, T, "implicit"));
+            }
             TEqn.solve();
         }
         
-        const scalarField& V = mesh.V().field();
+/*        const scalarField& V = mesh.V().field();
         scalarField TV = 0.25*fvc::surfaceSum
         (
             mag(fvc::snGrad(T))/mesh.deltaCoeffs()
         )().primitiveField()/V;
+*/
+        Info << "Time " << runTime.timeName() << " min " << min(T.internalField()).value()
+             << " max " << max(T.internalField()).value()  << endl;
+/*           << " sum " << gSum(T.primitiveField()*V)/gSum(V) << " TV "<< gSum(TV)
+           << endl;
 
-        Info << runTime.timeName() << " " << min(T.internalField()).value() << " "
-           << max(T.internalField()).value() << " "
-           << gSum(T.primitiveField()*V)/gSum(V) << " "
-           << gSum(TV) << endl;
-
-        if (runTime.writeTime()) {Co = CourantNo(phi+phiEx, runTime.deltaT());}
+        if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
+*/
         runTime.write();
+        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+            << endl;
     }
 
     Info << "End\n" << endl;
