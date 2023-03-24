@@ -1,1 +1,0 @@
-../advectionFoam_compareTimeSchemes/initEnergy.H

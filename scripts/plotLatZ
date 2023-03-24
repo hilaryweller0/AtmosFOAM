@@ -1,0 +1,32 @@
+#!/bin/bash -e
+
+if [ "$#" -ne 9 ]; then
+    echo usage 'plotLatZ case time var lon dlon colours.cpt min max incr'
+    exit
+fi
+
+case=$1
+time=$2
+var=$3
+lon=$4
+dlon=$5
+colours=$6
+min=$7
+max=$8
+incr=$9
+
+writeCellDataLatLon -time $time -case $case $var
+
+# Exctract lat-z cross section
+awk 'function abs(v) { return v < 0 ? -v : v};
+     {if (abs($1 - '$lon') < '$dlon') {print $2, $3/1000, $4}}' \
+         $case/$time/$var.latLon > $case/$time/$var.latz
+
+gmt makecpt -C$colours -D -T$min/$max/$incr > $case/colourScale.cpt
+gmt pscontour $case/$time/$var.latz -C$case/colourScale.cpt \
+       -Ba30/a5 -JX18c/6c -R-90/90/0/12 -h0 -I  > $case/$time/$var.eps
+makebb $case/$time/$var.eps
+pstitle $case/$time/$var.eps
+ev $case/$time/$var.eps
+
+rm $case/$time/$var.latLon $case/$time/$var.latz $case/colourScale.cpt
