@@ -60,7 +60,11 @@ volScalarField rho
     mesh,
     dimensionedScalar("rho", dimless, scalar(1))
 );
-surfaceScalarField rhof("rhof", linearInterpolate(rho));
+surfaceScalarField rhof
+(
+    IOobject("rhof", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    linearInterpolate(rho)
+);
 
 // Courant numbers to write out
 volScalarField Co

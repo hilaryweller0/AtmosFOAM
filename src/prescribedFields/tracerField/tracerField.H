@@ -33,6 +33,7 @@ class tracerField
     private:
     void applyToInternalField(volScalarField& T) const;
     void applyToBoundary(volScalarField& T, const label patchI) const;
+    void applyToBoundary(surfaceScalarField& T, const label patchI) const;
     virtual bool hasGradient() const;
     virtual scalar tracerAt(const point& p, const Time& t) const = 0;
     virtual vector gradientAt(const point& p, const Time& t) const;

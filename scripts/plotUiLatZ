@@ -1,0 +1,46 @@
+#!/bin/bash -e
+
+if [ "$#" -ne 10 ]; then
+    echo usage 'plotUiLatZ case time var i[0|1|2|3] lon dlon colours.cpt min max incr'
+    echo i=0 is longitudinal component, i=1 is latitudinal component, i=2 is z
+    echo i=4 is magnitude
+    exit
+fi
+
+case=$1
+time=$2
+var=$3
+i=$4
+lon=$5
+dlon=$6
+colours=$7
+min=$8
+max=$9
+incr=${10}
+
+echo $case $time $var $i $lon $dlon $colours $min $max $incr
+
+writeuvwLatLon -time $time -case $case $var
+
+# Exctract lat-z cross section
+if [ "$i" -lt 3 ]; then
+    let col=4+$i
+    awk 'function abs(v) { return v < 0 ? -v : v};
+         {if (abs($1 - '$lon') < '$dlon') {print $2, $3/1000, $'$col'}}' \
+         $case/$time/$var.latLon > $case/$time/$var$i.latz
+else
+    awk 'function abs(v) { return v < 0 ? -v : v};
+         {if (abs($1 - '$lon') < '$dlon') {print $2, $3/1000, sqrt($4**2+$5**2+$6**2)}}' \
+         $case/$time/$var.latLon > $case/$time/$var$i.latz
+fi
+
+gmt makecpt -C$colours -D -T$min/$max/$incr > $case/colourScale.cpt
+gmt pscontour $case/$time/$var$i.latz -C$case/colourScale.cpt \
+       -Ba30/a5 -JX18c/6c -R-90/90/0/12 -h0 -I  > $case/$time/$var$i.eps
+makebb $case/$time/$var$i.eps
+pstitle $case/$time/$var$i.eps
+ev $case/$time/$var$i.eps
+
+rm $case/$time/$var.latLon $case/$time/$var$i.latz $case/colourScale.cpt
+echo plotUiLatZ $case $time $var $i $lon $dlon $colours $min $max $incr
+echo created $case/$time/$var$i.eps

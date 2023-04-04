@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
         fvScalarMatrix ExnerEqn
         (
-            fvm::laplacian(Cp*theta, Exner) == fvc::div(gSf)
+            fvm::laplacian(Cp*thetaf, Exner) == fvc::div(gSf)
         );
         ExnerEqn.setReference(refCell, refExner);
         converged = ExnerEqn.solve(Exner.name()+"Final").nIterations() == 0;
@@ -88,10 +88,29 @@ int main(int argc, char *argv[])
     }
 
     Exner.write();
-    theta == T/Exner;
     theta.write();
     volScalarField p("p", pRef*pow(Exner, 1/kappa));
     p.write();
+    
+    // Test hydrostatic balance
+    surfaceScalarField snGradP
+    (
+        "snGradP",
+        gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+    );
+    snGradP.write();
+    volVectorField gradP
+    (
+        "gradP",
+        fvc::reconstruct(snGradP)
+    );
+    gradP.write();
+    volVectorField gradP2
+    (
+        "gradP2",
+         g - Cp*theta*fvc::grad(Exner)
+    );
+    gradP2.write();
 
     Info<< "End\n" << endl;
 

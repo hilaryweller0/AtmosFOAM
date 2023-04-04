@@ -15,4 +15,4 @@ EXE_LIBS = \
     -lExnerTheta \
     -lprescribedFields \
     -lthermalFields \
-    -lgeometry
+    -lOpenFOAMAtmosFOAMtools

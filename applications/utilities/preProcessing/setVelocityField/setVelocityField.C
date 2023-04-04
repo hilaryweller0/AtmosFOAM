@@ -1,5 +1,6 @@
 #include "fvCFD.H"
 #include "velocityField.H"
+#include "sphericalCentres.H"
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +13,11 @@ int main(int argc, char *argv[])
         "region",
         "meshRegion",
         "specify a non-default region to plot"
+    );
+    Foam::argList::addBoolOption
+    (
+        "spherical",
+        "specify face and cell centres are on a sphere"
     );
 
     timeSelector::addOptions();
@@ -33,6 +39,10 @@ int main(int argc, char *argv[])
             meshRegion, runTime.timeName(), runTime, IOobject::MUST_READ
         )
     );
+    if (args.optionFound("spherical"))
+    {
+        sphericalCentres(mesh);
+    }
 
     Info << "Creating flux field phi, U and Uf" << endl;
     surfaceScalarField phi

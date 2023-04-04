@@ -1,3 +1,5 @@
+sphericalGeometry/sphericalVector.C
+sphericalGeometry/sphericalCentres.C
 
 LIB = $(FOAM_USER_LIBBIN)/libOpenFOAMAtmosFOAMtools
 

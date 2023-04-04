@@ -17,6 +17,7 @@ addToRunTimeSelectionTable
 geodesicHadleyLikeVelocityField::
 geodesicHadleyLikeVelocityField(const dictionary& dict)
 :
+    divergentVelocityField(readBool(dict.lookup("divergenceFree"))),
     a_(readScalar(dict.lookup("earthRadius"))),
     H_(readScalar(dict.lookup("scaleHeight"))),
     ztop_(readScalar(dict.lookup("ztop"))),

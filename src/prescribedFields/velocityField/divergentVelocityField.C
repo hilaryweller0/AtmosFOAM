@@ -1,5 +1,20 @@
 #include "divergentVelocityField.H"
 
+divergentVelocityField::divergentVelocityField(const bool divFree__)
+:
+    divFree(divFree__)
+{}
+
+void divergentVelocityField::applyTo(surfaceScalarField& phi) const
+{
+    velocityField::applyTo(phi);
+    if (divFree)
+    {
+        project(phi);
+    }
+    else Info << "Not projecting" << endl;
+}
+
 void divergentVelocityField::applyToInternalField(surfaceScalarField& phi) const
 {
     phi.ref() = dimensionedScalar("phi", phi.dimensions(), scalar(0));
@@ -20,3 +35,8 @@ void divergentVelocityField::applyToBoundary(surfaceScalarField& phi, const labe
     }
 }
 
+void divergentVelocityField::project(surfaceScalarField& phi) const
+{
+    Info << "Projecting" << endl;
+
+}

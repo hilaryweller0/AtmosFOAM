@@ -30,6 +30,7 @@ autoPtr<velocityField> velocityField::New(const dictionary& dict)
 
 void velocityField::applyTo(surfaceScalarField& phi) const
 {
+    Info << "velocityField::applyTo" << endl;
     applyToInternalField(phi);
     
     forAll(phi.boundaryField(), patchI)

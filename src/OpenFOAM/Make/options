@@ -1,7 +1,8 @@
 EXE_INC = \
     -ggdb3 -O0 \
     -Wno-old-style-cast \
-    -IlnInclude
+    -IlnInclude \
+    -I$(LIB_SRC)/OpenFOAM/lnInclude
 
 LIB_LIBS = \
     -lOpenFOAM

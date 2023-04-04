@@ -34,6 +34,7 @@ Description
 #include "OFstream.H"
 #include "polarPoint.H"
 #include "sphericalVector.H"
+#include "sphericalCentres.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -71,6 +72,8 @@ int main(int argc, char *argv[])
             Foam::IOobject::MUST_READ
         )
     );
+    sphericalCentres(mesh);
+    
     const word fieldName = args.args()[1];
     
     // Read earth radius from system/extrudeMeshDict

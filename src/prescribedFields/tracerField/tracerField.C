@@ -56,6 +56,10 @@ void tracerField::applyTo(surfaceScalarField& Tf) const
         const point& p = mesh.Cf()[faceI];
         Tf[faceI] = tracerAt(velocityField.initialPositionOf(p, Tf.time()), Tf.time());
     }
+    forAll(Tf.boundaryField(), patchI)
+    {
+        applyToBoundary(Tf, patchI);
+    }
 }
 
 void tracerField::applyToInternalField(volScalarField& T) const
@@ -95,6 +99,20 @@ void tracerField::applyToBoundary(volScalarField& T, const label patchI) const
                     T.time()
             );
         }
+    }
+}
+
+void tracerField::applyToBoundary(surfaceScalarField& T, const label patchI) const
+{
+    fvsPatchField<scalar>& patch = T.boundaryFieldRef()[patchI];
+    forAll(patch, faceI)
+    {
+        const point& p = T.mesh().Cf().boundaryField()[patchI][faceI];
+        patch[faceI] = tracerAt
+        (
+            p,
+            T.time()
+        );
     }
 }
 

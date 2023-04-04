@@ -21,6 +21,7 @@ tracerField/radialDistance.C
 tracerField/tracerField.C
 tracerField/sphericalLayerTracerField.C
 tracerField/rhoIsothermalTracerField.C
+tracerField/exponentialWithHeightTracerField.C
 velocityField/velocityField.C
 velocityField/nonDivergentVelocityField.C
 velocityField/deformationalNonDivergentVelocityField.C

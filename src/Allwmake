@@ -20,8 +20,6 @@ wmake $makeType OpenFOAM
 wmake $makeType finiteVolume
 wmake $makeType HodgeOps
 wmake $makeType sampling
-wmake $makeType geometry
-wmake $makeType sphericalGeometry
 wmake $makeType prescribedFields
 wmake $makeType orography
 wmake $makeType ghostMesh

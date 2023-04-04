@@ -54,6 +54,14 @@ else
             if (nonOrth == nNonOrthCorr)
             {
                 phi = G*(phi - rhorAUf*Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf());
+                // Final explicit solve for mass conservation
+                if(ucorr == nOuterCorr-1 && corr == nCorr-1)
+                {
+                    solve
+                    (
+                        fvm::ddt(Psi, Exner) + fvc::div(phi)
+                    );
+                }
                 if (SIgravityWaves)
                 {
                     thetaf -= applySIg*phi*fvc::snGrad(theta)
@@ -72,14 +80,6 @@ else
                       - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
                     );
                     U = inv(tensor::I + rAU*rho*muSponge*spongeT) & U;
-                }
-                // Final explicit solve for mass conservation
-                if(ucorr == nOuterCorr-1 && corr == nCorr-1)
-                {
-                    solve
-                    (
-                        fvm::ddt(Psi, Exner) + fvc::div(phi)
-                    );
                 }
             }
         }
