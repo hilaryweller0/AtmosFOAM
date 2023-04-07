@@ -44,5 +44,7 @@ void velocityField::applyTo(surfaceScalarField& phi) const
             applyToBoundary(phi, patchI);
         }
     }
+    
+    project(phi);
 }
 

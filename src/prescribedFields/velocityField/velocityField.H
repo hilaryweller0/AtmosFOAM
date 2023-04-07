@@ -27,6 +27,7 @@ class velocityField
     private:
     virtual void applyToInternalField(surfaceScalarField& phi) const = 0;
     virtual void applyToBoundary(surfaceScalarField& phi, const label patchI) const = 0;
+    virtual void project(surfaceScalarField& phi) const = 0;
 };
 
 }

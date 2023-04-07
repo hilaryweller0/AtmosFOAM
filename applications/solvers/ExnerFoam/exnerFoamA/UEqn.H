@@ -11,8 +11,8 @@ if (impU)
 {
     solve
     (
-        UEqn == rho*
-        (
+        UEqn == rho //*(g - Cp*theta*fvc::grad(Exner))
+        *(
             fvc::reconstruct
             (
                 gSf

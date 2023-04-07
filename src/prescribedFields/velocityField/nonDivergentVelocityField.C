@@ -22,20 +22,33 @@ void nonDivergentVelocityField::applyToBoundary(surfaceScalarField& phi, const l
     }
 }
 
-scalar nonDivergentVelocityField::faceFlux(const face& f, const fvMesh& mesh, const Time& t) const
+scalar nonDivergentVelocityField::faceFlux
+(
+    const face& f,
+    const fvMesh& mesh,
+    const Time& t
+) const
 {
     point p0 = mesh.points()[f.last()];
     point p1 = p0;
+    vector s0 = streamfunctionAt(p0, t);
+    vector s1 = s0;
 
     scalar flux = 0;
 
     forAll(f, ip)
     {
         p0 = p1;
+        s0 = s1;
         p1 = mesh.points()[f[ip]];
-        point pmid = 0.5*(p0 + p1);
-        flux += streamfunctionAt(pmid, t) & (p0 - p1);
+        s1 = streamfunctionAt(p1, t);
+        //point pmid = 0.5*(p0 + p1);
+        //flux += streamfunctionAt(pmid, t) & (p0 - p1);
+        flux += (s0 + s1) & (p0 - p1);
     }
 
-    return flux;
+    return 0.5*flux;
 }
+
+void nonDivergentVelocityField::project(surfaceScalarField& phi) const
+{}

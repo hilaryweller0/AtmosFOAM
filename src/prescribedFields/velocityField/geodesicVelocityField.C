@@ -1,12 +1,12 @@
-#include "divergentVelocityField.H"
+#include "geodesicVelocityField.H"
 #include "fvCFD.H"
 
-divergentVelocityField::divergentVelocityField(const bool applyProjection__)
+geodesicVelocityField::geodesicVelocityField(const bool applyProjection__)
 :
     applyProjection(applyProjection__)
 {}
 
-void divergentVelocityField::applyToInternalField(surfaceScalarField& phi) const
+void geodesicVelocityField::applyToInternalField(surfaceScalarField& phi) const
 {
     phi.ref() = dimensionedScalar("phi", phi.dimensions(), scalar(0));
     const fvMesh& mesh = phi.mesh();
@@ -16,7 +16,7 @@ void divergentVelocityField::applyToInternalField(surfaceScalarField& phi) const
     }
 }
 
-void divergentVelocityField::applyToBoundary
+void geodesicVelocityField::applyToBoundary
 (
     surfaceScalarField& phi,
     const label patchI
@@ -30,7 +30,7 @@ void divergentVelocityField::applyToBoundary
     }
 }
 
-void divergentVelocityField::project(surfaceScalarField& phi) const
+void geodesicVelocityField::project(surfaceScalarField& phi) const
 {
     if (applyProjection)
     {

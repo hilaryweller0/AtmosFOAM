@@ -18,6 +18,7 @@ class nonDivergentVelocityField : public velocityField
     void applyToBoundary(surfaceScalarField& phi, const label patchI) const;
     scalar faceFlux(const face& f, const fvMesh& mesh, const Time& t) const;
     virtual vector streamfunctionAt(const point& p, const Time& t) const = 0;
+    void project(surfaceScalarField& phi) const;
 };
 
 }
