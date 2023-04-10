@@ -1,9 +1,9 @@
 #ifndef GEODESIC_DEFORMATIONAL_DIVERGENT_VELOCITY_FIELD_H
 #define GEODESIC_DEFORMATIONAL_DIVERGENT_VELOCITY_FIELD_H
 
-#include "divergentVelocityField.H"
+#include "geodesicVelocityField.H"
 
-class geodesicDeformationalDivergentVelocityField final : public divergentVelocityField
+class geodesicDeformationalDivergentVelocityField final : public geodesicVelocityField
 {
     public:
     TypeName("geodesicDeformationalDivergent");
@@ -11,7 +11,6 @@ class geodesicDeformationalDivergentVelocityField final : public divergentVeloci
 
     private:
     vector velocityAt(const point& p, const Time& t) const;
-    const dimensionedScalar radius;
 };
 
 #endif

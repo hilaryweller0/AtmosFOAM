@@ -3,7 +3,6 @@
 #include "tracerField.H"
 #include "velocityField.H"
 #include "noAdvection.H"
-#include "sphericalCentres.H"
 
 int main(int argc, char *argv[])
 {
@@ -31,11 +30,6 @@ int main(int argc, char *argv[])
         "tracerName",
         "specify a non-default tracer name"
     );
-    Foam::argList::addBoolOption
-    (
-        "spherical",
-        "specify face and cell centres are on a sphere"
-    );
     timeSelector::addOptions();
 
     #include "setRootCase.H"
@@ -55,10 +49,6 @@ int main(int argc, char *argv[])
             meshRegion, runTime.timeName(), runTime, IOobject::MUST_READ
         )
     );
-    if (args.optionFound("spherical"))
-    {
-        sphericalCentres(mesh);
-    }
 
     const word tracerName = args.optionFound("name") ?
                               args.optionRead<word>("name") :

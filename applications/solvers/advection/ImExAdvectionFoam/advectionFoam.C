@@ -34,24 +34,14 @@ Description
 #include "velocityField.H"
 #include "CourantNoFunc.H"
 #include "fvModels.H"
-#include "sphericalCentres.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addBoolOption
-    (
-        "spherical",
-        "specify face and cell centres are on a sphere"
-    );
     #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
-    if (args.optionFound("spherical"))
-    {
-        sphericalCentres(mesh);
-    }
     #include "createControl.H"
     #include "createFvModels.H"
     #include "createTimeControls.H"
@@ -63,18 +53,10 @@ int main(int argc, char *argv[])
 
     #include "createFields.H"
 
-    volScalarField div("div", fvc::div(phi*rhof));
+    volScalarField div("div", fvc::div(phi));
     div.write();
     Info << "div goes from " << min(div.internalField()).value() << " to "
          << max(div.internalField()).value() << endl;
-    volVectorField gradT("gradT", fvc::grad(T));
-    gradT.write();
-    Info << "mag(gradT) goes from " << min(mag(gradT)).value() << " to "
-         << max(mag(gradT)).value() << endl;
-    Info << "delta goes from " << min(1/mesh.deltaCoeffs()).value() << " to "
-         << max(1/mesh.deltaCoeffs()).value() << endl;
-    Info << "V goes from " << min(mesh.V()).value() << " to "
-         << max(mesh.V()).value() << endl;
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -99,7 +81,7 @@ int main(int argc, char *argv[])
         v = velocityField::New(dict);
         v->applyTo(phi);
         phi.oldTime() = phi;
-        //U = fvc::reconstruct(phi);
+        //U = fvc::reconstruct(phi/rhof);
         //U.write();
         phi.write();
     }
@@ -129,11 +111,12 @@ int main(int argc, char *argv[])
                 runTime.timeIndex()
             );
             v->applyTo(phi);
+            phiv = phi/rhof;
             #include "CourantNo.H"
 
             if (CoLimit > SMALL)
             {
-                exp = 0.5*(sign(phiLimit - mag(phi)) + 1);
+                exp = 0.5*(sign(phiLimit - mag(phiv)) + 1);
             }
 
             runTime.setTime
@@ -151,22 +134,17 @@ int main(int argc, char *argv[])
             fvScalarMatrix TEqn
             (
                 fvm::ddt(rho, T)
-              //+ fvc::div(exp*phi*rhof, T, "explicit")
-              //+ fvm::div((1-exp)*phi*rhof, T, "implicit")
             );
             if (CoLimit > SMALL)
             {
-                Info << "Including explicit advection" << endl;
                 TEqn += fvc::div(exp*phi*rhof, T, "explicit");
                 div = fvc::div(phi, T, "explicit");
-                div.write();
                 Info << "div goes from " << min(div.internalField()).value() << " to "
                      << max(div.internalField()).value() << endl;
             }
             if (min(mag(exp)).value() < 0.5)
             {
-                Info << "Including implicit advection" << endl;
-                TEqn += fvScalarMatrix(fvm::div((1-exp)*phi*rhof, T, "implicit"));
+                TEqn += fvScalarMatrix(fvm::div((1-exp)*phi, T, "implicit"));
             }
             TEqn.solve();
         }
@@ -177,10 +155,11 @@ int main(int argc, char *argv[])
             mag(fvc::snGrad(T))/mesh.deltaCoeffs()
         )().primitiveField()/V;
 */
-        Info << "Time " << runTime.timeName() << " min " << min(T.internalField()).value()
+        Info << "Time " << runTime.timeName()
+             << " min " << min(T.internalField()).value()
              << " max " << max(T.internalField()).value()  << endl;
-/*           << " sum " << gSum(T.primitiveField()*V)/gSum(V) << " TV "<< gSum(TV)
-           << endl;
+/*           << " sum " << gSum(T.primitiveField()*V)/gSum(V) << " TV "
+             << gSum(TV) << endl;
 
         if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
 */

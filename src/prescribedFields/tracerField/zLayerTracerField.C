@@ -1,12 +1,12 @@
-#include "exponentialWithHeightTracerField.H"
+#include "zLayerTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mathematicalConstants.H"
 using namespace constant::mathematical;
 
-defineTypeNameAndDebug(exponentialWithHeightTracerField, 0);
-addToRunTimeSelectionTable(tracerField, exponentialWithHeightTracerField, dict);
+defineTypeNameAndDebug(zLayerTracerField, 0);
+addToRunTimeSelectionTable(tracerField, zLayerTracerField, dict);
 
-exponentialWithHeightTracerField::exponentialWithHeightTracerField
+zLayerTracerField::zLayerTracerField
 (
     const dictionary& dict,
     const advectable& velocityField
@@ -18,12 +18,13 @@ exponentialWithHeightTracerField::exponentialWithHeightTracerField
         readBool(dict.lookup("spherical")),
         dict.lookupOrDefault<scalar>("earthRadius", scalar(0))
     ),
-    z0_(readScalar(dict.lookup("z0"))),
-    T0_(readScalar(dict.lookup("tracerAtz0"))),
-    H_(readScalar(dict.lookup("scaleHeight")))
+    z1_(readScalar(dict.lookup("tracerBase"))),
+    z2_(readScalar(dict.lookup("tracerTop"))),
+    z0_(0.5*(z1_+z2_)),
+    H_(z2_ - z1_)
 {};
 
-scalar exponentialWithHeightTracerField::tracerAt
+scalar zLayerTracerField::tracerAt
 (
     const point& p,
     const Time& t
@@ -32,6 +33,12 @@ scalar exponentialWithHeightTracerField::tracerAt
     scalar z = spherical()
              ? mag(p) - earthRadius()
              : p.z();
-    z -= z0_;
-    return T0_*Foam::exp(-z/H_);
+    scalar q = 0;
+    
+    if (z > z1_ && z < z2_)
+    {
+        q = 0.5*(1 + Foam::cos(2*pi*(z-z0_)/H_));
+    }
+
+    return q;
 }

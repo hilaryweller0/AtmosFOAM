@@ -34,7 +34,7 @@ Description
 #include "OFstream.H"
 #include "polarPoint.H"
 #include "sphericalVector.H"
-#include "sphericalCentres.H"
+#include "sphericalMeshData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,7 +72,6 @@ int main(int argc, char *argv[])
             Foam::IOobject::MUST_READ
         )
     );
-    sphericalCentres(mesh);
     
     const word fieldName = args.args()[1];
     
@@ -83,6 +82,9 @@ int main(int argc, char *argv[])
     );
     dictionary eDict = dict.subDict("linearRadialCoeffs");
     const scalar earthRadius(readScalar(eDict.lookup("Rsurface")));
+
+    // Calculate spherical mesh data
+    sphericalMeshData spherical(mesh, earthRadius);
 
     forAll(timeDirs, timeI)
     {
@@ -115,8 +117,9 @@ int main(int argc, char *argv[])
 
             for(label celli = 0; celli < mesh.nCells(); celli++)
             {
-                polarPoint C = convertToPolar(mesh.C()[celli], 360, earthRadius);
-                sphericalVector wind = convertToLocal(mesh.C()[celli], vf[celli]);
+                point xyz = spherical.cellCentres()[celli];
+                polarPoint C = convertToPolar(xyz, 360, earthRadius);
+                sphericalVector wind = convertToLocal(xyz, vf[celli]);
                 
                 os << C.Lon() << "  " << C.Lat() << "  " << C.Z() << "  "
                    << wind.v[0] << "  " << wind.v[1] << "  " << wind.v[2] << endl;
@@ -132,8 +135,9 @@ int main(int argc, char *argv[])
 
             for(label facei = 0; facei < mesh.nInternalFaces(); facei++)
             {
-                polarPoint Cf = convertToPolar(mesh.Cf()[facei], 360, earthRadius);
-                sphericalVector wind = convertToLocal(mesh.Cf()[facei], vf[facei]);
+                point xyz = spherical.faceCentres()[facei];
+                polarPoint Cf = convertToPolar(xyz, 360, earthRadius);
+                sphericalVector wind = convertToLocal(xyz, vf[facei]);
                 
                 os << Cf.Lon() << "  " << Cf.Lat() << "  " << Cf.Z() << "  "
                    << wind.v[0] << "  " << wind.v[1] << "  " << wind.v[2] << endl;

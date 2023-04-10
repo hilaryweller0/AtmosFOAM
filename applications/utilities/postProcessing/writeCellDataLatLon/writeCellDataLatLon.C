@@ -32,9 +32,7 @@ Description
 
 #include "fvCFD.H"
 #include "OFstream.H"
-#include "polarPoint.H"
-#include "sphericalVector.H"
-#include "sphericalCentres.H"
+#include "sphericalMeshData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -72,7 +70,6 @@ int main(int argc, char *argv[])
             Foam::IOobject::MUST_READ
         )
     );
-    sphericalCentres(mesh);
     
     const word fieldName = args.args()[1];
     
@@ -84,6 +81,9 @@ int main(int argc, char *argv[])
     dictionary eDict = dict.subDict("linearRadialCoeffs");
     const scalar earthRadius(readScalar(eDict.lookup("Rsurface")));
 
+    // Calculate spherical mesh data
+    sphericalMeshData spherical(mesh, earthRadius);
+    
     forAll(timeDirs, timeI)
     {
         runTime.setTime(timeDirs[timeI], timeI);
@@ -116,9 +116,10 @@ int main(int argc, char *argv[])
 
             for(label celli = 0; celli < mesh.nCells(); celli++)
             {
-                polarPoint C = convertToPolar(mesh.C()[celli], 360, earthRadius);
-                os << C.Lon() << "  " << C.Lat() << "  " << C.Z() << "  "
-                   << vf[celli] << endl;
+                const vector& C = spherical.CLonLatz()[celli];
+                os << C[0]*sphericalMeshData::radToDeg << "  "
+                   << C[1]*sphericalMeshData::radToDeg << "  "
+                   << C[2] << "  " << vf[celli] << endl;
             }
         }
         else

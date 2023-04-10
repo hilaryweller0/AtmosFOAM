@@ -6,9 +6,9 @@
  Tracer transport test cases
 James Kent, Paul A. Ullrich and Christiane Jablonowski*/
 
-#include "divergentVelocityField.H"
+#include "geodesicVelocityField.H"
 
-class geodesicHadleyLikeVelocityField final : public divergentVelocityField
+class geodesicHadleyLikeVelocityField final : public geodesicVelocityField
 {
     public:
     TypeName("geodesicHadleyLike");
@@ -16,7 +16,7 @@ class geodesicHadleyLikeVelocityField final : public divergentVelocityField
 
     private:
     vector velocityAt(const point& p, const Time& t) const;
-    scalar a_, H_, ztop_, u0_, w0_, tau_;
+    scalar H_, ztop_, u0_, w0_, tau_, rho0_;
     label K_;
 };
 

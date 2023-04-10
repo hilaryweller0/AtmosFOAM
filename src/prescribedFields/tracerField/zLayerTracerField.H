@@ -1,14 +1,14 @@
-#ifndef RHO_ISOTHERMAL_TRACER_FIELD_H
-#define RHO_ISOTHERMAL_TRACER_FIELD_H
+#ifndef Z_LAYER_TRACER_FIELD_H
+#define Z_LAYER_TRACER_FIELD_H
 
 #include "advectable.H"
 #include "tracerField.H"
 
-class rhoIsothermalTracerField final : public tracerField
+class zLayerTracerField final : public tracerField
 {
     public:
-    TypeName("rhoIsothermal");
-    rhoIsothermalTracerField
+    TypeName("zLayer");
+    zLayerTracerField
     (
         const dictionary& dict,
         const advectable& velocityField
@@ -16,7 +16,7 @@ class rhoIsothermalTracerField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
-    const scalar a_, rho0_, H_;
+    const scalar z1_, z2_, z0_, H_;
 };
 
 #endif

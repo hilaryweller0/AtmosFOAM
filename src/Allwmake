@@ -16,7 +16,6 @@ wmake $makeType ExnerTheta
 wmake $makeType shallowWater
 wmake $makeType thermalFields
 wmake $makeType TurbulenceModels
-wmake $makeType OpenFOAM
 wmake $makeType finiteVolume
 wmake $makeType HodgeOps
 wmake $makeType sampling

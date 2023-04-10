@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2011-2020 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2022 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -23,26 +23,56 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "sphericalCentres.H"
+#include "sphericalMeshData.H"
 
-void Foam::sphericalCentres(const primitiveMesh& mesh)
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
+namespace Foam
 {
-    Info << "Modifying cell centres and face centres for spherical geometry"
-         << endl;
+    defineTypeNameAndDebug(sphericalMeshData, 0);
+}
 
-    // Centres to change
-    vectorField& Cf = const_cast<vectorField&>(mesh.faceCentres());
-    vectorField& C = const_cast<vectorField&>(mesh.cellCentres());
-    // Need to change volumes to be consistent
-    scalarField& V = const_cast<scalarField&>(mesh.cellVolumes());
 
-    Info << "C[0] = " << C[0] << "\nCf[0] = " << Cf[0] << "\nV[0] = "
-         << V[0] << endl;
-         
-    // Copy of old face centres needed for calculating new cell centres
-    const vectorField Cfold = mesh.faceCentres();
+// * * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * //
 
-    // Other mesh data
+Foam::sphericalMeshData::sphericalMeshData
+(
+    const fvMesh& mesh,
+    const scalar earthRadius__
+)
+:
+    MeshObject<fvMesh, Foam::MoveableMeshObject, sphericalMeshData>(mesh),
+    Cf_(mesh.faceCentres()),
+    C_(mesh.cellCentres()),
+    V_(mesh.nCells()),
+    Sf_(mesh.faceAreas()),
+    earthRadius_(earthRadius__),
+    CfLonLatz_(mesh.nFaces()),
+    CLonLatz_(mesh.nCells())
+{
+    calcSphericalMeshData();
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor * * * * * * * * * * * * * * * //
+
+Foam::sphericalMeshData::~sphericalMeshData()
+{}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+void Foam::sphericalMeshData::calcSphericalMeshData()
+{
+    if (debug)
+    {
+        InfoInFunction << "Calculating spherical geometry" << endl;
+    }
+
+    const fvMesh& mesh = mesh_;
+
+    // References to Cartesian mesh data
+    const vectorField& CfC = mesh.faceCentres();
     const vectorField& Sf(mesh.faceAreas());
     const pointField& p = mesh.points();
     const faceList& faces = mesh.faces();
@@ -50,9 +80,7 @@ void Foam::sphericalCentres(const primitiveMesh& mesh)
     const labelList& own = mesh.faceOwner();
     const labelList& nei = mesh.faceNeighbour();
 
-    Info << "Cf[0] - C[own[0]] = " << Cf[0] - C[own[0]] << endl;
-
-    // Loop through all faces and modify face centres
+    // Loop through all faces and calculate face centres on the sphere
     forAll(faces, facei)
     {
         const labelList& f = faces[facei];
@@ -66,18 +94,18 @@ void Foam::sphericalCentres(const primitiveMesh& mesh)
         for(label ip = 0; ip < nPoints; ip++)
         {
             const point& nextPoint = p[f[(ip+1)%nPoints]];
-            // Add area of the triangle between the edge and the cell centre
-            scalar At = mag((nextPoint - Cf[facei])^(p[f[ip]] - Cf[facei]));
+            // Add area of the triangle between the edge and the face centre
+            scalar At = mag((nextPoint - CfC[facei])^(p[f[ip]] - CfC[facei]));
             A += At;
             // Add average radius for this triangle
             Ar += 0.5*(mag(nextPoint) + mag(p[f[ip]]))*At;
         }
-        
+
         // Push the face centre onto the sphere
-        scalar magCf = mag(Cf[facei]);
+        scalar magCf = mag(CfC[facei]);
         if (magCf > SMALL)
         {
-            Cf[facei] *= Ar/A/magCf;
+            Cf_[facei] *= Ar/A/magCf;
         }
     }
 
@@ -96,45 +124,73 @@ void Foam::sphericalCentres(const primitiveMesh& mesh)
         {
             label facei = c[fi];
             // The volume of the prism from the old face to the old centre
-            scalar Vp = mag((Cfold[facei] - C[celli]) & Sf[facei]);
+            scalar Vp = mag((CfC[facei] - C_[celli]) & Sf[facei]);
             Vc += Vp;
             // Add face radius for this face
-            Vr += mag(Cf[facei])*Vp;
+            Vr += mag(Cf_[facei])*Vp;
         }
         
         // Push the cell centre onto the sphere
-        scalar magC = mag(C[celli]);
+        scalar magC = mag(C_[celli]);
         if (magC > SMALL)
         {
-            C[celli] *= Vr/Vc/magC;
+            C_[celli] *= Vr/Vc/magC;
         }
     }
     
     // Modify the cell volumes for consistency with face and cell centres
-    V = 0;
+    V_ = 0;
     forAll(own, facei)
     {
         // Calculate 3*face-pyramid volume
-        scalar pyr3Vol = Sf[facei] & (Cf[facei] - C[own[facei]]);
+        scalar pyr3Vol = Sf[facei] & (Cf_[facei] - C_[own[facei]]);
 
         // Accumulate face-pyramid volume
-        V[own[facei]] += pyr3Vol;
+        V_[own[facei]] += pyr3Vol;
     }
 
     forAll(nei, facei)
     {
         // Calculate 3*face-pyramid volume
-        scalar pyr3Vol = Sf[facei] & (C[nei[facei]] - Cf[facei]);
+        scalar pyr3Vol = Sf[facei] & (C_[nei[facei]] - Cf_[facei]);
 
         // Accumulate face-pyramid volume
-        V[nei[facei]] += pyr3Vol;
+        V_[nei[facei]] += pyr3Vol;
     }
 
-    V *= (1.0/3.0);
-
-    Info << "C[0] = " << C[0] << "\nCf[0] = " << Cf[0] << "\nV[0] = "
-         << V[0] << endl;
-    Info << "Cf[0] - C[own[0]] = " << Cf[0] - C[own[0]] << endl;
+    V_ *= (1.0/3.0);
+    
+    // Calculating CfLonLatz_ and  CLonLatz_
+    CfLonLatz_.replace(2, mag(Cf_));
+    CfLonLatz_.replace(0, atan2(Cf_.component(1), Cf_.component(0)));
+    CfLonLatz_.replace
+    (
+        1,
+        asin(max(min(Cf_.component(2)/CfLonLatz_.component(2), 1.), -1.))
+    );
+    CfLonLatz_.replace(2, CfLonLatz_.component(2) - earthRadius_);
+    CLonLatz_.replace(2, mag(C_));
+    CLonLatz_.replace(0, atan2(C_.component(1), C_.component(0)));
+    CLonLatz_.replace
+    (
+        1,
+        asin(max(min(C_.component(2)/CLonLatz_.component(2), 1.), -1.))
+    );
+    CLonLatz_.replace(2, CLonLatz_.component(2) - earthRadius_);
+    
+    if (debug)
+    {
+        InfoInFunction
+            << "Finished calculating spherical geometry" << endl;
+    }
 }
+
+
+bool Foam::sphericalMeshData::movePoints()
+{
+    calcSphericalMeshData();
+    return true;
+}
+
 
 // ************************************************************************* //

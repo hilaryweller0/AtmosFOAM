@@ -1,4 +1,0 @@
-EXE_INC = -I$(OBJECTS_DIR) \
-          -IlnInclude \
-          -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude
-

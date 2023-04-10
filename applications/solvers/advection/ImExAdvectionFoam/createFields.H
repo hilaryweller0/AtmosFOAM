@@ -65,22 +65,24 @@ surfaceScalarField rhof
     IOobject("rhof", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
     linearInterpolate(rho)
 );
+// Volume flux (for Courant number limit)
+surfaceScalarField phiv("phiv", phi/rhof);
 
 // Courant numbers to write out
 volScalarField Co
 (
     IOobject("Co", runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
-    CourantNo(phi, runTime.deltaT())
+    CourantNo(phi/rhof, runTime.deltaT())
 );
 Co.write();
 
 // Split the flux into parts for implicit and explicit solution
 const surfaceScalarField phiLimit = CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt;
-surfaceScalarField exp = 0.5*(sign(phiLimit - mag(phi)) + 1);
+surfaceScalarField exp = 0.5*(sign(phiLimit - mag(phiv)) + 1);
 Info << "phiLimit goes from " << min(phiLimit.internalField()).value()
      << " to " << max(phiLimit.internalField()).value() << endl;
-Info << "phi goes from " << min(phi.internalField()).value()
-     << " to " << max(phi.internalField()).value() << endl;
+Info << "phiv goes from " << min(phiv.internalField()).value()
+     << " to " << max(phiv.internalField()).value() << endl;
 Info << "exp goes from " << min(exp.internalField()).value()
      << " to " << max(exp.internalField()).value() << endl;
 

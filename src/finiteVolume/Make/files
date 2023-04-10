@@ -1,3 +1,6 @@
+sphericalMeshData/sphericalMeshData.C
+sphericalMeshData/sphericalVector.C
+
 convectionSchemes/MPDATA/MPDATAs.C
 convectionSchemes/LaxWendroff/LaxWendroffs.C
 convectionSchemes/MPDATA_RK2/MPDATA_RK2s.C

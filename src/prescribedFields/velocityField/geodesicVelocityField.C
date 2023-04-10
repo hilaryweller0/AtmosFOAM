@@ -1,18 +1,30 @@
 #include "geodesicVelocityField.H"
+#include "sphericalMeshData.H"
 #include "fvCFD.H"
 
-geodesicVelocityField::geodesicVelocityField(const bool applyProjection__)
+geodesicVelocityField::geodesicVelocityField(const dictionary& dict)
 :
-    applyProjection(applyProjection__)
+    earthRadius_(readScalar(dict.lookup("earthRadius"))),
+    applyProjection_(readBool(dict.lookup("applyProjection")))
 {}
 
 void geodesicVelocityField::applyToInternalField(surfaceScalarField& phi) const
 {
+    // Get reference to spherical geometry
+    const sphericalMeshData& spherical = sphericalMeshData::New
+    (
+        phi.mesh(), earthRadius_
+    );
+
     phi.ref() = dimensionedScalar("phi", phi.dimensions(), scalar(0));
     const fvMesh& mesh = phi.mesh();
     forAll(phi, faceI)
     {
-        phi[faceI] = velocityAt(mesh.Cf()[faceI], phi.time()) & mesh.Sf()[faceI];
+        phi[faceI] = velocityAt
+        (
+            spherical.faceCentres()[faceI],
+            phi.time()
+        ) & mesh.Sf()[faceI];
     }
 }
 
@@ -22,17 +34,27 @@ void geodesicVelocityField::applyToBoundary
     const label patchI
 ) const
 {
+    // Get reference to spherical geometry
+    const sphericalMeshData& spherical = sphericalMeshData::New
+    (
+        phi.mesh(), earthRadius_
+    );
+
     const fvPatch& pat = phi.mesh().boundary()[patchI];
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
-        bf[faceI] = velocityAt(pat.Cf()[faceI], phi.time()) & pat.Sf()[faceI];
+        label i = pat.start() + faceI;
+        bf[faceI] = velocityAt
+        (
+            spherical.faceCentres()[i], phi.time()
+        ) & spherical.faceAreas()[i];
     }
 }
 
 void geodesicVelocityField::project(surfaceScalarField& phi) const
 {
-    if (applyProjection)
+    if (applyProjection_)
     {
         const fvMesh& mesh = phi.mesh();
         volScalarField P
