@@ -137,10 +137,7 @@ int main(int argc, char *argv[])
             );
             if (CoLimit > SMALL)
             {
-                TEqn += fvc::div(exp*phi*rhof, T, "explicit");
-                div = fvc::div(phi, T, "explicit");
-                Info << "div goes from " << min(div.internalField()).value() << " to "
-                     << max(div.internalField()).value() << endl;
+                TEqn += fvc::div(exp*phi, T, "explicit");
             }
             if (min(mag(exp)).value() < 0.5)
             {
