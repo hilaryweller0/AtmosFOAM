@@ -14,11 +14,11 @@ fvScalarMatrix thetaEqn
 );
 
 thetaEqn.solve();
-// Explitic solve for energy conservation
+/*// Explitic solve for energy conservation
 solve
 (
     fvm::ddt(rho, theta)
   + fvc::div(phi, theta)
   - fvc::laplacian(thermophysicalTransport->alphaEff(), theta)
 );
-
+*/
