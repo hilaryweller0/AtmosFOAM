@@ -116,7 +116,7 @@ void fixedFluxBuoyantExnerFvPatchScalarField::updateCoeffs()
         patch().lookupPatchField<surfaceScalarField, scalar>("thetaf");
 
     gradient() = (g.value() & patch().nf())/(Cp.value()*thetaf);
-    
+
     fixedGradientFvPatchScalarField::updateCoeffs();
 }
 

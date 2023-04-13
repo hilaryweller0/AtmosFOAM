@@ -15,6 +15,7 @@ class btfTransform final : public terrainFollowingTransform
     private:
     const dimensionedScalar H;
     const autoPtr<mountain> m;
+    const scalar groundOffset_;
 };
 
 #endif
