@@ -23,13 +23,12 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    turbulentExnerFoam
+    exnerFoam_wvw
 
 Description
-    Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi. 
-    Optional turbulence modelling.
-    Need to include implicit gravity waves and implicit advection
+    Transient solver for buoyant, compressible, non-hydrostatic/non-hydrostatic
+    flow using a simultaneous solution of Exner, theta and phi. 
+    Separate momentum equation for w
 
 \*---------------------------------------------------------------------------*/
 
@@ -65,7 +64,6 @@ int main(int argc, char *argv[])
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch impU(mesh.schemes().lookup("implicitU"));
-    const Switch stagger(mesh.schemes().lookup("stagger"));
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
@@ -80,9 +78,6 @@ int main(int argc, char *argv[])
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     
-    turbulence->validate();   //- Validate turbulence fields after construction
-                            //  and update derived fields as required
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -111,11 +106,9 @@ int main(int argc, char *argv[])
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
         Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
+
         #include "energy.H"
         
-        //- Solve the turbulence equations and correct the turbulence viscosity
-        turbulence->correct(); 
-
         if (runTime.writeTime())
         {
             runTime.write();

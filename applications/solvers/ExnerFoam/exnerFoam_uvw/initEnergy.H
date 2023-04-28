@@ -9,7 +9,7 @@ dimensionedScalar Vtot = sum(mesh.V());
 volScalarField KE
 (
     IOobject("KE", runTime.timeName(), mesh),
-    0.5*rho*magSqr(U)
+    0.5*rho*(magSqr(U) + magSqr(w))
 );
 volScalarField internalEnergy
 (

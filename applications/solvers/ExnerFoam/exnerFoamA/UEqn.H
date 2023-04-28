@@ -6,19 +6,34 @@ fvVectorMatrix UEqn
   + fvm::div(phi, U)
   + turbulence->divDevTau(U)
   + 2*rho*(Omega^(U-Ug))
+  + rho*muSponge*(spongeT & U)
 );
 if (impU)
 {
-    solve
-    (
-        UEqn == rho //*(g - Cp*theta*fvc::grad(Exner))
-        *(
-            fvc::reconstruct
-            (
-                gSf
-              - Cp*fvc::interpolate(theta)*fvc::snGrad(Exner)*mesh.magSf()
+    if (!hydrostatic)
+    {
+        solve
+        (
+            UEqn == rho
+            *(
+                fvc::reconstruct
+                (
+                    gSf
+                  - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                )
+              //- muSponge*(spongeT & U)
             )
-          //- muSponge*(spongeT & U)
-        )
-    );
+        );
+    }
+    else
+    {
+        volVectorField gradP
+        (
+            "gradP",
+            rho*fvc::reconstruct(Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf())
+        );
+        gradP.replace(2, scalar(0));
+        solve(UEqn == -gradP);
+        //-rho*muSponge*(spongeT & U));
+    }
 }
