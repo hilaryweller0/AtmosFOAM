@@ -26,7 +26,6 @@ volScalarField Exner
     mesh
 );
 
-
 Info<< "Reading theta\n" << endl;
 volScalarField theta
 (
