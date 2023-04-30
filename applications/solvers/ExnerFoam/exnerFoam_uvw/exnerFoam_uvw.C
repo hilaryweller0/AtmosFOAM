@@ -63,18 +63,22 @@ int main(int argc, char *argv[])
     #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const Switch impU(mesh.schemes().lookup("implicitU"));
+    const Switch implicitU(mesh.schemes().lookup("implicitU"));
+    const Switch implicitT(mesh.schemes().lookup("implicitT"));
+    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+
     const scalar ocCoeff
     (
         readScalar(mesh.schemes().subDict("ddtSchemes").lookup("ocCoeff"))
     );
     const scalar ocAlpha = 1/(1+ocCoeff);
+
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     

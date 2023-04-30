@@ -12,5 +12,7 @@ fvScalarMatrix thetaEqn
   + fvm::div(phi, theta)
 );
 
-thetaEqn.solve();
+if (implicitT) thetaEqn.solve();
+else theta = thetaEqn.H()/thetaEqn.A();
 
+thetaf = fvc::interpolate(theta);

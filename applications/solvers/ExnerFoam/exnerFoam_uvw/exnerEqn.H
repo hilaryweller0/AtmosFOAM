@@ -8,21 +8,6 @@ surfaceScalarField rhorAUf
     )
 );
 
-thetaf = fvc::interpolate(theta);
-
-if (hydrostatic || SIgravityWaves)
-{
-    // Apply this only where on vertical pointing faces where Gw>0
-    surfaceScalarField applySIg = mag(gUnitNormal)*max
-    (
-        -sign(fvc::snGrad(Exner)*fvc::snGrad(theta)),
-        scalar(0)
-    );
-    
-    thetaf += applySIg*phi*fvc::snGrad(theta)
-            /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
-}
-
 {
     for (int corr=0; corr<nCorr; corr++)
     {
