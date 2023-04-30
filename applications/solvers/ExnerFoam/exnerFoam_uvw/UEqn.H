@@ -11,14 +11,14 @@ fvScalarMatrix wEqn(fvm::Sp(rho*muSponge, w));
 
 if (SIgravityWaves || hydrostatic)
 {
-    surfaceScalarField Gf = -sqr(rhof)*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner)
-                            /fvc::interpolate(thetaEqn.A());
+    dimensionedScalar adt = /*ocAlpha**/runTime.deltaT();
+
+    surfaceScalarField Gf = -adt*rhof*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner);
 
     // Apply this only where on vertical pointing faces where G>0
     surfaceScalarField applySIg = mag(gUnitNormal)*max(sign(Gf), scalar(0));
     
-    thetaf += applySIg*phi*fvc::snGrad(theta)
-            /(fvc::interpolate(thetaEqn.A())*mesh.magSf());
+    thetaf += applySIg*adt*phi*fvc::snGrad(theta)/(rhof*mesh.magSf());
 
     volScalarField G = fvc::average(Gf);
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
