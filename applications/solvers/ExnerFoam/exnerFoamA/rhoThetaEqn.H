@@ -13,12 +13,13 @@ fvScalarMatrix thetaEqn
   - fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
 );
 
-thetaEqn.solve();
-/*// Explicit solve for energy conservation
-solve
-(
-    fvm::ddt(rho, theta)
-  + fvc::div(phi, theta)
-  - fvc::laplacian(thermophysicalTransport->alphaEff(), theta)
-);
-*/
+if (implicitT)
+{
+    thetaEqn.solve();
+}
+else
+{
+    theta = thetaEqn.H()/thetaEqn.A();
+}
+
+thetaf = fvc::interpolate(theta);

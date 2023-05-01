@@ -1,3 +1,0 @@
-exnerFoam_uvw.C
-
-EXE = $(FOAM_USER_APPBIN)/exnerFoam_uvw

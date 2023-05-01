@@ -1,9 +1,22 @@
-Info<< "Reading U\n" << endl;
+Info<< "Reading U and w\n" << endl;
 volVectorField U
 (
     IOobject
     (
         "U",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+
+volScalarField w
+(
+    IOobject
+    (
+        "w",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -69,7 +82,7 @@ surfaceScalarField phi
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    rhof*(linearInterpolate(U) & mesh.Sf())
+    rhof*((linearInterpolate(U) & mesh.Sf()) - linearInterpolate(w)*ghatSf)
 );
 phi.oldTime();
 
@@ -108,28 +121,6 @@ const volScalarField muSponge
         dimensionedScalar("muSponge", dimless, scalar(0))
        )/runTime.deltaT()
 );
-const tensor spongeT(envProperties.lookup("spongeOrientation"));
-
-/*const surfaceScalarField muSpongef
-(
-    "muSpongef",
-    (spongeT*fvc::interpolate(muSponge)) && sqr(mesh.Sf()/mesh.magSf())
-);*/
 Info << "Maximum sponge value = " << (max(muSponge)*runTime.deltaT()).value()
      << endl;
-
-// Used for implicit gravity waves
-surfaceScalarField applySIg
-(
-    IOobject("applySIg", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar("applySIg", dimless, scalar(0))
-
-);
-surfaceScalarField G
-(
-    IOobject("G", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar("G", dimless, scalar(1))
-);
 

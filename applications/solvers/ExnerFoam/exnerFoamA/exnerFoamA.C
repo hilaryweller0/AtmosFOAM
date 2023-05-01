@@ -23,13 +23,14 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    turbulentExnerFoam
+    exnerFoamA
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
     Optional turbulence modelling.
-    Need to include implicit gravity waves and implicit advection
+    Optional implicit gravity waves and implicit advection.
+    Separate momentum equation for w
 
 \*---------------------------------------------------------------------------*/
 
@@ -64,19 +65,22 @@ int main(int argc, char *argv[])
     #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const Switch impU(mesh.schemes().lookup("implicitU"));
-    const Switch stagger(mesh.schemes().lookup("stagger"));
+    const Switch implicitU(mesh.schemes().lookup("implicitU"));
+    const Switch implicitT(mesh.schemes().lookup("implicitT"));
+    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+
     const scalar ocCoeff
     (
         readScalar(mesh.schemes().subDict("ddtSchemes").lookup("ocCoeff"))
     );
     const scalar ocAlpha = 1/(1+ocCoeff);
+
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     
@@ -111,6 +115,10 @@ int main(int argc, char *argv[])
 
         dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
         Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
+
+        // Add vertical to horizontal velocity
+        U += -(w + (U & ghat))*ghat;
+
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
@@ -123,6 +131,9 @@ int main(int argc, char *argv[])
             Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
             Uf.write();
         }
+
+        // Remove vertical from horizontal velocity
+        U -= (U & ghat)*ghat;
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
