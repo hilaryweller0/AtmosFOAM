@@ -17,9 +17,5 @@ if (implicitT)
 {
     thetaEqn.solve();
 }
-else
-{
-    theta = thetaEqn.H()/thetaEqn.A();
-}
-
+theta = thetaEqn.H()/thetaEqn.A();
 thetaf = fvc::interpolate(theta);

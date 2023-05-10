@@ -8,10 +8,11 @@ fvVectorMatrix UEqn
   + 2*rho*(Omega^(U-Ug))
 );
 
-// w equation
+/*// w equation
 fvScalarMatrix wEqn(fvm::Sp(rho*muSponge, w));
+*/
 
-if (SIgravityWaves || hydrostatic)
+/*if (SIgravityWaves || hydrostatic)
 {
     dimensionedScalar adt = ocAlpha*runTime.deltaT();
 
@@ -26,9 +27,9 @@ if (SIgravityWaves || hydrostatic)
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
     
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
-}
+}*/
 
-if (!hydrostatic)
+/*if (!hydrostatic)
 {
     wEqn += fvScalarMatrix
     (
@@ -37,18 +38,28 @@ if (!hydrostatic)
       - fvm::laplacian(rho*turbulence->nuEff(), w)
     );
 }
-
+*/
 if (implicitU)
 {
-    volVectorField Urhs = rho*fvc::reconstruct
+    solve
     (
-        gSf
-      - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+        UEqn == rho*
+        (
+            g*thetap/thetaa
+          - Cp*(thetaa + thetap)*fvc::grad(Exnerp)
+          - muSponge*(U&ghat)*ghat
+        )
+    );
+
+    /*volVectorField Urhs = rho*
+    (
+        g*thetap/thetaa
+      - Cp*(thetaa + thetap)*fvc::grad(Exnerp)
     );
     volScalarField wrhs = - (Urhs & ghat);
     Urhs += wrhs*ghat;
 
     solve(UEqn == Urhs);
-    solve(wEqn == wrhs);
+    solve(wEqn == wrhs);*/
 }
 

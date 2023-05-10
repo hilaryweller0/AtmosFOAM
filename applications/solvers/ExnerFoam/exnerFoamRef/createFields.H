@@ -12,7 +12,7 @@ volVectorField U
     mesh
 );
 
-volScalarField w
+/*volScalarField w
 (
     IOobject
     (
@@ -24,13 +24,35 @@ volScalarField w
     ),
     mesh
 );
-
-Info<< "Reading Exner\n" << endl;
-volScalarField Exner
+*/
+Info<< "Reading perturbation Exner, Exnerp\n" << endl;
+volScalarField Exnerp
 (
     IOobject
     (
-        "Exner",
+        "Exnerp",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
+    mesh
+);
+Exnerp.oldTime();
+
+Info << "Reading ambient Exner, Exnera\n" << endl;
+const volScalarField Exnera
+(
+    IOobject("Exnera", runTime.constant(), mesh, IOobject::MUST_READ),
+    mesh
+);
+
+Info<< "Reading theta perturbations, thetap\n" << endl;
+volScalarField thetap
+(
+    IOobject
+    (
+        "thetap",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -39,35 +61,30 @@ volScalarField Exner
     mesh
 );
 
-thermo.p() = pRef*pow(Exner, 1/kappa);
-
-Info<< "Reading theta\n" << endl;
-volScalarField theta
+Info << "Reading ambient theta, thetaa\n" << endl;
+const volScalarField thetaa
 (
-    IOobject
-    (
-        "theta",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
+    IOobject("thetaa", runTime.constant(), mesh, IOobject::MUST_READ),
     mesh
 );
-theta.correctBoundaryConditions();
-// Old part of theta change (and theta on the face)
+
+const volScalarField dThetadz("dThetadz", fvc::grad(thetaa) & ghat);
+
+// Total theta on the face
 surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh),
-    linearInterpolate(theta)
+    linearInterpolate(thetaa + thetap)
 );
-thermo.T() = theta*Exner;
+
+#include "thermoUpdate.H"
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh),
-    pRef/(R*theta)*pow(Exner, (1-kappa)/kappa)
+    thermo.rho()
+    //pRef/(R*(thetaa + thetap))*pow(Exnera + Exnerp, 1/RbyCv)
 );
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
@@ -82,7 +99,8 @@ surfaceScalarField phi
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    rhof*((linearInterpolate(U) & mesh.Sf()) - linearInterpolate(w)*ghatSf)
+    fvc::flux(rho*U)
+    //rhof*((linearInterpolate(U) & mesh.Sf()) - linearInterpolate(w)*ghatSf)
 );
 phi.oldTime();
 

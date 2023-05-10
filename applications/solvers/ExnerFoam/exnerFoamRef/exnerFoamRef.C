@@ -23,14 +23,15 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamA
+    exnerFoamRef
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Separate momentum equation for w
+    NOT Separate momentum equation for w. NOT
+    Removes reference profile.
 
 \*---------------------------------------------------------------------------*/
 
@@ -60,14 +61,13 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     #include "createFields.H"
     //#include "initContinuityErrs.H"
-    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch implicitU(mesh.schemes().lookup("implicitU"));
     const Switch implicitT(mesh.schemes().lookup("implicitT"));
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+    //const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -83,35 +83,12 @@ int main(int argc, char *argv[])
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
+    const dimensionedScalar adt = ocCoeff*runTime.deltaT();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-/*
-    // Testing
-    //thetaf.boundaryFieldRef()[2] = Tref.value()/Exner.boundaryField()[2];
-    //Info << "theta0 = " << Tref.value()/Exner.boundaryField()[2][0] << endl;
-    volVectorField Urhs
-    (
-        "Urhs",
-        rho*fvc::reconstruct
-        (
-            gSf
-          - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
-        )
-    );
-    Urhs.write();
-    volVectorField gradExner
-    (
-        "gradExner",
-        fvc::reconstruct(gSf - Cp*Tref*fvc::snGrad(Exner)*mesh.magSf())
-    );
-    gradExner.write();
-    thetaf.write();
-    FatalErrorIn("exnerFoamA") << exit(FatalError);
-*/
-
 
     Info<< "\nStarting time loop\n" << endl;
 
@@ -131,33 +108,15 @@ int main(int argc, char *argv[])
         #include "rhoThetaEqn.H"
         //#include "compressibleContinuityErrs.H"
 
-        // Update the pressure and temperature based on the new Exner
-        thermo.p() = pRef*pow(Exner, 1/kappa);
-        thermo.T() = theta*Exner;
-        thermo.he() == thermo.he(thermo.p(),thermo.T());
-        thermo.correct();
-
-        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
-        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
-
+        #include "thermoUpdate.H"
         // Add vertical to horizontal velocity
-        U += -(w + (U & ghat))*ghat;
-
+        //U += -(w + (U & ghat))*ghat;
         #include "energy.H"
-        
         //- Solve the turbulence equations and correct the turbulence viscosity
-        turbulence->correct(); 
-
-        if (runTime.writeTime())
-        {
-            runTime.write();
-            surfaceVectorField Uf("Uf", linearInterpolate(U));
-            Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
-            Uf.write();
-        }
-
+        turbulence->correct();
         // Remove vertical from horizontal velocity
-        U -= (U & ghat)*ghat;
+        //U -= (U & ghat)*ghat;
+        runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
