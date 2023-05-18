@@ -8,7 +8,7 @@ surfaceScalarField rhorAUf
     )
 );
 
-surfaceScalarField G("G", 1 + adt*fvc::interpolate(muSponge));
+surfaceScalarField G("G", 1 + adt*mag(gUnitNormal)*fvc::interpolate(muSponge));
 
 /*if (SIgravityWaves)
 {
@@ -25,8 +25,8 @@ for (int corr=0; corr<nCorr; corr++)
     //w = wEqn.H()/wEqn.A();
     
     // Flux without pressure gradient
-    //phi = fvc::flux(rho*(U - w*ghat)) + rhorAUf*gSf*fvc::interpolate(thetap/thetaa);
-    phi = G*(fvc::flux(rho*U) + rhorAUf*gSf*fvc::interpolate(thetap/thetaa));
+    //phi = fvc::flux(rho*(U - w*ghat)) - rhorAUf*gSf*fvc::interpolate(thetap/thetaa);
+    phi = G*(fvc::flux(rho*U) - rhorAUf*gSf*fvc::interpolate(thetap/thetaa));
 
     // Exner from eqn of state
     Exnerp.oldTime() = pow(rho*R*(thetaa+thetap)/pRef, RbyCv) - Exnera;
@@ -57,10 +57,10 @@ for (int corr=0; corr<nCorr; corr++)
         {
             phi += ExnerEqn.flux()/ocAlpha;
 
-            U += rho*
+            U -= rho*
             (
                 g*thetap/thetaa
-              - Cp*(thetaa + thetap)*fvc::grad(Exnerp)
+              + Cp*(thetaa + thetap)*fvc::grad(Exnerp)
             )/UEqn.A();
 
             U = inv(tensor::I + adt*muSponge*(ghat*ghat)) & U;

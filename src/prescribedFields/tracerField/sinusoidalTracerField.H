@@ -5,6 +5,7 @@ to force specific Fourier modes of a problem to become excited. Returns:
     f(x,y,z) = (a_x + b_x*cos(2pi*k_x*(x-phi_x)/L_x))
              * (a_y + b_y*cos(2pi*k_y*(y-phi_y)/L_y))
              * (a_z + b_z*cos(2pi*k_z*(z-phi_z)/L_z))
+    Applied non zero in the box [xmin, xmax],[ymin, ymax],[zmin, zmax]
 */
 
 #ifndef SINUSOIDAL_3D_TRACER_FIELD_H
@@ -26,7 +27,8 @@ class sinusoidalTracerField final : public tracerField
                  b_x, b_y, b_z,
                  k_x, k_y, k_z,
                  L_x, L_y, L_z,
-                 phi_x, phi_y, phi_z;
+                 phi_x, phi_y, phi_z,
+                 xmin, xmax, ymin, ymax, zmin, zmax;
     // The maximum and minimum possible values of the function
     const scalar funcMax, funcMin;
 };

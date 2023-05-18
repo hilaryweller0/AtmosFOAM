@@ -14,7 +14,7 @@ fvScalarMatrix wEqn(fvm::Sp(rho*muSponge, w));
 
 /*if (SIgravityWaves || hydrostatic)
 {
-    dimensionedScalar adt = ocAlpha*runTime.deltaT();
+    //dimensionedScalar adt = ocAlpha*runTime.deltaT();
 
     surfaceScalarField Gf = -adt*rhof*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner);
 
@@ -43,18 +43,18 @@ if (implicitU)
 {
     solve
     (
-        UEqn == rho*
+        UEqn == -rho*
         (
             g*thetap/thetaa
-          - Cp*(thetaa + thetap)*fvc::grad(Exnerp)
-          - muSponge*(U&ghat)*ghat
+          + Cp*(thetaa + thetap)*fvc::grad(Exnerp)
+          + muSponge*(U&ghat)*ghat
         )
     );
 
-    /*volVectorField Urhs = rho*
+    /*volVectorField Urhs = -rho*
     (
         g*thetap/thetaa
-      - Cp*(thetaa + thetap)*fvc::grad(Exnerp)
+      + Cp*(thetaa + thetap)*fvc::grad(Exnerp)
     );
     volScalarField wrhs = - (Urhs & ghat);
     Urhs += wrhs*ghat;

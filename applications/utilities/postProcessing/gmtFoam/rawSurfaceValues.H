@@ -186,7 +186,7 @@ if (!separateLegend)
     {
         systemCall = systemCall + " -B" + stringScalar(2*mag(colourStep),3);
     }
-    systemCall = systemCall + " -D9c/-0.5c/18c/0.5ch >> " + epsFile;
+    systemCall = systemCall + " -D9xc/-0.5c/18c/0.5ch >> " + epsFile;
     systemVerbose(systemCall);
 }
 else
@@ -207,10 +207,10 @@ else
     {
         systemCall2 = systemCall2 + " -B" + stringScalar(2*mag(colourStep));
     }
-    systemCall = systemCall2 + " -D9c/-0.5c/18c/0.5ch  | ps2eps -f -q > " + legNameH;
+    systemCall = systemCall2 + " -D9xc/-0.5c/18c/0.5ch  | ps2eps -f -q > " + legNameH;
     systemVerbose(systemCall);
 
-    systemCall = systemCall2 + " -D-0.5c/9c/18c/0.5c "
+    systemCall = systemCall2 + " -Dx-0.5c/9c/18c/0.5c "
                 + " | ps2eps -f -q > " + legNameV;
     systemVerbose(systemCall);
 

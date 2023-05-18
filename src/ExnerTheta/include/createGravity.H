@@ -1,2 +1,0 @@
-gravity g(mesh);
-

@@ -4,7 +4,7 @@ IOdictionary thermoDict
 (
     IOobject
     (
-        "thermophysicalProperties",
+        "physicalProperties",
         mesh.time().constant(),
         mesh,
         IOobject::MUST_READ,

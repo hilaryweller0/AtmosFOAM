@@ -65,3 +65,8 @@ uniformDimensionedVectorField gvf
     g
 );
 
+// i, j and k directions, with k=-ghat
+const vector kdir = -ghat.value();
+const vector idir = vector(1,0,0);
+const vector jdir = -idir ^ kdir;
+
