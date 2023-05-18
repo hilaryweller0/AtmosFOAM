@@ -55,3 +55,16 @@ volScalarField T
     mesh
 );
 
+Info << "Reading/creating Exnerg\n" << endl;
+volScalarField Exnerg
+(
+    IOobject
+    (
+        "Exnerg",
+        runTime.timeName(),
+        mesh,
+        IOobject::READ_IF_PRESENT
+    ),
+    Exner - gh/(Cp*theta)
+);
+

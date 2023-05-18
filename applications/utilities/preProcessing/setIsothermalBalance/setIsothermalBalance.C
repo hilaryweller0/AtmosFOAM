@@ -44,6 +44,8 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
+    #include "readhRef.H"
+    #include "gh.H"
     #include "createFields.H"
       
     const dictionary& itsDict = mesh.solution().subDict("initialisation");
@@ -91,6 +93,8 @@ int main(int argc, char *argv[])
     theta.write();
     volScalarField p("p", pRef*pow(Exner, 1/kappa));
     p.write();
+    Exnerg = Exner - gh/(Cp*theta);
+    Exnerg.write();
     
     Info<< "End\n" << endl;
 
