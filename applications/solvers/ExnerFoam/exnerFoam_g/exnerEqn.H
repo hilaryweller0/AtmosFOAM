@@ -21,7 +21,7 @@ for (int corr=0; corr<nCorr; corr++)
     U = u*idir + w*kdir;
     
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) - rhorAUf*ghGradThetaByTheta*mesh.magSf();
+    phi = fvc::flux(rho*U) + rhorAUf*ghGradThetaByTheta*mesh.magSf();
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
@@ -49,7 +49,8 @@ for (int corr=0; corr<nCorr; corr++)
 
             volVectorField Urhs = rho*fvc::reconstruct
             (
-                (ghGradThetaByTheta - Cp*thetaf*fvc::snGrad(Exnerg))*mesh.magSf()
+                (ghGradThetaByTheta - Cp*thetaf*fvc::snGrad(Exnerg))
+                *mesh.magSf()
             );
             u += (Urhs & idir)/uEqn.A();
             w += (Urhs & kdir)/wEqn.A();
