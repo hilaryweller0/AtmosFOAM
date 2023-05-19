@@ -31,7 +31,7 @@ Description
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Exner_g is Exner - g.x/(c_p theta)
+    Exner_g is Exner - g.x/(c_p theta_a)
 
 \*---------------------------------------------------------------------------*/
 

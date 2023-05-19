@@ -9,9 +9,9 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-Exnerg.oldTime() = pow(rho*R*theta/pRef, RbyCv) - gh/(Cp*theta);
+Exnerg.oldTime() = pow(rho*R*theta/pRef, RbyCv) - ExnerOffset;
 Exnerg.oldTime().correctBoundaryConditions();
-volScalarField Psi = rho/(RbyCv*(Exnerg.oldTime() + gh/(Cp*theta)));
+volScalarField Psi = rho/(RbyCv*(Exnerg.oldTime() + ExnerOffset));
 
 for (int corr=0; corr<nCorr; corr++)
 {
@@ -21,17 +21,17 @@ for (int corr=0; corr<nCorr; corr++)
     U = u*idir + w*kdir;
     
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) + rhorAUf*ghGradThetaByTheta*mesh.magSf();
+    phi = fvc::flux(rho*U) - rhorAUf*sqrNh;
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
         fvScalarMatrix ExnerEqn
         (
-            EulerDdt.fvmDdt(Psi, Exnerg)
-          + EulerDdt.fvcDdt(rho)
-          + (1-ocAlpha)*fvc::div(phi.oldTime())
-          + ocAlpha*fvc::div(phi)
-          - ocAlpha*fvm::laplacian(rhorAUf*Cp*thetaf, Exnerg)
+            EulerDdt.fvmDdt(Psi/ocAlpha, Exnerg)
+          + EulerDdt.fvcDdt(rho)/ocAlpha
+          + (1-ocAlpha)/ocAlpha*fvc::div(phi.oldTime())
+          + fvc::div(phi)
+          - fvm::laplacian(rhorAUf*Cp*thetaf, Exnerg)
         );
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
@@ -45,15 +45,14 @@ for (int corr=0; corr<nCorr; corr++)
 
         if (nonOrth == nNonOrthCorr)
         {
-            phi += ExnerEqn.flux()/ocAlpha;
+            phi += ExnerEqn.flux();
 
-            volVectorField Urhs = rho*fvc::reconstruct
+            volVectorField Urhs = -rho*fvc::reconstruct
             (
-                (ghGradThetaByTheta - Cp*thetaf*fvc::snGrad(Exnerg))
-                *mesh.magSf()
+                sqrNh + Cp*thetaf*fvc::snGrad(Exnerg)*mesh.magSf()
             );
             u += (Urhs & idir)/uEqn.A();
-            w += (Urhs & kdir)/wEqn.A();
+            w += ((Urhs & kdir))/wEqn.A();
         }
     }
 }

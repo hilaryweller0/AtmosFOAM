@@ -16,12 +16,12 @@ if (SIgravityWaves || hydrostatic)
 {
     const dimensionedScalar adt = ocAlpha*runTime.deltaT();
     
-    surfaceScalarField Gf = -adt*rhof*Cp*gradTheta*fvc::snGrad(Exnerg);
+    surfaceScalarField Gf = -adt*rhof*Cp*fvc::snGrad(theta)*fvc::snGrad(Exnerg);
 
     // Apply this only where on vertical pointing faces where G>0
     surfaceScalarField applySIg = mag(gUnitNormal)*max(sign(Gf), scalar(0));
     
-    thetaf +=  applySIg*adt*gradTheta*phi/(rhof*mesh.magSf());
+    thetaf +=  applySIg*adt*fvc::snGrad(theta)*phi/(rhof*mesh.magSf());
 
     volScalarField G("G", fvc::average(Gf));
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
@@ -41,9 +41,9 @@ if (!hydrostatic)
 
 if (implicitU)
 {
-    volVectorField Urhs = rho*fvc::reconstruct
+    volVectorField Urhs = -rho*fvc::reconstruct
     (
-        (ghGradThetaByTheta - Cp*thetaf*fvc::snGrad(Exnerg))*mesh.magSf()
+        sqrNh + Cp*thetaf*fvc::snGrad(Exnerg)*mesh.magSf()
     );
     solve(uEqn == (Urhs & idir));
     solve(wEqn == (Urhs & kdir));

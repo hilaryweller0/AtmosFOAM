@@ -20,9 +20,3 @@ if (implicitT)
 theta = thetaEqn.H()/thetaEqn.A();
 thetaf = fvc::interpolate(theta);
 
-surfaceScalarField gradTheta("gradTheta", fvc::snGrad(theta));
-surfaceScalarField ghGradThetaByTheta
-(
-    "ghGradThetaByTheta",
-    ghf*gradTheta/thetaf
-);
