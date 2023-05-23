@@ -20,6 +20,7 @@ dimensionedScalar magg
 dimensionedVector ghat = g/magg;
 dimensionedVector Omega(envProperties.lookup("Omega"));
 const surfaceScalarField gSf("gSf", g & mesh.Sf());
+const surfaceScalarField gSfhat("gSfhat", g & mesh.Sf()/mesh.magSf());
 const surfaceScalarField ghatSf("ghatSf", ghat & mesh.Sf());
 const surfaceScalarField gUnitNormal("gUnitNormal", ghat & (mesh.Sf() / mesh.magSf()));
 // Geostrophic Velocity to maintain

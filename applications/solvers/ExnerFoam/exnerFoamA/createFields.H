@@ -1,4 +1,4 @@
-Info<< "Reading U and w\n" << endl;
+Info<< "Reading U, u and w\n" << endl;
 volVectorField U
 (
     IOobject
@@ -12,18 +12,18 @@ volVectorField U
     mesh
 );
 
-volScalarField w
+volScalarField u
 (
-    IOobject
-    (
-        "w",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
+    IOobject("u", runTime.timeName(), mesh, IOobject::MUST_READ),
     mesh
 );
+u = U & idir;
+volScalarField w
+(
+    IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
+    mesh
+);
+w = U & kdir;
 
 Info<< "Reading Exner\n" << endl;
 volScalarField Exner
@@ -39,8 +39,6 @@ volScalarField Exner
     mesh
 );
 
-thermo.p() = pRef*pow(Exner, 1/kappa);
-
 Info<< "Reading theta\n" << endl;
 volScalarField theta
 (
@@ -54,20 +52,20 @@ volScalarField theta
     ),
     mesh
 );
-theta.correctBoundaryConditions();
 // Old part of theta change (and theta on the face)
 surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh),
     linearInterpolate(theta)
 );
-thermo.T() = theta*Exner;
+
+#include "thermoUpdate.H"
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh),
-    pRef/(R*theta)*pow(Exner, (1-kappa)/kappa)
+    thermo.rho()
 );
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
@@ -82,7 +80,7 @@ surfaceScalarField phi
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    rhof*((linearInterpolate(U) & mesh.Sf()) - linearInterpolate(w)*ghatSf)
+    fvc::flux(rho*U)
 );
 phi.oldTime();
 
@@ -108,19 +106,19 @@ autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
 // Reading in the sponge layer coefficients (if present)
 const volScalarField muSponge
 (
-    volScalarField
+    IOobject
     (
-        IOobject
-        (
-            "muSponge",
-            runTime.constant(),
-            mesh,
-            IOobject::READ_IF_PRESENT
-        ),
+        "muSponge",
+        runTime.constant(),
         mesh,
-        dimensionedScalar("muSponge", dimless, scalar(0))
-       )/runTime.deltaT()
+        IOobject::READ_IF_PRESENT
+    ),
+    mesh,
+    dimensionedScalar("muSponge", dimless/dimTime, scalar(0))
 );
-Info << "Maximum sponge value = " << (max(muSponge)*runTime.deltaT()).value()
-     << endl;
 
+const surfaceScalarField muSpongef
+(
+    "muSpongef",
+    fvc::interpolate(muSponge)*mag(gUnitNormal)
+);

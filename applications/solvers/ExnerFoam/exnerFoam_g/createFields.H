@@ -60,20 +60,6 @@ surfaceScalarField thetaf
     linearInterpolate(theta)
 );
 
-Info << "Reading thetaa\n" << endl;
-const volScalarField thetaa
-(
-    IOobject("thetaa", runTime.constant(), mesh, IOobject::MUST_READ),
-    mesh
-);
-const surfaceScalarField sqrNh
-(
-    "sqrNh",
-    -ghf*mag(gUnitNormal)*mesh.magSf()*fvc::snGrad(thetaa)
-        /linearInterpolate(thetaa)
-);
-const volScalarField ExnerOffset("ExnerOffset", gh/(Cp*thetaa));
-
 #include "thermoUpdate.H"
 
 Info<< "Creating field rho\n" << endl;

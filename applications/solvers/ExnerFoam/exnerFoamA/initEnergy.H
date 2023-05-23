@@ -6,7 +6,7 @@ fileName OFname = Pstream::parRun() ?
 OFstream es(OFname);
 if (Pstream::master())
 {
-    es << "#time   KE       internal potential normalisedEnergy  max w max theta"
+    es << "#time   KE       internal potential normalisedEnergy  max w"
        << endl;
 }
 
@@ -20,7 +20,7 @@ volScalarField KE
 volScalarField internalEnergy
 (
     IOobject("internalEnergy", runTime.timeName(), mesh),
-    rho*theta*Exner*Cv
+    rho*thermo.T()*Cv
 );
 volScalarField potentialEnergy
 (

@@ -10,12 +10,15 @@ fvScalarMatrix thetaEqn
 (
     fvm::ddt(rho, theta)
   + fvm::div(phi, theta)
-  - fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
+  //- fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
 );
 
 if (implicitT)
 {
     thetaEqn.solve();
 }
-theta = thetaEqn.H()/thetaEqn.A();
+else
+{
+    theta = thetaEqn.H()/thetaEqn.A();
+}
 thetaf = fvc::interpolate(theta);

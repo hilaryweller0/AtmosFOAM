@@ -1,6 +1,6 @@
 {
     KE = 0.5*rho*magSqr(U);
-    internalEnergy = rho*theta*Exner*Cv;
+    internalEnergy = rho*thermo.T()*Cv;
     potentialEnergy = -rho*(g & mesh.C());
 
     dimensionedScalar KETot = fvc::domainIntegrate(KE)/Vtot;
@@ -10,7 +10,6 @@
          = (KETot + internalTot + potentialTot - energyInitTot)/energyInitTot;
     
     scalar maxw = max(U.component(vector::Z)).value();
-    scalar maxTheta = max(theta).value();
     
     if (Pstream::master())
     {
@@ -19,7 +18,7 @@
            << ((internalTot-internalInitTot)/energyInitTot).value() << "  "
            << ((potentialTot-potentialInitTot)/energyInitTot).value() << "  "
            << energyDiffNorm.value() << " "
-           << maxw << "  " << maxTheta << endl;
+           << maxw << endl;
     }
 }
 

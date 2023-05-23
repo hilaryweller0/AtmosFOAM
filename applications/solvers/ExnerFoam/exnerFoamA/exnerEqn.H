@@ -3,24 +3,25 @@ surfaceScalarField rhorAUf
     "rhorAUf",
     rhof*
     (
-        fvc::interpolate(rho/UEqn.A())*(1-mag(gUnitNormal))
+        fvc::interpolate(rho/uEqn.A())*(1-mag(gUnitNormal))
       + fvc::interpolate(rho/wEqn.A())*mag(gUnitNormal)
     )
 );
 
+// Exner from eqn of state
+Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
+Exner.oldTime().correctBoundaryConditions();
+volScalarField Psi = rho/(RbyCv*Exner.oldTime());
+
 for (int corr=0; corr<nCorr; corr++)
 {
     // Velocity without pressure gradient or buoyancy
-    U = UEqn.H()/UEqn.A();
+    u = uEqn.H()/uEqn.A();
     w = wEqn.H()/wEqn.A();
+    U = u*idir + w*kdir;
     
     // Flux without pressure gradient
-    phi = fvc::flux(rho*(U - w*ghat)) + rhorAUf*gSf;
-
-    // Exner from eqn of state
-    Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
-    Exner.oldTime().correctBoundaryConditions();
-    volScalarField Psi = rho/(RbyCv*Exner.oldTime());
+    phi = fvc::flux(rho*U) + rhorAUf*gSf;
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
@@ -44,19 +45,17 @@ for (int corr=0; corr<nCorr; corr++)
 
         if (nonOrth == nNonOrthCorr)
         {
-            phi = phi + ExnerEqn.flux();
+            phi += ExnerEqn.flux();
 
             volVectorField Urhs = rho*fvc::reconstruct
             (
-                gSf
-              - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
             );
-            volScalarField wrhs = - (Urhs & ghat);
-            Urhs += wrhs*ghat;
-            
-            U += Urhs/UEqn.A();
-            w += wrhs/wEqn.A();
+
+            u += (Urhs & idir)/uEqn.A();
+            w += (Urhs & kdir)/wEqn.A();
         }
     }
 }
+U = u*idir + w*kdir;
 

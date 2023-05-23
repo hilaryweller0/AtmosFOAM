@@ -1,11 +1,12 @@
 // Implicit solution of the Momentum equation for the turbulence
 
-fvVectorMatrix UEqn
+// Separate u and w equations
+fvScalarMatrix uEqn
 (
-    fvm::ddt(rho, U)
-  + fvm::div(phi, U)
-  + fvm::laplacian(rho*turbulence->nuEff(), U)
-  + 2*rho*(Omega^(U-Ug))
+    fvm::ddt(rho, u)
+  + fvm::div(phi, u)
+  //- fvm::laplacian(rho*turbulence->nuEff(), u)
+  //+ 2*rho*(Omega^(U-Ug))
 );
 
 // w equation
@@ -13,18 +14,31 @@ fvScalarMatrix wEqn(fvm::Sp(rho*muSponge, w));
 
 if (SIgravityWaves || hydrostatic)
 {
-    dimensionedScalar adt = ocAlpha*runTime.deltaT();
+    surfaceScalarField gradnTheta(fvc::snGrad(theta));
 
-    surfaceScalarField Gf = -adt*rhof*Cp*fvc::snGrad(theta)*fvc::snGrad(Exner);
+    surfaceScalarField Ndt
+    (
+        Foam::sqrt
+        (
+            max(-sqr(runTime.deltaT())*gSfhat*gradnTheta/thetaf, VSMALL)
+        )
+    );
+    surfaceScalarField wf(phi/(rhof*mesh.magSf()));
 
-    // Apply this only where on vertical pointing faces where G>0
-    surfaceScalarField applySIg = mag(gUnitNormal)*max(sign(Gf), scalar(0));
+    surfaceScalarField adt = runTime.deltaT()*max(scalar(0), 1-1/Ndt);
     
-    thetaf += applySIg*adt*phi*fvc::snGrad(theta)/(rhof*mesh.magSf());
-
-    volScalarField G = fvc::average(Gf);
+    // Face calculations
+    volScalarField G("G", fvc::average(-adt*rhof*Cp*gradnTheta*fvc::snGrad(Exner)));
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
-    
+    thetaf += min(adt*wf, 1/mesh.deltaCoeffs())*gradnTheta;
+
+    /*// Cell center calculations
+    volScalarField dThetadz("dThetadz", fvc::grad(theta) & kdir);
+    volScalarField G(-fvc::average(adt)*rho*Cp*dThetadz*(fvc::grad(Exner) & kdir));
+    G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
+    thetaf += adt*fvc::interpolate(w*dThetadz);*/
+
+    // Central matrix coefficient    
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 }
 
@@ -34,7 +48,7 @@ if (!hydrostatic)
     (
         fvm::ddt(rho, w)
       + fvm::div(phi, w)
-      - fvm::laplacian(rho*turbulence->nuEff(), w)
+      //- fvm::laplacian(rho*turbulence->nuEff(), w)
     );
 }
 
@@ -42,13 +56,10 @@ if (implicitU)
 {
     volVectorField Urhs = rho*fvc::reconstruct
     (
-        gSf
-      - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+        gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
     );
-    volScalarField wrhs = - (Urhs & ghat);
-    Urhs += wrhs*ghat;
 
-    solve(UEqn == Urhs);
-    solve(wEqn == wrhs);
+    solve(uEqn == (Urhs & idir));
+    solve(wEqn == (Urhs & kdir));
 }
 

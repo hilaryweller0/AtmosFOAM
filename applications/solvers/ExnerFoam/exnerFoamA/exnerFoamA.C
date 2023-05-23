@@ -28,6 +28,7 @@ Application
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
+    Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
     Separate momentum equation for w
@@ -60,7 +61,6 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     #include "createFields.H"
     //#include "initContinuityErrs.H"
-    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     
@@ -88,31 +88,17 @@ int main(int argc, char *argv[])
                             //  and update derived fields as required
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-/*
-    // Testing
-    //thetaf.boundaryFieldRef()[2] = Tref.value()/Exner.boundaryField()[2];
-    //Info << "theta0 = " << Tref.value()/Exner.boundaryField()[2][0] << endl;
+
+/*    // Testing
     volVectorField Urhs
     (
         "Urhs",
-        rho*fvc::reconstruct
-        (
-            gSf
-          - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
-        )
+        rho*fvc::reconstruct(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf())
+        //g - Cp*theta*fvc::grad(Exner)
     );
     Urhs.write();
-    volVectorField gradExner
-    (
-        "gradExner",
-        fvc::reconstruct(gSf - Cp*Tref*fvc::snGrad(Exner)*mesh.magSf())
-    );
-    gradExner.write();
-    thetaf.write();
     FatalErrorIn("exnerFoamA") << exit(FatalError);
 */
-
-
     Info<< "\nStarting time loop\n" << endl;
 
     while (runTime.loop())
@@ -121,7 +107,7 @@ int main(int argc, char *argv[])
 
         #include "compressibleCourantNo.H"
 
-        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
             #include "UEqn.H"
@@ -131,33 +117,12 @@ int main(int argc, char *argv[])
         #include "rhoThetaEqn.H"
         //#include "compressibleContinuityErrs.H"
 
-        // Update the pressure and temperature based on the new Exner
-        thermo.p() = pRef*pow(Exner, 1/kappa);
-        thermo.T() = theta*Exner;
-        thermo.he() == thermo.he(thermo.p(),thermo.T());
-        thermo.correct();
-
-        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
-        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
-
-        // Add vertical to horizontal velocity
-        U += -(w + (U & ghat))*ghat;
-
+        #include "thermoUpdate.H"
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
-        turbulence->correct(); 
-
-        if (runTime.writeTime())
-        {
-            runTime.write();
-            surfaceVectorField Uf("Uf", linearInterpolate(U));
-            Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
-            Uf.write();
-        }
-
-        // Remove vertical from horizontal velocity
-        U -= (U & ghat)*ghat;
+        turbulence->correct();
+        runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

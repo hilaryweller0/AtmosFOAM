@@ -28,9 +28,9 @@ Application
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
+    Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    NOT Separate momentum equation for w. NOT
     Removes reference profile.
 
 \*---------------------------------------------------------------------------*/
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch implicitU(mesh.schemes().lookup("implicitU"));
     const Switch implicitT(mesh.schemes().lookup("implicitT"));
-    //const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -83,7 +83,6 @@ int main(int argc, char *argv[])
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
-    const dimensionedScalar adt = ocCoeff*runTime.deltaT();
     
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
@@ -98,7 +97,7 @@ int main(int argc, char *argv[])
 
         #include "compressibleCourantNo.H"
 
-        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
             #include "rhoThetaEqn.H"
             #include "UEqn.H"
@@ -109,13 +108,10 @@ int main(int argc, char *argv[])
         //#include "compressibleContinuityErrs.H"
 
         #include "thermoUpdate.H"
-        // Add vertical to horizontal velocity
-        //U += -(w + (U & ghat))*ghat;
         #include "energy.H"
+        
         //- Solve the turbulence equations and correct the turbulence viscosity
         turbulence->correct();
-        // Remove vertical from horizontal velocity
-        //U -= (U & ghat)*ghat;
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

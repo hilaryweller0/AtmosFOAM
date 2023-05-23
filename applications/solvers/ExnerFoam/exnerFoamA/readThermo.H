@@ -34,7 +34,8 @@ const dimensionedScalar speedSound("speedSound", sqrt(gamma*R*Tref));
 const dimensionedScalar RbyCv("RbyCv", R/Cv);
 
 Info << "Cp = " << Cp.value() << " speedSound = " << speedSound << " kappa = "
-     << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv << endl;
+     << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv 
+     << " RbyCv = " << RbyCv << endl;
 
 Info << "Maximum acoustic Courant number = "
      << max(mesh.deltaCoeffs())*runTime.deltaT()*speedSound << endl;
