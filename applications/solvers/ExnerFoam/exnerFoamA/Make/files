@@ -1,3 +1,4 @@
 exnerFoamA.C
+correctedBCSnGrads.C
 
 EXE = $(FOAM_USER_APPBIN)/exnerFoamA

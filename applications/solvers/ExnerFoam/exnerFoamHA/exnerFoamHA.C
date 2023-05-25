@@ -48,6 +48,7 @@ Description
 #include "OFstream.H"
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
+#include "HodgeOps.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -56,13 +57,15 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    //#include "createSponge.H"
     #include "readEnvironmentalProperties.H"
+    HodgeOps Hodge(mesh);
+    surfaceScalarField gd("gd", g & Hodge.delta());
     #include "readThermo.H"
     #include "createFields.H"
     //#include "initContinuityErrs.H"
     #include "initEnergy.H"
     #include "energy.H"
+    
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch implicitU(mesh.schemes().lookup("implicitU"));
@@ -89,7 +92,7 @@ int main(int argc, char *argv[])
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    /*// Testing
+    // Testing
     volVectorField Urhs
     (
         "Urhs",
@@ -99,22 +102,50 @@ int main(int argc, char *argv[])
     Urhs.write();
     volVectorField gradExner("gradExner", fvc::grad(Exner));
     gradExner.write();
+    
     dimensionedScalar H("H", dimLength, 10e3);
     volScalarField decay
     (
         "decay",
-        exp(-mesh.C().component(2)/H)
+        //exp(-mesh.C().component(2)/H)
+        sqr((H - mesh.C().component(2))/H)
     );
     decay.write();
-    volVectorField gradDecay1("gradDecay1", -H*fvc::grad(decay));
+    
+    surfaceScalarField HsnGradA
+    (
+        "HsnGradA",
+        (2*mesh.Cf().component(2)/H - 2)*(kdir & mesh.Sf())/mesh.magSf()
+    );
+    surfaceScalarField HsnGrad("HsnGrad", H*fvc::snGrad(decay) - HsnGradA);
+    HsnGrad.write();
+    
+    volVectorField gradDecayA("gradDecayA", 0*mesh.C()/H);
+    gradDecayA.replace(2, 2*mesh.C().component(2)/H - 2);
+    gradDecayA.write();
+    
+    volVectorField gradDecay1("gradDecay1", H*fvc::grad(decay)-gradDecayA);
     gradDecay1.write();
+    
     volVectorField gradDecay2
     (
         "gradDecay2",
-        -H*fvc::reconstruct(fvc::snGrad(decay)*mesh.magSf())
+        H*fvc::reconstruct(fvc::snGrad(decay)*mesh.magSf())-gradDecayA
     );
     gradDecay2.write();
-    //FatalErrorIn("exnerFoamA") << exit(FatalError);*/
+    
+    volVectorField gradDecay3
+    (
+        "gradDecay3",
+        H*Hodge.reconstructd
+        (
+            fvc::snGrad(decay, "uncorr")*Hodge.magd()
+        )
+        -gradDecayA
+    );
+    gradDecay3.write();
+
+    //FatalErrorIn("exnerFoamA") << exit(FatalError);
 
     Info<< "\nStarting time loop\n" << endl;
 
