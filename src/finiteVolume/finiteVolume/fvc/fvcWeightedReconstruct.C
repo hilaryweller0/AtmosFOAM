@@ -2,16 +2,16 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2009 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 2011 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
     This file is part of OpenFOAM.
 
-    OpenFOAM is free software; you can redistribute it and/or modify it
-    under the terms of the GNU General Public License as published by the
-    Free Software Foundation; either version 2 of the License, or (at your
-    option) any later version.
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
 
     OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
     ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
@@ -19,16 +19,14 @@ License
     for more details.
 
     You should have received a copy of the GNU General Public License
-    along with OpenFOAM; if not, write to the Free Software Foundation,
-    Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvcLinearFaceReconstruct.H"
+#include "fvcWeightedReconstruct.H"
 #include "fvMesh.H"
 #include "zeroGradientFvPatchFields.H"
-#include "centredCFCFaceToFaceStencilObject.H"
-#include "fvcLinearFaceReconstructData.H"
+#include "weightedReconstructData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -47,28 +45,42 @@ tmp
 <
     GeometricField
     <
-        typename outerProduct<vector,Type>::type, fvsPatchField, surfaceMesh
+        typename outerProduct<vector,Type>::type, fvPatchField, volMesh
     >
 >
-linearFaceReconstruct
+weightedReconstruct
 (
-    const GeometricField<Type, fvsPatchField, surfaceMesh>& ssf
+    const GeometricField<Type, fvsPatchField, surfaceMesh>& ssf,
+    const scalar boundaryWeight
 )
 {
     typedef typename outerProduct<vector, Type>::type GradType;
 
     const fvMesh& mesh = ssf.mesh();
 
-    const centredCFCFaceToFaceStencilObject& stencil
-        = centredCFCFaceToFaceStencilObject::New(mesh);
-
-    const fvcLinearFaceReconstructData& fit = fvcLinearFaceReconstructData::New
+    const weightedReconstructData& data = weightedReconstructData::New
     (
-        mesh, stencil
+        mesh, boundaryWeight
     );
 
-    tmp<GeometricField<GradType, fvsPatchField, surfaceMesh> > treconField
-        = stencil.weightedSum(ssf, fit.coeffs());
+    tmp<GeometricField<GradType, fvPatchField, volMesh> > treconField
+    (
+        new GeometricField<GradType, fvPatchField, volMesh>
+        (
+            IOobject
+            (
+                "volIntegrate("+ssf.name()+')',
+                ssf.instance(),
+                mesh,
+                IOobject::NO_READ,
+                IOobject::NO_WRITE
+            ),
+            data.invTensor() & surfaceSum(data.faceWeights()*ssf),
+            extrapolatedCalculatedFvPatchField<GradType>::typeName
+        )
+    );
+
+    treconField.ref().correctBoundaryConditions();
 
     return treconField;
 }
@@ -79,21 +91,22 @@ tmp
 <
     GeometricField
     <
-        typename outerProduct<vector, Type>::type, fvsPatchField, surfaceMesh
+        typename outerProduct<vector, Type>::type, fvPatchField, volMesh
     >
 >
-linearFaceReconstruct
+weightedReconstruct
 (
-    const tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >& tssf
+    const tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >& tssf,
+    const scalar boundaryWeight
 )
 {
     typedef typename outerProduct<vector, Type>::type GradType;
-    tmp<GeometricField<GradType, fvsPatchField, surfaceMesh> > tsf
+    tmp<GeometricField<GradType, fvPatchField, volMesh> > tvf
     (
-        fvc::linearFaceReconstruct(tssf())
+        fvc::weightedReconstruct(tssf()), boundaryWeight
     );
     tssf.clear();
-    return tsf;
+    return tvf;
 }
 
 

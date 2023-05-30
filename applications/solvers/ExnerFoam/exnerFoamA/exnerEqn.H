@@ -47,9 +47,9 @@ for (int corr=0; corr<nCorr; corr++)
         {
             phi += ExnerEqn.flux();
 
-            volVectorField Urhs = rho*fvc::reconstruct
+            volVectorField Urhs = rho*fvc::weightedReconstruct
             (
-                gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+                gSf + ExnerEqn.flux()/rhorAUf, 0.25
             );
 
             u += (Urhs & idir)/uEqn.A();

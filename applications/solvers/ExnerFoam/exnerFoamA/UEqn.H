@@ -54,9 +54,9 @@ if (!hydrostatic)
 
 if (implicitU)
 {
-    volVectorField Urhs = rho*fvc::reconstruct
+    volVectorField Urhs = rho*fvc::weightedReconstruct
     (
-        gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()
+        gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf(), 0.25
     );
 
     solve(uEqn == (Urhs & idir));

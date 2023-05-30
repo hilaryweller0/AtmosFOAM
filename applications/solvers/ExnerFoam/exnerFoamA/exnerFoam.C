@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamRef
+    exnerFoamA
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
@@ -31,7 +31,7 @@ Description
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Removes reference profile.
+    Separate momentum equation for w
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,6 +48,7 @@ Description
 #include "OFstream.H"
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
+#include "fvcWeightedReconstruct.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

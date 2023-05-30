@@ -88,7 +88,7 @@ volReconstruct
         )
     );
 
-    treconField().correctBoundaryConditions();
+    treconField.ref().correctBoundaryConditions();
 
     return treconField;
 }

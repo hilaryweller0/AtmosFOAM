@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamA
+    exnerFoamRef
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
@@ -31,7 +31,7 @@ Description
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Separate momentum equation for w
+    Removes reference profile.
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,6 +48,7 @@ Description
 #include "OFstream.H"
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
+#include "fvcWeightedReconstruct.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -88,33 +89,6 @@ int main(int argc, char *argv[])
                             //  and update derived fields as required
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    /*// Testing
-    volVectorField Urhs
-    (
-        "Urhs",
-        rho*fvc::reconstruct(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf())
-        //g - Cp*theta*fvc::grad(Exner)
-    );
-    Urhs.write();
-    volVectorField gradExner("gradExner", fvc::grad(Exner));
-    gradExner.write();
-    dimensionedScalar H("H", dimLength, 10e3);
-    volScalarField decay
-    (
-        "decay",
-        exp(-mesh.C().component(2)/H)
-    );
-    decay.write();
-    volVectorField gradDecay1("gradDecay1", -H*fvc::grad(decay));
-    gradDecay1.write();
-    volVectorField gradDecay2
-    (
-        "gradDecay2",
-        -H*fvc::reconstruct(fvc::snGrad(decay)*mesh.magSf())
-    );
-    gradDecay2.write();
-    //FatalErrorIn("exnerFoamA") << exit(FatalError);*/
 
     Info<< "\nStarting time loop\n" << endl;
 

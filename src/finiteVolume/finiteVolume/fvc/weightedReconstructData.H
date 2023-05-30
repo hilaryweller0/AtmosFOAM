@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     |
-    \\  /    A nd           | Copyright (C) 1991-2009 OpenCFD Ltd.
+    \\  /    A nd           | Copyright (C) 1991-2007 OpenCFD Ltd.
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,22 +22,25 @@ License
     along with OpenFOAM; if not, write to the Free Software Foundation,
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-InNamespace
-    Foam::fvc
+Class
+    Foam::weightedReconstructData
 
 Description
-    Reconstruct surfaceVectorField from face flux field using a linear fit.
+    Data for weighted reconstructing cell vectors from face fluxes with
+    specified weight for boundaries
 
 SourceFiles
-    fvcLinearFaceReconstruct.C
+    weightedReconstructData.C
 
 \*---------------------------------------------------------------------------*/
 
+#ifndef weightedReconstructData_H
+#define weightedReconstructData_H
 
-#ifndef fvcLinearFaceReconstruct_H
-#define fvcLinearFaceReconstruct_H
-
-#include "surfaceFieldsFwd.H"
+#include "MeshObject.H"
+#include "fvMesh.H"
+#include "surfaceFields.H"
+#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -45,31 +48,59 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                     Namespace fvc functions Declaration
+                    Class weightedReconstructData Declaration
 \*---------------------------------------------------------------------------*/
 
-namespace fvc
+class weightedReconstructData
+:
+    public MeshObject<fvMesh, MoveableMeshObject, weightedReconstructData>
 {
-    template<class Type>
-    tmp
-    <
-        GeometricField
-        <typename outerProduct<vector, Type>::type, fvsPatchField, surfaceMesh>
-    > linearFaceReconstruct
-    (
-        const GeometricField<Type, fvsPatchField, surfaceMesh>&
-    );
+    // Private data
 
-    template<class Type>
-    tmp
-    <
-        GeometricField
-        <typename outerProduct<vector, Type>::type, fvsPatchField, surfaceMesh>
-    > linearFaceReconstruct
-    (
-        const tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >&
-    );
-}
+        //- The boundary weight
+        const scalar boundaryWeight_;
+
+        //- The weights for each face
+        surfaceVectorField faceWeights_;
+
+        //- The inverted tensor to convert from face flux to cell vectors
+        volTensorField invTensor_;
+
+    // Private Member Functions
+
+        //- Re-calculate the data
+        void calcData();
+
+public:
+
+    // Declare name of the class and its debug switch
+    TypeName("weightedReconstructData");
+
+    // Constructors
+
+        //- Construct from components
+        explicit weightedReconstructData
+        (
+            const fvMesh& mesh,
+            const scalar boundaryWeight__
+        );
+
+
+    //- Destructor
+    virtual ~weightedReconstructData();
+
+
+    // Member functions
+
+        //- Return the weights for each face (distance to weightPower)
+        const surfaceVectorField& faceWeights() const { return faceWeights_;}
+
+        //- Return he inverted tensor to convert from face flux to cell vectors
+        const volTensorField& invTensor() const { return invTensor_;}
+
+        //- Recalculate the data when the mesh moves
+        bool movePoints();
+};
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -79,7 +110,7 @@ namespace fvc
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-#   include "fvcLinearFaceReconstruct.C"
+#   include "weightedReconstructData.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
