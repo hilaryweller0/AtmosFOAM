@@ -217,7 +217,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::QUICKupwind<Type>::blendingFactor() co
                     mesh.time().deltaT()*mesh.deltaCoeffs()
                    *mag(tUflux)/mesh.magSf()
                   - Co1_
-                )/(Co2_ - Co1_),
+                )/max(Co2_ - Co1_, SMALL),
                 scalar(1)
             ),
             scalar(0)

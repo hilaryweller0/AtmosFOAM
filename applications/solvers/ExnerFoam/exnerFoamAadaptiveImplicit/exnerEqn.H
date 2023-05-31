@@ -19,9 +19,9 @@ for (int corr=0; corr<nCorr; corr++)
     u = uEqn.H()/uEqn.A();
     w = wEqn.H()/wEqn.A();
     U = u*idir + w*kdir;
-
+    
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) + rhorAUf*gSf;
+    phi = fvc::flux(rho*U) + ocAlpha*rhorAUf*gSf;
     
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
@@ -29,9 +29,9 @@ for (int corr=0; corr<nCorr; corr++)
         (
             EulerDdt.fvmDdt(Psi, Exner)
           + EulerDdt.fvcDdt(rho)
-          + (1-ocAlpha)*fvc::div(phi.oldTime())
-          + ocAlpha*fvc::div(phi)
-          - ocAlpha*fvm::laplacian(rhorAUf*Cp*thetaf, Exner)
+          + fvc::div(phiOld)
+          + fvc::div(offCentre*phi)
+          - fvm::laplacian(offCentre*ocAlpha*rhorAUf*Cp*thetaf, Exner)
         );
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
@@ -45,15 +45,15 @@ for (int corr=0; corr<nCorr; corr++)
 
         if (nonOrth == nNonOrthCorr && ocAlpha > SMALL)
         {
-            phi += ExnerEqn.flux()/ocAlpha;
+            phi += ExnerEqn.flux()/offCentre;
 
-            volVectorField Urhs = rho*fvc::weightedReconstruct
+            Urhs = rho*fvc::weightedReconstruct
             (
-                gSf + ExnerEqn.flux()/(ocAlpha*rhorAUf), 0.25
+                gSf + ExnerEqn.flux()/(offCentre*ocAlpha*rhorAUf), 0.25
             );
 
-            u += (Urhs & idir)/uEqn.A();
-            w += (Urhs & kdir)/wEqn.A();
+            u += ocAlpha*(Urhs & idir)/uEqn.A();
+            w += ocAlpha*(Urhs & kdir)/wEqn.A();
         }
     }
 }
