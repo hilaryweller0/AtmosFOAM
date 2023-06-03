@@ -9,11 +9,9 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-if (thermoDynamic)
-{
-    Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
-    Exner.oldTime().correctBoundaryConditions();
-}
+Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
+Exner.oldTime().correctBoundaryConditions();
+volScalarField Psi = rho/(RbyCv*Exner.oldTime());
 
 for (int corr=0; corr<nCorr; corr++)
 {
@@ -29,19 +27,12 @@ for (int corr=0; corr<nCorr; corr++)
     {
         fvScalarMatrix ExnerEqn
         (
-            fvc::div(phiOld)
+            EulerDdt.fvmDdt(Psi, Exner)
+          + EulerDdt.fvcDdt(rho)
+          + fvc::div(phiOld)
           + fvc::div(offCentre*phi)
           - fvm::laplacian(offCentre*ocAlpha*rhorAUf*Cp*thetaf, Exner)
         );
-        if (thermoDynamic)
-        {
-            ExnerEqn += fvScalarMatrix
-            (
-                EulerDdt.fvmDdt(rho/(RbyCv*Exner.oldTime()), Exner)
-              + EulerDdt.fvcDdt(rho)
-            );
-        }
-        else ExnerEqn.relax();
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
         {
@@ -66,6 +57,5 @@ for (int corr=0; corr<nCorr; corr++)
         }
     }
 }
-Urhs.relax(0.5);
 U = u*idir + w*kdir;
 

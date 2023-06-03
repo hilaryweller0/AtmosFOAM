@@ -1,16 +1,20 @@
 // update density according to the continuity equation
 solve
 (
-    fvm::ddt(rho) + fvc::div(phi)
+    EulerDdt.fvmDdt(rho)
+  + fvc::div(phiOld)
+  + fvc::div(phiNew)
 );
 rhof = fvc::interpolate(rho);
 
 // theta equation
 fvScalarMatrix thetaEqn
 (
-    fvm::ddt(rho, thetap)
-  + fvm::div(phi, thetap)
-  + rho*w*(fvc::grad(thetaa) & kdir)
+    EulerDdt.fvmDdt(rho, thetap)
+  + fvm::div(phiNew, thetap, "div(phi,thetap)")
+  + fvc::div(phiOld, thetap.oldTime(), "div(phi,thetap)")
+  + (1-ocAlpha)*rho.oldTime()*w.oldTime()*dThetaadz
+  + ocAlpha*rho*w*dThetaadz
   //- fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
 );
 

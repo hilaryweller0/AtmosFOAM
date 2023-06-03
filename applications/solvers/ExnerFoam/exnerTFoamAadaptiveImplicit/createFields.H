@@ -11,6 +11,7 @@ volVectorField U
     ),
     mesh
 );
+U.oldTime();
 
 volScalarField u
 (
@@ -18,41 +19,21 @@ volScalarField u
     mesh
 );
 u = U & idir;
+u.oldTime();
 volScalarField w
 (
     IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
     mesh
 );
 w = U & kdir;
+w.oldTime();
 
-Info<< "Reading perturbation Exner, Exnerp\n" << endl;
-volScalarField Exnerp
+Info<< "Reading Exner\n" << endl;
+volScalarField Exner
 (
     IOobject
     (
-        "Exnerp",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-Exnerp.oldTime();
-
-Info << "Reading ambient Exner, Exnera\n" << endl;
-const volScalarField Exnera
-(
-    IOobject("Exnera", runTime.constant(), mesh, IOobject::MUST_READ),
-    mesh
-);
-
-Info<< "Reading theta perturbations, thetap\n" << endl;
-volScalarField thetap
-(
-    IOobject
-    (
-        "thetap",
+        "Exner",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -61,28 +42,28 @@ volScalarField thetap
     mesh
 );
 
-Info << "Reading ambient theta, thetaa\n" << endl;
-const volScalarField thetaa
+Info<< "Reading T\n" << endl;
+volScalarField T
 (
-    IOobject("thetaa", runTime.constant(), mesh, IOobject::MUST_READ),
+    IOobject
+    (
+        "T",
+        runTime.timeName(),
+        mesh,
+        IOobject::MUST_READ,
+        IOobject::AUTO_WRITE
+    ),
     mesh
 );
-
-// thetaa and thetap on the face
-const surfaceScalarField thetaaf("thetaaf", linearInterpolate(thetaa));
-surfaceScalarField thetapf
+volScalarField theta("theta", T/Exner);
+// Old part of theta change (and theta on the face)
+surfaceScalarField thetaf
 (
-    IOobject("thetapf", runTime.timeName(), mesh),
-    linearInterpolate(thetap)
+    IOobject("thetaf", runTime.timeName(), mesh),
+    linearInterpolate(theta)
 );
-surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
-volScalarField theta("theta", thetaa + thetap);
-const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaa) & kdir);
 
-if (thermoDynamic)
-{
-    #include "thermoUpdate.H"
-}
+#include "thermoUpdate.H"
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
@@ -162,14 +143,13 @@ surfaceScalarField phiNew("phiNew", offCentre*phi);
 volVectorField Urhs
 (
     IOobject("Urhs", runTime.timeName(), mesh),
-    -rho*fvc::weightedReconstruct
+    rho*fvc::weightedReconstruct
     (
-        gSf*thetapf/thetaaf + Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf(), 1
+        gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf(), 0.25
     ),
+    //mesh,
+    //dimensionedVector(dimensionSet(1,-2,-2,0,0), vector::zero),
     U.boundaryField().types()
 );
 Urhs.oldTime();
-Urhs.storePrevIter();
-thetaf.storePrevIter();
-theta.storePrevIter();
 

@@ -9,6 +9,5 @@ offCentre = max
 phiOld = (1-offCentre)*phi.oldTime();
 phiNew = offCentre*phi;
 
-Info << "ocAlpha = " << ocAlpha << " offCentre-ocAlpha goes from "
-     << max(offCentre).value()-ocAlpha
-     << " to " << min(offCentre).value()-ocAlpha << endl;
+Info << "offCentre-ocAlpha goes from " << max(offCentre).value()-ocAlpha 
+    << " to " << min(offCentre).value()-ocAlpha << endl;

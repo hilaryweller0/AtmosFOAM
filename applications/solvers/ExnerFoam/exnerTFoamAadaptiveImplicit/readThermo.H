@@ -5,10 +5,7 @@ autoPtr<fluidThermo> pThermo
     fluidThermo::New(mesh)
 );
 fluidThermo& thermo = pThermo();
-
-const Switch thermoDynamic(thermo.properties().lookup("thermoDynamic"));
-
-if (thermoDynamic) { thermo.validate(args.executable(), "h", "e"); }
+thermo.validate(args.executable(), "h", "e");
 
 // Use of Exner needs reference T and p and a single value of R, Cp and Cv
 const dimensionedScalar Tref

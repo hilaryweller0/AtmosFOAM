@@ -104,15 +104,24 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            #include "rhoThetaEqn.H"
+            if (thermoDynamic)
+            {
+                #include "rhoThetaEqn.H"
+            }
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
             #include "offCentreAdvection.H"
-            #include "thermoUpdate.H"
-            #include "energy.H"
+            if (thermoDynamic)
+            {
+                #include "thermoUpdate.H"
+            }
         }
-        #include "rhoThetaEqn.H"
+        if (thermoDynamic)
+        {
+            #include "rhoThetaEqn.H"
+        }
+
         Urhs = rho*fvc::weightedReconstruct
         (
             gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf(), 0.25
@@ -120,7 +129,10 @@ int main(int argc, char *argv[])
 
         //#include "compressibleContinuityErrs.H"
 
-        #include "thermoUpdate.H"
+        if (thermoDynamic)
+        {
+            #include "thermoUpdate.H"
+        }
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity

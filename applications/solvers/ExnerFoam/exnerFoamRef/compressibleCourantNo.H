@@ -30,6 +30,8 @@ Description
 \*---------------------------------------------------------------------------*/
 
 scalar CoNum = 0.0;
+scalar CoH = 0;
+scalar CoV = 0;
 scalar meanCoNum = 0.0;
 scalar maxNdt = 0.0;
 
@@ -46,6 +48,14 @@ if (mesh.nInternalFaces())
     meanCoNum =
         0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
 
+    sumPhi = fvc::surfaceSum(mag(phi*gUnitNormal))().internalField()
+          / rho.internalField();
+    CoV = 0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+
+    sumPhi = fvc::surfaceSum(mag(phi*(1-mag(gUnitNormal))))().internalField()
+          / rho.internalField();
+    CoH = 0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+
     volScalarField Ndt
     (
         "Ndt",
@@ -59,6 +69,7 @@ if (mesh.nInternalFaces())
 }
 
 Info<< "Courant Number mean: " << meanCoNum
-    << " max: " << CoNum << " max Ndt = " << maxNdt << endl;
+    << " max: " << CoNum << " horizontal " << CoH << " vertical " << CoV
+    << " max Ndt = " << maxNdt << endl;
 
 // ************************************************************************* //

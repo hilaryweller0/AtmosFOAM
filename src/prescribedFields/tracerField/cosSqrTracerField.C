@@ -14,7 +14,7 @@ cosSqrTracerField::cosSqrTracerField
     width_(readScalar(dict.lookup("width"))),
     centre_(dict.lookup("centre")),
     maxTracer_(readScalar(dict.lookup("maxTracer"))),
-    backgroundTracer_(dict.lookupOrDefault<scalar>("backgroundTracer", 0))
+    backgroundTracer_(readScalar(dict.lookup("backgroundTracer")))
 {}
 
 scalar cosSqrTracerField::tracerAt(const point& p, const Time& t) const

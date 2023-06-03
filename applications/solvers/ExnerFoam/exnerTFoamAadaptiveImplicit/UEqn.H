@@ -18,7 +18,7 @@ fvScalarMatrix wEqn
   - (1-ocAlpha)*(Urhs.oldTime() & kdir)
 );
 
-if (thermoDynamic && (SIgravityWaves || hydrostatic))
+if (SIgravityWaves || hydrostatic)
 {
     surfaceScalarField gradnTheta(fvc::snGrad(theta));
 
@@ -34,34 +34,16 @@ if (thermoDynamic && (SIgravityWaves || hydrostatic))
     surfaceScalarField adt = runTime.deltaT()*max(ocAlpha, 1-1/Ndt);
     
     // Face calculations
-    volScalarField G
-    (
-        "G",
-        fvc::average
-        (
-            -adt*rhof*gradnTheta*
-            (
-                Cp*fvc::snGrad(Exnerp) + gSf/(mesh.magSf()*thetaaf)
-            )
-        )
-    );
+    volScalarField G("G", fvc::average(-adt*rhof*Cp*gradnTheta*fvc::snGrad(Exner)));
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
-    thetapf += min(adt*wf, 1/mesh.deltaCoeffs())*gradnTheta;
+    thetaf += min(adt*wf, 1/mesh.deltaCoeffs())*gradnTheta;
 
     /*// Cell center calculations
     volScalarField dThetadz("dThetadz", fvc::grad(theta) & kdir);
-
-    volScalarField G
-    (
-        -fvc::average(adt)*rho*dThetadz*
-        (
-            (g&kdir)/thetaa + (Cp*fvc::grad(Exnerp) & kdir)
-        )
-    );
+    volScalarField G(-fvc::average(adt)*rho*Cp*dThetadz*(fvc::grad(Exner) & kdir));
     G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
-    thetapf += adt*fvc::interpolate(w*dThetadz);*/
+    thetaf += adt*fvc::interpolate(w*dThetadz);*/
 
-    thetaf = thetapf + thetaaf;
     // Central matrix coefficient    
     wEqn += fvScalarMatrix(fvm::Sp(ocCoeff*G, w));
 }

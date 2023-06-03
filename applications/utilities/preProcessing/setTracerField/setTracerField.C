@@ -30,6 +30,11 @@ int main(int argc, char *argv[])
         "tracerName",
         "specify a non-default tracer name"
     );
+    Foam::argList::addBoolOption
+    (
+        "increment",
+        "add the prescribed field as an increment to the existing field"
+    );
     timeSelector::addOptions();
 
     #include "setRootCase.H"
@@ -130,7 +135,16 @@ int main(int argc, char *argv[])
         runTime.setTime(timeDirs[timeI], timeI);
         Info << "writing " << tracerName << " for time " << runTime.timeName()
              << endl;
-        tracer->applyTo(T);
+        if (args.optionFound("increment"))
+        {
+            T.oldTime();
+            tracer->applyTo(T);
+            T == T + T.oldTime();
+        }
+        else
+        {
+            tracer->applyTo(T);
+        }
         T.write();
 
         Info << "writing " << tracerName << "f for time "

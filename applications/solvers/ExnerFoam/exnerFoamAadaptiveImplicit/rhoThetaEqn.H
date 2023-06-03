@@ -14,6 +14,14 @@ fvScalarMatrix thetaEqn
   + fvm::div(phiNew, theta, "div(phi,theta)")
   + fvc::div(phiOld, theta.oldTime(), "div(phi,theta)")
   //- fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
+
+    // Term to compensate energy for numerical diffusion of theta
+  /*- 0.5/Exner*fvc::laplacian
+    (
+        mag(phi)*fvc::interpolate(theta, "diffusionThetaCorr")
+                /(mesh.deltaCoeffs()*mesh.magSf()),
+        Exner
+    )*/
 );
 
 if (implicitT)

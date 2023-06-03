@@ -17,7 +17,8 @@ dimensionedScalar magg
 (
     max(mag(g), dimensionedScalar("", dimensionSet(0,1,-2,0,0), SMALL))
 );
-dimensionedVector ghat = g/magg;
+dimensionedVector ghat = mag(g).value() < SMALL ?
+    dimensionedVector("ghat", dimless, vector(0,0,1)): g/magg;
 dimensionedVector Omega(envProperties.lookup("Omega"));
 const surfaceScalarField gSf("gSf", g & mesh.Sf());
 const surfaceScalarField gSfhat("gSfhat", g & mesh.Sf()/mesh.magSf());

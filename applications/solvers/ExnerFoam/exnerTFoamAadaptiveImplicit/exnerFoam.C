@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamRef
+    exnerFoamA
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
@@ -31,7 +31,6 @@ Description
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Removes reference profile.
     Separate momentum equation for w.
     Time-stepping is CN with off-centering alpha which depends on Courant
     number for advection.
@@ -105,37 +104,23 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (thermoDynamic)
-            {
-                #include "rhoThetaEqn.H"
-            }
+            #include "rhoTEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
             #include "offCentreAdvection.H"
-            if (thermoDynamic)
-            {
-                #include "thermoUpdate.H"
-            }
+            #include "thermoUpdate.H"
+            #include "energy.H"
         }
-        if (thermoDynamic)
-        {
-            #include "rhoThetaEqn.H"
-        }
-
-        Urhs = -rho*fvc::weightedReconstruct
+        #include "rhoTEqn.H"
+        Urhs = rho*fvc::weightedReconstruct
         (
-            Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()
-          + gSf*thetapf/thetaaf,
-            1
+            gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf(), 0.25
         );
 
         //#include "compressibleContinuityErrs.H"
 
-        if (thermoDynamic)
-        {
-            #include "thermoUpdate.H"
-        }
+        #include "thermoUpdate.H"
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
