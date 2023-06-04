@@ -63,10 +63,6 @@ int main(int argc, char *argv[])
     //#include "createSponge.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
-    #include "createFields.H"
-    //#include "initContinuityErrs.H"
-    #include "initEnergy.H"
-    #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch implicitU(mesh.schemes().lookup("implicitU"));
@@ -84,6 +80,11 @@ int main(int argc, char *argv[])
         readScalar(mesh.schemes().subDict("ddtSchemes").lookup("ocCoeff"))
     );
     const scalar ocAlpha = 1/(1+ocCoeff);
+
+    #include "createFields.H"
+    //#include "initContinuityErrs.H"
+    #include "initEnergy.H"
+    #include "energy.H"
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
@@ -105,7 +106,7 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (thermoDynamic)
+            if (thermoDynamic || Boussinesq)
             {
                 #include "rhoThetaEqn.H"
             }
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
 
         //#include "compressibleContinuityErrs.H"
 
-        if (thermoDynamic)
+        if (thermoDynamic && !Boussinesq)
         {
             #include "thermoUpdate.H"
         }

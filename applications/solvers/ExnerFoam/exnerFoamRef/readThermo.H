@@ -7,8 +7,9 @@ autoPtr<fluidThermo> pThermo
 fluidThermo& thermo = pThermo();
 
 const Switch thermoDynamic(thermo.properties().lookup("thermoDynamic"));
+const Switch Boussinesq(thermo.properties().lookup("Boussinesq"));
 
-if (thermoDynamic) { thermo.validate(args.executable(), "h", "e"); }
+if (thermoDynamic && !Boussinesq) { thermo.validate(args.executable(), "h", "e"); }
 
 // Use of Exner needs reference T and p and a single value of R, Cp and Cv
 const dimensionedScalar Tref

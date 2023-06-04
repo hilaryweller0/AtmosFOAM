@@ -1,11 +1,14 @@
 // update density according to the continuity equation
-solve
-(
-    EulerDdt.fvmDdt(rho)
-  + fvc::div(phiOld)
-  + fvc::div(phiNew)
-);
-rhof = fvc::interpolate(rho);
+if (!Boussinesq)
+{
+    solve
+    (
+        EulerDdt.fvmDdt(rho)
+      + fvc::div(phiOld)
+    + fvc::div(phiNew)
+    );
+    rhof = fvc::interpolate(rho);
+}
 
 // theta equation
 fvScalarMatrix thetaEqn
@@ -26,6 +29,10 @@ else
 {
     thetap = thetaEqn.H()/thetaEqn.A();
 }
+
 thetapf = fvc::interpolate(thetap);
-thetaf = thetapf + thetaaf;
-theta = thetaa + thetap;
+if (!Boussinesq)
+{
+    thetaf = thetapf + thetaaf;
+    theta = thetaa + thetap;
+}

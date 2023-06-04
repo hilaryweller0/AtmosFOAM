@@ -38,7 +38,12 @@ volScalarField Exnerp
     ),
     mesh
 );
-Exnerp.oldTime();
+if (thermoDynamic && !Boussinesq)
+{
+    Exnerp.oldTime();
+}
+const label pRefCell = mesh.solution().subDict("solvers").subDict(Exnerp.name())
+    .lookupOrDefault<label>("pRefCell", label(0));
 
 Info << "Reading ambient Exner, Exnera\n" << endl;
 const volScalarField Exnera
@@ -79,7 +84,8 @@ surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
 volScalarField theta("theta", thetaa + thetap);
 const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaa) & kdir);
 
-if (thermoDynamic)
+// Update thermodynamics if needed
+if (thermoDynamic && !Boussinesq)
 {
     #include "thermoUpdate.H"
 }
@@ -169,7 +175,24 @@ volVectorField Urhs
     U.boundaryField().types()
 );
 Urhs.oldTime();
-Urhs.storePrevIter();
-thetaf.storePrevIter();
-theta.storePrevIter();
+
+// Fields needed for implicit gravity and acoustic waves
+surfaceScalarField gradnTheta(fvc::snGrad(theta));
+surfaceScalarField Ndt
+(
+    sqrt(max(-sqr(runTime.deltaT())*gSfhat*gradnTheta/thetaf, VSMALL))
+);
+surfaceScalarField adt = runTime.deltaT()*max(ocAlpha, 1-1/Ndt);
+volScalarField G
+(
+    "G",
+    fvc::average(-adt*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf))
+);
+if (thermoDynamic || !Boussinesq)
+{
+    G += fvc::average(-adt*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp));
+}
+G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
+volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));
+
 

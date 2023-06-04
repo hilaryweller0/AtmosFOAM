@@ -9,12 +9,12 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-if (thermoDynamic)
+if (thermoDynamic && !Boussinesq)
 {
     Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
     Exnerp.oldTime().correctBoundaryConditions();
+    Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 }
-volScalarField Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 
 for (int corr=0; corr<nCorr; corr++)
 {
@@ -34,7 +34,7 @@ for (int corr=0; corr<nCorr; corr++)
           + fvc::div(offCentre*phi)
           - fvm::laplacian(offCentre*ocAlpha*rhorAUf*Cp*thetaf, Exnerp)
         );
-        if (thermoDynamic)
+        if (thermoDynamic && !Boussinesq)
         {
             ExnerEqn += fvScalarMatrix
             (
@@ -42,7 +42,10 @@ for (int corr=0; corr<nCorr; corr++)
               + EulerDdt.fvcDdt(rho)
             );
         }
-        else ExnerEqn.relax();
+        else
+        {
+            ExnerEqn.setReference(pRefCell, Exnerp[pRefCell]);
+        }
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
         {
@@ -59,7 +62,9 @@ for (int corr=0; corr<nCorr; corr++)
 
             Urhs = rho*fvc::weightedReconstruct
             (
-                ExnerEqn.flux()/(offCentre*ocAlpha*rhorAUf) - gSf*thetapf/thetaaf, 1
+                ExnerEqn.flux()/(offCentre*ocAlpha*rhorAUf) 
+              - gSf*thetapf/thetaaf,
+                1
             );
 
             u += ocAlpha*(Urhs & idir)/uEqn.A();
@@ -67,6 +72,5 @@ for (int corr=0; corr<nCorr; corr++)
         }
     }
 }
-Urhs.relax(0.5);
 U = u*idir + w*kdir;
 
