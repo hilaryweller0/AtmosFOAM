@@ -1,4 +1,4 @@
-Info<< "Reading U, u and w\n" << endl;
+Info<< "Reading U\n" << endl;
 volVectorField U
 (
     IOobject
@@ -11,19 +11,6 @@ volVectorField U
     ),
     mesh
 );
-
-volScalarField u
-(
-    IOobject("u", runTime.timeName(), mesh, IOobject::MUST_READ),
-    mesh
-);
-u = U & idir;
-volScalarField w
-(
-    IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
-    mesh
-);
-w = U & kdir;
 
 Info<< "Reading Exner\n" << endl;
 volScalarField Exner
@@ -106,19 +93,39 @@ autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
 // Reading in the sponge layer coefficients (if present)
 const volScalarField muSponge
 (
-    IOobject
+    volScalarField
     (
-        "muSponge",
-        runTime.constant(),
+        IOobject
+        (
+            "muSponge",
+            runTime.constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT
+        ),
         mesh,
-        IOobject::READ_IF_PRESENT
-    ),
-    mesh,
-    dimensionedScalar("muSponge", dimless/dimTime, scalar(0))
+        dimensionedScalar("muSponge", dimless, scalar(0))
+       )/runTime.deltaT()
 );
+const tensor spongeT(envProperties.lookup("spongeOrientation"));
 
 const surfaceScalarField muSpongef
 (
     "muSpongef",
-    fvc::interpolate(muSponge)*mag(gUnitNormal)
+    (spongeT*fvc::interpolate(muSponge)) && sqr(mesh.Sf()/mesh.magSf())
 );
+
+// Used for implicit gravity waves
+surfaceScalarField applySIg
+(
+    IOobject("applySIg", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("applySIg", dimless, scalar(0))
+
+);
+surfaceScalarField G
+(
+    IOobject("G", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("G", dimless, scalar(1))
+);
+

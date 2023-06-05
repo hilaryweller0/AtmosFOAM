@@ -37,8 +37,6 @@ Foam::QUICKupwind<Foam::vector>::correction
 {
     const fvMesh& mesh = this->mesh();
 
-    fv::orthogonalSnGrad<vector> oSnGrad(mesh);
-
     tmp<surfaceVectorField> tsfCorr
     (
         surfaceVectorField::New
@@ -60,12 +58,19 @@ Foam::QUICKupwind<Foam::vector>::correction
     const surfaceVectorField& Cf = mesh.Cf();
     const surfaceVectorField dhat = mesh.delta()/mag(mesh.delta());
 
-    fv::gaussGrad<vector> gradScheme_(mesh);
+    tmp<fv::orthogonalSnGrad<vector>> oSnGrad
+    (
+        new fv::orthogonalSnGrad<vector>(mesh)
+    );
+    tmp<fv::gaussGrad<vector>> gradScheme_
+    (
+        new fv::gaussGrad<vector>(mesh)
+    );
 
-    const volTensorField gradVf = gradScheme_.grad(vf);
+    const volTensorField gradVf = gradScheme_().grad(vf);
 
     surfaceTensorField gradVff = linearInterpolate(gradVf);
-    surfaceVectorField sdGrad = oSnGrad.snGrad(vf, mesh.deltaCoeffs());
+    surfaceVectorField sdGrad = oSnGrad().snGrad(vf, mesh.deltaCoeffs());
     gradVff += (sdGrad - (gradVff & dhat))*dhat;
 
     forAll(faceFlux, facei)
@@ -105,17 +110,19 @@ Foam::QUICKupwind<Foam::vector>::correction
 
                 if (pFaceFlux[facei] > 0)
                 {
-                    pSfCorr[facei] = 0.5*(pCf[facei] - C[own])
-                                   & (gradVf[own] + pGradVff[facei]);
+                    pSfCorr[facei] = (pCf[facei] - C[own])
+                                   & (gradVf[own] + pGradVff[facei])*0.5;
                 }
                 else
                 {
-                    pSfCorr[facei] = 0.5*(pCf[facei] - pd[facei] - C[own])
-                                   & (pGradVfNei[facei] + gradVff[facei]);
+                    pSfCorr[facei] = (pCf[facei] - pd[facei] - C[own])
+                                   & (pGradVfNei[facei] + pGradVff[facei])*0.5;
                 }
             }
         }
     }
+
+    sfCorr *= blendingFactor();
 
     return tsfCorr;
 }

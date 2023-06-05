@@ -23,15 +23,13 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamA
+    turbulentExnerFoam
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
-    Separate solutions for components of the velocity.
     Optional turbulence modelling.
-    Optional implicit gravity waves and implicit advection.
-    Separate momentum equation for w
+    Need to include implicit gravity waves and implicit advection
 
 \*---------------------------------------------------------------------------*/
 
@@ -48,7 +46,6 @@ Description
 #include "OFstream.H"
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
-#include "fvcWeightedReconstruct.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -57,24 +54,24 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
+    //#include "createSponge.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
     #include "createFields.H"
-    #include "initContinuityErrs.H"
+    //#include "initContinuityErrs.H"
+    const dimensionedScalar initHeat = fvc::domainIntegrate(theta*rho);
     #include "initEnergy.H"
     #include "energy.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const Switch implicitU(mesh.schemes().lookup("implicitU"));
-    const Switch implicitT(mesh.schemes().lookup("implicitT"));
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
-
+    const Switch impU(mesh.schemes().lookup("implicitU"));
+    const Switch stagger(mesh.schemes().lookup("stagger"));
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
     const int nCorr = itsDict.lookupOrDefault<int>("nCorrectors", 1);
     const int nNonOrthCorr =
         itsDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
-
+    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
     const scalar ocCoeff
     (
         readScalar(mesh.schemes().subDict("ddtSchemes").lookup("ocCoeff"))
@@ -82,7 +79,7 @@ int main(int argc, char *argv[])
     const scalar ocAlpha = 1/(1+ocCoeff);
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
-
+    
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
 
@@ -96,23 +93,36 @@ int main(int argc, char *argv[])
 
         #include "compressibleCourantNo.H"
 
-        for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
+        for (int ucorr=0; ucorr<nOuterCorr; ucorr++)
         {
-            #include "rhoEqn.H"
-            #include "thetaEqn.H"
+            #include "rhoThetaEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
-        #include "rhoEqn.H"
+        #include "rhoThetaEqn.H"
+        //#include "compressibleContinuityErrs.H"
 
-        #include "thermoUpdate.H"
-        #include "compressibleContinuityErrs.H"
+        // Update the pressure and temperature based on the new Exner
+        thermo.p() = pRef*pow(Exner, 1/kappa);
+        thermo.T() = theta*Exner;
+        thermo.he() == thermo.he(thermo.p(),thermo.T());
+        thermo.correct();
+
+        dimensionedScalar totalHeatDiff = fvc::domainIntegrate(theta*rho) - initHeat;
+        Info << "Heat error = " << (totalHeatDiff/initHeat).value() << endl;
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
-        turbulence->correct();
-        runTime.write();
+        turbulence->correct(); 
+
+        if (runTime.writeTime())
+        {
+            runTime.write();
+            surfaceVectorField Uf("Uf", linearInterpolate(U));
+            Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+            Uf.write();
+        }
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

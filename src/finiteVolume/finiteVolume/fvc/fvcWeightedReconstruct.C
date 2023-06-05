@@ -103,7 +103,7 @@ weightedReconstruct
     typedef typename outerProduct<vector, Type>::type GradType;
     tmp<GeometricField<GradType, fvPatchField, volMesh> > tvf
     (
-        fvc::weightedReconstruct(tssf()), boundaryWeight
+        fvc::weightedReconstruct(tssf(), boundaryWeight)
     );
     tssf.clear();
     return tvf;

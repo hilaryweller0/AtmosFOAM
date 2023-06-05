@@ -9,10 +9,9 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-if (thermoDynamic && !Boussinesq)
+if (!Boussinesq)
 {
     Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
-    Exnerp.oldTime().correctBoundaryConditions();
     Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 }
 
@@ -24,22 +23,22 @@ for (int corr=0; corr<nCorr; corr++)
     U = u*idir + w*kdir;
     
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) - ocAlpha*rhorAUf*gSf*thetapf/thetaaf;
+    phi = fvc::flux(rho*U) - offCentre*rhorAUf*gSf*thetapf/thetaaf;
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
         fvScalarMatrix ExnerEqn
         (
-            fvc::div(phiOld)
-          + fvc::div(offCentre*phi)
-          - fvm::laplacian(offCentre*ocAlpha*rhorAUf*Cp*thetaf, Exnerp)
+            fvc::div(offCentre*phi)
+          - fvm::laplacian(sqr(offCentre)*rhorAUf*Cp*thetaf, Exnerp)
         );
-        if (thermoDynamic && !Boussinesq)
+        if (!Boussinesq)
         {
             ExnerEqn += fvScalarMatrix
             (
                 EulerDdt.fvmDdt(Psi, Exnerp)
               + EulerDdt.fvcDdt(rho)
+              - rhoRHS.oldTime()
             );
         }
         else
@@ -56,21 +55,25 @@ for (int corr=0; corr<nCorr; corr++)
             ExnerEqn.solve(Exnerp.name());
         }
 
-        if (nonOrth == nNonOrthCorr && ocAlpha > SMALL)
+        if (nonOrth == nNonOrthCorr)
         {
             phi += ExnerEqn.flux()/offCentre;
 
             Urhs = rho*fvc::weightedReconstruct
             (
-                ExnerEqn.flux()/(offCentre*ocAlpha*rhorAUf) 
-              - gSf*thetapf/thetaaf,
-                1
+                offCentre*
+                (
+                    ExnerEqn.flux()/(sqr(offCentre)*rhorAUf)
+                  - gSf*thetapf/thetaaf
+                ),
+                0.25
             );
 
-            u += ocAlpha*(Urhs & idir)/uEqn.A();
-            w += ocAlpha*(Urhs & kdir)/wEqn.A();
+            u += (Urhs & idir)/uEqn.A();
+            w += (Urhs & kdir)/wEqn.A();
         }
     }
 }
 U = u*idir + w*kdir;
+aphi = offCentre*phi;
 

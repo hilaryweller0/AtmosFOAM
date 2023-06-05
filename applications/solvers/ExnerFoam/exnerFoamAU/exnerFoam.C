@@ -23,15 +23,13 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamA
+    exnerFoamAU
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
     using a simultaneous solution of Exner, theta and phi. 
-    Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Separate momentum equation for w
 
 \*---------------------------------------------------------------------------*/
 
@@ -67,7 +65,6 @@ int main(int argc, char *argv[])
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const Switch implicitU(mesh.schemes().lookup("implicitU"));
     const Switch implicitT(mesh.schemes().lookup("implicitT"));
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);

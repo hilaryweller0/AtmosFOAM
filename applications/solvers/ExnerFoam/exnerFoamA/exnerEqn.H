@@ -10,7 +10,6 @@ surfaceScalarField rhorAUf
 
 // Exner from eqn of state
 Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
-Exner.oldTime().correctBoundaryConditions();
 volScalarField Psi = rho/(RbyCv*Exner.oldTime());
 
 for (int corr=0; corr<nCorr; corr++)
@@ -34,7 +33,7 @@ for (int corr=0; corr<nCorr; corr++)
           - ocAlpha*fvm::laplacian(rhorAUf*Cp*thetaf, Exner)
         );
 
-        if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
+        if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr == nCorr-1)
         {
             ExnerEqn.solve(Exner.name() + "Final");
         }

@@ -5,9 +5,7 @@ offCentre = max
         /(runTime.deltaT()*mesh.deltaCoeffs()
             *max(mag(phi), dimensionedScalar(phi.dimensions(), SMALL)))
 );
-
-phiOld = (1-offCentre)*phi.oldTime();
-phiNew = offCentre*phi;
+aphi = offCentre*phi;
 
 Info << "ocAlpha = " << ocAlpha << " offCentre-ocAlpha goes from "
      << max(offCentre).value()-ocAlpha

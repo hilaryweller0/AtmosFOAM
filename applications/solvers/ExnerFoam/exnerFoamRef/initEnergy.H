@@ -4,11 +4,6 @@ fileName OFname = Pstream::parRun() ?
                 args.rootPath() / args.caseName() / "../energy.dat" :
                 args.rootPath() / args.caseName() / "energy.dat";
 OFstream es(OFname);
-if (Pstream::master())
-{
-    es << "#time   KE       internal potential normalisedEnergy  max w"
-       << endl;
-}
 
 dimensionedScalar Vtot = sum(mesh.V());
 
@@ -44,4 +39,10 @@ Info << "Vtot = " << Vtot << "\nKEInitTot = " << KEInitTot
      
 const dimensionedScalar energyInitTot 
       = KEInitTot + internalInitTot + potentialInitTot;
+
+if (Pstream::master())
+{
+    es << "#time   KE       internal potential normalisedEnergy  max w"
+       << endl;
+}
 

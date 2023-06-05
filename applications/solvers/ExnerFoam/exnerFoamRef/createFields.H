@@ -14,13 +14,13 @@ volVectorField U
 
 volScalarField u
 (
-    IOobject("u", runTime.timeName(), mesh, IOobject::MUST_READ),
+    IOobject("u", runTime.constant(), mesh, IOobject::MUST_READ),
     mesh
 );
 u = U & idir;
 volScalarField w
 (
-    IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
+    IOobject("w", runTime.constant(), mesh, IOobject::MUST_READ),
     mesh
 );
 w = U & kdir;
@@ -38,7 +38,7 @@ volScalarField Exnerp
     ),
     mesh
 );
-if (thermoDynamic && !Boussinesq)
+if (!Boussinesq)
 {
     Exnerp.oldTime();
 }
@@ -85,7 +85,7 @@ volScalarField theta("theta", thetaa + thetap);
 const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaa) & kdir);
 
 // Update thermodynamics if needed
-if (thermoDynamic && !Boussinesq)
+if (!Boussinesq)
 {
     #include "thermoUpdate.H"
 }
@@ -154,45 +154,42 @@ const surfaceScalarField muSpongef
 
 surfaceScalarField offCentre
 (
-    "offCentreAdvection",
-    max
-    (
-        0.5,
-        1 - rhof*mesh.magSf()
-            /(runTime.deltaT()*mesh.deltaCoeffs()
-                *max(mag(phi), dimensionedScalar(phi.dimensions(), SMALL)))
-    )
+    IOobject("offCentreAdvection", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar(dimless, ocAlpha)
 );
-surfaceScalarField phiOld("phiOld", (1-offCentre)*phi.oldTime());
-surfaceScalarField phiNew("phiNew", offCentre*phi);
+surfaceScalarField aphi = offCentre*phi;
+
+volScalarField rhoRHS
+(
+    IOobject("rhoRHS", runTime.timeName(), mesh),
+    EulerDdt.fvcDdt(rho)
+);
+rhoRHS.oldTime();
+
 volVectorField Urhs
 (
     IOobject("Urhs", runTime.timeName(), mesh),
-    -rho*fvc::weightedReconstruct
-    (
-        gSf*thetapf/thetaaf + Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf(), 1
-    ),
-    U.boundaryField().types()
+    EulerDdtv.fvcDdt(rho, U)
 );
 Urhs.oldTime();
+volScalarField thetapRHS
+(
+    IOobject("thetapRHS", runTime.timeName(), mesh),
+    EulerDdt.fvcDdt(rho, thetap)
+);
 
 // Fields needed for implicit gravity and acoustic waves
 surfaceScalarField gradnTheta(fvc::snGrad(theta));
-surfaceScalarField Ndt
-(
-    sqrt(max(-sqr(runTime.deltaT())*gSfhat*gradnTheta/thetaf, VSMALL))
-);
-surfaceScalarField adt = runTime.deltaT()*max(ocAlpha, 1-1/Ndt);
 volScalarField G
 (
     "G",
-    fvc::average(-adt*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf))
+    fvc::average(-offCentre*runTime.deltaT()*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf))
 );
-if (thermoDynamic || !Boussinesq)
+if (!Boussinesq)
 {
-    G += fvc::average(-adt*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp));
+    G += fvc::average(-offCentre*runTime.deltaT()*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp));
 }
 G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
 volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));
-
 

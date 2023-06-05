@@ -4,32 +4,29 @@
 fvScalarMatrix uEqn
 (
     EulerDdt.fvmDdt(rho, u)
-  + fvm::div(phiNew, u, "div(phi,u)")
-  + fvc::div(phiOld, u.oldTime(), "div(phi,u)")
-  //- fvm::laplacian(rho*turbulence->nuEff(), u)
+  + fvm::div(aphi, u, "div(phi,U)")
+  - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), u)
   //+ 2*rho*(Omega^(U-Ug))
-  - (1-ocAlpha)*(Urhs.oldTime() & idir)
+  - (Urhs.oldTime() & idir)
 );
 
 // w equation
 fvScalarMatrix wEqn
 (
     fvm::Sp(rho*muSponge, w)
-  - (1-ocAlpha)*(Urhs.oldTime() & kdir)
+  - (Urhs.oldTime() & kdir)
 );
 
-if (thermoDynamic && (SIgravityWaves || hydrostatic))
+if (SIgravityWaves || hydrostatic)
 {
     if (!Boussinesq)
     {
         gradnTheta = fvc::snGrad(theta);
-        Ndt = sqrt(max(-sqr(runTime.deltaT())*gSfhat*gradnTheta/thetaf, VSMALL));
-        adt = runTime.deltaT()*max(ocAlpha, 1-1/Ndt);
     
         // Face calculations
         G = fvc::average
         (
-            -adt*rhof*gradnTheta*
+            -offCentre*runTime.deltaT()*rhof*gradnTheta*
             (
                 Cp*fvc::snGrad(Exnerp) + gSf/(mesh.magSf()*thetaaf)
             )
@@ -37,7 +34,11 @@ if (thermoDynamic && (SIgravityWaves || hydrostatic))
         G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
     }
     
-    thetapf += min(adt*phi/(rhof*mesh.magSf()), 1/mesh.deltaCoeffs())*gradnTheta;
+    thetapf += min
+    (
+        runTime.deltaT()*aphi/(rhof*mesh.magSf()),
+        1/mesh.deltaCoeffs()
+    )*gradnTheta;
 
     /*// Cell center calculations
     volScalarField dThetadz("dThetadz", fvc::grad(theta) & kdir);
@@ -66,15 +67,24 @@ if (!hydrostatic)
     wEqn += fvScalarMatrix
     (
         EulerDdt.fvmDdt(rho, w)
-      + fvm::div(phiNew, w, "div(phi,w)")
-      + fvc::div(phiOld, w.oldTime(), "div(phi,w)")
-      //- fvm::laplacian(rho*turbulence->nuEff(), w)
+      + fvm::div(aphi, w, "div(phi,U)")
+      - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
     );
 }
 
 if (implicitU)
 {
-    solve(uEqn == ocAlpha*(Urhs & idir));
-    solve(wEqn == ocAlpha*(Urhs & kdir));
+    if (ucorr == 0)
+    {
+        Urhs = rho*fvc::weightedReconstruct
+        (
+            offCentre
+           *(Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf() - gSf*thetapf/thetaaf),
+           0.25
+        );
+    }
+    
+    solve(uEqn == (Urhs & idir));
+    solve(wEqn == (Urhs & kdir));
 }
 

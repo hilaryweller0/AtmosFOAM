@@ -77,7 +77,7 @@ void Foam::weightedReconstructData::calcData()
     faceWeights_ = mesh_.Sf()/mesh_.magSf();
     forAll(faceWeights_.boundaryField(), patchi)
     {
-        faceWeights_.boundaryFieldRef()[patchi] *= 0.25;
+        faceWeights_.boundaryFieldRef()[patchi] *= boundaryWeight_;
     }
     
     invTensor_ = inv(fvc::surfaceSum(faceWeights_*mesh_.Sf()));

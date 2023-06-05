@@ -1,9 +1,8 @@
 Info << "Initialising total energy file energy.dat\n" << endl;
 
-fileName OFname = Pstream::parRun() ?
-                args.rootPath() / args.caseName() / "../energy.dat" :
-                args.rootPath() / args.caseName() / "energy.dat";
-OFstream es(OFname);
+OFstream es(args.rootPath() / args.caseName() / "energy.dat");
+es << "#time   KE       internal potential normalisedEnergy  max w max theta"
+   << endl;
 
 dimensionedScalar Vtot = sum(mesh.V());
 
@@ -15,7 +14,7 @@ volScalarField KE
 volScalarField internalEnergy
 (
     IOobject("internalEnergy", runTime.timeName(), mesh),
-    rho*thermo.T()*Cv
+    rho*theta*Exner*Cv
 );
 volScalarField potentialEnergy
 (
@@ -39,10 +38,4 @@ Info << "Vtot = " << Vtot << "\nKEInitTot = " << KEInitTot
      
 const dimensionedScalar energyInitTot 
       = KEInitTot + internalInitTot + potentialInitTot;
-
-if (Pstream::master())
-{
-    es << "#time   KE       internal potential normalisedEnergy  max w"
-       << endl;
-}
 

@@ -4,8 +4,8 @@
 fvScalarMatrix uEqn
 (
     fvm::ddt(rho, u)
-  + fvm::div(phi, u)
-  //- fvm::laplacian(rho*turbulence->nuEff(), u)
+  + fvm::div(phi, u, "div(phi,U)")
+  - fvm::laplacian(rho*turbulence->nuEff(), u)
   //+ 2*rho*(Omega^(U-Ug))
 );
 
@@ -47,8 +47,8 @@ if (!hydrostatic)
     wEqn += fvScalarMatrix
     (
         fvm::ddt(rho, w)
-      + fvm::div(phi, w)
-      //- fvm::laplacian(rho*turbulence->nuEff(), w)
+      + fvm::div(phi, w, "div(phi,U)")
+      - fvm::laplacian(rho*turbulence->nuEff(), w)
     );
 }
 

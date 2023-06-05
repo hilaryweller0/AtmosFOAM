@@ -5,10 +5,7 @@ autoPtr<fluidThermo> pThermo
     fluidThermo::New(mesh)
 );
 fluidThermo& thermo = pThermo();
-
-const Switch Boussinesq(thermo.properties().lookup("Boussinesq"));
-
-if (!Boussinesq) { thermo.validate(args.executable(), "h", "e"); }
+thermo.validate(args.executable(), "h", "e");
 
 // Use of Exner needs reference T and p and a single value of R, Cp and Cv
 const dimensionedScalar Tref
@@ -37,8 +34,7 @@ const dimensionedScalar speedSound("speedSound", sqrt(gamma*R*Tref));
 const dimensionedScalar RbyCv("RbyCv", R/Cv);
 
 Info << "Cp = " << Cp.value() << " speedSound = " << speedSound << " kappa = "
-     << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv 
-     << " RbyCv = " << RbyCv << endl;
+     << kappa << " R = " << air.R() << " RR = " << RR << " Cv = " << Cv << endl;
 
 Info << "Maximum acoustic Courant number = "
      << max(mesh.deltaCoeffs())*runTime.deltaT()*speedSound << endl;

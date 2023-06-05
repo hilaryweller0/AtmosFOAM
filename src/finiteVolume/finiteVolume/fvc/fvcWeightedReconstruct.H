@@ -59,7 +59,7 @@ namespace fvc
     > weightedReconstruct
     (
         const GeometricField<Type, fvsPatchField, surfaceMesh>&,
-        const scalar boundaryWeight = 1
+        const scalar boundaryWeight
     );
 
     template<class Type>
@@ -70,7 +70,7 @@ namespace fvc
     > weightedReconstruct
     (
         const tmp<GeometricField<Type, fvsPatchField, surfaceMesh> >&,
-        const scalar boundaryWeight = 1
+        const scalar boundaryWeight
     );
 }
 

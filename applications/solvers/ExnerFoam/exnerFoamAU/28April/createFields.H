@@ -1,4 +1,4 @@
-Info<< "Reading U, u and w\n" << endl;
+Info<< "Reading U\n" << endl;
 volVectorField U
 (
     IOobject
@@ -11,19 +11,6 @@ volVectorField U
     ),
     mesh
 );
-
-volScalarField u
-(
-    IOobject("u", runTime.timeName(), mesh, IOobject::MUST_READ),
-    mesh
-);
-u = U & idir;
-volScalarField w
-(
-    IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
-    mesh
-);
-w = U & kdir;
 
 Info<< "Reading Exner\n" << endl;
 volScalarField Exner
@@ -39,6 +26,8 @@ volScalarField Exner
     mesh
 );
 
+thermo.p() = pRef*pow(Exner, 1/kappa);
+
 Info<< "Reading theta\n" << endl;
 volScalarField theta
 (
@@ -52,20 +41,20 @@ volScalarField theta
     ),
     mesh
 );
-// theta on the face
+
+// Old part of theta change (and theta on the face)
 surfaceScalarField thetaf
 (
     IOobject("thetaf", runTime.timeName(), mesh),
-    linearInterpolate(theta)
+    fvc::interpolate(theta)
 );
-
-#include "thermoUpdate.H"
+thermo.T() = theta*Exner;
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh),
-    thermo.rho()
+    pRef/(R*theta)*pow(Exner, (1-kappa)/kappa)
 );
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
@@ -80,7 +69,7 @@ surfaceScalarField phi
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    fvc::flux(rho*U)
+    rhof*(linearInterpolate(U) & mesh.Sf())
 );
 phi.oldTime();
 
@@ -106,19 +95,41 @@ autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
 // Reading in the sponge layer coefficients (if present)
 const volScalarField muSponge
 (
-    IOobject
+    volScalarField
     (
-        "muSponge",
-        runTime.constant(),
+        IOobject
+        (
+            "muSponge",
+            runTime.constant(),
+            mesh,
+            IOobject::READ_IF_PRESENT
+        ),
         mesh,
-        IOobject::READ_IF_PRESENT
-    ),
-    mesh,
-    dimensionedScalar("muSponge", dimless/dimTime, scalar(0))
+        dimensionedScalar("muSponge", dimless, scalar(0))
+       )/runTime.deltaT()
 );
+const tensor spongeT(envProperties.lookup("spongeOrientation"));
 
-const surfaceScalarField muSpongef
+/*const surfaceScalarField muSpongef
 (
     "muSpongef",
-    fvc::interpolate(muSponge)*mag(gUnitNormal)
+    (spongeT*fvc::interpolate(muSponge)) && sqr(mesh.Sf()/mesh.magSf())
+);*/
+Info << "Maximum sponge value = " << (max(muSponge)*runTime.deltaT()).value()
+     << endl;
+
+// Used for implicit gravity waves
+surfaceScalarField applySIg
+(
+    IOobject("applySIg", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("applySIg", dimless, scalar(0))
+
 );
+surfaceScalarField G
+(
+    IOobject("G", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar("G", dimless, scalar(1))
+);
+

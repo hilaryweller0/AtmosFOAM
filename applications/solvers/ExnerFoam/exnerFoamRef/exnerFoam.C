@@ -60,7 +60,6 @@ int main(int argc, char *argv[])
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
-    //#include "createSponge.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
     
@@ -81,15 +80,16 @@ int main(int argc, char *argv[])
     );
     const scalar ocAlpha = 1/(1+ocCoeff);
 
-    #include "createFields.H"
-    //#include "initContinuityErrs.H"
-    #include "initEnergy.H"
-    #include "energy.H"
-
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     fv::EulerDdtScheme<vector> EulerDdtv(mesh);
+
+    #include "createFields.H"
+    #include "initContinuityErrs.H"
+    #include "initEnergy.H"
+    #include "energy.H"
     #include "offCentreAdvection.H"
+    #include "updateOldRHS.H"
 
     turbulence->validate();   //- Validate turbulence fields after construction
                             //  and update derived fields as required
@@ -106,41 +106,35 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (thermoDynamic || Boussinesq)
+            if (!Boussinesq)
             {
-                #include "rhoThetaEqn.H"
+                #include "rhoEqn.H"
             }
+            #include "thetaEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
-            #include "offCentreAdvection.H"
-            if (thermoDynamic)
-            {
-                #include "thermoUpdate.H"
-            }
         }
-        if (thermoDynamic)
+        if (!Boussinesq)
         {
-            #include "rhoThetaEqn.H"
+            #include "rhoEqn.H"
         }
+        #include "thetaEqn.H"
 
-        Urhs = -rho*fvc::weightedReconstruct
-        (
-            Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()
-          + gSf*thetapf/thetaaf,
-            1
-        );
-
-        //#include "compressibleContinuityErrs.H"
-
-        if (thermoDynamic && !Boussinesq)
+        if (!Boussinesq)
         {
             #include "thermoUpdate.H"
+            #include "compressibleContinuityErrs.H"
         }
+        
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
         turbulence->correct();
+
+        #include "offCentreAdvection.H"
+        #include "updateOldRHS.H"
+
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
