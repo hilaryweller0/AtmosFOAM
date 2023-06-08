@@ -1,11 +1,13 @@
 Info<< "Reading thermophysical properties\n" << endl;
 
+
 autoPtr<fluidThermo> pThermo
 (
     fluidThermo::New(mesh)
 );
 fluidThermo& thermo = pThermo();
 
+const Switch hydrostatic(thermo.properties().lookup("hydrostatic"));
 const Switch Boussinesq(thermo.properties().lookup("Boussinesq"));
 
 if (!Boussinesq) { thermo.validate(args.executable(), "h", "e"); }

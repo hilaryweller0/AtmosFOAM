@@ -2,7 +2,7 @@
 #include "advectable.H"
 #include "tracerField.H"
 #include "velocityField.H"
-#include "noAdvection.H"
+#include "zeroVelocityField.H"
 
 int main(int argc, char *argv[])
 {
@@ -107,6 +107,14 @@ int main(int argc, char *argv[])
     );
     Info << "Setting velocityField" << endl;
     autoPtr<velocityField> velocityField(velocityField::New(velocityDict));
+    if (dynamic_cast<advectable*>(&velocityField()) == nullptr)
+    {
+        WarningIn("setTracerField")
+            << "Cannot define analytic solution for tracer for non-advectable "
+            << "velocityField. Using zero velocity field" << endl;
+    
+        velocityField = new zeroVelocityField(velocityDict);
+    }
     Info << "Setting tracer" << endl;
     autoPtr<tracerField> tracer
     (

@@ -24,6 +24,7 @@ License
 \*---------------------------------------------------------------------------*/
 
 #include "sphericalMeshData.H"
+#include "polarPoint.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -48,7 +49,8 @@ Foam::sphericalMeshData::sphericalMeshData
     Sf_(mesh.faceAreas()),
     earthRadius_(earthRadius__),
     CfLonLatz_(mesh.nFaces()),
-    CLonLatz_(mesh.nCells())
+    CLonLatz_(mesh.nCells()),
+    pointsLatLonz_(mesh.nPoints())
 {
     calcSphericalMeshData();
 }
@@ -177,6 +179,13 @@ void Foam::sphericalMeshData::calcSphericalMeshData()
         asin(max(min(C_.component(2)/CLonLatz_.component(2), 1.), -1.))
     );
     CLonLatz_.replace(2, CLonLatz_.component(2) - earthRadius_);
+    
+    // Calculating pointsLatLonz_
+    forAll(pointsLatLonz_, ip)
+    {
+        polarPoint pp = convertToPolar(p[ip], 180, earthRadius_);
+        pointsLatLonz_[ip] = point(pp[0], pp[1], pp[2]);
+    }
     
     if (debug)
     {

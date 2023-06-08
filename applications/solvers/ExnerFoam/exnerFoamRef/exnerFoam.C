@@ -55,6 +55,11 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+enum class advType{Implicit, Explicit, Diagonal};
+template<> const char* Foam::NamedEnum<advType,3>::names[]
+    = {"Implicit", "Explicit", "Diagonal"};
+NamedEnum<advType, 3> AdvectionType;
+
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -64,9 +69,7 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const Switch implicitU(mesh.schemes().lookup("implicitU"));
-    const Switch implicitT(mesh.schemes().lookup("implicitT"));
-    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
+    const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);

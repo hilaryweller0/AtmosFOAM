@@ -1,7 +1,7 @@
 #include "deformationalNonDivergentGeodesicVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
-
 #include "polarPoint.H"
+#include "deformationalNonDivergentGeodesicVelocityFieldData.H"
 
 defineTypeNameAndDebug(deformationalNonDivergentGeodesicVelocityField, 0);
 addToRunTimeSelectionTable
@@ -14,28 +14,35 @@ addToRunTimeSelectionTable
 deformationalNonDivergentGeodesicVelocityField::
 deformationalNonDivergentGeodesicVelocityField(const dictionary& dict)
 :
-    radius("radius", dimLength, readScalar(dict.lookup("radius"))),
+    geodesicNonDivergentVelocityField(dict),
+    radius(readScalar(dict.lookup("radius"))),
     deformationScale(readScalar(dict.lookup("deformationScale"))),
-    endTime(dict.lookup("endTime"))
+    endTime(readScalar(dict.lookup("endTime")))
 {};
 
 vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
 (
-        const point& p,
-        const Time& t
+    const label ip,
+    const sphericalMeshData& spherical,
+    const Time& t
 ) const
 {
-    const dimensionedScalar& T = endTime;
+    // Get reference to the data
+    const deformationalNonDivergentGeodesicVelocityFieldData&
+         data = deformationalNonDivergentGeodesicVelocityFieldData::New
+    (
+        spherical.mesh(), radius, deformationScale, endTime
+    );
 
-    const polarPoint& polarp = convertToPolar(p);
-    const scalar lat = polarp.lat();
-    const scalar lon = polarp.lon();
+    const scalar lon = spherical.pointsLatLonz()[ip][0];
 
     // section 2.3 doi:10.5194/gmd-5-887-2012
-    const dimensionedScalar lonPrime = lon - 2 * M_PI * t / T;
-
-    const dimensionedScalar psi = deformationScale * radius / T * 
-            sqr(Foam::sin(lonPrime)) * sqr(Foam::cos(lat)) * Foam::cos(M_PI*t/T)
-          - 2*M_PI*radius/T * Foam::sin(lat);
-    return p/mag(p) * psi.value() * radius.value();
+    const scalar lonPrime = lon - 2 * M_PI * t.value() / endTime;
+    
+    return data.phat_sqrrByT()[ip]*
+    (
+        data.Dcos2Lat()[ip]*sqr(Foam::sin(lonPrime))
+            *Foam::cos(M_PI*t.value()/endTime)
+      - data.TwoPiSinLat()[ip]
+    );
 }

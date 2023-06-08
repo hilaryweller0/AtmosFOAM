@@ -68,6 +68,7 @@ class sphericalMeshData
         scalar earthRadius_;
         vectorField CfLonLatz_;
         vectorField CLonLatz_;
+        pointField pointsLatLonz_;
 
     // Private Member Functions
 
@@ -120,9 +121,10 @@ public:
         scalar earthRadius() const { return earthRadius_; }
         const vectorField& CfLonLatz() const { return CfLonLatz_; }
         const vectorField& CLonLatz() const { return CLonLatz_; }
+        const pointField& pointsLatLonz() const { return pointsLatLonz_; }
 
         //- Delete the spherical data when the mesh moves
-        virtual bool movePoints();
+        bool movePoints();
 };
 
 

@@ -14,13 +14,13 @@ volVectorField U
 
 volScalarField u
 (
-    IOobject("u", runTime.timeName(), mesh, IOobject::MUST_READ),
+    IOobject("u", runTime.constant(), mesh, IOobject::MUST_READ),
     mesh
 );
 u = U & idir;
 volScalarField w
 (
-    IOobject("w", runTime.timeName(), mesh, IOobject::MUST_READ),
+    IOobject("w", runTime.constant(), mesh, IOobject::MUST_READ),
     mesh
 );
 w = U & kdir;

@@ -42,9 +42,7 @@ int main(int argc, char *argv[])
     #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "createControl.H"
-    #include "createFvModels.H"
-    #include "createTimeControls.H"
+    const int nCorr(readLabel(mesh.solution().lookup("nOuterCorrections")));
 
     #include "createFields.H"
 
@@ -83,19 +81,16 @@ int main(int argc, char *argv[])
          << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
     
     #include "CourantNo.H"
-    #include "setInitialDeltaT.H"
 
     while (runTime.run())
     {
-        #include "readTimeControls.H"
-        fvModels.correct();
         #include "CourantNo.H"
-        #include "setDeltaT.H"
         runTime++;
         Info<< "\nTime = " << runTime.timeName() << endl;
         
         if (timeVaryingWind)
         {
+            Info << "Setting wind field" << endl;
             runTime.setTime
             (
                 runTime.time().value() - 0.5*runTime.deltaTValue(),
@@ -113,13 +108,18 @@ int main(int argc, char *argv[])
 //            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
-        // Implicit advection
-        fvScalarMatrix TEqn
-        (
-            fvm::ddt(T)
-          + fvm::div(phi, T)
-        );
-        TEqn.solve();
+        for (int corr = 0; corr < nCorr; corr++)
+        {
+            // Implicit advection
+            Info << "Creating advection equation matrix" << endl;
+            fvScalarMatrix TEqn
+            (
+                fvm::ddt(T)
+              + fvm::div(phi, T)
+            );
+            Info << "Solving advection equation" << endl;
+            TEqn.solve();
+        }
         
         //TV = totalVariation(T);
         Info << runTime.timeName() << " T goes from " 

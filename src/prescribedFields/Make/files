@@ -21,6 +21,7 @@ tracerField/radialDistance.C
 tracerField/tracerField.C
 tracerField/zLayerTracerField.C
 tracerField/exponentialWithHeightTracerField.C
+velocityField/deformationalNonDivergentGeodesicVelocityFieldData.C
 velocityField/velocityField.C
 velocityField/nonDivergentVelocityField.C
 velocityField/deformationalNonDivergentVelocityField.C
@@ -36,6 +37,7 @@ velocityField/zeroVelocityField.C
 velocityField/constructiveRotorsVelocityField.C
 velocityField/sinusoidalVelocityField.C
 velocityField/geodesicVelocityField.C
+velocityField/geodesicNonDivergentVelocityField.C
 velocityField/geodesicHadleyLikeVelocityField.C
 
 LIB = $(FOAM_USER_LIBBIN)/libprescribedFields
