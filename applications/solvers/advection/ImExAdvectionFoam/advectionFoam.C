@@ -33,7 +33,8 @@ Description
 #include "fvCFD.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
-#include "fvModels.H"
+#include "EulerDdtScheme.H"
+#include "localMax.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -42,21 +43,16 @@ int main(int argc, char *argv[])
     #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
-    #include "createControl.H"
-    #include "createFvModels.H"
-    #include "createTimeControls.H"
-    #define dt runTime.deltaT()
-
-    // Read the number of iterations each time-step
-    const int nCorr = mesh.solution().lookupOrDefault<label>("nCorr", label(2));
+    
+    const int nCorr(readLabel(mesh.solution().lookup("nOuterCorrections")));
     const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
+    const Switch fullImplicit(mesh.schemes().lookup("fullImplicit"));
+
+    // Pre-defined time stepping scheme and min/max interpolation
+    fv::EulerDdtScheme<scalar> EulerDdt(mesh);
+    localMax<scalar> maxInterp(mesh);
 
     #include "createFields.H"
-
-    volScalarField div("div", fvc::div(phi));
-    div.write();
-    Info << "div goes from " << min(div.internalField()).value() << " to "
-         << max(div.internalField()).value() << endl;
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -81,42 +77,43 @@ int main(int argc, char *argv[])
         v = velocityField::New(dict);
         v->applyTo(phi);
         phi.oldTime() = phi;
-        //U = fvc::reconstruct(phi/rhof);
-        //U.write();
-        phi.write();
+        //phi.write();
     }
+
+    #include "CourantNo.H"
+    scalar maxCo = CoNum;
 
     // Initialise up diagnostics
     //scalar TV = totalVariation(T);
     Info << runTime.timeName() << " T goes from " 
          << min(T.internalField()).value() << " to "
-         << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
-    
-    #include "CourantNo.H"
-    #include "setInitialDeltaT.H"
+         << max(T.internalField()).value() << endl; //" TV = " << TV << endl;    
 
     while (runTime.run())
     {
-        #include "readTimeControls.H"
-        fvModels.correct();
         runTime++;
         Info<< "\nTime = " << runTime.timeName() << endl;
         
         if (timeVaryingWind)
         {
-            // Time half way for 2nd order accuracy
+            Info << "Setting wind field" << endl; // half way time for 2nd order
             runTime.setTime
             (
                 runTime.time().value() - 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
             v->applyTo(phi);
-            phiv = phi/rhof;
-            #include "CourantNo.H"
+            // For variable density flow
+            //phiv = phi/rhof;
 
+            #include "CourantNo.H"
+            maxCo = CoNum;
+            Co = CourantNo(phi, runTime.deltaT());
+            Cof = maxInterp.interpolate(Co);
             if (CoLimit > SMALL)
             {
-                exp = 0.5*(sign(phiLimit - mag(phiv)) + 1);
+                ImEx = 0.5*(sign(Cof - CoLimit) + 1);
+                offCentre = max(0.5, 1 - 1/Cof);
             }
 
             runTime.setTime
@@ -124,42 +121,44 @@ int main(int argc, char *argv[])
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
-            //U = fvc::reconstruct(phi);
-            //Uf = linearInterpolate(U);
-            //Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
-        for(label corr = 0; corr < nCorr; corr++)
+        Info << "Advection" << endl;
+        T -= runTime.deltaT()*fvc::div((1-offCentre)*phi, T, "div(phi,T)");
+        T.oldTime() = T;
+
+        for (int corr = 0; corr < nCorr; corr++)
         {
             fvScalarMatrix TEqn
             (
-                fvm::ddt(rho, T)
+                //fvm::ddt(rho, T)
+                EulerDdt.fvmDdt(T)
             );
             if (CoLimit > SMALL)
             {
-                TEqn += fvc::div(exp*phi, T, "explicit");
+                TEqn += fvc::div(offCentre*(1-ImEx)*phi, T, "div(phi,T)");
             }
-            if (min(mag(exp)).value() < 0.5)
+            if (maxCo > CoLimit)
             {
-                TEqn += fvScalarMatrix(fvm::div((1-exp)*phi, T, "implicit"));
+                TEqn += fvScalarMatrix(fvm::div(offCentre*ImEx*phi, T, "div(phi,T)"));
             }
-            TEqn.solve();
+            if (fullImplicit)
+            {
+                TEqn.solve();
+            }
+            else
+            {
+                T = TEqn.H()/TEqn.A();
+                //T = T.oldTime()
+                //  - runTime.deltaT()*fvc::div(offCentre*(1-ImEx)*phi, T, "div(phi,T)");
+            }
         }
         
-/*        const scalarField& V = mesh.V().field();
-        scalarField TV = 0.25*fvc::surfaceSum
-        (
-            mag(fvc::snGrad(T))/mesh.deltaCoeffs()
-        )().primitiveField()/V;
-*/
-        Info << "Time " << runTime.timeName()
-             << " min " << min(T.internalField()).value()
-             << " max " << max(T.internalField()).value()  << endl;
-/*           << " sum " << gSum(T.primitiveField()*V)/gSum(V) << " TV "
-             << gSum(TV) << endl;
+        //TV = totalVariation(T);
+        Info << runTime.timeName() << " T goes from " 
+             << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << endl;//" TV = " << TV << endl;
 
-        if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
-*/
         runTime.write();
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"

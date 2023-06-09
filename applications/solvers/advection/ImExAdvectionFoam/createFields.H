@@ -54,7 +54,7 @@ surfaceScalarField phi
     mesh //Uf & mesh.Sf()
 );
 
-volScalarField rho
+/*volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
     mesh,
@@ -66,23 +66,24 @@ surfaceScalarField rhof
     linearInterpolate(rho)
 );
 // Volume flux (for Courant number limit)
-surfaceScalarField phiv("phiv", phi/rhof);
+surfaceScalarField phiv("phiv", phi/rhof);*/
+//surfaceScalarField& phiv(phi);
 
 // Courant numbers to write out
 volScalarField Co
 (
     IOobject("Co", runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
-    CourantNo(phi/rhof, runTime.deltaT())
+    /*CourantNo(phi/rhof, runTime.deltaT())*/
+    CourantNo(phi, runTime.deltaT())
 );
 Co.write();
 
-// Split the flux into parts for implicit and explicit solution
-const surfaceScalarField phiLimit = CoLimit*mesh.magSf()/mesh.deltaCoeffs()/dt;
-surfaceScalarField exp = 0.5*(sign(phiLimit - mag(phiv)) + 1);
-Info << "phiLimit goes from " << min(phiLimit.internalField()).value()
-     << " to " << max(phiLimit.internalField()).value() << endl;
-Info << "phiv goes from " << min(phiv.internalField()).value()
-     << " to " << max(phiv.internalField()).value() << endl;
-Info << "exp goes from " << min(exp.internalField()).value()
-     << " to " << max(exp.internalField()).value() << endl;
+// Courant number on faces
+surfaceScalarField Cof("Cof", maxInterp.interpolate(Co));
+
+// Implicit/explicit dependent on Courant number
+surfaceScalarField ImEx("ImEx", 0.5*(sign(Cof - CoLimit) + 1));
+
+// Temporal off centering that varies in space (large for large Courant)
+surfaceScalarField offCentre("offCentre", max(0.5, 1 - 1/Cof));
 

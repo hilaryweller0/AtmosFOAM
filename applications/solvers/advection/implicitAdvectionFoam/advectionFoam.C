@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    EulerImplicitExplicitAdvectionFoam
+    ImplicitAdvectionFoam
 
 Description
     Solves a transport equation for a passive scalar using an explicit and/or
@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
         phi.oldTime() = phi;
         U = fvc::reconstruct(phi);
         U.write();
-        phi.write();
+        //phi.write();
     }
 
     // Initialise up diagnostics
@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
     
-    #include "CourantNo.H"
 
     while (runTime.run())
     {
@@ -90,7 +89,7 @@ int main(int argc, char *argv[])
         
         if (timeVaryingWind)
         {
-            Info << "Setting wind field" << endl;
+            Info << "Setting wind field (half way time for 2nd order)" << endl;
             runTime.setTime
             (
                 runTime.time().value() - 0.5*runTime.deltaTValue(),
@@ -102,16 +101,15 @@ int main(int argc, char *argv[])
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
-
-            U = fvc::reconstruct(phi);
-//            Uf = linearInterpolate(U);
-//            Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+            //U = fvc::reconstruct(phi);
+            //Uf = linearInterpolate(U);
+            //Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
         for (int corr = 0; corr < nCorr; corr++)
         {
             // Implicit advection
-            Info << "Creating advection equation matrix" << endl;
+            Info << "Implicit/explicit advection" << endl;
             fvScalarMatrix TEqn
             (
                 fvm::ddt(T)
@@ -128,6 +126,9 @@ int main(int argc, char *argv[])
 
         if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
         runTime.write();
+        Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
+            << "  ClockTime = " << runTime.elapsedClockTime() << " s"
+            << endl;
     }
 
     Info << "End\n" << endl;
