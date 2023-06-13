@@ -12,6 +12,7 @@ volScalarField T
     ),
     mesh
 );
+T.correctBoundaryConditions();
 
 volVectorField U
 (
@@ -53,8 +54,13 @@ surfaceScalarField phi
     ),
     Uf & mesh.Sf()
 );
-phi.write();
-phi.oldTime();
+
+surfaceScalarField offCentre
+(
+    IOobject("offCentre", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar(dimless, scalar(0.5))
+);
 
 // Courant numbers to write out
 volScalarField Co
@@ -63,4 +69,4 @@ volScalarField Co
     CourantNo(phi, runTime.deltaT())
 );
 Co.write();
-fvc::div(phi, T);
+

@@ -33,6 +33,7 @@ Description
 #include "fvCFD.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
+#include "localMax.H"
 #include "fvModels.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -68,7 +69,7 @@ int main(int argc, char *argv[])
         timeVaryingWind = bool(dict.lookup("timeVaryingWind"));
         v = velocityField::New(dict);
         v->applyTo(phi);
-        phi.oldTime() = phi;
+        //phi.oldTime() = phi;
         U = fvc::reconstruct(phi);
         U.write();
         //phi.write();
@@ -80,6 +81,7 @@ int main(int argc, char *argv[])
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
     
+    localMax<scalar> maxInterp(mesh);
 
     while (runTime.run())
     {
@@ -101,15 +103,17 @@ int main(int argc, char *argv[])
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
-            //U = fvc::reconstruct(phi);
-            //Uf = linearInterpolate(U);
-            //Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
         }
 
+        Co = CourantNo(phi, runTime.deltaT());
+        surfaceScalarField Cof(maxInterp.interpolate(Co));
+        offCentre = max(0.5, 1 - 1/Cof);
         for (int corr = 0; corr < nCorr; corr++)
         {
+        
             // Implicit advection
-            Info << "Implicit/explicit advection" << endl;
+            Info << "Outer corr " << corr << " Implicit/explicit advection"
+                 << endl;
             fvScalarMatrix TEqn
             (
                 fvm::ddt(T)
@@ -124,7 +128,6 @@ int main(int argc, char *argv[])
              << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;//" TV = " << TV << endl;
 
-        if (runTime.writeTime()) {Co = CourantNo(phi, runTime.deltaT());}
         runTime.write();
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
