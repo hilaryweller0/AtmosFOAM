@@ -85,7 +85,6 @@ int main(int argc, char *argv[])
 
     while (runTime.run())
     {
-        #include "CourantNo.H"
         runTime++;
         Info<< "\nTime = " << runTime.timeName() << endl;
         
@@ -104,10 +103,11 @@ int main(int argc, char *argv[])
                 runTime.timeIndex()
             );
         }
+        #include "CourantNo.H"
 
-        Co = CourantNo(phi, runTime.deltaT());
-        surfaceScalarField Cof(maxInterp.interpolate(Co));
-        offCentre = max(0.5, 1 - 1/Cof);
+//        Co = CourantNo(phi, runTime.deltaT());
+//        surfaceScalarField Cof(maxInterp.interpolate(Co));
+//        offCentre = max(0.5, 1 - 1/Cof);
         for (int corr = 0; corr < nCorr; corr++)
         {
         
@@ -128,7 +128,11 @@ int main(int argc, char *argv[])
              << min(T.internalField()).value() << " to "
              << max(T.internalField()).value() << endl;//" TV = " << TV << endl;
 
-        runTime.write();
+        if (runTime.writeTime())
+        {
+            Co = CourantNo(phi, runTime.deltaT());
+            runTime.write();
+        }
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
             << endl;

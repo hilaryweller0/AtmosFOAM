@@ -28,7 +28,7 @@ License
 #include "fvcDiv.H"
 #include "EulerDdtScheme.H"
 #include "fvc.H"
-#include "uncorrectedSnGrad.H"
+#include "orthogonalSnGrad.H"
 #include "CourantNoFunc.H"
 #include "localMax.H"
 #include "leastSquaresGrad.H"
@@ -45,11 +45,62 @@ namespace Foam
 namespace fv
 {
 
-// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+// * * * * * * * * * * * * * * * Constructors * * * * * * * * * * * * * * * //
 
 template<class Type>
-void LaxWendroff<Type>::calculateAntiD
+ LaxWendroff<Type>::LaxWendroff
 (
+    const fvMesh& mesh,
+    const surfaceScalarField& faceFlux,
+    Istream& is
+)
+:
+    convectionScheme<Type>(mesh, faceFlux),
+    dict_(is),
+    nCorr_(readLabel(dict_.lookup("nCorr"))),
+    offCentre_(readScalar(dict_.lookup("offCentre"))),
+    timeCorrector_(dict_.lookupOrDefault<word>("timeCorrector", "advective")),
+    FCTlimit_(dict_.lookup("FCTlimit")),
+    FCTmin_(dict_.lookupOrDefault<scalar>("FCTmin", scalar(0))),
+    FCTmax_(dict_.lookupOrDefault<scalar>("FCTmax", scalar(0))),
+    tupwindConvection_
+    (
+        tmp<gaussConvectionScheme<Type>>
+        (
+            new gaussConvectionScheme<Type>
+            (
+                mesh,
+                faceFlux,
+                tmp<surfaceInterpolationScheme<Type>>
+                (
+                    new upwind<Type>(mesh, faceFlux)
+                )
+            )
+        )
+    )
+{
+    if (offCentre_ >= 0.5 - SMALL) timeCorrector_ = "none";
+
+    else if
+    (
+        timeCorrector_ != "advective"
+     && timeCorrector_ != "flux"
+     && timeCorrector_ != "none"
+    )
+    {
+        FatalErrorIn("LaxWendroff::LaxWendroff")
+            << "timeCorrector must be one of advective, flux or none but "
+            << timeCorrector_ << " was given" << exit(FatalError);
+        
+    }
+}
+
+// * * * * * * * * * * Member functions * * * * * * * * * * * * * * * //
+
+template<class Type>
+void LaxWendroff<Type>::calculateFluxCorr
+(
+    surfaceScalarField& fluxCorr,
     const surfaceScalarField& faceFlux,
     const GeometricField<Type, fvPatchField, volMesh>& vf,
     const surfaceScalarField& offCentre
@@ -59,62 +110,58 @@ void LaxWendroff<Type>::calculateAntiD
     const fvMesh& mesh = this->mesh();
     const dimensionedScalar& dt = mesh.time().deltaT();
     const surfaceScalarField& rdelta = mesh.deltaCoeffs();
-    localMax<scalar> maxInterp(this->mesh());
 
-    // Calculate necessary additional fields for the correction
+    // Schemes needed
+    fv::orthogonalSnGrad<Type> snGrad(mesh);
+    fv::gaussGrad<Type> grad(mesh);
+    localMax<scalar> maxInterp(mesh);
+    upwind<vector> upwindV(mesh, faceFlux);
 
     // Gradient of T in the cell centre to cell centre direction
-    fv::uncorrectedSnGrad<Type> snGrad(mesh);
     surfaceScalarField snGradT = snGrad.snGrad(vf);
 
+    // Fields needed
+    // Upwind cell centre (for each face)
+    surfaceVectorField Cup(upwindV.interpolate(mesh.C()));
+    // Full face gradient of T: average between face and upwind location
+    GeometricField
+    <
+        typename outerProduct<vector, Type>::type,
+        fvsPatchField,
+        surfaceMesh
+    > gradT = linearInterpolate(grad.grad(vf));
+    gradT += (snGradT - (gradT & mesh.delta())*rdelta)
+         * mesh.delta()*rdelta;
+    gradT = 0.5*(gradT + upwindV.interpolate(grad.grad(vf)));
+    
     // The correction in space
-    antiD() = 0.5*mag(faceFlux)*snGradT/rdelta;
+    //fluxCorr = 0.5*mag(faceFlux)*snGradT/rdelta;
+    fluxCorr = faceFlux*(gradT & (mesh.Cf() - Cup));
 
     // Apply a correction in time if needed
     if (timeCorrector_ == "advective")
     {
         // The full velocity field from the flux and correct
-        surfaceVectorField Uf = fvc::interpolate
-        (
-            fvc::reconstruct(faceFlux), "LaxWendroff_velocity"
-        );
+        surfaceVectorField Uf = linearInterpolate(fvc::reconstruct(faceFlux));
         Uf += (faceFlux - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 
-        // Full face gradient of T
-        fv::leastSquaresGrad<Type> grad(mesh);
-        GeometricField
-        <
-            typename outerProduct<vector, Type>::type,
-            fvsPatchField,
-            surfaceMesh
-        > gradT = fvc::interpolate(grad.grad(vf), "LaxWendroff_gradient");
-        gradT += (snGradT - (gradT & mesh.delta())*rdelta)
-             * mesh.delta()*rdelta;
-
         // add advetive form time correction
-        antiD() -= max(1-2*offCentre, scalar(0))*0.5*faceFlux*dt*(Uf & gradT);
+        fluxCorr -= max(1-2*offCentre, scalar(0))*0.5*faceFlux*dt*(Uf & gradT);
     }
     else if(timeCorrector_ == "flux")
     {
-        antiD() -= max(1-2*offCentre, scalar(0))*0.5*faceFlux*dt
-         *fvc::interpolate(fvc::div(faceFlux, vf, "LaxWendroff_div"), "LaxWendroff_idiv");
+        fluxCorr -= max(1-2*offCentre, scalar(0))*0.5*faceFlux*dt
+         *linearInterpolate(fvc::div(faceFlux*linearInterpolate(vf)));
     }
 
+    // Reduce the correction where offCentre > 0
+    //fluxCorr *= (1 - offCentre);
+
     // Smooth where offCentre>0
-    surfaceVectorField V("antiDV", linearInterpolate(fvc::reconstruct(antiD())));
+    surfaceVectorField V(linearInterpolate(fvc::reconstruct(fluxCorr)));
     surfaceScalarField imp = offCentre/(offCentre+SMALL);
     imp = maxInterp.interpolate(fvc::localMax(imp));
-    //imp = linearInterpolate(fvc::localMax(imp));
-    antiD() = imp*(V & mesh.Sf()) + (1-imp)*antiD();
-
-    /*// Limit to obey Courant number restriction
-    volScalarField CoV("CoV", 4*CourantNo(antiD(), dt));
-    surfaceScalarField Cof("Cof", maxInterp.interpolate(CoV));
-    antiD() /= max(scalar(1), Cof);
-    */
-    volScalarField CoV("CoV", CourantNo(antiD(), dt));
-    Info << "Anti-diffusive Courant number max: " << max(CoV).value()
-         << endl;
+    fluxCorr = imp*(V & mesh.Sf()) + (1-imp)*fluxCorr;
 }
 
 template<class Type>
@@ -125,7 +172,7 @@ LaxWendroff<Type>::interpolate
     const GeometricField<Type, fvPatchField, volMesh>& vf
 ) const
 {
-    // Just use the low order interpolate for now
+    // Just use the low order interpolate
     tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> tinterp
     (
         new GeometricField<Type, fvsPatchField, surfaceMesh>
@@ -185,34 +232,30 @@ LaxWendroff<Type>::fvcDiv
     const fvMesh& mesh = this->mesh();
     const dimensionedScalar& dt = mesh.time().deltaT();
 
-    // Calculate the local off centering for each face
+    // Schemes needed
+    EulerDdtScheme<Type> backwardEuler(this->mesh());
     localMax<scalar> maxInterp(this->mesh());
-    volScalarField C = CourantNo(faceFlux, dt);
 
+    // Calculate the local off centering for each face
     surfaceScalarField offCentre
     (
         IOobject("offCentre", mesh.time().timeName(), mesh),
         mesh,
-        dimensionedScalar("", dimless, scalar(0))
+        dimensionedScalar("", dimless, offCentre_)
     );
     if (offCentre_ < 0)
     {
-        volScalarField offCentreC
+        offCentre = maxInterp.interpolate
         (
-            "offCentreC",
-            max(1-1/(C+0.25), scalar(0))
+            max(scalar(0), 1 - 1/(CourantNo(faceFlux, dt)+ 0.25))
         );
-        offCentre = maxInterp.interpolate(offCentreC);
     }
-    else {offCentre == offCentre_;}
-    
-    Info << "offCentre goes from " << min(offCentre).value() << " to " 
-         << max(offCentre).value() << endl;
+    const Switch anyImplicit = max(offCentre).value() > SMALL;
     
     // Initialise the divergence to be the first-order upwind divergence
     tmp<GeometricField<Type, fvPatchField, volMesh>> tConvection
     (
-        upwindConvect().fvcDiv((1-offCentre)*faceFlux, vf)
+        upwindConvect().fvcDiv((1-offCentre)*faceFlux, vf.oldTime())
     );
 
     tConvection.ref().rename
@@ -229,56 +272,62 @@ LaxWendroff<Type>::fvcDiv
     );
     
     // Calculte the implicit part of the advection
-    if (mag(offCentre_) > SMALL)
+    if (anyImplicit)
     {
-        EulerDdtScheme<Type> backwardEuler(this->mesh());
-        fvMatrix<Type> fvmT
+        fvMatrix<Type> TEqn
         (
             backwardEuler.fvmDdt(T)
           + upwindConvect().fvmDiv(offCentre*faceFlux, T)
         );
-        fvmT.solve();
+        TEqn.solve();
     
         // Add the low order implicit divergence
-        tConvection.ref() += upwindConvect().fvcDiv(offCentre*faceFlux, T);
+        tConvection.ref() += fvc::div(TEqn.flux());
     }
     
     // Calculate, apply (and update) the correction
-    if (nCorr_ > 0) calculateAntiD(faceFlux, T, offCentre);
+    surfaceScalarField fluxCorr
+    (
+        IOobject("fluxCorr", mesh.time().timeName(), mesh),
+        mesh,
+        dimensionedScalar(T.dimensions()*faceFlux.dimensions(), scalar(0))
+    );
+    if (nCorr_ > 0) calculateFluxCorr(fluxCorr, faceFlux, T, offCentre);
     for(label iCorr = 1; iCorr < nCorr_; iCorr++)
     {
-        calculateAntiD
+        calculateFluxCorr
         (
+            fluxCorr,
             faceFlux,
-            T - dt*fvc::div(antiD()),
+            T - dt*fvc::div(fluxCorr),
             offCentre
         );
     }
-    if (nCorr_ > 0)
+     // Limit the fluxes with Zalesak FCT limiter
+    if (FCTlimit_ && nCorr_ > 0)
     {
         dimensionedScalar FCTmin("FCTmin", T.dimensions(), FCTmin_);
         dimensionedScalar FCTmax("FCTmax", T.dimensions(), FCTmax_);
         
-        // Limit the fluxes with Zalesak FCT limiter if needed
-        if (FCTlimit_)
+        if (FCTmin_ < FCTmax_)
         {
-            if (FCTmin_ < FCTmax_)
-            {
-                fvc::fluxLimit(antiD(), T, FCTmin, FCTmax, dt);
-            }
-            else if (mag(offCentre_) < SMALL)
-            {
-                fvc::fluxLimit(antiD(), T, vf, dt);
-            }
-            else
-            {
-                fvc::fluxLimit(antiD(), T, dt);
-            }
+            fvc::fluxLimit(fluxCorr, T, FCTmin, FCTmax, dt);
         }
-    
-        tConvection.ref() += fvc::div(antiD());
+        else if (!anyImplicit)
+        {
+            fvc::fluxLimit(fluxCorr, T, vf, dt);
+        }
+        else
+        {
+            fvc::fluxLimit(fluxCorr, T, dt);
+        }
     }
     
+    if (nCorr_ > 0)
+    {
+        tConvection.ref() += fvc::div(fluxCorr);
+    }
+
     return tConvection;
 }
 

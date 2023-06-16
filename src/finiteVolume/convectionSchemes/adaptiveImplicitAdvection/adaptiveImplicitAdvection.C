@@ -159,15 +159,28 @@ adaptiveImplicitAdvection<Type>::fvcDiv
     
     // Update the implicit/explicit split
     surfaceScalarField Cof(maxInterp.interpolate(CourantNo(faceFlux, dt)));
+    surfaceScalarField CoBlend
+    (
+        "blend",
+        scalar(1) - max
+        (
+            min((Cof - CoLimit_)/(1 - CoLimit_), scalar(1)),
+            scalar(0)
+        )
+    );
     surfaceScalarField ImEx("ImEx", 0.5*(sign(Cof - CoLimit_) + 1));
     surfaceScalarField oImEx("oImEx", offCentre()*ImEx);
+    const Switch anyImplicit = max(oImEx).value() > SMALL;
 
     // Initialise the divergence to be the old time, upwind divergence
     tmp<GeometricField<Type, fvPatchField, volMesh>> tConvection
     (
         upwindConvect.fvcDiv((1-oImEx)*faceFlux, vf.oldTime())
     );
-    tConvection.ref().rename("convection(" + faceFlux.name() + ',' + vf.name() + ')');
+    tConvection.ref().rename
+    (
+        "convection(" + faceFlux.name() + ',' + vf.name() + ')'
+    );
 
     // Create temporary field to advect and apply explicit upwind
     GeometricField<Type, fvPatchField, volMesh> T
@@ -178,7 +191,7 @@ adaptiveImplicitAdvection<Type>::fvcDiv
     );
 
     // Implicit upwind
-    if (max(oImEx).value() > SMALL)
+    if (anyImplicit)
     {
         fvMatrix<Type> TEqn
         (
@@ -190,10 +203,15 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         T.oldTime() = vf.oldTime() - dt*tConvection();
     }
     else T.oldTime();
+    T = vf;
 
-    // Correction at the old time
-    surfaceScalarField fluxCorrOld = (1-offCentre())*faceFlux.oldTime()
-                               *tCorrectionScheme_->correction(vf.oldTime());
+    // Correction at the old time and RK2 correction for upwind
+    surfaceScalarField fluxCorrOld = CoBlend*(1-offCentre())*faceFlux
+                               *tCorrectionScheme_->correction(vf.oldTime())
+    + (1-ImEx)*offCentre()*faceFlux*
+    (
+        upwindConvect.interpolate(faceFlux, T.oldTime() - vf.oldTime())
+    );
     // Correction to be updated
     surfaceScalarField fluxCorr = fluxCorrOld;
     
@@ -201,7 +219,7 @@ adaptiveImplicitAdvection<Type>::fvcDiv
     for(int iCorr = 0; iCorr < nCorr_; iCorr++)
     {
         fluxCorr = fluxCorrOld
-                 + offCentre()*faceFlux*tCorrectionScheme_->correction(T);
+                 + CoBlend*offCentre()*faceFlux*tCorrectionScheme_->correction(T);
 
         // Add HO fluxes
         if (iCorr < nCorr_-1)
@@ -220,7 +238,7 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         {
             fvc::fluxLimit(fluxCorr, T, FCTmin, FCTmax, dt);
         }
-        else if (max(oImEx).value() < SMALL)
+        else if (!anyImplicit)
         {
             fvc::fluxLimit(fluxCorr, T.oldTime(), vf.oldTime(), dt);
         }
@@ -232,7 +250,6 @@ adaptiveImplicitAdvection<Type>::fvcDiv
     
     if (nCorr_ > 0)
     {
-        T = T.oldTime() - dt*fvc::div(fluxCorr);
         tConvection.ref() += fvc::div(fluxCorr);
     }
 

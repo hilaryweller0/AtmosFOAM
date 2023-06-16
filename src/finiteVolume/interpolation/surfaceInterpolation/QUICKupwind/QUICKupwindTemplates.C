@@ -36,8 +36,9 @@ Foam::QUICKupwind<Type>::QUICKupwind
 )
 :
     upwind<Type>(mesh, faceFlux),
-    Co1_(1),
-    Co2_(2)
+    Co1_(-1),
+    Co2_(-1),
+    applyBlend_(false)
 {}
 
 
@@ -50,7 +51,8 @@ Foam::QUICKupwind<Type>::QUICKupwind
 :
     upwind<Type>(mesh, is),
     Co1_(readScalar(is)),
-    Co2_(readScalar(is))
+    Co2_(readScalar(is)),
+    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0)
 {}
 
 
@@ -64,7 +66,8 @@ Foam::QUICKupwind<Type>::QUICKupwind
 :
     upwind<Type>(mesh, faceFlux, is),
     Co1_(readScalar(is)),
-    Co2_(readScalar(is))
+    Co2_(readScalar(is)),
+    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0)
 {}
 
 
@@ -178,7 +181,10 @@ Foam::QUICKupwind<Type>::correction
         }
     }
     //Scale the correction by the blending factor
-    sfCorr *= blendingFactor();
+    if (applyBlend_)
+    {
+        sfCorr *= blendingFactor();
+    }
 
     return tsfCorr;
 }

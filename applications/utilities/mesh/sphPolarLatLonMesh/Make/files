@@ -1,0 +1,6 @@
+sphPolarLatLonMesh.C
+polarPatch/polarPatch.C
+polarPatch/polarPatchData.C
+extrudedMesh.C
+
+EXE = $(FOAM_USER_APPBIN)/sphPolarLatLonMesh

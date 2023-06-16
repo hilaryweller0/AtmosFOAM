@@ -30,7 +30,7 @@ Description
     correction. Same weighting factors as QUICK but all applied as an explicit
     correction on first-order upwind. 
     Scheme is QUICK below Courant number Co1 and upwind above Co2 and
-    blended in between.
+    blended in between. If Co2 < Co1 or Co1 < 0 then no blending is done.
 
 SourceFiles
     QUICKupwind.C
@@ -64,6 +64,9 @@ class QUICKupwind
 
         //- Courant number above which upwind
         const scalar Co2_;
+        
+        //- Whether or not to apply any blending
+        const Switch applyBlend_;
 
 public:
 

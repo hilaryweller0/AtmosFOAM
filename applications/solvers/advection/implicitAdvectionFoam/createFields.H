@@ -55,13 +55,13 @@ surfaceScalarField phi
     Uf & mesh.Sf()
 );
 
-surfaceScalarField offCentre
+/*surfaceScalarField offCentre
 (
     IOobject("offCentre", runTime.timeName(), mesh),
     mesh,
     dimensionedScalar(dimless, scalar(0.5))
 );
-
+*/
 // Courant numbers to write out
 volScalarField Co
 (

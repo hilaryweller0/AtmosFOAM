@@ -82,13 +82,8 @@ class LaxWendroff
         // Apply Zalesak FCT correction with given limits (equal for monotone)
         const Switch FCTlimit_;
         const Type FCTmin_, FCTmax_;
-        
-        const surfaceScalarField faceVol_;
 
-        //- anti-diffusive flux
-        mutable surfaceScalarField* antiDPtr_;
-
-        //- upwind interpolation
+        //- upwind divergence
         tmp<gaussConvectionScheme<Type>> tupwindConvection_;
 
 public:
@@ -98,110 +93,21 @@ public:
 
     // Constructors
 
-        //- Construct from components
-        LaxWendroff
-        (
-            const fvMesh& mesh,
-            const surfaceScalarField& faceFlux,
-            label nCorr__ = 1,
-            scalar offCentre__ = 0,
-            word timeCorrector__ = "advective",
-            Switch FCTlimit__ = false,
-            scalar FCTmin__ = 0,
-            scalar FCTmax__ = 0
-        )
-        :
-            convectionScheme<Type>(mesh, faceFlux),
-            dict_(),
-            nCorr_(nCorr__),
-            offCentre_(offCentre__),
-            timeCorrector_(timeCorrector__),
-            FCTlimit_(FCTlimit__),
-            FCTmin_(FCTmin__),
-            FCTmax_(FCTmax__),
-            faceVol_(mesh.Sf() & mesh.delta()),
-            antiDPtr_(new surfaceScalarField(faceFlux)),
-            tupwindConvection_
-            (
-                tmp<gaussConvectionScheme<Type>>
-                (
-                    new gaussConvectionScheme<Type>
-                    (
-                        mesh,
-                        faceFlux,
-                        tmp<surfaceInterpolationScheme<Type>>
-                        (
-                            new upwind<Type>(mesh, faceFlux)
-                        )
-                    )
-                )
-            )
-        {}
-
         //- Construct from mesh, faceFlux and Istream
         LaxWendroff
         (
             const fvMesh& mesh,
             const surfaceScalarField& faceFlux,
             Istream& is
-        )
-        :
-            convectionScheme<Type>(mesh, faceFlux),
-            dict_(is),
-            nCorr_(readLabel(dict_.lookup("nCorr"))),
-            offCentre_(readScalar(dict_.lookup("offCentre"))),
-            timeCorrector_(dict_.lookupOrDefault<word>("timeCorrector", "advective")),
-            FCTlimit_(dict_.lookup("FCTlimit")),
-            FCTmin_(dict_.lookupOrDefault<scalar>("FCTmin", scalar(0))),
-            FCTmax_(dict_.lookupOrDefault<scalar>("FCTmax", scalar(0))),
-            faceVol_(mesh.Sf() & mesh.delta()),
-            antiDPtr_(new surfaceScalarField(faceFlux)),
-            tupwindConvection_
-            (
-                tmp<gaussConvectionScheme<Type>>
-                (
-                    new gaussConvectionScheme<Type>
-                    (
-                        mesh,
-                        faceFlux,
-                        tmp<surfaceInterpolationScheme<Type>>
-                        (
-                            new upwind<Type>(mesh, faceFlux)
-                        )
-                    )
-                )
-            )
-        {
-            if (offCentre_ >= 0.5 - SMALL) timeCorrector_ = "none";
-        
-            else if
-            (
-                timeCorrector_ != "advective"
-             && timeCorrector_ != "flux"
-             && timeCorrector_ != "RK2"
-             && timeCorrector_ != "none"
-            )
-            {
-                FatalErrorIn("LaxWendroff::LaxWendroff")
-                    << "timeCorrector must be one of advective, flux or none but "
-                    << timeCorrector_ << " was given" << exit(FatalError);
-                
-            }
-        }
+        );
         
         //- Disallow default bitwise copy construction
         LaxWendroff(const LaxWendroff&) = delete;
 
         //- Destructor
-        ~LaxWendroff()
-        {
-            delete antiDPtr_;
-        }
+        ~LaxWendroff(){}
 
     // Member Functions
-    
-        // Return the anti-diffusive flux
-        surfaceScalarField& antiD() const { return *antiDPtr_; }
     
         //- Access to upwind convection scheme
         const gaussConvectionScheme<Type>& upwindConvect() const
@@ -209,9 +115,10 @@ public:
             return tupwindConvection_();
         }
 
-        //- Calculate the anti-diffusive flux
-        void calculateAntiD
+        //- Calculate the high order flux correction
+        void calculateFluxCorr
         (
+            surfaceScalarField& fluxCorr,
             const surfaceScalarField& faceFlux,
             const GeometricField<Type, fvPatchField, volMesh>& vf,
             const surfaceScalarField& offCentre
