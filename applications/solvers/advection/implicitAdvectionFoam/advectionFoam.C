@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    ImplicitAdvectionFoam
+    implicitAdvectionFoam
 
 Description
     Solves a transport equation for a passive scalar using an explicit and/or
@@ -33,8 +33,6 @@ Description
 #include "fvCFD.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
-#include "localMax.H"
-#include "fvModels.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -69,10 +67,8 @@ int main(int argc, char *argv[])
         timeVaryingWind = bool(dict.lookup("timeVaryingWind"));
         v = velocityField::New(dict);
         v->applyTo(phi);
-        //phi.oldTime() = phi;
-        U = fvc::reconstruct(phi);
+        U = fvc::reconstruct(phi/rhof);
         U.write();
-        //phi.write();
     }
 
     // Initialise up diagnostics
@@ -81,8 +77,6 @@ int main(int argc, char *argv[])
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl; //" TV = " << TV << endl;
     
-    localMax<scalar> maxInterp(mesh);
-
     while (runTime.run())
     {
         runTime++;
@@ -97,17 +91,17 @@ int main(int argc, char *argv[])
                 runTime.timeIndex()
             );
             v->applyTo(phi);
+            phiv = phi/rhof;
             runTime.setTime
             (
                 runTime.time().value() + 0.5*runTime.deltaTValue(),
                 runTime.timeIndex()
             );
         }
-        #include "CourantNo.H"
+        Co = CourantNo(phiv, runTime.deltaT());
+        Info << "Courant Number mean: " << (fvc::domainIntegrate(Co)/Vtot).value()
+             << " max: " << max(Co).value() << endl;
 
-//        Co = CourantNo(phi, runTime.deltaT());
-//        surfaceScalarField Cof(maxInterp.interpolate(Co));
-//        offCentre = max(0.5, 1 - 1/Cof);
         for (int corr = 0; corr < nCorr; corr++)
         {
         
@@ -116,10 +110,9 @@ int main(int argc, char *argv[])
                  << endl;
             fvScalarMatrix TEqn
             (
-                fvm::ddt(T)
+                fvm::ddt(rho, T)
               + fvm::div(phi, T)
             );
-            Info << "Solving advection equation" << endl;
             TEqn.solve();
         }
         
@@ -130,7 +123,6 @@ int main(int argc, char *argv[])
 
         if (runTime.writeTime())
         {
-            Co = CourantNo(phi, runTime.deltaT());
             runTime.write();
         }
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

@@ -126,7 +126,6 @@ int main(int argc, char *argv[])
         Info << "Advection" << endl;
         //T -= runTime.deltaT()*fvc::div((1-offCentre)*phi, T, "div(phi,T)");
         T.oldTime() -= runTime.deltaT()*fvc::div((1-offCentre)*phi, T, "div(phi,T)");
-        //volScalarField divTold = fvc::div((1-offCentre)*phi, T, "div(phi,T)");
 
         for (int corr = 0; corr < nCorr; corr++)
         {

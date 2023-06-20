@@ -55,18 +55,35 @@ surfaceScalarField phi
     Uf & mesh.Sf()
 );
 
-/*surfaceScalarField offCentre
+Info << "Reading in density if present" << endl;
+volScalarField rho
 (
-    IOobject("offCentre", runTime.timeName(), mesh),
+    IOobject("rho", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
     mesh,
-    dimensionedScalar(dimless, scalar(0.5))
+    dimensionedScalar("rho", dimless, scalar(1))
 );
-*/
+surfaceScalarField rhof
+(
+    IOobject("rhof", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+    linearInterpolate(rho)
+);
+// Volume flux (for Courant number limit)
+surfaceScalarField phiv("phiv", phi/rhof);
+
+// Check that phi dimensions are density * volFlux
+if (phiv.dimensions() != dimensionSet(0,3,-1,0,0))
+{
+    FatalErrorIn("implicitAdvectionFoam")
+        << "Dimension inconsistency between flux, phi = " << phi.dimensions()
+        << "\nand density, rho = " << rho.dimensions() << exit(FatalError);
+}
+
 // Courant numbers to write out
 volScalarField Co
 (
     IOobject("Co", runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
-    CourantNo(phi, runTime.deltaT())
+    CourantNo(phiv, runTime.deltaT())
 );
 Co.write();
+dimensionedScalar Vtot = sum(mesh.V());
 

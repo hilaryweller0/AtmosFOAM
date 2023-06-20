@@ -12,6 +12,7 @@ volScalarField T
     ),
     mesh
 );
+T.correctBoundaryConditions();
 
 /*volVectorField U
 (

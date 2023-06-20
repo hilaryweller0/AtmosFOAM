@@ -50,11 +50,11 @@ if (mesh.nInternalFaces())
 
     sumPhi = fvc::surfaceSum(mag(phi*gUnitNormal))().internalField()
           / rho.internalField();
-    CoV = 0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+    CoV = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
     sumPhi = fvc::surfaceSum(mag(phi*(1-mag(gUnitNormal))))().internalField()
           / rho.internalField();
-    CoH = 0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
+    CoH = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
     volScalarField Ndt
     (

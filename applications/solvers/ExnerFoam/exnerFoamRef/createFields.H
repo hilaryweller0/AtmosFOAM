@@ -158,7 +158,8 @@ surfaceScalarField offCentre
     mesh,
     dimensionedScalar(dimless, ocAlpha)
 );
-surfaceScalarField aphi = offCentre*phi;
+// Mid time-level flux
+surfaceScalarField phiMid = (1 - offCentre)*phi.oldTime() + offCentre*phi;
 
 volScalarField rhoRHS
 (

@@ -34,12 +34,25 @@ int main(int argc, char *argv[])
         )
     );
 
+    Info << "Reading in density, rho, if present" << endl;
+    volScalarField rho
+    (
+        IOobject("rho", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+        mesh,
+        dimensionedScalar(dimless, scalar(1))
+    );
+    surfaceScalarField rhof
+    (
+        IOobject("rhof", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
+        linearInterpolate(rho)
+    );
+
     Info << "Creating flux field phi, U and Uf" << endl;
     surfaceScalarField phi
     (
         IOobject("phi", runTime.timeName(), mesh, IOobject::READ_IF_PRESENT),
         mesh,
-        dimensionedScalar("phi", cmptMultiply(dimVelocity, dimArea), scalar(0))
+        dimensionedScalar(dimVelocity*dimArea*rho.dimensions(), scalar(0))
     );
 
     volVectorField U
@@ -52,7 +65,7 @@ int main(int argc, char *argv[])
             IOobject::READ_IF_PRESENT,
             IOobject::AUTO_WRITE
         ),
-        fvc::reconstruct(phi)
+        fvc::reconstruct(phi/rhof)
     );
 
     // Read Uf if present, otherwise create and write
@@ -94,9 +107,9 @@ int main(int argc, char *argv[])
         v->applyTo(phi);
         phi.write();
 
-        U = fvc::reconstruct(phi);
+        U = fvc::reconstruct(phi/rhof);
         Uf = linearInterpolate(U);
-        Uf += (phi - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
+        Uf += (phi/rhof - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 
         Info << "writing U and Uf for time " << runTime.timeName() << endl;
         U.write();

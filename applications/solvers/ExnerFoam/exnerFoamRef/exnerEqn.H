@@ -75,5 +75,5 @@ for (int corr=0; corr<nCorr; corr++)
     }
 }
 U = u*idir + w*kdir;
-aphi = offCentre*phi;
+phiMid = (1 - offCentre)*phi.oldTime() + offCentre*phi;
 

@@ -2,8 +2,7 @@
 solve
 (
     EulerDdt.fvmDdt(rho)
-  - rhoRHS.oldTime()
-  + fvc::div(aphi)
+  + fvc::div(phiMid)
 );
 rhof = fvc::interpolate(rho);
 

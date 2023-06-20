@@ -28,7 +28,6 @@ Description
     LaxWendroff with variable off-centred time stepping as an explicit
      correction on first-order upwind (implicit or explicit)
     Parameters set in a dictionary:
-        nCorr 2;    // Number of correctors (default 1)
         offCentre -1;   // "-1" implies set by Courant number or value [0,1]
         FCTlimit false; // Apply Zalesak FCT, true or false
         FCTmin   0;     // If true give min and max or equal for monotone
@@ -45,6 +44,8 @@ SourceFiles
 #include "upwind.H"
 #include "gaussConvectionScheme.H"
 #include "dictionary.H"
+#include "orthogonalSnGrad.H"
+#include "localMax.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -67,24 +68,94 @@ class LaxWendroff
 {
     // Private Data
 
-        //- Dictionary for reading the LaxWendroff parameters
+        // Dictionary for reading the LaxWendroff parameters
         dictionary dict_;
 
-        //- Number of corrections (1 is normal)
-        const label nCorr_;
-        
         // Off centering uniform value [0,1] or variable (value <0)
         const scalar offCentre_;
         
-        // Use advective or flux form time corrector or none
+        //- Use advective or flux form time corrector or none
         word timeCorrector_;
 
-        // Apply Zalesak FCT correction with given limits (equal for monotone)
+        //- Apply Zalesak FCT correction with given limits (equal for monotone)
         const Switch FCTlimit_;
         const Type FCTmin_, FCTmax_;
 
-        //- upwind divergence
-        tmp<gaussConvectionScheme<Type>> tupwindConvection_;
+        // Density field name
+        const word densityName_;
+
+        // Schemes needed 
+
+        // upwind divergence
+        gaussConvectionScheme<Type> GaussUpwind;
+        
+        // Max interpolate
+        localMax<scalar> maxInterp;
+        
+        
+    // Private member functions
+    
+        //- Calculate the off centering that varies in space
+        tmp<surfaceScalarField> calcOffCentre
+        (
+            const surfaceScalarField& flux
+        ) const;
+        
+        //- Smooth the correction where offCentre > 0
+        void smoothFluxCorr
+        (
+            surfaceScalarField& fluxCorr,
+            const surfaceScalarField& offCentre
+        ) const;
+        
+        //- Calculate the high order flux correction
+        void calculateCorr
+        (
+            surfaceScalarField& Tcorr,
+            const surfaceScalarField& volFlux,
+            const GeometricField<Type, fvPatchField, volMesh>& vf,
+            const surfaceScalarField& offCentre
+        ) const;
+
+        void advect
+        (
+            volScalarField& T,
+            const surfaceScalarField& faceFlux,
+            const surfaceScalarField& volFlux
+        ) const;
+                
+        // Return the density field
+        const volScalarField& rho() const
+        {
+            return this->mesh().objectRegistry::template
+                     lookupObject<volScalarField>(densityName_);
+        }
+        
+        // Check for density field
+        bool isRho() const
+        {
+            return this->mesh().objectRegistry::template
+                 foundObject<volScalarField>(densityName_);
+        }
+        
+        // Divide by the mid-time density on the face
+        tmp<surfaceScalarField> specific(const surfaceScalarField& flux) const;
+
+        // Divide by the density
+        tmp<GeometricField<Type, fvPatchField, volMesh>> 
+        specific(const GeometricField<Type, fvPatchField, volMesh>& vf) const;
+
+        tmp<GeometricField<Type, fvPatchField, volMesh>> 
+        specific
+        (
+            const tmp<GeometricField<Type, fvPatchField, volMesh>>& tvf
+        ) const;
+        
+        tmp<surfaceVectorField> upwindDelta
+        (
+            const surfaceScalarField& flux
+        ) const;
+
 
 public:
 
@@ -109,21 +180,6 @@ public:
 
     // Member Functions
     
-        //- Access to upwind convection scheme
-        const gaussConvectionScheme<Type>& upwindConvect() const
-        {
-            return tupwindConvection_();
-        }
-
-        //- Calculate the high order flux correction
-        void calculateFluxCorr
-        (
-            surfaceScalarField& fluxCorr,
-            const surfaceScalarField& faceFlux,
-            const GeometricField<Type, fvPatchField, volMesh>& vf,
-            const surfaceScalarField& offCentre
-        ) const;
-
         tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> interpolate
         (
             const surfaceScalarField&,
@@ -136,7 +192,6 @@ public:
             const GeometricField<Type, fvPatchField, volMesh>&
         ) const;
 
-        // The part of the advection which is solved implicitly
         tmp<fvMatrix<Type>> fvmDiv
         (
             const surfaceScalarField&,
@@ -148,7 +203,7 @@ public:
             const surfaceScalarField&,
             const GeometricField<Type, fvPatchField, volMesh>&
         ) const;
-
+        
     // Member Operators
 
         //- Disallow default bitwise assignment
