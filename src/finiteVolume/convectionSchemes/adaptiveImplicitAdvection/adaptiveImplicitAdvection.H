@@ -31,7 +31,7 @@ Description
     Parameters set in a dictionary:
         correctionScheme QUICKupwind 1 2; // Name of HO correction scheme
         nCorr 1;    // Number of correctors (default 1)
-        offCentre offCentreName; // Name of surfaceScalarField for off-centering
+        offCentre [0,1] or <0; // <0 means calculated from Courant no, Co
         CoLimit   1; // Max Co to be treated explicitly
         FCTlimit false; // Apply Zalesak FCT, true or false
         FCTmin   0;     // If true give min and max or equal for monotone
@@ -74,14 +74,11 @@ class adaptiveImplicitAdvection
         //- Dictionary for reading the adaptiveImplicitAdvection parameters
         dictionary dict_;
 
-        //- Interpolation scheme for setting correction on upwind
-        tmp<surfaceInterpolationScheme<Type>> tCorrectionScheme_;
-
         //- Number of HO corrections
         const int nCorr_;
 
-        // Off centering (surfaceField from database, 0.5 for 2nd order in time)
-        const word offCentreName_;
+        // Off centering uniform value [0,1] or variable (value <0)
+        const scalar offCentre_;
         
         // Max Courant number to be treated explicitly
         const scalar CoLimit_;
@@ -90,6 +87,32 @@ class adaptiveImplicitAdvection
         const Switch FCTlimit_;
         const scalar FCTmin_, FCTmax_;
 
+    // Private member functions
+    
+        //- Calculate the off centering that varies in space
+        tmp<surfaceScalarField> calcOffCentre
+        (
+            const surfaceScalarField& flux
+        ) const;
+        
+        // The correction scheme
+        tmp<surfaceInterpolationScheme<Type>> corrScheme
+        (
+            const surfaceScalarField& flux
+        ) const
+        {
+            return tmp<surfaceInterpolationScheme<Type>>
+            (
+                surfaceInterpolationScheme<Type>::New
+                (
+                    this->mesh(),
+                    flux,
+                    dict_.lookup("correctionScheme")
+                )
+            );
+        };
+
+        
 public:
 
     //- Runtime type information

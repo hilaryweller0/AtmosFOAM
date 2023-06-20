@@ -42,6 +42,52 @@ namespace Foam
 namespace fv
 {
 
+template<class Type>
+tmp<surfaceScalarField>
+adaptiveImplicitAdvection<Type>::calcOffCentre
+(
+    const surfaceScalarField& volFlux
+) const
+{
+    const fvMesh& mesh = this->mesh();
+    const dimensionedScalar& dt = mesh.time().deltaT();
+    
+    localMax<scalar> maxInterp(mesh);
+
+    tmp<surfaceScalarField> toff
+    (
+        new surfaceScalarField
+        (
+            IOobject("offCentre", mesh.time().timeName(), mesh),
+            mesh,
+            dimensionedScalar("", dimless, offCentre_)
+        )
+    );
+    surfaceScalarField& off = toff.ref();
+    
+    if (offCentre_ < -SMALL)
+    {
+        // First set offCentre_ to Courant number (on the face)
+        if (mesh.objectRegistry::template foundObject<volScalarField>("Co"))
+        {
+            off = maxInterp.interpolate
+            (
+                mesh.objectRegistry::template
+                     lookupObject<volScalarField>("Co")
+            );
+        }
+        else
+        {
+            off = maxInterp.interpolate(CourantNo(volFlux, dt));
+        }
+        // Next calculate off centering from Courant number
+        //off = max(scalar(0.5), 1 - 1/(off + 0.25));
+        off = max(scalar(0.5), 1 - 1/off);
+    }
+    
+    return toff;
+}
+
 // * * * * * * * * * * * Constructor * * * * * * * * * * * * * * * * * * * * //
 
 template<class Type>
@@ -54,15 +100,8 @@ adaptiveImplicitAdvection<Type>::adaptiveImplicitAdvection
 :
     convectionScheme<Type>(mesh, faceFlux),
     dict_(is),
-    tCorrectionScheme_
-    (
-        surfaceInterpolationScheme<Type>::New
-        (
-            mesh, faceFlux, dict_.lookup("correctionScheme")
-        )
-    ),
     nCorr_(readLabel(dict_.lookup("nCorr"))),
-    offCentreName_(dict_.lookup("offCentre")),
+    offCentre_(readScalar(dict_.lookup("offCentre"))),
     CoLimit_(readScalar(dict_.lookup("CoLimit"))),
     FCTlimit_(dict_.lookup("FCTlimit")),
     FCTmin_(dict_.lookupOrDefault<scalar>("FCTmin", scalar(0))),
@@ -71,13 +110,6 @@ adaptiveImplicitAdvection<Type>::adaptiveImplicitAdvection
 
 // * * * * * * * * * * * Member Functions * * * * * * * * * * * * //
 
-template<class Type>
-const surfaceScalarField& 
-adaptiveImplicitAdvection<Type>::offCentre() const
-{
-    return this->mesh().objectRegistry::template
-         lookupObject<surfaceScalarField>(offCentreName_);
-}
 
 template<class Type>
 tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
@@ -92,7 +124,7 @@ adaptiveImplicitAdvection<Type>::interpolate
     (
         new GeometricField<Type, fvsPatchField, surfaceMesh>
         (
-            tCorrectionScheme_().interpolate(vf)
+            corrScheme(faceFlux)->interpolate(vf)
         )
     );
 
@@ -156,81 +188,92 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         faceFlux,
         tmp<surfaceInterpolationScheme<Type>>(new upwind<Type>(mesh, faceFlux))
     );
-    
-    // Update the implicit/explicit split
-    surfaceScalarField Cof(maxInterp.interpolate(CourantNo(faceFlux, dt)));
-    surfaceScalarField CoBlend
+    gaussConvectionScheme<Type> upwindConvectOld
     (
-        "blend",
-        scalar(1) - max
+        mesh,
+        faceFlux.oldTime(),
+        tmp<surfaceInterpolationScheme<Type>>
         (
-            min((Cof - CoLimit_)/(1 - CoLimit_), scalar(1)),
-            scalar(0)
+            new upwind<Type>(mesh, faceFlux.oldTime())
         )
     );
+    
+    // Update the implicit/explicit split
+    surfaceScalarField offCentre = calcOffCentre(faceFlux);
+    surfaceScalarField Cof(maxInterp.interpolate(CourantNo(faceFlux, dt)));
     surfaceScalarField ImEx("ImEx", 0.5*(sign(Cof - CoLimit_) + 1));
-    surfaceScalarField oImEx("oImEx", offCentre()*ImEx);
+    surfaceScalarField oImEx("oImEx", offCentre*ImEx);
     const Switch anyImplicit = max(oImEx).value() > SMALL;
 
-    // Initialise the divergence to be the old time, upwind divergence
-    tmp<GeometricField<Type, fvPatchField, volMesh>> tConvection
-    (
-        upwindConvect.fvcDiv((1-oImEx)*faceFlux, vf.oldTime())
-    );
-    tConvection.ref().rename
-    (
-        "convection(" + faceFlux.name() + ',' + vf.name() + ')'
-    );
-
-    // Create temporary field to advect and apply explicit upwind
+    // Create temporary field to advect
     GeometricField<Type, fvPatchField, volMesh> T
     (
         IOobject(vf.name(), mesh.time().timeName(), mesh),
-        vf.oldTime() - dt*tConvection(),
+        vf,
         vf.boundaryField().types()
     );
+    T.oldTime() = vf.oldTime();
+    
+    // Accumulate the total flux, starting from the old time step terms
+    surfaceScalarField totalFlux = (1-offCentre)*faceFlux.oldTime()*
+    (
+        upwindConvectOld.interpolate(faceFlux.oldTime(), T.oldTime())
+      + corrScheme(faceFlux.oldTime())->correction(T.oldTime())
+    );
 
-    // Implicit upwind
-    if (anyImplicit)
+    // Low and HO corrections
+    for(int iCorr = 0; iCorr < nCorr_; iCorr++)
     {
+        surfaceScalarField totalFluxNew = totalFlux
+            + offCentre*faceFlux*
+            (
+                (1-ImEx)*upwindConvect.interpolate(faceFlux, T)
+              + corrScheme(faceFlux)->correction(T)
+            );
+    
         fvMatrix<Type> TEqn
         (
             backwardEuler.fvmDdt(T)
-          + fvMatrix<Type>(upwindConvect.fvmDiv(oImEx*faceFlux, T))
+          + fvc::div(totalFluxNew)
+          + upwindConvect.fvmDiv(oImEx*faceFlux, T)
         );
         TEqn.solve();
-        tConvection.ref() += fvc::div(TEqn.flux());
-        T.oldTime() = vf.oldTime() - dt*tConvection();
+        
+        if (iCorr == nCorr_-1) totalFlux = totalFluxNew + TEqn.flux();
     }
-    else T.oldTime();
-    T = vf;
 
-    // Correction at the old time and RK2 correction for upwind
-    surfaceScalarField fluxCorrOld = CoBlend*(1-offCentre())*faceFlux
-                               *tCorrectionScheme_->correction(vf.oldTime())
-    + (1-ImEx)*offCentre()*faceFlux*
-    (
-        upwindConvect.interpolate(faceFlux, T.oldTime() - vf.oldTime())
-    );
-    // Correction to be updated
-    surfaceScalarField fluxCorr = fluxCorrOld;
-    
-    // HO corrections
-    for(int iCorr = 0; iCorr < nCorr_; iCorr++)
+    // Limit the fluxes with Zalesak FCT limiter
+    if (FCTlimit_)
     {
-        fluxCorr = fluxCorrOld
-                 + CoBlend*offCentre()*faceFlux*tCorrectionScheme_->correction(T);
-
-        // Add HO fluxes
-        if (iCorr < nCorr_-1)
+        T = T.oldTime();
+        
+        // Calculate the low order solution
+        surfaceScalarField lowFlux = (1-offCentre)*faceFlux.oldTime()*
+        (
+            upwindConvectOld.interpolate(faceFlux.oldTime(), T.oldTime())
+        );
+        
+        for(int iCorr = 0; iCorr < nCorr_; iCorr++)
         {
-            T = T.oldTime() - dt*fvc::div(fluxCorr);
-        }
-    }
+            surfaceScalarField lowFluxNew = lowFlux
+            + offCentre*faceFlux*
+            (
+                (1-ImEx)*upwindConvect.interpolate(faceFlux, T)
+            );
     
-    // Limit the fluxes with Zalesak FCT limiter if needed
-    if (FCTlimit_ && nCorr_ > 0)
-    {
+            fvMatrix<Type> TEqn
+            (
+                backwardEuler.fvmDdt(T)
+              + fvc::div(lowFluxNew)
+              + upwindConvect.fvmDiv(oImEx*faceFlux, T)
+            );
+            TEqn.solve();
+        
+            if (iCorr == nCorr_-1) lowFlux = lowFluxNew + TEqn.flux();
+        }
+        
+        surfaceScalarField fluxCorr = totalFlux - lowFlux;
+
         dimensionedScalar FCTmin("FCTmin", T.dimensions(), FCTmin_);
         dimensionedScalar FCTmax("FCTmax", T.dimensions(), FCTmax_);
         
@@ -240,20 +283,24 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         }
         else if (!anyImplicit)
         {
-            fvc::fluxLimit(fluxCorr, T.oldTime(), vf.oldTime(), dt);
+            fvc::fluxLimit(fluxCorr, T, vf.oldTime(), dt);
         }
         else
         {
-            fvc::fluxLimit(fluxCorr, T.oldTime(), dt);
+            fvc::fluxLimit(fluxCorr, T, dt);
         }
-    }
-    
-    if (nCorr_ > 0)
-    {
-        tConvection.ref() += fvc::div(fluxCorr);
+        totalFlux = lowFlux + fluxCorr;
     }
 
-    return tConvection;
+    // Calculate the implied divergence and return
+    return tmp<GeometricField<Type, fvPatchField, volMesh>>
+    (
+        new GeometricField<Type, fvPatchField, volMesh>
+        (
+            "div("+faceFlux.name()+','+vf.name()+')',
+            fvc::div(totalFlux)
+        )
+    );
 }
 
 
