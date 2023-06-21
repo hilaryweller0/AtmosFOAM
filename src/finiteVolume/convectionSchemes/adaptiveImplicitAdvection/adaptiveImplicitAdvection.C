@@ -212,7 +212,7 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         vf,
         vf.boundaryField().types()
     );
-    T.oldTime() = vf.oldTime();
+    T.oldTime() == vf.oldTime();
     
     // Accumulate the total flux, starting from the old time step terms
     surfaceScalarField totalFlux = (1-offCentre)*faceFlux.oldTime()*
@@ -245,7 +245,7 @@ adaptiveImplicitAdvection<Type>::fvcDiv
     // Limit the fluxes with Zalesak FCT limiter
     if (FCTlimit_)
     {
-        T = T.oldTime();
+        T == T.oldTime();
         
         // Calculate the low order solution
         surfaceScalarField lowFlux = (1-offCentre)*faceFlux.oldTime()*
@@ -253,24 +253,15 @@ adaptiveImplicitAdvection<Type>::fvcDiv
             upwindConvectOld.interpolate(faceFlux.oldTime(), T.oldTime())
         );
         
-        for(int iCorr = 0; iCorr < nCorr_; iCorr++)
-        {
-            surfaceScalarField lowFluxNew = lowFlux
-            + offCentre*faceFlux*
-            (
-                (1-ImEx)*upwindConvect.interpolate(faceFlux, T)
-            );
-    
-            fvMatrix<Type> TEqn
-            (
-                backwardEuler.fvmDdt(T)
-              + fvc::div(lowFluxNew)
-              + upwindConvect.fvmDiv(oImEx*faceFlux, T)
-            );
-            TEqn.solve();
+        fvMatrix<Type> TEqn
+        (
+            backwardEuler.fvmDdt(T)
+          + fvc::div(lowFlux)
+          + upwindConvect.fvmDiv(offCentre*faceFlux, T)
+        );
+        TEqn.solve();
         
-            if (iCorr == nCorr_-1) lowFlux = lowFluxNew + TEqn.flux();
-        }
+        lowFlux += TEqn.flux();
         
         surfaceScalarField fluxCorr = totalFlux - lowFlux;
 

@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
                 runTime.timeIndex()
             );
             v->applyTo(phi);
+            phi.oldTime() = phi;
             phiv = phi/rhof;
             runTime.setTime
             (
