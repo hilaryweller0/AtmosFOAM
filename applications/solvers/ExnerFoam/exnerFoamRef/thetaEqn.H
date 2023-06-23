@@ -2,7 +2,6 @@
 fvScalarMatrix thetaEqn
 (
     EulerDdt.fvmDdt(rho, thetap)
-  + fvc::div(phiMid, thetap, "div(phi,thetap)")
   + rho*w*(fvc::grad(offCentre*thetaaf) & kdir)
   - fvm::laplacian
     (
@@ -12,7 +11,23 @@ fvScalarMatrix thetaEqn
   - thetapRHS
 );
 
-thetaEqn.solve("thetaEqn");
+if (advectionType == advType::Implicit || advectionType == advType::Diagonal)
+{
+    thetaEqn += fvScalarMatrix(fvm::div(aphi, thetap, "div(phi,thetap)"));
+}
+else
+{
+    thetaEqn += fvc::div(aphi, thetap, "div(phi,thetap)");
+}
+
+if (advectionType == advType::Implicit)
+{
+    thetaEqn.solve();
+}
+else
+{
+    thetap = thetaEqn.H()/thetaEqn.A();
+}
 
 thetapf = fvc::interpolate(thetap);
 if (!Boussinesq)

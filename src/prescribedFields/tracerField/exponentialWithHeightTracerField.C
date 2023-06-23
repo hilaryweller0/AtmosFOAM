@@ -20,7 +20,8 @@ exponentialWithHeightTracerField::exponentialWithHeightTracerField
     ),
     z0_(readScalar(dict.lookup("z0"))),
     T0_(readScalar(dict.lookup("tracerAtz0"))),
-    H_(readScalar(dict.lookup("scaleHeight")))
+    H_(readScalar(dict.lookup("scaleHeight"))),
+    offset_(dict.lookupOrDefault<scalar>("offset", scalar(0)))
 {};
 
 scalar exponentialWithHeightTracerField::tracerAt
@@ -33,5 +34,5 @@ scalar exponentialWithHeightTracerField::tracerAt
              ? mag(p) - earthRadius()
              : p.z();
     z -= z0_;
-    return T0_*Foam::exp(-z/H_);
+    return offset_ + T0_*Foam::exp(-z/H_);
 }

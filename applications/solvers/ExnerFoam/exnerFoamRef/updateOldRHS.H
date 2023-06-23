@@ -1,6 +1,4 @@
-// Old RHS does not include advection as this is treated with Lax-Wendroff
-
-thetapRHS = //-fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
+thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
           - rho*w*(fvc::grad((1-offCentre)*thetaaf) & kdir)
           + fvc::laplacian
             (
@@ -10,7 +8,7 @@ thetapRHS = //-fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
 
 if (!hydrostatic)
 {
-    Urhs = //- fvc::div((1-offCentre)*phi, U, "div(phi,U)")
+    Urhs = - fvc::div((1-offCentre)*phi, U, "div(phi,U)")
            - rho*fvc::weightedReconstruct
             (
                (1-offCentre)
@@ -29,8 +27,8 @@ else
             );
     Urhs += idir*
     (
-         /*-fvc::div((1-offCentre)*phi, u, "div(phi,U)")
-        + */fvc::laplacian((1-offCentre)*rhof*fvc::interpolate(turbulence->nuEff()), u)
+         -fvc::div((1-offCentre)*phi, u, "div(phi,U)")
+        + fvc::laplacian((1-offCentre)*rhof*fvc::interpolate(turbulence->nuEff()), u)
     );
 }
 

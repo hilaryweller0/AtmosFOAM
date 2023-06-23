@@ -16,7 +16,7 @@ class exponentialWithHeightTracerField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
-    const scalar z0_, T0_, H_;
+    const scalar z0_, T0_, H_, offset_;
 };
 
 #endif
