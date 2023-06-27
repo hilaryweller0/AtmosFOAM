@@ -72,15 +72,13 @@ if (advectionType == advType::Implicit)
 {
     if (ucorr == 0)
     {
-        Urhs = rho*fvc::weightedReconstruct
-        (
-            offCentre
-           *(Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf() - gSf*thetapf/thetaaf),
-           0.25
-        );
+        solve(uEqn);
+        solve(wEqn);
     }
-    
-    solve(uEqn == (Urhs & idir));
-    solve(wEqn == (Urhs & kdir));
+    else
+    {
+        solve(uEqn == (Urhs & idir));
+        solve(wEqn == (Urhs & kdir));
+    }
 }
 

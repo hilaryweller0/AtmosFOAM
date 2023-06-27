@@ -13,6 +13,7 @@ if (!Boussinesq)
 {
     Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
     Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
+    //Psi.oldTime() = Psi;
 }
 
 for (int corr=0; corr<nCorr; corr++)

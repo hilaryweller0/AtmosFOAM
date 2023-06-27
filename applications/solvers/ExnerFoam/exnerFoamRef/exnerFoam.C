@@ -70,6 +70,7 @@ int main(int argc, char *argv[])
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
     const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
+    const Switch divFreeInitial(mesh.solution().lookup("divFreeInitial"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -88,6 +89,7 @@ int main(int argc, char *argv[])
     fv::EulerDdtScheme<vector> EulerDdtv(mesh);
 
     #include "createFields.H"
+    #include "divFreeInitial.H"
     #include "initContinuityErrs.H"
     #include "initEnergy.H"
     #include "energy.H"
