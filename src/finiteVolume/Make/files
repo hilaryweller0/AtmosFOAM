@@ -15,6 +15,7 @@ finiteVolume/fvc/fvcCof.C
 finiteVolume/fvc/fvcPosDefCof.C
 finiteVolume/fvc/fvcDet.C
 
+functionObjects/CourantNoU/CourantNoU.C
 
 finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C
 finiteVolume/sGradSchemes/interpGrad/interpGrads.C

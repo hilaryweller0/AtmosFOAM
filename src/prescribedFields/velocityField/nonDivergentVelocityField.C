@@ -30,21 +30,21 @@ scalar nonDivergentVelocityField::faceFlux
 ) const
 {
     point p0 = mesh.points()[f.last()];
-    point p1 = p0;
+    point p1;
     vector s0 = streamfunctionAt(p0, t);
-    vector s1 = s0;
+    vector s1;
 
     scalar flux = 0;
 
     forAll(f, ip)
     {
-        p0 = p1;
-        s0 = s1;
         p1 = mesh.points()[f[ip]];
         s1 = streamfunctionAt(p1, t);
         //point pmid = 0.5*(p0 + p1);
         //flux += streamfunctionAt(pmid, t) & (p0 - p1);
         flux += (s0 + s1) & (p0 - p1);
+        p0 = p1;
+        s0 = s1;
     }
 
     return 0.5*flux;

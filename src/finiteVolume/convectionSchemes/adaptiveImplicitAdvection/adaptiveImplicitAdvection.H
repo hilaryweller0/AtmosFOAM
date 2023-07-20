@@ -33,6 +33,7 @@ Description
         nCorr 1;    // Number of correctors (default 1)
         offCentre [0,1] or <0; // <0 means calculated from Courant no, Co
         CoLimit   1; // Max Co to be treated explicitly
+        //fullSolver true; // Use full solver (true) or HbyA
         FCTlimit false; // Apply Zalesak FCT, true or false
         FCTmin   0;     // If true give min and max or equal for monotone
         FCTmax   0;     // If true give min and max or equal for monotone
@@ -82,6 +83,9 @@ class adaptiveImplicitAdvection
         
         // Max Courant number to be treated explicitly
         const scalar CoLimit_;
+        
+        // Full solver or HbyA solution
+        //const Switch fullSolver_;
         
         // Apply Zalesak FCT correction with given limits (equal for monotone)
         const Switch FCTlimit_;

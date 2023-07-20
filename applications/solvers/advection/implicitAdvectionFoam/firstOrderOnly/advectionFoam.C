@@ -22,11 +22,11 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Application
-    implicitAdvectionFoam
+    implicitAdvectionFoam1
 
 Description
-    Solves a transport equation for a passive scalar using an explicit and/or
-    implicit time-stepping method.
+    Solves a transport equation for a passive scalar using Backward-Euler
+    upwind wit H/A instead of a solver
 
 \*---------------------------------------------------------------------------*/
 
@@ -41,10 +41,10 @@ int main(int argc, char *argv[])
     #include "setRootCaseLists.H"
     #include "createTime.H"
     #include "createMesh.H"
-    const int nCorr(readLabel(mesh.solution().lookup("nOuterCorrections")));
+    const Switch fullSolver(mesh.schemes().lookup("fullSolver"));
 
     #include "createFields.H"
-    const dimensionedScalar Ttot0 = fvc::domainIntegrate(rho*T);
+    const dimensionedScalar Ttot0 = fvc::domainIntegrate(T);
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -104,21 +104,24 @@ int main(int argc, char *argv[])
         Info << "Courant Number mean: " << (fvc::domainIntegrate(Co)/Vtot).value()
              << " max: " << max(Co).value() << endl;
 
-        for (int corr = 0; corr < nCorr; corr++)
+        fvScalarMatrix TEqn
+        (
+            fvm::ddt(rho, T)
+          + fvm::div(phi, T)
+        );
+        if (fullSolver)
         {
-        
-            // Implicit advection
-            Info << "Outer corr " << corr << " Implicit/explicit advection"
-                 << endl;
-            fvScalarMatrix TEqn
-            (
-                fvm::ddt(rho, T)
-              + fvm::div(phi, T)
-            );
             TEqn.solve();
+            T = T.oldTime() - runTime.deltaT()*fvc::div(TEqn.flux());
+        }
+        else
+        {
+            T = TEqn.H()/TEqn.A();
+            T = T.oldTime() - runTime.deltaT()*fvc::div(phi, T);
         }
         
-        const dimensionedScalar Ttot = fvc::domainIntegrate(rho*T);
+        dimensionedScalar Ttot = fvc::domainIntegrate(T);
+
         //TV = totalVariation(T);
         Info << runTime.timeName() << " T goes from " 
              << min(T.internalField()).value() << " to "

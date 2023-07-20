@@ -11,7 +11,7 @@ cosSqrTracerField::cosSqrTracerField
 )
 :
     tracerField(velocityField),
-    width_(readScalar(dict.lookup("width"))),
+    halfWidth_(readScalar(dict.lookup("halfWidth"))),
     centre_(dict.lookup("centre")),
     maxTracer_(readScalar(dict.lookup("maxTracer"))),
     backgroundTracer_(readScalar(dict.lookup("backgroundTracer")))
@@ -19,10 +19,10 @@ cosSqrTracerField::cosSqrTracerField
 
 scalar cosSqrTracerField::tracerAt(const point& p, const Time& t) const
 {
-    if (mag(p - centre_) < width_)
+    if (mag(p - centre_) < halfWidth_)
     {
         return backgroundTracer_
-             + maxTracer_*0.25*sqr(1+Foam::cos(M_PI*mag(p - centre_)/width_));
+             + maxTracer_*sqr(Foam::cos(0.5*M_PI*mag(p - centre_)/halfWidth_));
     }
     else
     {

@@ -12,7 +12,7 @@ class cosSqrTracerField final : public tracerField
 
     private:
     scalar tracerAt(const point& p, const Time& t) const;
-    const scalar width_;
+    const scalar halfWidth_;
     const point centre_;
     const scalar maxTracer_;
     const scalar backgroundTracer_;

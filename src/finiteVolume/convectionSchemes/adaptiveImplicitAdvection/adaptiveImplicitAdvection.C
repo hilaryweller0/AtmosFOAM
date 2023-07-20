@@ -103,6 +103,7 @@ adaptiveImplicitAdvection<Type>::adaptiveImplicitAdvection
     nCorr_(readLabel(dict_.lookup("nCorr"))),
     offCentre_(readScalar(dict_.lookup("offCentre"))),
     CoLimit_(readScalar(dict_.lookup("CoLimit"))),
+    //fullSolver_(dict_.lookup("fullSolver")),
     FCTlimit_(dict_.lookup("FCTlimit")),
     FCTmin_(dict_.lookupOrDefault<scalar>("FCTmin", scalar(0))),
     FCTmax_(dict_.lookupOrDefault<scalar>("FCTmax", scalar(0)))
@@ -238,7 +239,6 @@ adaptiveImplicitAdvection<Type>::fvcDiv
           + upwindConvect.fvmDiv(oImEx*faceFlux, T)
         );
         TEqn.solve();
-        
         if (iCorr == nCorr_-1) totalFlux = totalFluxNew + TEqn.flux();
     }
 
@@ -249,17 +249,19 @@ adaptiveImplicitAdvection<Type>::fvcDiv
         
         // Calculate the low order solution
         surfaceScalarField lowFlux = (1-offCentre)*faceFlux.oldTime()*
-        (
             upwindConvectOld.interpolate(faceFlux.oldTime(), T.oldTime())
-        );
+          + offCentre*faceFlux*(1-ImEx)*upwindConvect.interpolate(faceFlux, T);
         
         fvMatrix<Type> TEqn
         (
             backwardEuler.fvmDdt(T)
           + fvc::div(lowFlux)
-          + upwindConvect.fvmDiv(offCentre*faceFlux, T)
+          + upwindConvect.fvmDiv(oImEx*faceFlux, T)
         );
         TEqn.solve();
+        Info << "Low order FCT solutions goes from "
+             << min(T.internalField()).value() << " to "
+             << max(T.internalField()).value() << endl;
         
         lowFlux += TEqn.flux();
         
