@@ -1,13 +1,18 @@
-thetapSource = -rho*w*(fvc::grad(thetaaf) & kdir);
-alphaEff = fvc::interpolate(thermophysicalTransport->alphaEff());
-/*thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
-          - (1-fvc::average(offCentre))*rho*w*(fvc::grad(thetaaf) & kdir)
+if (SIgravityWaves)
+{
+    thetapf = fvc::interpolate(thetap);
+    thetaf = thetapf + thetaaf;
+}
+
+
+thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
+          - rho*w*(fvc::grad((1-offCentre)*thetaaf) & kdir)
           + fvc::laplacian
             (
                 (1-offCentre)*fvc::interpolate(thermophysicalTransport->alphaEff()),
                 thetap
             );
-*/
+
 if (!hydrostatic)
 {
     Urhs = - fvc::div((1-offCentre)*phi, U, "div(phi,U)")

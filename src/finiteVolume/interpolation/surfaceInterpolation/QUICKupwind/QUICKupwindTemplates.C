@@ -38,7 +38,8 @@ Foam::QUICKupwind<Type>::QUICKupwind
     upwind<Type>(mesh, faceFlux),
     Co1_(-1),
     Co2_(-1),
-    applyBlend_(false)
+    applyBlend_(false),
+    rhoName_("")
 {}
 
 
@@ -52,7 +53,8 @@ Foam::QUICKupwind<Type>::QUICKupwind
     upwind<Type>(mesh, is),
     Co1_(readScalar(is)),
     Co2_(readScalar(is)),
-    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0)
+    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0),
+    rhoName_("")
 {}
 
 
@@ -67,7 +69,8 @@ Foam::QUICKupwind<Type>::QUICKupwind
     upwind<Type>(mesh, faceFlux, is),
     Co1_(readScalar(is)),
     Co2_(readScalar(is)),
-    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0)
+    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0),
+    rhoName_(is)
 {}
 
 
@@ -197,11 +200,17 @@ Foam::tmp<Foam::surfaceScalarField> Foam::QUICKupwind<Type>::blendingFactor() co
     
     if (this->faceFlux_.dimensions() == dimMassFlux)
     {
-        // Currently assume that the density field
-        // corresponding to the mass-flux is named "rho"
+        /*// Currently assume that the density field
+        // corresponding to the mass-flux is named "rho" or "rho_0"
+        const word& fl = this->faceFlux_.name();
+        const word rhoName = (fl.replace("_0", "") != fl)
+             ? "rho_0" : "rho";
+        
+        //Info << "Flux is " << fl << " rho is " << rhoName << endl;
+        */
         const volScalarField& rho =
             mesh.objectRegistry::template lookupObject<volScalarField>
-            ("rho");
+            (rhoName_);
 
         tUflux = this->faceFlux_/linearInterpolate(rho);
     }

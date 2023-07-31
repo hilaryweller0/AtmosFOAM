@@ -23,18 +23,15 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamRef
+    exnerFoamRefuvw
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
-    using a simultaneous solution of Exner, theta and phi. 
+    using a simultaneous solution of Exner_g, theta and phi. 
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Removes reference profile.
-    Separate momentum equation for w.
-    Time-stepping is CN with off-centering alpha which depends on Courant
-    number for advection.
+    Exner_g is Exner - g.x/(c_p theta)
 
 \*---------------------------------------------------------------------------*/
 
@@ -52,14 +49,8 @@ Description
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
 #include "fvcWeightedReconstruct.H"
-#include "fvFCTadvectionDiffusion.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-enum class advType{Implicit, Explicit, Diagonal};
-template<> const char* Foam::NamedEnum<advType,3>::names[]
-    = {"Implicit", "Explicit", "Diagonal"};
-NamedEnum<advType, 3> AdvectionType;
 
 int main(int argc, char *argv[])
 {
@@ -68,10 +59,11 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
+    #include "readhRef.H"
+    #include "gh.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
-    const Switch divFreeInitial(mesh.solution().lookup("divFreeInitial"));
+    const Switch hydrostatic(mesh.schemes().lookup("hydrostatic"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
     const int nOuterCorr = itsDict.lookupOrDefault<int>("nOuterCorrectors", 2);
@@ -87,14 +79,11 @@ int main(int argc, char *argv[])
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
-    fv::EulerDdtScheme<vector> EulerDdtv(mesh);
-
+    
     #include "createFields.H"
-    #include "divFreeInitial.H"
     #include "initContinuityErrs.H"
     #include "initEnergy.H"
     #include "energy.H"
-    #include "offCentreAdvection.H"
     #include "updateOldRHS.H"
 
     turbulence->validate();   //- Validate turbulence fields after construction
@@ -112,41 +101,20 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (!Boussinesq)
-            {
-                #include "rhoEqn.H"
-            }
+            #include "rhoEqn.H"
             #include "thetaEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
-        if (!Boussinesq)
-        {
-            #include "rhoEqn.H"
-        }
-        if (SIgravityWaves || hydrostatic)
-        {
-            thetapf = fvc::interpolate(thetap);
-            if (!Boussinesq)
-            {
-                thetaf = thetapf + thetaaf;
-            }
-        }
-        if (!Boussinesq)
-        {
-            #include "thermoUpdate.H"
-            #include "compressibleContinuityErrs.H"
-        }
-        
+        #include "rhoEqn.H"
+
+        #include "thermoUpdate.H"
+        #include "compressibleContinuityErrs.H"
         #include "energy.H"
-        
         //- Solve the turbulence equations and correct the turbulence viscosity
         turbulence->correct();
-
-        #include "offCentreAdvection.H"
         #include "updateOldRHS.H"
-
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

@@ -27,7 +27,7 @@ License
 #include "surfaceFields.H"
 #include "volFields.H"
 #include "localMax.H"
-#include "localMin.H"
+#include "localMinMin.H"
 #include "fvcLocalMinMax.H"
 #include "upwind.H"
 #include "downwind.H"
@@ -53,11 +53,13 @@ void fluxLimit
 {
     const fvMesh& mesh = fluxCorr.mesh();
     
+    // Schemes needed
+    Foam::localMax<scalar> maxInterp(mesh);
+    Foam::localMinMin<scalar> minInterp(mesh);
+
     // Local extrema
     volScalarField Tmin = min(Td, Told);
     volScalarField Tmax = max(Td, Told);
-    Foam::localMax<scalar> maxInterp(mesh);
-    Foam::localMin<scalar> minInterp(mesh);
     surfaceScalarField Tfmax = maxInterp.interpolate(Tmax);
     surfaceScalarField Tfmin = minInterp.interpolate(Tmin);
     Tmax = fvc::localMax(Tfmax);
@@ -82,7 +84,7 @@ void fluxLimit
     
     // Local extrema
     Foam::localMax<scalar> maxInterp(mesh);
-    Foam::localMin<scalar> minInterp(mesh);
+    Foam::localMinMin<scalar> minInterp(mesh);
     surfaceScalarField Tfmax = maxInterp.interpolate(Td);
     surfaceScalarField Tfmin = minInterp.interpolate(Td);
     volScalarField Tmax = fvc::localMax(Tfmax);
@@ -91,7 +93,7 @@ void fluxLimit
     // Amount each cell can rise or fall by
     volScalarField Qp = Tmax - Td;
     volScalarField Qm = Td - Tmin;
-
+    
     fluxLimitFromQ(fluxCorr, Qp, Qm, dt);
 }
 
@@ -133,13 +135,15 @@ void fluxLimitFromQ
     volScalarField Rm = min(1., Qm/max(Pm, Psmall));
     forAll(Rp, cellI)
     {
-        if (mag(Pp[cellI]) < VSMALL) Rp[cellI] = 0;
-        if (mag(Pm[cellI]) < VSMALL) Rm[cellI] = 0;
+        if (mag(Pp[cellI]) < SMALL) Rp[cellI] = 0;
+        if (mag(Pm[cellI]) < SMALL) Rm[cellI] = 0;
     }
     
-    // Limit the fluxes
+    // Up and downwind interpolation schemes
     upwind<scalar> up(mesh, mesh.magSf());
     downwind<scalar> down(mesh, mesh.magSf());
+
+    // Limit the fluxes
     surfaceScalarField RpOwn = up.interpolate(Rp);
     surfaceScalarField RpNei = down.interpolate(Rp);
     surfaceScalarField RmOwn = up.interpolate(Rm);

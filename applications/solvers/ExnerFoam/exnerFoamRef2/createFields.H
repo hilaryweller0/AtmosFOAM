@@ -132,10 +132,6 @@ autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
     fluidThermophysicalTransportModel::New(turbulence(), thermo)
 );
 
-surfaceScalarField alphaEff
-     = fvc::interpolate(thermophysicalTransport->alphaEff());
-alphaEff.oldTime();
-
 // Reading in the sponge layer coefficients (if present)
 const volScalarField muSponge
 (
@@ -174,16 +170,14 @@ rhoRHS.oldTime();
 volVectorField Urhs
 (
     IOobject("Urhs", runTime.timeName(), mesh),
-    EulerDdtv.fvcDdt(rho, U)
+    (U - U.oldTime())/runTime.deltaT()
 );
 Urhs.oldTime();
-/*volScalarField thetapRHS
+volScalarField thetapRHS
 (
     IOobject("thetapRHS", runTime.timeName(), mesh),
     EulerDdt.fvcDdt(rho, thetap)
-);*/
-volScalarField thetapSource("thetapSource", -rho*w*(fvc::grad(thetaaf) & kdir));
-thetapSource.oldTime();
+);
 
 // Fields needed for implicit gravity and acoustic waves
 surfaceScalarField gradnTheta(fvc::snGrad(theta));

@@ -118,12 +118,15 @@ int main(int argc, char *argv[])
             TEqn.solve();
         }
         
+        //volScalarField div("div", fvc::div(phi));
+        
         const dimensionedScalar Ttot = fvc::domainIntegrate(rho*T);
         //TV = totalVariation(T);
         Info << runTime.timeName() << " T goes from " 
              << min(T.internalField()).value() << " to "
              << max(T.internalField()).value()
              << " normalised T mass change = " << ((Ttot - Ttot0)/Ttot0).value()
+             //<< " div goes from " << min(div).value() << " to " << max(div).value()
              << endl;//" TV = " << TV << endl;
 
         if (runTime.writeTime())

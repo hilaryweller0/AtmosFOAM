@@ -44,6 +44,6 @@ vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
         data.Dcos2Lat()[ip]*sqr(Foam::sin(lonPrime))
             *Foam::cos(M_PI*t.value()/endTime)
       - data.TwoPiSinLat()[ip]
-      + 2 * M_PI
+      + 4 * M_PI
     );
 }

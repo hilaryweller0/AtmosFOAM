@@ -59,15 +59,19 @@ void localMin
 
     forAll(mesh.boundary(), patchi)
     {
-        const labelUList& pFaceCells =
-            mesh.boundary()[patchi].faceCells();
+        //if (mesh.boundary()[patchi].coupled())
+        //{
+            const labelUList& pFaceCells =
+                mesh.boundary()[patchi].faceCells();
 
-        const fvsPatchField<scalar>& pssf = ssf.boundaryField()[patchi];
+            const fvsPatchField<scalar>& pssf = ssf.boundaryField()[patchi];
 
-        forAll(mesh.boundary()[patchi], facei)
-        {
-            vfMin[pFaceCells[facei]] = min(vfMin[pFaceCells[facei]], pssf[facei]);
-        }
+            forAll(mesh.boundary()[patchi], facei)
+            {
+                vfMin[pFaceCells[facei]]
+                     = min(vfMin[pFaceCells[facei]], pssf[facei]);
+            }
+        //}
     }
 }
 
@@ -98,14 +102,16 @@ localMin
                 "GREAT",
                 ssf.dimensions(),
                 GREAT
-            ),
-            extrapolatedCalculatedFvPatchField<scalar>::typeName
+            )
         )
     );
     volScalarField& vf = tvf.ref();
 
     localMin(vf.primitiveFieldRef(), ssf);
-    vf.correctBoundaryConditions();
+    forAll(vf.boundaryField(), patchi)
+    {
+        vf.boundaryFieldRef()[patchi] = ssf.boundaryField()[patchi];
+    }
 
     return tvf;
 }
@@ -145,15 +151,19 @@ void localMax
 
     forAll(mesh.boundary(), patchi)
     {
-        const labelUList& pFaceCells =
-            mesh.boundary()[patchi].faceCells();
+        //if (mesh.boundary()[patchi].coupled())
+        //{
+            const labelUList& pFaceCells =
+                mesh.boundary()[patchi].faceCells();
 
-        const fvsPatchField<scalar>& pssf = ssf.boundaryField()[patchi];
+            const fvsPatchField<scalar>& pssf = ssf.boundaryField()[patchi];
 
-        forAll(mesh.boundary()[patchi], facei)
-        {
-            vfMax[pFaceCells[facei]] = max(vfMax[pFaceCells[facei]], pssf[facei]);
-        }
+            forAll(mesh.boundary()[patchi], facei)
+            {
+                vfMax[pFaceCells[facei]]
+                     = max(vfMax[pFaceCells[facei]], pssf[facei]);
+            }
+        //}
     }
 }
 
@@ -184,14 +194,16 @@ localMax
                 "-GREAT",
                 ssf.dimensions(),
                 -GREAT
-            ),
-            extrapolatedCalculatedFvPatchField<scalar>::typeName
+            )
         )
     );
     volScalarField& vf = tvf.ref();
 
     localMax(vf.primitiveFieldRef(), ssf);
-    vf.correctBoundaryConditions();
+    forAll(vf.boundaryField(), patchi)
+    {
+        vf.boundaryFieldRef()[patchi] = ssf.boundaryField()[patchi];
+    }
 
     return tvf;
 }

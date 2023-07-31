@@ -40,8 +40,7 @@ if (SIgravityWaves || hydrostatic)
         G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
     }
     
-    thetapf += offCentre*runTime.deltaT()*fvc::interpolate(w*dThetadz)
-                *sign(fvc::interpolate(G));
+    thetapf += offCentre*runTime.deltaT()*fvc::interpolate(w*dThetadz);
 
     if (!Boussinesq)
     {

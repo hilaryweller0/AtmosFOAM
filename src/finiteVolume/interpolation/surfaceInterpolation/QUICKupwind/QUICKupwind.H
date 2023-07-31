@@ -67,6 +67,9 @@ class QUICKupwind
         
         //- Whether or not to apply any blending
         const Switch applyBlend_;
+        
+        //- Name of the density field to divide the flux (if needed)
+        const word rhoName_;
 
 public:
 

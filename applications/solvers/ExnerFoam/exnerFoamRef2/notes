@@ -1,0 +1,6 @@
+[Remove variable off centering from all but advection?]
+Remove options
+Correct thetap
+Simplify
+checkConsistency.H
+Make implicitAdvection look up offCenter

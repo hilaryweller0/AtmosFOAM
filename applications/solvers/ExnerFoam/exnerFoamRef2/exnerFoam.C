@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamRef
+    exnerFoamRef2
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
@@ -52,14 +52,8 @@ Description
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
 #include "fvcWeightedReconstruct.H"
-#include "fvFCTadvectionDiffusion.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-enum class advType{Implicit, Explicit, Diagonal};
-template<> const char* Foam::NamedEnum<advType,3>::names[]
-    = {"Implicit", "Explicit", "Diagonal"};
-NamedEnum<advType, 3> AdvectionType;
 
 int main(int argc, char *argv[])
 {
@@ -70,7 +64,6 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
     const Switch divFreeInitial(mesh.solution().lookup("divFreeInitial"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
@@ -87,7 +80,6 @@ int main(int argc, char *argv[])
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
-    fv::EulerDdtScheme<vector> EulerDdtv(mesh);
 
     #include "createFields.H"
     #include "divFreeInitial.H"
@@ -112,33 +104,15 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (!Boussinesq)
-            {
-                #include "rhoEqn.H"
-            }
+            #include "rhoEqn.H"
             #include "thetaEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
-        if (!Boussinesq)
-        {
-            #include "rhoEqn.H"
-        }
-        if (SIgravityWaves || hydrostatic)
-        {
-            thetapf = fvc::interpolate(thetap);
-            if (!Boussinesq)
-            {
-                thetaf = thetapf + thetaaf;
-            }
-        }
-        if (!Boussinesq)
-        {
-            #include "thermoUpdate.H"
-            #include "compressibleContinuityErrs.H"
-        }
-        
+        #include "rhoEqn.H"
+        #include "thermoUpdate.H"
+        #include "compressibleContinuityErrs.H"
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity
