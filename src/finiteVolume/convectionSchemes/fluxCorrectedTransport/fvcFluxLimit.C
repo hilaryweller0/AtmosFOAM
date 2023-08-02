@@ -115,6 +115,23 @@ void fluxLimit
 }
 
 
+void fluxLimit
+(
+    surfaceScalarField& fluxCorr,
+    const volScalarField& Td,
+    const volScalarField& Tmin,
+    const volScalarField& Tmax,
+    const dimensionedScalar& dt
+)
+{
+    // Amount each cell can rise or fall by
+    volScalarField Qp = Tmax - Td;
+    volScalarField Qm = Td - Tmin;
+
+    fluxLimitFromQ(fluxCorr, Qp, Qm, dt);
+}
+
+
 void fluxLimitFromQ
 (
     surfaceScalarField& fluxCorr,

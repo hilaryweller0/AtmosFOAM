@@ -61,6 +61,7 @@ namespace fv
         const surfaceScalarField& flux,
         const surfaceScalarField& gamma,
         const volScalarField& S,
+        const bool implicitAdvection = true,
         const bool finalIter = true
     );
 }

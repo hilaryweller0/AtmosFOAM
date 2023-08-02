@@ -13,6 +13,7 @@ fv::FCTadvectionDiffusion
     phi, 
     alphaEff,
     thetapSource,
+    advectionType == advType::Implicit,
     ucorr == nOuterCorr-1
 );
 /*

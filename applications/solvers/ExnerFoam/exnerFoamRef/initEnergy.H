@@ -27,6 +27,7 @@ Info << "KE dimensions = " << KE.dimensions() << nl
      << "internalEnergy dimensions = " << internalEnergy.dimensions() << nl
      << "potentialEnergy dimensions = " << potentialEnergy.dimensions() << endl;
 
+const dimensionedScalar massTot0 = fvc::domainIntegrate(rho);
 const dimensionedScalar KEInitTot = fvc::domainIntegrate(KE)/Vtot;
 const dimensionedScalar internalInitTot 
       = fvc::domainIntegrate(internalEnergy)/Vtot;
@@ -35,14 +36,14 @@ const dimensionedScalar potentialInitTot
       
 Info << "Vtot = " << Vtot << "\nKEInitTot = " << KEInitTot
      << "\ninternalInitTot = " << internalInitTot << "\npotentialInitTot = "
-     << potentialInitTot << endl;
+     << potentialInitTot << "\nmassTot = " << massTot0/Vtot << endl;
      
 const dimensionedScalar energyInitTot 
       = KEInitTot + internalInitTot + potentialInitTot;
 
 if (Pstream::master())
 {
-    es << "#time   KE       internal potential normalisedEnergy  max w"
+    es << "#time   KE       internal potential normalisedEnergy  max w normMass"
        << endl;
 }
 

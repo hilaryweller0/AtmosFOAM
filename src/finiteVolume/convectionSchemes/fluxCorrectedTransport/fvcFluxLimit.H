@@ -72,6 +72,15 @@ namespace fvc
         const dimensionedScalar& dt
     );
 
+    void fluxLimit
+    (
+        surfaceScalarField& fluxCorr,
+        const volScalarField& Td,
+        const volScalarField& Tmin,
+        const volScalarField& Tmax,
+        const dimensionedScalar& dt
+    );
+
     void fluxLimitFromQ
     (
         surfaceScalarField& fluxCorr,

@@ -8,7 +8,7 @@ fvScalarMatrix uEqn
   //+ 2*rho*(Omega^(U-Ug))
   - (Urhs.oldTime() & idir)
 );
-if (advectionType == advType::Implicit || advectionType == advType::Diagonal)
+if (advectionType == advType::Implicit)
 {
     uEqn += fvScalarMatrix(fvm::div(aphi, u, "div(phi,U)"));
 }
@@ -59,7 +59,7 @@ if (!hydrostatic)
         EulerDdt.fvmDdt(rho, w)
       - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
     );
-    if (advectionType == advType::Implicit || advectionType == advType::Diagonal)
+    if (advectionType == advType::Implicit)
     {
         wEqn += fvScalarMatrix(fvm::div(aphi, w, "div(phi,U)"));
     }

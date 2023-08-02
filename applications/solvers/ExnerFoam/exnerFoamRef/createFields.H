@@ -84,17 +84,12 @@ surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
 volScalarField theta("theta", thetaa + thetap);
 const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaa) & kdir);
 
-// Update thermodynamics if needed
-if (!Boussinesq)
-{
-    #include "thermoUpdate.H"
-}
-
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
-    IOobject("rho", runTime.timeName(), mesh),
-    thermo.rho()
+    IOobject("rho", runTime.timeName(), mesh,
+    IOobject::NO_READ, IOobject::AUTO_WRITE),
+    pRef*pow(Exnera, 1/RbyCv)/(R*theta)
 );
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
@@ -112,6 +107,12 @@ surfaceScalarField phi
     fvc::flux(rho*U)
 );
 phi.oldTime();
+
+// Update thermodynamics if needed
+if (!Boussinesq)
+{
+    #include "thermoUpdate.H"
+}
 
 //  turbulence fields
 Info<< "Creating turbulence model\n" << endl;

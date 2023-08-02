@@ -57,7 +57,8 @@ void FCTadvectionDiffusion
     const surfaceScalarField& flux,
     const surfaceScalarField& gamma,
     const volScalarField& S,
-    const bool finalIter
+    const bool implicitAdvection, // = true
+    const bool finalIter //= true
 )
 {
     // Reference to the mesh and the time step
@@ -87,13 +88,22 @@ void FCTadvectionDiffusion
     
     ITstream corrSchemeIS(dict.lookup("correctionScheme"));
     OStringStream oss;
-    oss << corrSchemeIS[0] << " " << corrSchemeIS[1] << " " << corrSchemeIS[2]
-        << " " << corrSchemeIS[3].wordToken()+"_0";
+    for(label i = 0; i < corrSchemeIS.size()-1; i++)
+    {
+        oss << corrSchemeIS[i] << " ";
+    }
+    oss << corrSchemeIS[corrSchemeIS.size()-1].wordToken()+"_0";
     IStringStream corrSchemeIS0(oss.str());
     
-    // Old and new fluxes
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Some additional fields needed throughout
+    // Old and new fluxes and old rhoT
     surfaceScalarField aphi = offCentre*flux;
     surfaceScalarField bphi = (1-offCentre)*flux.oldTime();
+    volScalarField rhoTold = rho.oldTime()*T.oldTime();
+
+    // Time averaged source
+    volScalarField Smid = fvc::average(offCentre)*(S - S.oldTime())+ S.oldTime();
     
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Schemes needed
@@ -140,14 +150,6 @@ void FCTadvectionDiffusion
         HOschemeOld(gaussSchemeOld.interpScheme());
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    // offCentre on cell centres
-    volScalarField offCentreC = fvc::average(1-offCentre);
-
-    // Time averaged source
-    volScalarField Smid = (1-offCentreC)*S.oldTime() + offCentreC*S;
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Full solution without FCT
 
     // Initialise the high and low order total fluxes (including rho T)
@@ -161,20 +163,31 @@ void FCTadvectionDiffusion
     fvMatrix<scalar> TEqn
     (
         backwardEuler.fvmDdt(rho, T)
-      + upwindConvect.fvmDiv(aphi, T)
       - laplacian.fvmLaplacian(offCentre*gamma, T)
       + fvc::div(fluxLow)
       == Smid
     );
+    if (implicitAdvection)
+    {
+        TEqn += fvMatrix<scalar>(upwindConvect.fvmDiv(aphi, T));
+    }
 
     // Iterations of full solution (without FCT)
     for(label iter = 0; iter < nIter; iter++)
     {
-        solve(TEqn == -fvc::div(fluxHigh + aphi*HOscheme->correction(T)));
+        surfaceScalarField flux = fluxHigh + aphi*HOscheme->correction(T);
+        if (!implicitAdvection)
+        {
+            flux += aphi*upwindConvect.interpolate(aphi, T);
+        }
+
+        solve(TEqn == -fvc::div(flux));
     }
 
     // Apply FCT if required
     if (FCT == FCTType::FCTon || (FCT == FCTType::FCTfinal && finalIter))
+    {
+    if (implicitAdvection)
     {
         // Store full flux
         surfaceScalarField flux = fluxLow + fluxHigh
@@ -189,22 +202,61 @@ void FCTadvectionDiffusion
         flux -= fluxLow;
 
         // Limit the solution
-        Foam::fvc::fluxLimit(flux, rho*T, dt);
+        if (FCTmin < FCTmax)
+        {
+            Foam::fvc::fluxLimit(flux, rho*T, rho*FCTmin, rho*FCTmax, dt);
+        }
+        else
+        {
+            Foam::fvc::fluxLimit(flux, rho*T, rhoTold, dt);
+        }
 
         // Calculate the limited solution
         T = 
         (
-            rho.oldTime()*T.oldTime() + dt*
+            rhoTold + dt*
             (
                -fvc::div(flux + fluxLow)
               + Smid
             )
         )/rho;
         T.correctBoundaryConditions();
+    }
+    else // FCT for explicit advection
+    {
+        surfaceScalarField fluxLowNew = aphi*upwindConvect.interpolate(aphi, T);
+    
+        // High order correction
+        fluxHigh += aphi*HOscheme->correction(T);
 
+        // Calculate 1st-order (bounded) solution
+        solve(TEqn == -fvc::div(fluxLowNew));
+        
+        fluxLow += fluxLowNew + TEqn.flux();
+
+        // Limit the solution
+        if (FCTmin < FCTmax)
+        {
+            Foam::fvc::fluxLimit(fluxHigh, rho*T, rho*FCTmin, rho*FCTmax, dt);
+        }
+        else
+        {
+            Foam::fvc::fluxLimit(fluxHigh, rho*T, rhoTold, dt);
+        }
+
+        // Calculate the limited solution
+        T = 
+        (
+            rhoTold + dt*
+            (
+               -fvc::div(fluxHigh + fluxLow)
+              + Smid
+            )
+        )/rho;
+        T.correctBoundaryConditions();
+    }
     }
 }
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

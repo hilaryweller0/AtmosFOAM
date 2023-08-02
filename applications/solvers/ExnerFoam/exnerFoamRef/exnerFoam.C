@@ -56,10 +56,10 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-enum class advType{Implicit, Explicit, Diagonal};
-template<> const char* Foam::NamedEnum<advType,3>::names[]
-    = {"Implicit", "Explicit", "Diagonal"};
-NamedEnum<advType, 3> AdvectionType;
+enum class advType{Implicit, Explicit};
+template<> const char* Foam::NamedEnum<advType,2>::names[]
+    = {"Implicit", "Explicit"};
+NamedEnum<advType, 2> AdvectionType;
 
 int main(int argc, char *argv[])
 {

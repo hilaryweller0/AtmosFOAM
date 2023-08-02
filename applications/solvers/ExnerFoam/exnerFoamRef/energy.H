@@ -8,6 +8,7 @@
     dimensionedScalar potentialTot = fvc::domainIntegrate(potentialEnergy)/Vtot;
     dimensionedScalar energyDiffNorm
          = (KETot + internalTot + potentialTot - energyInitTot)/energyInitTot;
+    dimensionedScalar massTot = fvc::domainIntegrate(thermo.p()/(R*thermo.T()));
     
     scalar maxw = max(U.component(vector::Z)).value();
     
@@ -18,7 +19,7 @@
            << ((internalTot-internalInitTot)/energyInitTot).value() << "  "
            << ((potentialTot-potentialInitTot)/energyInitTot).value() << "  "
            << energyDiffNorm.value() << " "
-           << maxw << endl;
+           << maxw << " " << ((massTot - massTot0)/massTot0).value() << endl;
     }
 }
 
