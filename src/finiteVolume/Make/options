@@ -5,11 +5,26 @@ EXE_INC = \
     -I$(LIB_SRC)/finiteVolume/lnInclude \
     -I$(LIB_SRC)/triSurface/lnInclude \
     -I$(LIB_SRC)/meshTools/lnInclude \
-    -I$(LIB_SRC)/functionObjects/field/lnInclude
+    -I$(LIB_SRC)/functionObjects/field/lnInclude \
+    -I$(LIB_SRC)/physicalProperties/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/basic/lnInclude \
+    -I$(LIB_SRC)/thermophysicalModels/solidThermo/lnInclude \
+    -I$(LIB_SRC)/physicalProperties/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/momentumTransportModels/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/incompressible/lnInclude \
+    -I$(LIB_SRC)/MomentumTransportModels/compressible/lnInclude \
+    -I$(LIB_SRC)/ThermophysicalTransportModels/lnInclude
 
 LIB_LIBS = \
     -lOpenFOAM \
     -lfiniteVolume \
     -ltriSurface \
     -lmeshTools \
-    -lfieldFunctionObjects
+    -lfieldFunctionObjects \
+    -lfluidThermophysicalModels \
+    -lphysicalProperties \
+    -lmomentumTransportModels \
+    -lincompressibleMomentumTransportModels \
+    -lcompressibleMomentumTransportModels \
+    -lthermophysicalTransportModels
+

@@ -47,7 +47,7 @@ for (int corr=0; corr<nCorr; corr++)
             ExnerEqn.setReference(pRefCell, Exnerp[pRefCell]);
         }
 
-        if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr&&corr==nCorr-1)
+        if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr==nCorr-1)
         {
             ExnerEqn.solve(Exnerp.name() + "Final");
         }

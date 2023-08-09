@@ -33,7 +33,7 @@ const dimensionedScalar internalInitTot
       = fvc::domainIntegrate(internalEnergy)/Vtot;
 const dimensionedScalar potentialInitTot 
       = fvc::domainIntegrate(potentialEnergy)/Vtot;
-      
+
 Info << "Vtot = " << Vtot << "\nKEInitTot = " << KEInitTot
      << "\ninternalInitTot = " << internalInitTot << "\npotentialInitTot = "
      << potentialInitTot << "\nmassTot = " << massTot0/Vtot << endl;
@@ -43,7 +43,7 @@ const dimensionedScalar energyInitTot
 
 if (Pstream::master())
 {
-    es << "#time   KE       internal potential normalisedEnergy  max w normMass"
+    es << "#time   KE       internal potential normalisedEnergy  max w normMass heatTransferz"
        << endl;
 }
 

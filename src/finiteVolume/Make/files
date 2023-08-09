@@ -18,6 +18,8 @@ finiteVolume/fvc/fvcPosDefCof.C
 finiteVolume/fvc/fvcDet.C
 
 functionObjects/CourantNoU/CourantNoU.C
+functionObjects/heatFlux/heatFlux.C
+functionObjects/wFlux/wFlux.C
 
 finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C
 finiteVolume/sGradSchemes/interpGrad/interpGrads.C
