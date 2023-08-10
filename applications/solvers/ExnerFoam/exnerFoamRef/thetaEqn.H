@@ -1,22 +1,5 @@
 // theta equation
-alphaEff = fvc::interpolate(thermophysicalTransport->alphaEff());
-thetapSource = -rho*w*(fvc::grad(thetaaf) & kdir);
 
-//volScalarField thetap2("thetap2", thetap);
-//thetap2.oldTime() == thetap.oldTime();
-
-fv::FCTadvectionDiffusion
-(
-    thetap,
-    rho,
-    offCentre,
-    phi, 
-    alphaEff,
-    thetapSource,
-    advectionType == advType::Implicit,
-    ucorr == nOuterCorr-1
-);
-/*
 fvScalarMatrix thetaEqn
 (
     EulerDdt.fvmDdt(rho, thetap)
@@ -29,7 +12,7 @@ fvScalarMatrix thetaEqn
   - thetapRHS
 );
 
-if (advectionType == advType::Implicit || advectionType == advType::Diagonal)
+if (advectionType == advType::Implicit)
 {
     thetaEqn += fvScalarMatrix(fvm::div(aphi, thetap, "div(phi,thetap)"));
 }
@@ -37,19 +20,22 @@ else
 {
     thetaEqn += fvc::div(aphi, thetap, "div(phi,thetap)");
 }
+thetaEqn.solve();
 
-if (advectionType == advType::Implicit)
-{
-    thetaEqn.solve();
-}
-else
-{
-    thetap = thetaEqn.H()/thetaEqn.A();
-}
+/*alphaEff = fvc::interpolate(thermophysicalTransport->alphaEff());
+thetapSource = -rho*w*(fvc::grad(thetaaf) & kdir);
 
-thetap2.write();
-Info << "thetapDiff goes from " << min(thetap - thetap2).value()
-     << " to "  << max(thetap - thetap2).value() << endl;
+fv::FCTadvectionDiffusion
+(
+    thetap,
+    rho,
+    offCentre,
+    phi, 
+    alphaEff,
+    thetapSource,
+    advectionType == advType::Implicit,
+    ucorr == nOuterCorr-1
+);
 */
 thetapf = fvc::interpolate(thetap);
 if (!Boussinesq)

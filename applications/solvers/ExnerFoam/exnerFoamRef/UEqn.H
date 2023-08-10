@@ -69,17 +69,14 @@ if (!hydrostatic)
     }
 }
 
-if (advectionType == advType::Implicit)
+if (ucorr == 0)
 {
-    if (ucorr == 0)
-    {
-        solve(uEqn);
-        solve(wEqn);
-    }
-    else
-    {
-        solve(uEqn == (Urhs & idir));
-        solve(wEqn == (Urhs & kdir));
-    }
+    solve(uEqn);
+    solve(wEqn);
+}
+else
+{
+    solve(uEqn == (Urhs & idir));
+    solve(wEqn == (Urhs & kdir));
 }
 

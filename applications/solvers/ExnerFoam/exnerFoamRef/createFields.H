@@ -91,6 +91,7 @@ volScalarField rho
     IOobject::NO_READ, IOobject::AUTO_WRITE),
     pRef*pow(Exnera, 1/RbyCv)/(R*theta)
 );
+rho.write();
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
 
 Info<< "Calculating face flux field phi\n" << endl;
@@ -107,6 +108,7 @@ surfaceScalarField phi
     fvc::flux(rho*U)
 );
 phi.oldTime();
+phi.write();
 
 // Update thermodynamics if needed
 if (!Boussinesq)
@@ -178,13 +180,13 @@ volVectorField Urhs
     EulerDdtv.fvcDdt(rho, U)
 );
 Urhs.oldTime();
-/*volScalarField thetapRHS
+volScalarField thetapRHS
 (
     IOobject("thetapRHS", runTime.timeName(), mesh),
     EulerDdt.fvcDdt(rho, thetap)
-);*/
-volScalarField thetapSource("thetapSource", -rho*w*(fvc::grad(thetaaf) & kdir));
-thetapSource.oldTime();
+);
+//volScalarField thetapSource("thetapSource", -rho*w*(fvc::grad(thetaaf) & kdir));
+//thetapSource.oldTime();
 
 // Fields needed for implicit gravity and acoustic waves
 surfaceScalarField gradnTheta(fvc::snGrad(theta));
