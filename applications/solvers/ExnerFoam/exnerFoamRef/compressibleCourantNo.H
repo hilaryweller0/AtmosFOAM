@@ -29,32 +29,20 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-scalar CoNum = 0.0;
-scalar CoH = 0;
-scalar CoV = 0;
-scalar meanCoNum = 0.0;
-scalar maxNdt = 0.0;
-
 if (mesh.nInternalFaces())
 {
-    scalarField sumPhi
-    (
-        fvc::surfaceSum(mag(phi))().internalField()
-      / rho.internalField()
-    );
+    scalar maxCoNum = max(CoNum.internalField()).value();
 
-    CoNum = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
+    scalar meanCoNum = (fvc::domainIntegrate(CoNum)/gSum(mesh.V().field()))
+        .value();
 
-    meanCoNum =
-        0.5*(gSum(sumPhi)/gSum(mesh.V().field()))*runTime.deltaTValue();
-
-    sumPhi = fvc::surfaceSum(mag(phi*gUnitNormal))().internalField()
+    scalarField sumPhi = fvc::surfaceSum(mag(phi*gUnitNormal))().internalField()
           / rho.internalField();
-    CoV = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
+    scalar CoV = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
     sumPhi = fvc::surfaceSum(mag(phi*(1-mag(gUnitNormal))))().internalField()
           / rho.internalField();
-    CoH = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
+    scalar CoH = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
     volScalarField Ndt
     (
@@ -65,11 +53,11 @@ if (mesh.nInternalFaces())
             dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
         ))
     );
-    maxNdt = gMax(Ndt);
-}
+    scalar maxNdt = gMax(Ndt);
 
-Info<< "Courant Number mean: " << meanCoNum
-    << " max: " << CoNum << " horizontal " << CoH << " vertical " << CoV
-    << " max Ndt = " << maxNdt << endl;
+    Info<< "Courant Number mean: " << meanCoNum
+        << " max: " << maxCoNum << " horizontal " << CoH << " vertical " << CoV
+        << " max Ndt = " << maxNdt << endl;
+}
 
 // ************************************************************************* //

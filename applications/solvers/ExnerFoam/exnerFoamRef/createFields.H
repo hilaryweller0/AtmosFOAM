@@ -159,6 +159,18 @@ const surfaceScalarField muSpongef
     fvc::interpolate(muSponge)*mag(gUnitNormal)
 );
 
+volScalarField CoNum
+(
+    IOobject("CoNum", runTime.timeName(), mesh),
+    CourantNo(phi/rhof, runTime.deltaT())
+);
+localMax<scalar> maxInterp(mesh);
+surfaceScalarField ImEx
+(
+    "ImEx",
+    0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
+);
+
 surfaceScalarField offCentre
 (
     IOobject("offCentreAdvection", runTime.timeName(), mesh),
@@ -193,11 +205,17 @@ surfaceScalarField gradnTheta(fvc::snGrad(theta));
 volScalarField G
 (
     "G",
-    fvc::average(-offCentre*runTime.deltaT()*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf))
+    fvc::average
+    (
+        -offCentre*runTime.deltaT()*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf)
+    )
 );
 if (!Boussinesq)
 {
-    G += fvc::average(-offCentre*runTime.deltaT()*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp));
+    G += fvc::average
+    (
+        -offCentre*runTime.deltaT()*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp)
+    );
 }
 G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
 volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));

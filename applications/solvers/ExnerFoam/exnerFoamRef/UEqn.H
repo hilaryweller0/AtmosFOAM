@@ -4,18 +4,12 @@
 fvScalarMatrix uEqn
 (
     EulerDdt.fvmDdt(rho, u)
+  + fvm::div(ImEx*aphi, u, "div(phi,U)")
+  + fvc::div((1-ImEx)*aphi, u, "div(phi,U)")
   - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), u)
   //+ 2*rho*(Omega^(U-Ug))
   - (Urhs.oldTime() & idir)
 );
-if (advectionType == advType::Implicit)
-{
-    uEqn += fvScalarMatrix(fvm::div(aphi, u, "div(phi,U)"));
-}
-else
-{
-    uEqn += fvc::div(aphi, u, "div(phi,U)");
-}
 
 // w equation
 fvScalarMatrix wEqn
@@ -27,29 +21,25 @@ fvScalarMatrix wEqn
 if (SIgravityWaves || hydrostatic)
 {
     volScalarField dThetadz("dThetadz", fvc::grad(theta) & kdir);
+    volScalarField offCC = fvc::average(offCentre);
 
     if (!Boussinesq)
     {
-        volScalarField G
+        G = max
         (
-            -runTime.deltaT()*fvc::average(offCentre)*rho*dThetadz*
+            -runTime.deltaT()*sqr(offCC)*rho*dThetadz*
             (
                 (g&kdir)/thetaa + (Cp*fvc::grad(Exnerp) & kdir)
-            )
+            ),
+            dimensionedScalar("", G.dimensions(), scalar(0))
         );
-        G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
     }
     
-    thetapf += offCentre*runTime.deltaT()*fvc::interpolate(w*dThetadz)
-                *sign(fvc::interpolate(G));
-
-    if (!Boussinesq)
-    {
-        thetaf = thetapf + thetaaf;
-    }
+    //thetapf += runTime.deltaT()*fvc::interpolate(offCC*w*dThetadz*sign(G));
+    //if (!Boussinesq) { thetaf = thetapf + thetaaf; }
     
     // Central matrix coefficient    
-    wEqn += fvScalarMatrix(fvm::Sp(ocCoeff*G, w));
+    wEqn += fvScalarMatrix(fvm::Sp(G, w));
 }
 
 if (!hydrostatic)
@@ -57,16 +47,10 @@ if (!hydrostatic)
     wEqn += fvScalarMatrix
     (
         EulerDdt.fvmDdt(rho, w)
+      + fvm::div(ImEx*aphi, w, "div(phi,U)")
+      + fvc::div((1-ImEx)*aphi, w, "div(phi,U)")
       - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
     );
-    if (advectionType == advType::Implicit)
-    {
-        wEqn += fvScalarMatrix(fvm::div(aphi, w, "div(phi,U)"));
-    }
-    else
-    {
-        wEqn += fvc::div(aphi, w, "div(phi,U)");
-    }
 }
 
 if (ucorr == 0)

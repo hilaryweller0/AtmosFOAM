@@ -52,14 +52,15 @@ Description
 #include "rhoThermo.H"
 #include "EulerDdtScheme.H"
 #include "fvcWeightedReconstruct.H"
-#include "fvFCTadvectionDiffusion.H"
+#include "CourantNoFunc.H"
+#include "localMax.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-enum class advType{Implicit, Explicit};
-template<> const char* Foam::NamedEnum<advType,2>::names[]
-    = {"Implicit", "Explicit"};
-NamedEnum<advType, 2> AdvectionType;
+//enum class advType{Implicit, Explicit};
+//template<> const char* Foam::NamedEnum<advType,2>::names[]
+//    = {"Implicit", "Explicit"};
+//NamedEnum<advType, 2> AdvectionType;
 
 int main(int argc, char *argv[])
 {
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
+    //const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
     const Switch divFreeInitial(mesh.solution().lookup("divFreeInitial"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
@@ -84,6 +85,10 @@ int main(int argc, char *argv[])
         readScalar(mesh.schemes().subDict("ddtSchemes").lookup("ocCoeff"))
     );
     const scalar ocAlpha = 1/(1+ocCoeff);
+    const scalar CoLimitExp
+    (
+        readScalar(mesh.schemes().subDict("divSchemes").lookup("CoLimitExp"))
+    );
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
@@ -125,14 +130,14 @@ int main(int argc, char *argv[])
         {
             #include "rhoEqn.H"
         }
-        if (SIgravityWaves || hydrostatic)
+        /*if (SIgravityWaves || hydrostatic)
         {
             thetapf = fvc::interpolate(thetap);
             if (!Boussinesq)
             {
                 thetaf = thetapf + thetaaf;
             }
-        }
+        }*/
         if (!Boussinesq)
         {
             #include "thermoUpdate.H"
