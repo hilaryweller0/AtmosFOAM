@@ -1,1 +1,25 @@
-/home/hilary/.OpenFOAM/10/caseDicts/postProcessing/fields/heatFlux
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+Description
+    Calculates the heat flux
+
+\*---------------------------------------------------------------------------*/
+
+type            heatFlux;
+libs            ("libfiniteVolumeAtmosFOAM.so");
+
+T Tdiff;
+phi phi;
+U U;
+rho rho;
+fields ($T $U $phi $rho);
+
+executeControl  writeTime;
+writeControl    writeTime;
+
+// ************************************************************************* //

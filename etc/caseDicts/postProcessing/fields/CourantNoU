@@ -1,1 +1,22 @@
-/home/hilary/.OpenFOAM/10/caseDicts/postProcessing/fields/CourantNoU
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+Description
+    Calculates the Courant Number field from the velocity field.
+
+\*---------------------------------------------------------------------------*/
+
+type            CourantNoU;
+libs            ("libfiniteVolumeAtmosFOAM.so");
+
+U             U;
+field           $U;
+
+executeControl  writeTime;
+writeControl    writeTime;
+
+// ************************************************************************* //
