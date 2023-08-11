@@ -130,14 +130,14 @@ int main(int argc, char *argv[])
         {
             #include "rhoEqn.H"
         }
-        /*if (SIgravityWaves || hydrostatic)
+        if (SIgravityWaves || hydrostatic)
         {
             thetapf = fvc::interpolate(thetap);
             if (!Boussinesq)
             {
                 thetaf = thetapf + thetaaf;
             }
-        }*/
+        }
         if (!Boussinesq)
         {
             #include "thermoUpdate.H"

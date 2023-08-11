@@ -197,26 +197,7 @@ volScalarField thetapRHS
     IOobject("thetapRHS", runTime.timeName(), mesh),
     EulerDdt.fvcDdt(rho, thetap)
 );
-//volScalarField thetapSource("thetapSource", -rho*w*(fvc::grad(thetaaf) & kdir));
-//thetapSource.oldTime();
 
-// Fields needed for implicit gravity and acoustic waves
-surfaceScalarField gradnTheta(fvc::snGrad(theta));
-volScalarField G
-(
-    "G",
-    fvc::average
-    (
-        -offCentre*runTime.deltaT()*rhof*gradnTheta*gSf/(mesh.magSf()*thetaaf)
-    )
-);
-if (!Boussinesq)
-{
-    G += fvc::average
-    (
-        -offCentre*runTime.deltaT()*rhof*gradnTheta*Cp*fvc::snGrad(Exnerp)
-    );
-}
-G = max(G, dimensionedScalar("", G.dimensions(), scalar(0)));
+// Fields needed for implicit acoustic waves
 volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));
 
