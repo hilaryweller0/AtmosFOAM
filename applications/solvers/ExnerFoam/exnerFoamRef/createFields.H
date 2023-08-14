@@ -82,7 +82,7 @@ surfaceScalarField thetapf
 );
 surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
 volScalarField theta("theta", thetaa + thetap);
-const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaa) & kdir);
+const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaaf) & kdir);
 
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
@@ -198,6 +198,5 @@ volScalarField thetapRHS
     EulerDdt.fvcDdt(rho, thetap)
 );
 
-// Fields needed for implicit acoustic waves
+// Fields needed for implicit gravity and acoustic waves
 volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));
-
