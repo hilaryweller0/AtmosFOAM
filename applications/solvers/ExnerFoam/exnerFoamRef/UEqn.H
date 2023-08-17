@@ -45,6 +45,26 @@ if (SIgravityWaves || hydrostatic)
     );
 
     thetapf += ocCoeff*runTime.deltaT()*fvc::interpolate(w*Gamma);
+    /*
+    // Face calculations
+    surfaceScalarField Gamma = fvc::snGrad(theta);
+    volScalarField G = -sqr(ocCoeff)*runTime.deltaT()*rho*
+    (
+        kdir & 
+        fvc::weightedReconstruct(Gamma*mesh.magSf(), 0.25)
+    )*
+    (
+        kdir & 
+        fvc::weightedReconstruct
+        (
+            gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf(),
+            0.25
+        )
+    );
+    
+    thetapf += ocCoeff*runTime.deltaT()*Gamma*phi
+                /(rhof*mesh.magSf());
+    *///
     if (!Boussinesq) { thetaf = thetaaf + thetapf; }
 
     // Central matrix coefficient
