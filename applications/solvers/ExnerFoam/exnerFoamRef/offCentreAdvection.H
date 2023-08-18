@@ -28,6 +28,6 @@ if (SIgravityWaves)
         dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
     ));
 
-    ImEx += (1 - ImEx)*0.5*(sign(maxInterp.interpolate(Ndt) - 2)+1);
+    ImEx += (1 - ImEx)*0.5*(sign(maxInterp.interpolate(Ndt) - 1.8)+1);
 }
 
