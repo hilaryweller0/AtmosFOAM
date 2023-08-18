@@ -73,12 +73,16 @@ if (SIgravityWaves || hydrostatic)
 
 if (ucorr == 0)
 {
-    solve(uEqn);
-    solve(wEqn);
+    Urhs = -rho*fvc::weightedReconstruct
+    (
+        offCentre*
+        (
+            Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()
+          + gSf*thetapf/thetaaf
+        ),
+        0.25
+    );
 }
-else
-{
-    solve(uEqn == (Urhs & idir));
-    solve(wEqn == (Urhs & kdir));
-}
+solve(uEqn == (Urhs & idir));
+solve(wEqn == (Urhs & kdir));
 
