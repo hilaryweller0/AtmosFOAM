@@ -179,6 +179,23 @@ surfaceScalarField offCentre
 );
 surfaceScalarField aphi = offCentre*phi;
 
+surfaceScalarField Ndt
+(
+    "Ndt", 
+    runTime.deltaT()*Foam::sqrt(max
+    (
+        //-(g & fvc::grad(thetaf))/theta,
+        -gSfhat*fvc::snGrad(thetaa)/thetaaf,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
+    ))
+);
+surfaceScalarField offCentrePG
+(
+    IOobject("offCentrePG", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar(dimless, ocAlpha)
+);
+
 volScalarField rhoRHS
 (
     IOobject("rhoRHS", runTime.timeName(), mesh),

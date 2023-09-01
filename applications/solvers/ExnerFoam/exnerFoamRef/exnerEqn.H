@@ -24,14 +24,14 @@ for (int corr=0; corr<nCorr; corr++)
     U = u*idir + w*kdir;
     
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) - offCentre*rhorAUf*gSf*thetapf/thetaaf;
+    phi = fvc::flux(rho*U) - offCentrePG*rhorAUf*gSf*thetapf/thetaaf;
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
         fvScalarMatrix ExnerEqn
         (
             fvc::div(offCentre*phi)
-          - fvm::laplacian(sqr(offCentre)*rhorAUf*Cp*thetaf, Exnerp)
+          - fvm::laplacian(offCentre*offCentrePG*rhorAUf*Cp*thetaf, Exnerp)
         );
         if (!Boussinesq)
         {
@@ -62,9 +62,9 @@ for (int corr=0; corr<nCorr; corr++)
 
             Urhs = rho*fvc::weightedReconstruct
             (
-                offCentre*
+                offCentrePG*
                 (
-                    ExnerEqn.flux()/(sqr(offCentre)*rhorAUf)
+                    ExnerEqn.flux()/(offCentre*offCentrePG*rhorAUf)
                   - gSf*thetapf/thetaaf
                 ),
                 0.25

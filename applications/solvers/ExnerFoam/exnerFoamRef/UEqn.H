@@ -31,40 +31,25 @@ if (!hydrostatic)
 
 if (SIgravityWaves || hydrostatic)
 {
-    // Calculate excess stratification
+    // Calculate stratification
     volScalarField Gamma = max
     (
-        (fvc::grad(thetaf) & kdir)
-      - thetaa/(sqr(ocCoeff*runTime.deltaT())*magg),
+        (fvc::grad(thetaf) & kdir),
         dimensionedScalar(theta.dimensions()/dimLength, scalar(0))
     );
 
-    volScalarField G = -sqr(ocCoeff)*runTime.deltaT()*rho*Gamma*
-    (
-        (g&kdir)/thetaa + (Cp*fvc::grad(Exnerp) & kdir)
-    );
-
-    thetapf += ocCoeff*runTime.deltaT()*fvc::interpolate(w*Gamma);
-    /*
-    // Face calculations
-    surfaceScalarField Gamma = fvc::snGrad(theta);
-    volScalarField G = -sqr(ocCoeff)*runTime.deltaT()*rho*
-    (
-        kdir & 
-        fvc::weightedReconstruct(Gamma*mesh.magSf(), 0.25)
-    )*
-    (
-        kdir & 
-        fvc::weightedReconstruct
+    volScalarField G = -runTime.deltaT()*rho*Gamma*
+        (fvc::weightedReconstruct
         (
-            gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf(),
+            sqr(offCentrePG)*
+            (
+                gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()
+            ),
             0.25
-        )
-    );
-    
-    thetapf += ocCoeff*runTime.deltaT()*Gamma*phi
-                /(rhof*mesh.magSf());
-    *///
+        ) & kdir);
+
+    thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*Gamma);
+
     if (!Boussinesq) { thetaf = thetaaf + thetapf; }
 
     // Central matrix coefficient
@@ -75,7 +60,7 @@ if (ucorr == 0)
 {
     Urhs = -rho*fvc::weightedReconstruct
     (
-        offCentre*
+        offCentrePG*
         (
             Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()
           + gSf*thetapf/thetaaf

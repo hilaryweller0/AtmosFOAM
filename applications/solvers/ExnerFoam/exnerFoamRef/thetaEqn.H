@@ -5,7 +5,7 @@ fvScalarMatrix thetaEqn
     EulerDdt.fvmDdt(rho, thetap)
   + fvm::div(ImEx*aphi, thetap, "div(phi,thetap)")
   + fvc::div((1-ImEx)*aphi, thetap, "div(phi,thetap)")
-  + fvc::average(offCentre)*rho*w*dThetaadz
+  + fvc::average(offCentrePG)*rho*w*dThetaadz
   - fvm::laplacian
     (
         offCentre*fvc::interpolate(thermophysicalTransport->alphaEff()),

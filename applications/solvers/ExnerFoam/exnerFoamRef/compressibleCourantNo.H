@@ -44,15 +44,6 @@ if (mesh.nInternalFaces())
           / rho.internalField();
     scalar CoH = 0.5*gMax(sumPhi/mesh.V().field())*runTime.deltaTValue();
 
-    volScalarField Ndt
-    (
-        "Ndt",
-        runTime.deltaT()*Foam::sqrt(max
-        (
-            -(g & fvc::grad(thetaf))/theta,
-            dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
-        ))
-    );
     scalar maxNdt = gMax(Ndt);
 
     Info<< "Courant Number mean: " << meanCoNum
