@@ -39,14 +39,14 @@ if (SIgravityWaves || hydrostatic)
     );
 
     volScalarField G = -runTime.deltaT()*rho*Gamma*
-        (fvc::weightedReconstruct
+    (
+        fvc::weightedReconstruct
         (
-            sqr(offCentrePG)*
-            (
-                gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()
-            ),
+            sqr(offCentrePG)*(gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()),
             0.25
-        ) & kdir);
+        )
+        & kdir
+    );
 
     thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*Gamma);
 
