@@ -80,6 +80,7 @@ surfaceScalarField thetapf
     IOobject("thetapf", runTime.timeName(), mesh),
     linearInterpolate(thetap)
 );
+thetapf.oldTime();
 surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
 volScalarField theta("theta", thetaa + thetap);
 const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaaf) & kdir);
@@ -189,12 +190,8 @@ surfaceScalarField Ndt
         dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
     ))
 );
-surfaceScalarField offCentrePG
-(
-    IOobject("offCentrePG", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar(dimless, ocAlpha)
-);
+const surfaceScalarField& offCentrePG = offCentre;
+surfaceScalarField offCentreGW = max(scalar(0), 1 - 1/max(Ndt, SMALL));
 
 volScalarField rhoRHS
 (

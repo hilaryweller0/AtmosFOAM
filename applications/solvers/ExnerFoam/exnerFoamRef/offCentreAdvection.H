@@ -30,7 +30,11 @@ Ndt = runTime.deltaT()*Foam::sqrt
 // Modify Imex for strong stratification
 if (SIgravityWaves)
 {
-    offCentrePG = max(ocAlpha, 1 - 1/max(2*Ndt, SMALL));
+    //offCentrePG = max(ocAlpha, 1 - 1/max(2*Ndt, SMALL));
+    offCentreGW = max(scalar(0), 1 - 1/max(Ndt, SMALL));
+    Info << "offCentreGW goes from " << min(offCentreGW).value()
+         << " to " << max(offCentreGW).value() << endl;
+
     
     ImEx += (1 - ImEx)*0.5*(sign(Ndt - 1.8) + 1);
 

@@ -42,18 +42,18 @@ if (SIgravityWaves || hydrostatic)
     (
         fvc::weightedReconstruct
         (
-            sqr(offCentrePG)*(gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()),
+            offCentrePG*offCentreGW
+                *(gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()),
             0.25
         )
         & kdir
     );
 
-    thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*Gamma);
-
-    if (!Boussinesq) { thetaf = thetaaf + thetapf; }
-
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
+
+    //thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
+    //if (!Boussinesq) { thetaf = thetaaf + thetapf; }
 }
 
 if (ucorr == 0)
