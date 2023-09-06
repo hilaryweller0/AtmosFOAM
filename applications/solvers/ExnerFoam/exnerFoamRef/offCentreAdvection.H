@@ -35,11 +35,11 @@ if (SIgravityWaves)
     Info << "offCentreGW goes from " << min(offCentreGW).value()
          << " to " << max(offCentreGW).value() << endl;
 
-    
     ImEx += (1 - ImEx)*0.5*(sign(Ndt - 1.8) + 1);
 
-    Info << "ocAlpha = " << ocAlpha << " offCentrePG-ocAlpha goes from "
+/*    Info << "ocAlpha = " << ocAlpha << " offCentrePG-ocAlpha goes from "
          << max(offCentrePG).value()-ocAlpha
          << " to " << min(offCentrePG).value()-ocAlpha << endl;
+*/
 }
 
