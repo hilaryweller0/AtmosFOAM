@@ -176,7 +176,7 @@ surfaceScalarField offCentre
 (
     IOobject("offCentreAdvection", runTime.timeName(), mesh),
     mesh,
-    dimensionedScalar(dimless, ocAlpha)
+    dimensionedScalar(dimless, 0.5)
 );
 surfaceScalarField aphi = offCentre*phi;
 
@@ -190,8 +190,15 @@ surfaceScalarField Ndt
         dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
     ))
 );
-const surfaceScalarField& offCentrePG = offCentre;
-surfaceScalarField offCentreGW = max(scalar(0), 1 - 1/max(Ndt, SMALL));
+surfaceScalarField offCentrePG
+(
+    IOobject("offCentrePG", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar(dimless, ocAlpha)
+);
+
+surfaceScalarField& offCentreGW = offCentrePG;
+    //max(scalar(0), 1 - 1/max(Ndt, SMALL));
 
 volScalarField rhoRHS
 (

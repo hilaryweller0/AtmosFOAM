@@ -52,8 +52,8 @@ if (SIgravityWaves || hydrostatic)
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 
-    //thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
-    //if (!Boussinesq) { thetaf = thetaaf + thetapf; }
+    thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
+    if (!Boussinesq) { thetaf = thetaaf + thetapf; }
 }
 
 if (ucorr == 0)
