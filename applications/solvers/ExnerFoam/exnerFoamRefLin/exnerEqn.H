@@ -9,8 +9,8 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
-volScalarField Psi = rho/(RbyCv*Exner.oldTime());
+Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
+Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 
 for (int corr=0; corr<nCorr; corr++)
 {
@@ -20,26 +20,26 @@ for (int corr=0; corr<nCorr; corr++)
     U = u*idir + w*kdir;
 
     // Flux without pressure gradient
-    phi = fvc::flux(rho*U) + offCentrePG*rhorAUf*gSf;
+    phi = fvc::flux(rho*U) - offCentrePG*rhorAUf*gSf*thetapf/thetaaf;
 
     for (int nonOrth=0; nonOrth<=nNonOrthCorr; nonOrth++)
     {
         fvScalarMatrix ExnerEqn
         (
-            EulerDdt.fvmDdt(Psi, Exner)
+            EulerDdt.fvmDdt(Psi, Exnerp)
           + EulerDdt.fvcDdt(rho)
           - rhoRHS.oldTime()
           + fvc::div(offCentre*phi)
-          - fvm::laplacian(offCentre*offCentrePG*rhorAUf*Cp*thetaf, Exner)
+          - fvm::laplacian(offCentre*offCentrePG*rhorAUf*Cp*thetaaf, Exnerp)
         );
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr==nCorr-1)
         {
-            ExnerEqn.solve(Exner.name() + "Final");
+            ExnerEqn.solve(Exnerp.name() + "Final");
         }
         else
         {
-            ExnerEqn.solve(Exner.name());
+            ExnerEqn.solve(Exnerp.name());
         }
 
         if (nonOrth == nNonOrthCorr)
@@ -50,7 +50,8 @@ for (int corr=0; corr<nCorr; corr++)
             (
                 offCentrePG*
                 (
-                    gSf + ExnerEqn.flux()/(offCentre*offCentrePG*rhorAUf)
+                    ExnerEqn.flux()/(offCentre*offCentrePG*rhorAUf)
+                  - gSf*thetapf/thetaaf
                 ),
                 0.25
             );

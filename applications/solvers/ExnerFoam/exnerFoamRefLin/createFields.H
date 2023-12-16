@@ -25,12 +25,12 @@ volScalarField w
 );
 w = U & kdir;
 
-Info<< "Reading Exner\n" << endl;
-volScalarField Exner
+Info<< "Reading perturbation Exner, Exnerp\n" << endl;
+volScalarField Exnerp
 (
     IOobject
     (
-        "Exner",
+        "Exnerp",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -38,14 +38,21 @@ volScalarField Exner
     ),
     mesh
 );
-Exner.oldTime();
+Exnerp.oldTime();
 
-Info<< "Reading theta\n" << endl;
-volScalarField theta
+Info << "Reading ambient Exner, Exnera\n" << endl;
+const volScalarField Exnera
+(
+    IOobject("Exnera", runTime.constant(), mesh, IOobject::MUST_READ),
+    mesh
+);
+
+Info<< "Reading theta perturbations, thetap\n" << endl;
+volScalarField thetap
 (
     IOobject
     (
-        "theta",
+        "thetap",
         runTime.timeName(),
         mesh,
         IOobject::MUST_READ,
@@ -53,19 +60,31 @@ volScalarField theta
     ),
     mesh
 );
-// theta on the face
-surfaceScalarField thetaf
+
+Info << "Reading ambient theta, thetaa\n" << endl;
+const volScalarField thetaa
 (
-    IOobject("thetaf", runTime.timeName(), mesh),
-    linearInterpolate(theta)
+    IOobject("thetaa", runTime.constant(), mesh, IOobject::MUST_READ),
+    mesh
 );
 
+// thetaa and thetap on the face
+const surfaceScalarField thetaaf("thetaaf", linearInterpolate(thetaa));
+surfaceScalarField thetapf
+(
+    IOobject("thetapf", runTime.timeName(), mesh),
+    linearInterpolate(thetap)
+);
+thetapf.oldTime();
+surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
+volScalarField theta("theta", thetaa + thetap);
+const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaaf) & kdir);
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (
     IOobject("rho", runTime.timeName(), mesh,
     IOobject::NO_READ, IOobject::AUTO_WRITE),
-    pRef*pow(Exner, 1/RbyCv)/(R*theta)
+    pRef*pow(Exnera, 1/RbyCv)/(R*theta)
 );
 rho.write();
 surfaceScalarField rhof("rhof", fvc::interpolate(rho));
@@ -131,16 +150,51 @@ const surfaceScalarField muSpongef
     fvc::interpolate(muSponge)*mag(gUnitNormal)
 );
 
+const volScalarField N2
+(
+    "N2",
+    max
+    (
+        dThetaadz*magg/thetaa,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
+    )
+);
+
+const surfaceScalarField Ndt
+(
+    "Ndt", 
+    runTime.deltaT()*Foam::sqrt(max
+    (
+        maxInterp.interpolate(N2), //-gSfhat*fvc::snGrad(thetaa)/thetaaf,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), SMALL)
+    ))
+);
+
+const surfaceScalarField Ndtf
+(
+    "Ndtf",
+    runTime.deltaT()*Foam::sqrt(max
+    (
+        -gSfhat*fvc::snGrad(thetaa)/thetaaf,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), SMALL)
+    ))
+);
+
 volScalarField CoNum
 (
     IOobject("CoNum", runTime.timeName(), mesh),
     CourantNo(phi/rhof, runTime.deltaT())
 );
-localMax<scalar> maxInterp(mesh);
 surfaceScalarField ImEx
 (
     "ImEx",
     0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
+);
+
+const surfaceScalarField offCentrev
+(
+    "offCentrev",
+    max(ocAlpha, 1 - 1/(2*Ndtf))
 );
 
 surfaceScalarField offCentre
@@ -151,24 +205,12 @@ surfaceScalarField offCentre
 );
 surfaceScalarField aphi = offCentre*phi;
 
-surfaceScalarField Ndt
-(
-    "Ndt", 
-    runTime.deltaT()*Foam::sqrt(max
-    (
-        -gSfhat*fvc::snGrad(theta)/thetaf,
-        dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
-    ))
-);
 surfaceScalarField offCentrePG
 (
     IOobject("offCentrePG", runTime.timeName(), mesh),
     mesh,
     dimensionedScalar(dimless, ocAlpha)
 );
-
-surfaceScalarField offCentreGW = //offCentrePG;
-    max(scalar(0), 1 - 1/max(Ndt, SMALL));
 
 volScalarField rhoRHS
 (
@@ -183,12 +225,11 @@ volVectorField Urhs
     EulerDdtv.fvcDdt(rho, U)
 );
 Urhs.oldTime();
-volScalarField thetaRHS
+volScalarField thetapRHS
 (
-    IOobject("thetaRHS", runTime.timeName(), mesh),
-    EulerDdt.fvcDdt(rho, theta)
+    IOobject("thetapRHS", runTime.timeName(), mesh),
+    EulerDdt.fvcDdt(rho, thetap)
 );
 
 // Fields needed for implicit gravity and acoustic waves
-volScalarField Psi("Psi", rho/(RbyCv*Exner));
-
+volScalarField Psi("Psi", rho/(RbyCv*(Exnera+Exnerp.oldTime())));

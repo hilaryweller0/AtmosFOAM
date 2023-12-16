@@ -23,7 +23,7 @@ License
     Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 Application
-    exnerFoamA
+    exnerFoamRefLin
 
 Description
     Transient solver for buoyant, viscous, compressible, non-hydrostatic flow
@@ -31,7 +31,10 @@ Description
     Separate solutions for components of the velocity.
     Optional turbulence modelling.
     Optional implicit gravity waves and implicit advection.
-    Separate momentum equation for w
+    Removes reference profile. Assume ref theta in Exner gradient
+    Separate momentum equation for w.
+    Time-stepping is CN with off-centering alpha which depends on Courant
+    number for advection and GWs.
 
 \*---------------------------------------------------------------------------*/
 
@@ -84,6 +87,7 @@ int main(int argc, char *argv[])
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     fv::EulerDdtScheme<vector> EulerDdtv(mesh);
+    localMax<scalar> maxInterp(mesh);
 
     #include "createFields.H"
     #include "divFreeInitial.H"
@@ -115,6 +119,8 @@ int main(int argc, char *argv[])
             #include "exnerEqn.H"
         }
         #include "rhoEqn.H"
+        thetapf = fvc::interpolate(thetap);
+        thetaf = thetapf + thetaaf;
 
         #include "thermoUpdate.H"
         #include "compressibleContinuityErrs.H"

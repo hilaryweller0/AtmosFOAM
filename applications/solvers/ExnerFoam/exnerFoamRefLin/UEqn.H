@@ -24,34 +24,24 @@ fvScalarMatrix wEqn
 
 if (SIgravityWaves)
 {
-    // Calculate stratification
-    volScalarField Gamma = max
-    (
-        (fvc::grad(thetaf) & kdir),
-        dimensionedScalar(theta.dimensions()/dimLength, scalar(0))
-    );
-
-    volScalarField G = -runTime.deltaT()*rho*Gamma*
-    (
-        fvc::weightedReconstruct
-        (
-            offCentrePG*offCentreGW*Cp*fvc::snGrad(Exner)*mesh.magSf(),
-            0.25
-        )
-        & kdir
-    );
+    volScalarField G = runTime.deltaT()*rho*N2*fvc::average(sqr(offCentrePG));
 
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 
-    thetaf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
+    thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*dThetaadz);
 }
 
 if (ucorr == 0)
 {
-    Urhs = rho*fvc::weightedReconstruct
+    Urhs = -rho*fvc::weightedReconstruct
     (
-        offCentrePG*(gSf - Cp*thetaf*fvc::snGrad(Exner)*mesh.magSf()), 0.25
+        offCentrePG*
+        (
+            Cp*thetaaf*fvc::snGrad(Exnerp)*mesh.magSf()
+          + gSf*thetapf/thetaaf
+        ),
+        0.25
     );
 }
 solve(uEqn == (Urhs & idir));

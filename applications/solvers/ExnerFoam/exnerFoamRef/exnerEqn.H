@@ -22,7 +22,7 @@ for (int corr=0; corr<nCorr; corr++)
     u = uEqn.H()/uEqn.A();
     w = wEqn.H()/wEqn.A();
     U = u*idir + w*kdir;
-    
+
     // Flux without pressure gradient
     phi = fvc::flux(rho*U) - offCentrePG*rhorAUf*gSf*thetapf/thetaaf;
 
