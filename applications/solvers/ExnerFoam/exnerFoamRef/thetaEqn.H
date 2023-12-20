@@ -1,5 +1,4 @@
 // theta equation
-
 fvScalarMatrix thetaEqn
 (
     EulerDdt.fvmDdt(rho, thetap)
@@ -17,8 +16,5 @@ fvScalarMatrix thetaEqn
 thetaEqn.solve();
 
 thetapf = fvc::interpolate(thetap);
-if (!Boussinesq)
-{
-    thetaf = thetapf + thetaaf;
-    theta = thetaa + thetap;
-}
+thetaf = thetapf + thetaaf;
+theta = thetaa + thetap;

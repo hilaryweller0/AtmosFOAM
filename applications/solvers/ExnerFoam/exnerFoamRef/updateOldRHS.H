@@ -1,38 +1,19 @@
-//thetapSource = -rho*w*(fvc::grad(thetaaf) & kdir);
-//alphaEff = fvc::interpolate(thermophysicalTransport->alphaEff());
 thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
-          - (1-fvc::average(offCentre))*rho*w*(fvc::grad(thetaaf) & kdir)
+          - (1-fvc::average(offCentrePG))*rho*w*dThetaadz
           + fvc::laplacian
             (
                 (1-offCentre)*fvc::interpolate(thermophysicalTransport->alphaEff()),
                 thetap
             );
 
-if (!hydrostatic)
-{
-    Urhs = - fvc::div((1-offCentre)*phi, U, "div(phi,U)")
-           - rho*fvc::weightedReconstruct
-            (
-                (1-offCentrePG)*
-                (gSf*thetapf/thetaaf + Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()),
-                0.25
-            )
-         + fvc::laplacian((1-offCentre)*rhof*fvc::interpolate(turbulence->nuEff()), U);
-}
-else
-{
-    Urhs = - rho*fvc::weightedReconstruct
-            (
-                (1-offCentrePG)*
-                (gSf*thetapf/thetaaf + Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()),
-                0.25
-            );
-    Urhs += idir*
-    (
-         -fvc::div((1-offCentre)*phi, u, "div(phi,U)")
-        + fvc::laplacian((1-offCentre)*rhof*fvc::interpolate(turbulence->nuEff()), u)
-    );
-}
+Urhs = - fvc::div((1-offCentre)*phi, U, "div(phi,U)")
+       - rho*fvc::weightedReconstruct
+        (
+            (1-offCentrePG)*
+            (gSf*thetapf/thetaaf + Cp*thetaf*fvc::snGrad(Exnerp)*mesh.magSf()),
+            0.25
+        )
+     + fvc::laplacian((1-offCentre)*rhof*fvc::interpolate(turbulence->nuEff()), U);
 
 rhoRHS = -fvc::div((1-offCentre)*phi);
 

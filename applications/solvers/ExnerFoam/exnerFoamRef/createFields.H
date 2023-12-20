@@ -38,12 +38,7 @@ volScalarField Exnerp
     ),
     mesh
 );
-if (!Boussinesq)
-{
-    Exnerp.oldTime();
-}
-const label pRefCell = mesh.solution().subDict("solvers").subDict(Exnerp.name())
-    .lookupOrDefault<label>("pRefCell", label(0));
+Exnerp.oldTime();
 
 Info << "Reading ambient Exner, Exnera\n" << endl;
 const volScalarField Exnera
@@ -111,11 +106,7 @@ surfaceScalarField phi
 phi.oldTime();
 phi.write();
 
-// Update thermodynamics if needed
-if (!Boussinesq)
-{
-    #include "thermoUpdate.H"
-}
+#include "thermoUpdate.H"
 
 //  turbulence fields
 Info<< "Creating turbulence model\n" << endl;
@@ -160,45 +151,67 @@ const surfaceScalarField muSpongef
     fvc::interpolate(muSponge)*mag(gUnitNormal)
 );
 
+const volScalarField N2
+(
+    "N2",
+    max
+    (
+        dThetaadz*magg/thetaa,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
+    )
+);
+
+const surfaceScalarField Ndt
+(
+    "Ndt", 
+    runTime.deltaT()*Foam::sqrt(max
+    (
+        maxInterp.interpolate(N2), //-gSfhat*fvc::snGrad(thetaa)/thetaaf,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), SMALL)
+    ))
+);
+
+const surfaceScalarField Ndtf
+(
+    "Ndtf",
+    runTime.deltaT()*Foam::sqrt(max
+    (
+        -gSfhat*fvc::snGrad(thetaa)/thetaaf,
+        dimensionedScalar("", dimensionSet(0,0,-2,0,0), SMALL)
+    ))
+);
+
 volScalarField CoNum
 (
     IOobject("CoNum", runTime.timeName(), mesh),
     CourantNo(phi/rhof, runTime.deltaT())
 );
-localMax<scalar> maxInterp(mesh);
 surfaceScalarField ImEx
 (
     "ImEx",
     0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
 );
 
+const surfaceScalarField offCentrev
+(
+    "offCentrev",
+    max(ocAlpha, 1 - 1/(2*Ndtf))
+);
+
 surfaceScalarField offCentre
 (
     IOobject("offCentreAdvection", runTime.timeName(), mesh),
     mesh,
-    dimensionedScalar(dimless, 0.5)
+    dimensionedScalar(dimless, ocAlpha)
 );
 surfaceScalarField aphi = offCentre*phi;
 
-surfaceScalarField Ndt
-(
-    "Ndt", 
-    runTime.deltaT()*Foam::sqrt(max
-    (
-        //-(g & fvc::grad(thetaf))/theta,
-        -gSfhat*fvc::snGrad(thetaa)/thetaaf,
-        dimensionedScalar("", dimensionSet(0,0,-2,0,0), scalar(0))
-    ))
-);
 surfaceScalarField offCentrePG
 (
     IOobject("offCentrePG", runTime.timeName(), mesh),
     mesh,
     dimensionedScalar(dimless, ocAlpha)
 );
-
-surfaceScalarField& offCentreGW = offCentrePG;
-    //max(scalar(0), 1 - 1/max(Ndt, SMALL));
 
 volScalarField rhoRHS
 (

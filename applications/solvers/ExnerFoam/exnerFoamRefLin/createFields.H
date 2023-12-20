@@ -79,6 +79,7 @@ thetapf.oldTime();
 surfaceScalarField thetaf("thetaf", thetaaf + thetapf);
 volScalarField theta("theta", thetaa + thetap);
 const volScalarField dThetaadz("dThetaadz", fvc::grad(thetaaf) & kdir);
+
 Info<< "Creating field rho\n" << endl;
 volScalarField rho
 (

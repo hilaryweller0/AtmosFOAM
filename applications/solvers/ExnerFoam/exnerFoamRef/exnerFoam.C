@@ -57,11 +57,6 @@ Description
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-//enum class advType{Implicit, Explicit};
-//template<> const char* Foam::NamedEnum<advType,2>::names[]
-//    = {"Implicit", "Explicit"};
-//NamedEnum<advType, 2> AdvectionType;
-
 int main(int argc, char *argv[])
 {
     #include "setRootCase.H"
@@ -71,7 +66,6 @@ int main(int argc, char *argv[])
     #include "readThermo.H"
     
     const Switch SIgravityWaves(mesh.schemes().lookup("SIgravityWaves"));
-    //const advType advectionType(AdvectionType.read(mesh.schemes().lookup("advectionType")));
     const Switch divFreeInitial(mesh.solution().lookup("divFreeInitial"));
 
     const dictionary& itsDict = mesh.solution().subDict("iterations");
@@ -93,6 +87,7 @@ int main(int argc, char *argv[])
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     fv::EulerDdtScheme<vector> EulerDdtv(mesh);
+    localMax<scalar> maxInterp(mesh);
 
     #include "createFields.H"
     #include "divFreeInitial.H"
@@ -117,33 +112,18 @@ int main(int argc, char *argv[])
 
         for (int ucorr=0; ucorr < nOuterCorr; ucorr++)
         {
-            if (!Boussinesq)
-            {
-                #include "rhoEqn.H"
-            }
+            #include "rhoEqn.H"
             #include "thetaEqn.H"
             #include "UEqn.H"
             // Exner and momentum equations
             #include "exnerEqn.H"
         }
-        if (!Boussinesq)
-        {
-            #include "rhoEqn.H"
-        }
-        if (SIgravityWaves || hydrostatic)
-        {
-            thetapf = fvc::interpolate(thetap);
-            if (!Boussinesq)
-            {
-                thetaf = thetapf + thetaaf;
-            }
-        }
-        if (!Boussinesq)
-        {
-            #include "thermoUpdate.H"
-            #include "compressibleContinuityErrs.H"
-        }
-        
+        #include "rhoEqn.H"
+        thetapf = fvc::interpolate(thetap);
+        thetaf = thetapf + thetaaf;
+
+        #include "thermoUpdate.H"
+        #include "compressibleContinuityErrs.H"
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity

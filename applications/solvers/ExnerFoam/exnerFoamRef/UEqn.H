@@ -14,46 +14,22 @@ fvScalarMatrix uEqn
 // w equation
 fvScalarMatrix wEqn
 (
-    fvm::Sp(rho*muSponge, w)
+    EulerDdt.fvmDdt(rho, w)
+  + fvm::div(ImEx*aphi, w, "div(phi,U)")
+  + fvc::div((1-ImEx)*aphi, w, "div(phi,U)")
+  - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
+  + fvm::Sp(rho*muSponge, w)
   - (Urhs.oldTime() & kdir)
 );
 
-if (!hydrostatic)
+if (SIgravityWaves)
 {
-    wEqn += fvScalarMatrix
-    (
-        EulerDdt.fvmDdt(rho, w)
-      + fvm::div(ImEx*aphi, w, "div(phi,U)")
-      + fvc::div((1-ImEx)*aphi, w, "div(phi,U)")
-      - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
-    );
-}
-
-if (SIgravityWaves || hydrostatic)
-{
-    // Calculate stratification
-    volScalarField Gamma = max
-    (
-        (fvc::grad(thetaf) & kdir),
-        dimensionedScalar(theta.dimensions()/dimLength, scalar(0))
-    );
-
-    volScalarField G = -runTime.deltaT()*rho*Gamma*
-    (
-        fvc::weightedReconstruct
-        (
-            offCentrePG*offCentreGW
-                *(gSf/thetaaf + Cp*fvc::snGrad(Exnerp)*mesh.magSf()),
-            0.25
-        )
-        & kdir
-    );
+    volScalarField G = runTime.deltaT()*rho*N2*fvc::average(sqr(offCentrePG));
 
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 
-    thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
-    if (!Boussinesq) { thetaf = thetaaf + thetapf; }
+    thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*dThetaadz);
 }
 
 if (ucorr == 0)

@@ -9,12 +9,8 @@ surfaceScalarField rhorAUf
 );
 
 // Exner from eqn of state
-if (!Boussinesq)
-{
-    Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
-    Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
-    //Psi.oldTime() = Psi;
-}
+Exnerp.oldTime() = pow(rho*R*theta/pRef, RbyCv) - Exnera;
+Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 
 for (int corr=0; corr<nCorr; corr++)
 {
@@ -30,22 +26,12 @@ for (int corr=0; corr<nCorr; corr++)
     {
         fvScalarMatrix ExnerEqn
         (
-            fvc::div(offCentre*phi)
+            EulerDdt.fvmDdt(Psi, Exnerp)
+          + EulerDdt.fvcDdt(rho)
+          - rhoRHS.oldTime()
+          + fvc::div(offCentre*phi)
           - fvm::laplacian(offCentre*offCentrePG*rhorAUf*Cp*thetaf, Exnerp)
         );
-        if (!Boussinesq)
-        {
-            ExnerEqn += fvScalarMatrix
-            (
-                EulerDdt.fvmDdt(Psi, Exnerp)
-              + EulerDdt.fvcDdt(rho)
-              - rhoRHS.oldTime()
-            );
-        }
-        else
-        {
-            ExnerEqn.setReference(pRefCell, Exnerp[pRefCell]);
-        }
 
         if(ucorr == nOuterCorr-1 && nonOrth == nNonOrthCorr && corr==nCorr-1)
         {
