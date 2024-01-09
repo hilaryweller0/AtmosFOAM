@@ -1,8 +1,11 @@
 CoNum = CourantNo(phi/rhof, runTime.deltaT());
-surfaceScalarField Cof = runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()
-                            /(rhof*mesh.magSf());
+surfaceScalarField Cof = max
+(
+    runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()/(rhof*mesh.magSf()),
+    maxInterp.interpolate(CoNum)
+);
 
-offCentre = max(offCentrev, 1 - 1/max(Cof, SMALL));
+offCentre = max(0.5, 1 - 1/max(Cof, SMALL));
 aphi = offCentre*phi;
 
 Info << "offCentre goes from " << min(offCentre).value()
@@ -14,7 +17,11 @@ Info << "ImEx goes from " << min(ImEx).value()
 
 if (SIgravityWaves)
 {
-    offCentrePG = max(offCentre, 1 - 1/(2*Ndt));
+    offCentrePG = max(scalar(0), 1 - 1/(2*Ndt));
+    offCentrePG = max(ocAlpha, max(offCentre, offCentrePG));
+
+//    Info << "offCentreGW goes from " << min(offCentreGW).value()
+//         << " to " << max(offCentreGW).value() << endl;
 
     Info << "offCentrePG goes from " << min(offCentrePG).value()
          << " to " << max(offCentrePG).value() << endl;

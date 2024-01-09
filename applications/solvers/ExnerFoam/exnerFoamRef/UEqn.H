@@ -24,12 +24,13 @@ fvScalarMatrix wEqn
 
 if (SIgravityWaves)
 {
-    volScalarField G = runTime.deltaT()*rho*N2*fvc::average(sqr(offCentrePG));
+    volScalarField G = runTime.deltaT()*rho*N2
+                    *fvc::average(offCentreGW*offCentrePG);
 
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 
-    thetapf += offCentrePG*runTime.deltaT()*fvc::interpolate(w*dThetaadz);
+    thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*dThetaadz);
 }
 
 if (ucorr == 0)

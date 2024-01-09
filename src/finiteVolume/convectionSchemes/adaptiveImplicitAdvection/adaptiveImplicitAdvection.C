@@ -259,15 +259,14 @@ adaptiveImplicitAdvection<Type>::fvcDiv
           + upwindConvect.fvmDiv(oImEx*faceFlux, T)
         );
         TEqn.solve();
+        //Info << "Low order FCT solutions goes from "
+        //     << min(T.internalField()).value() << " to "
+        //     << max(T.internalField()).value() << endl;
         lowFlux += TEqn.flux();
-        //T = T.oldTime() - dt*fvc::div(lowFlux);
-        /*Info << "Low order FCT solutions goes from "
-             << min(T.internalField()).value() << " to "
-             << max(T.internalField()).value() << endl;
-        volScalarField Tcons = T.oldTime() - dt*fvc::div(lowFlux);
-        Info << "Conservative low order FCT solutions goes from "
-             << min(Tcons.internalField()).value() << " to "
-             << max(Tcons.internalField()).value() << endl;*/
+        T = T.oldTime() - dt*fvc::div(lowFlux);
+        //Info << "Conservative low order FCT solutions goes from "
+        //     << min(T.internalField()).value() << " to "
+        //     << max(T.internalField()).value() << endl;
         
         surfaceScalarField fluxCorr = totalFlux - lowFlux;
 

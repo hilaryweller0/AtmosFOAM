@@ -192,11 +192,11 @@ surfaceScalarField ImEx
     0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
 );
 
-const surfaceScalarField offCentrev
+/*const surfaceScalarField offCentrev
 (
     "offCentrev",
     max(ocAlpha, 1 - 1/(2*Ndtf))
-);
+);*/
 
 surfaceScalarField offCentre
 (
@@ -212,6 +212,13 @@ surfaceScalarField offCentrePG
     mesh,
     dimensionedScalar(dimless, ocAlpha)
 );
+
+const surfaceScalarField& offCentreGW = offCentrePG;
+/*(
+    IOobject("offCentreGW", runTime.timeName(), mesh),
+    mesh,
+    dimensionedScalar(dimless, scalar(0))
+);*/
 
 volScalarField rhoRHS
 (
