@@ -183,7 +183,8 @@ const surfaceScalarField Ndtf
 
 volScalarField CoNum
 (
-    IOobject("CoNum", runTime.timeName(), mesh),
+    IOobject("CoNum", runTime.timeName(), mesh, 
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
     CourantNo(phi/rhof, runTime.deltaT())
 );
 surfaceScalarField ImEx
@@ -192,11 +193,11 @@ surfaceScalarField ImEx
     0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
 );
 
-/*const surfaceScalarField offCentrev
+const surfaceScalarField offCentrev
 (
     "offCentrev",
-    max(ocAlpha, 1 - 1/(2*Ndtf))
-);*/
+    max(ocAlpha, 1 - 1/(2*Ndt))
+);
 
 surfaceScalarField offCentre
 (
@@ -216,8 +217,7 @@ surfaceScalarField offCentrePG
 const surfaceScalarField& offCentreGW = offCentrePG;
 /*(
     IOobject("offCentreGW", runTime.timeName(), mesh),
-    mesh,
-    dimensionedScalar(dimless, scalar(0))
+    min(scalar(1), max(scalar(0), 0.5*Ndt))
 );*/
 
 volScalarField rhoRHS

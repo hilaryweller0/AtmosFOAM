@@ -54,6 +54,7 @@ Description
 #include "fvcWeightedReconstruct.H"
 #include "CourantNoFunc.H"
 #include "localMax.H"
+#include "fvcLocalMinMax.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

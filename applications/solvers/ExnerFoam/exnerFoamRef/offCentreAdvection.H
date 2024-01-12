@@ -1,11 +1,12 @@
 CoNum = CourantNo(phi/rhof, runTime.deltaT());
+//CoNum = fvc::localMax(maxInterp.interpolate(CoNum));
 surfaceScalarField Cof = max
 (
     runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()/(rhof*mesh.magSf()),
     maxInterp.interpolate(CoNum)
 );
 
-offCentre = max(0.5, 1 - 1/max(Cof, SMALL));
+offCentre = max(offCentrev, 1 - 1/max(Cof, SMALL));
 aphi = offCentre*phi;
 
 Info << "offCentre goes from " << min(offCentre).value()
@@ -17,8 +18,8 @@ Info << "ImEx goes from " << min(ImEx).value()
 
 if (SIgravityWaves)
 {
-    offCentrePG = max(scalar(0), 1 - 1/(2*Ndt));
-    offCentrePG = max(ocAlpha, max(offCentre, offCentrePG));
+    //offCentrePG = max(offCentre, offCentreGW);
+    offCentrePG = offCentre;
 
 //    Info << "offCentreGW goes from " << min(offCentreGW).value()
 //         << " to " << max(offCentreGW).value() << endl;
