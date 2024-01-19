@@ -14,24 +14,31 @@ fvScalarMatrix uEqn
 // w equation
 fvScalarMatrix wEqn
 (
-    EulerDdt.fvmDdt(rho, w)
-  + fvm::div(ImEx*aphi, w, "div(phi,U)")
-  + fvc::div((1-ImEx)*aphi, w, "div(phi,U)")
-  - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
-  + fvm::Sp(rho*muSponge, w)
+    fvm::Sp(rho*muSponge, w)
   - (Urhs.oldTime() & kdir)
 );
 
-if (SIgravityWaves)
+if (!hydrostatic)
+{
+    wEqn += fvScalarMatrix
+    (
+        EulerDdt.fvmDdt(rho, w)
+      + fvm::div(ImEx*aphi, w, "div(phi,U)")
+      + fvc::div((1-ImEx)*aphi, w, "div(phi,U)")
+      - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), w)
+    );
+}
+
+if (SIgravityWaves || hydrostatic)
 {
     // Calculate stratification
-    volScalarField dThetadz = max
+    volScalarField Gamma = max
     (
         (fvc::grad(thetaf) & kdir),
         dimensionedScalar(theta.dimensions()/dimLength, scalar(0))
     );
 
-    volScalarField G = -runTime.deltaT()*rho*dThetadz*
+    volScalarField G = -runTime.deltaT()*rho*Gamma*
     (
         fvc::weightedReconstruct
         (
@@ -45,8 +52,8 @@ if (SIgravityWaves)
     // Central matrix coefficient
     wEqn += fvScalarMatrix(fvm::Sp(G, w));
 
-    thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*dThetadz);
-    thetaf = thetaaf + thetapf;
+    thetapf += offCentreGW*runTime.deltaT()*fvc::interpolate(w*Gamma);
+    if (!Boussinesq) { thetaf = thetaaf + thetapf; }
 }
 
 if (ucorr == 0)
@@ -63,4 +70,5 @@ if (ucorr == 0)
 }
 solve(uEqn == (Urhs & idir));
 solve(wEqn == (Urhs & kdir));
+
 

@@ -197,6 +197,7 @@ const surfaceScalarField offCentrev
 (
     "offCentrev",
     max(ocAlpha, 1 - 1/(2*Ndt))
+    //max(ocAlpha, 0.5*(1 + sqrt(max(sqr(Ndt) - 4,scalar(0)))/(2*Ndt)))
 );
 
 surfaceScalarField offCentre
