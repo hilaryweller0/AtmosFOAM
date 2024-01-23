@@ -171,7 +171,7 @@ const surfaceScalarField Ndt
     ))
 );
 
-const surfaceScalarField Ndtf
+/*const surfaceScalarField Ndtf
 (
     "Ndtf",
     runTime.deltaT()*Foam::sqrt(max
@@ -179,7 +179,7 @@ const surfaceScalarField Ndtf
         -gSfhat*fvc::snGrad(thetaa)/thetaaf,
         dimensionedScalar("", dimensionSet(0,0,-2,0,0), SMALL)
     ))
-);
+);*/
 
 volScalarField CoNum
 (
@@ -193,12 +193,12 @@ surfaceScalarField ImEx
     0.5*(sign(maxInterp.interpolate(CoNum) - CoLimitExp) + 1)
 );
 
-const surfaceScalarField offCentrev
+/*const surfaceScalarField offCentrev
 (
     "offCentrev",
     max(ocAlpha, 1 - 1/(2*Ndt))
     //max(ocAlpha, 0.5*(1 + sqrt(max(sqr(Ndt) - 4,scalar(0)))/(2*Ndt)))
-);
+);*/
 
 surfaceScalarField offCentre
 (
@@ -208,12 +208,12 @@ surfaceScalarField offCentre
 );
 surfaceScalarField aphi = offCentre*phi;
 
-surfaceScalarField offCentrePG
-(
+const surfaceScalarField& offCentrePG = offCentre;
+/*(
     IOobject("offCentrePG", runTime.timeName(), mesh),
     mesh,
     dimensionedScalar(dimless, ocAlpha)
-);
+);*/
 
 const surfaceScalarField& offCentreGW = offCentrePG;
 /*(
