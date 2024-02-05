@@ -8,7 +8,7 @@ surfaceScalarField Cof = max
 
 if (SIgravityWaves)
 {
-    offCentre = max(ocAlpha, 1 - 1/max(Cof + Ndt + 0.2, SMALL));
+    offCentre = max(ocAlpha, 1 - 1/max(Cof*(1 + Ndt) + 0.2, SMALL));
 }
 else
 {
