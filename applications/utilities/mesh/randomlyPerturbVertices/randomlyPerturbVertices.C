@@ -1,7 +1,11 @@
 #include <cstdlib>
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
 
+using namespace Foam;
 int main(int argc, char *argv[])
 {
 #   include "setRootCase.H"

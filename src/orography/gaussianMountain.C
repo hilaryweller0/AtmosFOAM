@@ -1,6 +1,8 @@
 #include "gaussianMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(gaussianMountain, 0);
 addToRunTimeSelectionTable(mountain, gaussianMountain, dict);
 
@@ -19,4 +21,5 @@ dimensionedScalar gaussianMountain::heightAt(const point& p) const
     h = h0_ / pow((1.0 + pow(mag(r)/halfwidth_.value(),2)), 1.5);
 
     return h;
+}
 }

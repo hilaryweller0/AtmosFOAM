@@ -1,5 +1,8 @@
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
+
 void nonDivergentVelocityField::applyToInternalField(surfaceScalarField& phi) const
 {
     phi.ref() = dimensionedScalar("phi", phi.dimensions(), scalar(0));
@@ -52,3 +55,5 @@ scalar nonDivergentVelocityField::faceFlux
 
 void nonDivergentVelocityField::project(surfaceScalarField& phi) const
 {}
+
+}

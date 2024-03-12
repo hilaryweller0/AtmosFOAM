@@ -13,8 +13,8 @@ volSymmTensorField R
 
 // Lookup Cmu corresponding to the turbulence model selected
 const scalar Cmu = turbulence->coeffDict().lookupOrDefault<scalar>("Cmu", 0.09);
-const scalar kappa = turbulence->coeffDict().lookupOrDefault<scalar>
-    ("kappa", 0.41);
+//const scalar kappa = turbulence->coeffDict().lookupOrDefault<scalar>
+//    ("kappa", 0.41);
 
 volScalarField mixingLength
 (
@@ -22,12 +22,9 @@ volScalarField mixingLength
     turbulence->nut()/(::pow(Cmu,0.25) * sqrt(turbulence->k()))
 );
 
-wallDist wd(mesh);
-volScalarField mixingLength2("mixingLength2", kappa*wd.y());
-
 runTime.write();
 
-setWriter::New(runTime.graphFormat())->write
+setWriter::New(runTime.controlDict().lookup("graphFormat"))->write
 (
     runTime.globalPath()
    /functionObjects::writeFile::outputPrefix
@@ -55,8 +52,6 @@ setWriter::New(runTime.graphFormat())->write
 
     "gammaDot", mag(fvc::grad(U))().primitiveField(),
     "lm", mixingLength.primitiveField(),
-    "lm2", mixingLength2.primitiveField(),
-    "nut2", (sqr(mixingLength2)*mag(fvc::grad(U)))().primitiveField(),
 
     "TKEproduction", (magSqr(fvc::grad(U))*turbulence->nut())().primitiveField(),
     

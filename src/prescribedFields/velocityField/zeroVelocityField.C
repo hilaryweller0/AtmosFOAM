@@ -1,6 +1,9 @@
 #include "zeroVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(zeroVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, zeroVelocityField, dict);
 
@@ -23,4 +26,6 @@ point zeroVelocityField::initialPositionOf
 ) const
 {
     return p;
+}
+
 }

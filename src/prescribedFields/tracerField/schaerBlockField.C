@@ -1,6 +1,8 @@
 #include "schaerBlockField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(schaerBlockField, 0);
 addToRunTimeSelectionTable(tracerField, schaerBlockField, dict);
 
@@ -35,4 +37,5 @@ scalar schaerBlockField::tracerAt
     {
         return 0;
     }
+}
 }

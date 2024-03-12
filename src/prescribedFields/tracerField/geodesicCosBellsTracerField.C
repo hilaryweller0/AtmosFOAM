@@ -1,6 +1,8 @@
 #include "geodesicCosBellsTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(geodesicCosBellsTracerField, 0);
 addToRunTimeSelectionTable(tracerField, geodesicCosBellsTracerField, dict);
 
@@ -73,4 +75,6 @@ scalar geodesicCosBellsTracerField::hi
 ) const
 {
     return (hmax/2 * (1 + Foam::cos(M_PI * ri/(R/2)))).value();
+}
+
 }

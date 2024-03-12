@@ -1,7 +1,6 @@
 #ifndef CROSSABLE_MOUNTAIN_H
 #define CROSSABLE_MOUNTAIN_H
 
-#include "fvCFD.H"
 #include "mountain.H"
 
 namespace Foam

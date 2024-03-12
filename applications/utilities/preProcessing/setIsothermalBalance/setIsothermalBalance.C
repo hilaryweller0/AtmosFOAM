@@ -30,10 +30,22 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
 #include "fluidThermo.H"
 #include "ExnerTheta.H"
 #include "rhoThermo.H"
+#include "fvmLaplacian.H"
+#include "fvcDiv.H"
+#include "fvcVolumeIntegrate.H"
+#include "fvcSnGrad.H"
+#include "fvcFlux.H"
+#include "uniformDimensionedFields.H"
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -44,8 +56,6 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "readEnvironmentalProperties.H"
     #include "readThermo.H"
-    #include "readhRef.H"
-    #include "gh.H"
     #include "createFields.H"
       
     const dictionary& itsDict = mesh.solution().subDict("initialisation");

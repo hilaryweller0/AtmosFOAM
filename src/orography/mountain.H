@@ -1,7 +1,9 @@
 #ifndef MOUNTAIN_H
 #define MOUNTAIN_H
 
-#include "fvCFD.H"
+#include "fvMesh.H"
+#include "dimensionedTypes.H"
+#include "autoPtr.H"
 
 namespace Foam
 {
@@ -9,6 +11,9 @@ namespace Foam
 class mountain
 {
     public:
+    //- Runtime type information
+    TypeName("mountain");
+
     declareRunTimeSelectionTable
     (
         autoPtr,

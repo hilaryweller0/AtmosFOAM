@@ -1,6 +1,10 @@
 #include "divergentVelocityField.H"
-#include "fvCFD.H"
+#include "fvScalarMatrix.H"
+#include "fvmLaplacian.H"
+#include "fvcDiv.H"
 
+namespace Foam
+{
 divergentVelocityField::divergentVelocityField(const bool applyProjection__)
 :
     applyProjection(applyProjection__)
@@ -47,4 +51,5 @@ void divergentVelocityField::project(surfaceScalarField& phi) const
         PEqn.solve();
         phi += PEqn.flux();
     }
+}
 }

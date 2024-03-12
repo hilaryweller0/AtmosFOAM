@@ -25,7 +25,10 @@ License
 
 #include "partition.H"
 #include "moreListOps.H"
-#include "fvCFD.H"
+#include "fvcReconstruct.H"
+#include "surfaceInterpolate.H"
+#include "fvcDiv.H"
+#include "linear.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 

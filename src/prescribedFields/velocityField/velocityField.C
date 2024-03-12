@@ -1,6 +1,10 @@
 #include "velocityField.H"
 #include "wallPolyPatch.H"
 
+namespace Foam
+{
+
+defineTypeNameAndDebug(velocityField, 0);
 defineRunTimeSelectionTable(velocityField, dict);
 
 autoPtr<velocityField> velocityField::New(const dictionary& dict)
@@ -47,3 +51,4 @@ void velocityField::applyTo(surfaceScalarField& phi) const
     project(phi);
 }
 
+}

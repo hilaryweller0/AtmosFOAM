@@ -1,5 +1,8 @@
 #include "mountain.H"
 
+namespace Foam
+{
+defineTypeNameAndDebug(mountain, 0);
 defineRunTimeSelectionTable(mountain, dict);
 
 autoPtr<mountain> mountain::New(const dictionary& dict)
@@ -25,4 +28,6 @@ autoPtr<mountain> mountain::New(const dictionary& dict)
     (
        cstrIter()(dict)
     );
+}
+
 }

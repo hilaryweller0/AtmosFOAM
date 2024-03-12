@@ -107,7 +107,7 @@ void fixedFluxBuoyantlnExnerFvPatchScalarField::updateCoeffs()
 
     const constTransport<hConstThermo<perfectGas<specie> > > air
     (
-         thermoProperties.subDict("mixture")
+         "mixture", thermoProperties
     );
 
     const dimensionedScalar Cp("Cp", dimGasConstant, air.Cp(0,0));

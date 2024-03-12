@@ -1,6 +1,9 @@
 #include "cosSqrTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(cosSqrTracerField, 0);
 addToRunTimeSelectionTable(tracerField, cosSqrTracerField, dict);
 
@@ -28,4 +31,6 @@ scalar cosSqrTracerField::tracerAt(const point& p, const Time& t) const
     {
         return backgroundTracer_;
     }
+}
+
 }

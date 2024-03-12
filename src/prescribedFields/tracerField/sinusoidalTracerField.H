@@ -14,6 +14,8 @@ to force specific Fourier modes of a problem to become excited. Returns:
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class sinusoidalTracerField final : public tracerField
 {
     public:
@@ -32,7 +34,6 @@ class sinusoidalTracerField final : public tracerField
     // The maximum and minimum possible values of the function
     const scalar funcMax, funcMin;
 };
-
+}
 #endif
-
 

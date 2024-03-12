@@ -1,6 +1,8 @@
 #include "sineWaveMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(sineWaveMountain, 0);
 addToRunTimeSelectionTable(mountain, sineWaveMountain, dict);
 
@@ -42,4 +44,4 @@ dimensionedScalar sineWaveMountain::timeToCross
 {
     return dimensionedScalar("", dimTime, scalar(0));
 }
-
+}

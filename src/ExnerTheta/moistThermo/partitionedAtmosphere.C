@@ -25,7 +25,8 @@ License
 
 #include "partitionedAtmosphere.H"
 #include "moreListOps.H"
-#include "fvCFD.H"
+#include "surfaceInterpolate.H"
+#include "fvcDiv.H"
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 

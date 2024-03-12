@@ -3,6 +3,8 @@
 
 #include "tracerField.H"
 
+namespace Foam
+{
 class arakawaKonorRadiationTracerField final : public tracerField
 {
     public:
@@ -12,6 +14,6 @@ class arakawaKonorRadiationTracerField final : public tracerField
     private:
     scalar tracerAt(const point& p, const Time& t) const;
 };
-
+}
 #endif
 

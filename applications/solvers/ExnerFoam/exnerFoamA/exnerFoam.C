@@ -38,7 +38,7 @@ Description
 #include "fvCFD.H"
 #include "fluidThermo.H"
 #include "compressibleMomentumTransportModels.H"
-#include "fluidThermophysicalTransportModel.H"
+#include "ThermophysicalTransportModel.H"
 #include "physicalProperties.H"
 #include "fundamentalConstants.H"
 #include "specie.H"
@@ -51,6 +51,7 @@ Description
 #include "fvcWeightedReconstruct.H"
 #include "CourantNoFunc.H"
 #include "localMax.H"
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

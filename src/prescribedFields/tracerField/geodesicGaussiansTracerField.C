@@ -1,6 +1,8 @@
 #include "geodesicGaussiansTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(geodesicGaussiansTracerField, 0);
 addToRunTimeSelectionTable(tracerField, geodesicGaussiansTracerField, dict);
 
@@ -48,4 +50,5 @@ scalar geodesicGaussiansTracerField::tracerAt
         hmax * Foam::exp(-b*magSqr(p - centre1)/sqr(R))
       + hmax * Foam::exp(-b*magSqr(p - centre2)/sqr(R))
     );
+}
 }

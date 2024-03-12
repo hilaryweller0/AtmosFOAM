@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
 class horizontalVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
@@ -17,6 +19,6 @@ class horizontalVelocityField final : public nonDivergentVelocityField, public a
     const dimensionedScalar z1;
     const dimensionedScalar z2;
 };
-
+}
 #endif
 

@@ -1,6 +1,9 @@
 #include "arakawaKonorStripes.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(arakawaKonorStripesTracerField, 0);
 addToRunTimeSelectionTable(tracerField, arakawaKonorStripesTracerField, dict);
 
@@ -46,4 +49,5 @@ scalar arakawaKonorStripesTracerField::tracerAt
     {
         return 0;
     }
+}
 }

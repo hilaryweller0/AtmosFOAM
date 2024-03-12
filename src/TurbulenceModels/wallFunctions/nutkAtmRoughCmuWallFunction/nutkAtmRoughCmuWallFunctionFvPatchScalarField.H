@@ -109,13 +109,6 @@ public:
 
     // Constructors
 
-        //- Construct from patch and internal field
-        nutkAtmRoughCmuWallFunctionFvPatchScalarField
-        (
-            const fvPatch&,
-            const DimensionedField<scalar, volMesh>&
-        );
-
         //- Construct from patch, internal field and dictionary
         nutkAtmRoughCmuWallFunctionFvPatchScalarField
         (
@@ -184,29 +177,6 @@ public:
             const momentumTransportModel& turbModel,
             const label patchi
         );
-
-
-        // Mapping functions
-
-            //- Map (and resize as needed) from self given a mapping object
-            virtual void autoMap(const fvPatchFieldMapper&);
-
-            //- Reverse map the given fvPatchField onto this fvPatchField
-            virtual void rmap
-            (
-                const fvPatchScalarField&,
-                const labelList&
-            );
-
-            //- Reset the fvPatchField to the given fvPatchField
-            //  Used for mesh to mesh mapping
-            virtual void reset(const fvPatchScalarField&);
-
-
-        // I-O
-
-            //- Write
-            virtual void write(Ostream&) const;
 };
 
 

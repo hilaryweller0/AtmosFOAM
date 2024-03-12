@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
 class geodesicSolidBodyVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
@@ -17,6 +19,6 @@ class geodesicSolidBodyVelocityField final : public nonDivergentVelocityField, p
     const scalar alpha;
     dimensionedScalar endTime;
 };
-
+}
 #endif
 

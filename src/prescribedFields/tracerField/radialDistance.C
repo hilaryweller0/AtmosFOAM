@@ -1,6 +1,8 @@
 #include "radialDistance.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(radialDistance, 0);
 addToRunTimeSelectionTable(tracerField, radialDistance, dict);
 
@@ -24,4 +26,5 @@ scalar radialDistance::tracerAt
     scalar r = mag(d);
 
     return r;
+}
 }

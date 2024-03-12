@@ -1,6 +1,8 @@
 #include "doubleCosineMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(doubleCosineMountain, 0);
 addToRunTimeSelectionTable(mountain, doubleCosineMountain, dict);
 
@@ -29,4 +31,5 @@ dimensionedScalar doubleCosineMountain::heightAt(const point& p) const
         h = h0m_ * 0.5*(1+Foam::cos(M_PI*rm/radiusm_.value()));
     }
     return h;
+}
 }

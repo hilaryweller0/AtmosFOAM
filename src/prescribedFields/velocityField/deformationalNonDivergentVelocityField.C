@@ -1,6 +1,8 @@
 #include "deformationalNonDivergentVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(deformationalNonDivergentVelocityField, 0);
 addToRunTimeSelectionTable
 (
@@ -45,4 +47,5 @@ vector deformationalNonDivergentVelocityField::streamfunctionAt
         *Foam::cos(M_PI*t/T)
       - domainSize_.x()*p.y()/T
     );
+}
 }

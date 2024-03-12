@@ -1,7 +1,9 @@
 #ifndef TERRAIN_FOLLOWING_TRANSFORM_H
 #define TERRAIN_FOLLOWING_TRANSFORM_H
 
-#include "fvCFD.H"
+#include "fvMesh.H"
+#include "dimensionedTypes.H"
+#include "autoPtr.H"
 
 namespace Foam
 {
@@ -9,6 +11,7 @@ namespace Foam
 class terrainFollowingTransform
 {
     public:
+    TypeName("terrainFollowingTransform");
     declareRunTimeSelectionTable
     (
         autoPtr,

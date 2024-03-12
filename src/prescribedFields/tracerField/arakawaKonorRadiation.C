@@ -1,6 +1,8 @@
 #include "arakawaKonorRadiation.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(arakawaKonorRadiationTracerField, 0);
 addToRunTimeSelectionTable(tracerField, arakawaKonorRadiationTracerField, dict);
 
@@ -34,4 +36,5 @@ scalar arakawaKonorRadiationTracerField::tracerAt
     {
         return 0;
     }
+}
 }

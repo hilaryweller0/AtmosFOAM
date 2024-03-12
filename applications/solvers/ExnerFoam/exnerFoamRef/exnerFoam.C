@@ -41,7 +41,7 @@ Description
 #include "fvCFD.H"
 #include "fluidThermo.H"
 #include "compressibleMomentumTransportModels.H"
-#include "fluidThermophysicalTransportModel.H"
+#include "ThermophysicalTransportModel.H"
 #include "physicalProperties.H"
 #include "fundamentalConstants.H"
 #include "specie.H"
@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
     #include "createFields.H"
     #include "divFreeInitial.H"
-    #include "initContinuityErrs.H"
+    //#include "initContinuityErrs.H"
     #include "initEnergy.H"
     #include "energy.H"
     #include "offCentreAdvection.H"
@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         thetaf = thetapf + thetaaf;
 
         #include "thermoUpdate.H"
-        #include "compressibleContinuityErrs.H"
+        //#include "compressibleContinuityErrs.H"
         #include "energy.H"
         
         //- Solve the turbulence equations and correct the turbulence viscosity

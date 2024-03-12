@@ -34,7 +34,7 @@ SourceFiles
 #ifndef deformationalNonDivergentGeodesicVelocityFieldData_H
 #define deformationalNonDivergentGeodesicVelocityFieldData_H
 
-#include "MeshObject.H"
+#include "DemandDrivenMeshObject.H"
 #include "fvMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -48,7 +48,7 @@ namespace Foam
 
 class deformationalNonDivergentGeodesicVelocityFieldData
 :
-    public MeshObject<fvMesh, MoveableMeshObject, deformationalNonDivergentGeodesicVelocityFieldData>
+    public DemandDrivenMeshObject<fvMesh, MoveableMeshObject, deformationalNonDivergentGeodesicVelocityFieldData>
 {
     // Private Data
 

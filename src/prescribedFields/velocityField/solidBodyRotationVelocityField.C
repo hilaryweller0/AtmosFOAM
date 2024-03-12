@@ -2,6 +2,9 @@
 #include "addToRunTimeSelectionTable.H"
 #include "transform.H"
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(solidBodyRotationVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, solidBodyRotationVelocityField, dict);
 
@@ -67,4 +70,5 @@ point solidBodyRotationVelocityField::initialPositionOf
     tensor R = Ra(rotation_/mag(rotation_), 2*mag(rotation_)*t.value());
     
     return (R & (p - centre_)) + centre_;
+}
 }

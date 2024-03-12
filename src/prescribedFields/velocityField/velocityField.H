@@ -1,7 +1,8 @@
 #ifndef VELOCITY_FIELD_H
 #define VELOCITY_FIELD_H
 
-#include "fvCFD.H"
+#include "surfaceFields.H"
+#include "volFields.H"
 
 namespace Foam
 {
@@ -9,6 +10,10 @@ namespace Foam
 class velocityField
 {
     public:
+
+    //- Runtime type information
+    TypeName("velocityField");
+
     declareRunTimeSelectionTable
     (
         autoPtr,

@@ -32,7 +32,19 @@ Description
 \*---------------------------------------------------------------------------*/
 
 #include "HodgeOps.H"
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
+#include "fvmLaplacian.H"
+#include "fvcDiv.H"
+#include "fvcVolumeIntegrate.H"
+#include "fvcSnGrad.H"
+#include "fvcFlux.H"
+#include "uniformDimensionedFields.H"
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

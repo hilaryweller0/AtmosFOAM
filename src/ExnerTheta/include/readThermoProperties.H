@@ -37,7 +37,7 @@ const dimensionedScalar alpha("alpha", nu/Pr);
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
-    thermoDict.subDict("mixture")
+    "mixture", thermoDict
 );
 
 const dimensionedScalar R("R", dimGasConstant, air.R());

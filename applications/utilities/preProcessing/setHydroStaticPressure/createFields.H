@@ -50,8 +50,23 @@ volVectorField U
 );
 
 #include "readGravitationalAcceleration.H"
-#include "readhRef.H"
-#include "gh.H"
+Info<< "\nReading hRef" << endl;
+uniformDimensionedScalarField hRef
+(
+    IOobject
+    (
+        "hRef",
+        runTime.constant(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::NO_WRITE
+    ),
+    dimensionedScalar(dimLength, 0)
+);
+Info<< "Calculating field g.h\n" << endl;
+dimensionedScalar ghRef(- mag(g)*hRef);
+volScalarField gh("gh", (g & mesh.C()) - ghRef);
+surfaceScalarField ghf("ghf", (g & mesh.Cf()) - ghRef);
 
 const surfaceScalarField gSf("gSf", g & mesh.Sf());
 const surfaceScalarField gzSf("gzSf", (g & mesh.Cf())*mesh.magSf());

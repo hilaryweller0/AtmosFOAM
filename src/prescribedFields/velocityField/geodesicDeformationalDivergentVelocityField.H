@@ -3,6 +3,8 @@
 
 #include "geodesicVelocityField.H"
 
+namespace Foam
+{
 class geodesicDeformationalDivergentVelocityField final : public geodesicVelocityField
 {
     public:
@@ -12,7 +14,6 @@ class geodesicDeformationalDivergentVelocityField final : public geodesicVelocit
     private:
     vector velocityAt(const point& p, const Time& t) const;
 };
-
+}
 #endif
-
 

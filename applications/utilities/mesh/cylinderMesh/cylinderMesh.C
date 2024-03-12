@@ -31,11 +31,19 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "IOdictionary.H"
+#include "IOPtrList.H"
+#include "systemDict.H"
+
+#include "fvMesh.H"
+#include "argList.H"
 #include "mathematicalConstants.H"
 #include "OFstream.H"
+#include "OSspecific.H"
 #include "boundBox.H"
 
+using namespace Foam;
 using namespace Foam::constant::mathematical;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

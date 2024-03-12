@@ -1,7 +1,11 @@
 #include "geodesicVelocityField.H"
 #include "sphericalMeshData.H"
-#include "fvCFD.H"
+#include "fvScalarMatrix.H"
+#include "fvmLaplacian.H"
+#include "fvcDiv.H"
 
+namespace Foam
+{
 geodesicVelocityField::geodesicVelocityField(const dictionary& dict)
 :
     earthRadius_(readScalar(dict.lookup("earthRadius"))),
@@ -69,4 +73,5 @@ void geodesicVelocityField::project(surfaceScalarField& phi) const
         PEqn.solve();
         phi += PEqn.flux();
     }
+}
 }

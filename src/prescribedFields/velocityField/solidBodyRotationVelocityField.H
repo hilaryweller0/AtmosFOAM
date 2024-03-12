@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
 class solidBodyRotationVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
@@ -18,6 +20,6 @@ class solidBodyRotationVelocityField final : public nonDivergentVelocityField, p
     const scalar innerRadius_;
     const scalar outerRadius_;
 };
-
+}
 #endif
 

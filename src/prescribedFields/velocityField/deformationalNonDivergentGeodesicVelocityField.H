@@ -3,6 +3,8 @@
 
 #include "geodesicNonDivergentVelocityField.H"
 
+namespace Foam
+{
 class deformationalNonDivergentGeodesicVelocityField final : public geodesicNonDivergentVelocityField
 {
     public:
@@ -22,5 +24,5 @@ class deformationalNonDivergentGeodesicVelocityField final : public geodesicNonD
         const Time& t
     ) const;
 };
-
+}
 #endif

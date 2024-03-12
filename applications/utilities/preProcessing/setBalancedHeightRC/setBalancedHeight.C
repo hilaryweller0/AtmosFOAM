@@ -31,7 +31,18 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
+#include "fvmLaplacian.H"
+#include "fvcDiv.H"
+#include "fvcVolumeIntegrate.H"
+#include "fvcSnGrad.H"
+#include "fvcFlux.H"
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

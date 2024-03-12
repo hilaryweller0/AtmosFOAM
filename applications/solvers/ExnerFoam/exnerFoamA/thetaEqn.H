@@ -1,4 +1,5 @@
 // theta equation
+alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
 fvScalarMatrix thetaEqn
 (
     EulerDdt.fvmDdt(rho, theta)
@@ -6,7 +7,7 @@ fvScalarMatrix thetaEqn
   + fvc::div((1-ImEx)*aphi, theta, "div(phi,theta)")
   - fvm::laplacian
     (
-        offCentre*fvc::interpolate(thermophysicalTransport->alphaEff()),
+        offCentre*alphaEff,
         theta
     )
   - thetaRHS

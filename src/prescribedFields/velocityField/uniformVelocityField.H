@@ -6,6 +6,8 @@
 
 // strictly, a uniform velocity field is nonDivergent
 // but it's easier to specify it without using a streamfunction
+namespace Foam
+{
 class uniformVelocityField final : public divergentVelocityField, public advectable
 {
     public:
@@ -18,7 +20,6 @@ class uniformVelocityField final : public divergentVelocityField, public advecta
     const vector v;
     const vector acceleration;
 };
-
+}
 #endif
-
 

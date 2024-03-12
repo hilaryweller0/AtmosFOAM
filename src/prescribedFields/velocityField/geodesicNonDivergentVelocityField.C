@@ -1,6 +1,7 @@
 #include "geodesicNonDivergentVelocityField.H"
-#include "fvCFD.H"
 
+namespace Foam
+{
 geodesicNonDivergentVelocityField::geodesicNonDivergentVelocityField
 (
     const dictionary& dict
@@ -123,3 +124,4 @@ scalar geodesicNonDivergentVelocityField::faceFlux
 
 void geodesicNonDivergentVelocityField::project(surfaceScalarField& phi) const
 {}
+}

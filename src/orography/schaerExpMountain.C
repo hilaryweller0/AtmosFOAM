@@ -1,6 +1,8 @@
 #include "schaerExpMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(schaerExpMountain, 0);
 addToRunTimeSelectionTable(mountain, schaerExpMountain, dict);
 addToRunTimeSelectionTable(dualGradeMountain, schaerExpMountain, dict);
@@ -34,4 +36,4 @@ dimensionedScalar schaerExpMountain::end() const
 {
     return dimensionedScalar("end", dimLength, a);
 }
-
+}

@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
 class shearedVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
@@ -23,6 +25,6 @@ class shearedVelocityField final : public nonDivergentVelocityField, public adve
     const scalar magU0;
     vector u0hat;
 };
-
+}
 #endif
 

@@ -41,18 +41,18 @@ Foam::weightedReconstructData::weightedReconstructData
     const scalar boundaryWeight__
 )
 :
-    MeshObject<fvMesh, Foam::MoveableMeshObject, weightedReconstructData>(mesh),
+    DemandDrivenMeshObject<fvMesh, Foam::MoveableMeshObject, weightedReconstructData>(mesh),
     boundaryWeight_(boundaryWeight__),
     faceWeights_
     (
-        IOobject("faceWeights", mesh_.pointsInstance(), mesh_),
-        mesh_,
+        IOobject("faceWeights", this->mesh().pointsInstance(), this->mesh()),
+        this->mesh(),
         dimensionedVector(dimless, Zero)
     ),
     invTensor_
     (
-        IOobject("invTensor", mesh_.pointsInstance(), mesh_),
-        mesh_,
+        IOobject("invTensor", this->mesh().pointsInstance(), this->mesh()),
+        this->mesh(),
         dimensionedTensor(dimless/dimArea, Zero)
     )
 {
@@ -74,16 +74,16 @@ void Foam::weightedReconstructData::calcData()
         InfoInFunction << "Calculating reconstruction daa" << endl;
     }
 
-    faceWeights_ = mesh_.Sf()/mesh_.magSf();
+    faceWeights_ = this->mesh().Sf()/this->mesh().magSf();
     forAll(faceWeights_.boundaryField(), patchi)
     {
-        if (!mesh_.boundaryMesh()[patchi].coupled())
+        if (!this->mesh().boundaryMesh()[patchi].coupled())
         {
             faceWeights_.boundaryFieldRef()[patchi] *= boundaryWeight_;
         }
     }
     
-    invTensor_ = inv(fvc::surfaceSum(faceWeights_*mesh_.Sf()));
+    invTensor_ = inv(fvc::surfaceSum(faceWeights_*this->mesh().Sf()));
 
     if (debug)
     {

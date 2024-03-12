@@ -25,7 +25,6 @@ License
 
 #include "fvFCTadvectionDiffusion.H"
 #include "fvcFluxLimit.H"
-#include "fvCFD.H"
 #include "EulerDdtScheme.H"
 #include "upwind.H"
 #include "linear.H"
@@ -33,6 +32,7 @@ License
 #include "gaussLaplacianScheme.H"
 #include "correctedSnGrad.H"
 #include "gaussDivScheme.H"
+#include "fvcAverage.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

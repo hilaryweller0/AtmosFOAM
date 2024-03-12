@@ -35,7 +35,7 @@ Foam::perfectGasPhase::perfectGasPhase
     const dictionary& dict
 )
 :
-    constTransport<hConstThermo<perfectGas<specie> > >(dict.subDict("gas")),
+    constTransport<hConstThermo<perfectGas<specie> > >("gas", dict),
     R_("R", dimGasConstant, constTransport<hConstThermo<perfectGas<specie> > >::R()),
     T0_(dict.subDict("gasDict").lookup("T0")),
     p0_(dict.subDict("gasDict").lookup("p0")),

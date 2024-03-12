@@ -30,15 +30,29 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
+#include "fvcDiv.H"
+#include "linear.H"
+#include "surfaceInterpolate.H"
+#include "fvcVolumeIntegrate.H"
+#include "fvcReconstruct.H"
+#include "fvmLaplacian.H"
+#include "fvmDiv.H"
+#include "fvScalarMatrix.H"
 #include "velocityField.H"
 #include "CourantNoFunc.H"
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-    #include "setRootCaseLists.H"
+    #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
     const int nCorr(readLabel(mesh.solution().lookup("nOuterCorrections")));

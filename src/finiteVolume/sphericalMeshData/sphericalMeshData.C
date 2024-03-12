@@ -42,7 +42,7 @@ Foam::sphericalMeshData::sphericalMeshData
     const scalar earthRadius__
 )
 :
-    MeshObject<fvMesh, Foam::MoveableMeshObject, sphericalMeshData>(mesh),
+    DemandDrivenMeshObject<fvMesh, Foam::MoveableMeshObject, sphericalMeshData>(mesh),
     Cf_(mesh.faceCentres()),
     C_(mesh.cellCentres()),
     V_(mesh.nCells()),
@@ -71,7 +71,7 @@ void Foam::sphericalMeshData::calcSphericalMeshData()
         InfoInFunction << "Calculating spherical geometry" << endl;
     }
 
-    const fvMesh& mesh = mesh_;
+    const fvMesh& mesh = this->mesh();
 
     // References to Cartesian mesh data
     const vectorField& CfC = mesh.faceCentres();

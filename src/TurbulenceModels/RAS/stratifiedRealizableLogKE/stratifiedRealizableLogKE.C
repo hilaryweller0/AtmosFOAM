@@ -89,8 +89,8 @@ template<class BasicMomentumTransportModel>
 void stratifiedRealizableLogKE<BasicMomentumTransportModel>::correctNut()
 {
     const volTensorField gradU(fvc::grad(this->U_));
-    const volScalarField S2(modelName("S2"), 2*magSqr(dev(symm(gradU))));
-    const volScalarField magS(modelName("magS"), sqrt(S2));
+    const volScalarField S2(typedName("S2"), 2*magSqr(dev(symm(gradU))));
+    const volScalarField magS(typedName("magS"), sqrt(S2));
 
     correctNut(gradU, S2, magS);
 }
@@ -318,23 +318,23 @@ void stratifiedRealizableLogKE<BasicMomentumTransportModel>::correct()
 
     volScalarField::Internal divU
     (
-        modelName("divU"),
+        typedName("divU"),
         fvc::div(fvc::absolute(this->phi(), U))()
     );
 
     const volTensorField gradU(fvc::grad(U));
-    const volScalarField S2(modelName("S2"), 2*magSqr(dev(symm(gradU))));
-    const volScalarField magS(modelName("magS"), sqrt(S2));
+    const volScalarField S2(typedName("S2"), 2*magSqr(dev(symm(gradU))));
+    const volScalarField magS(typedName("magS"), sqrt(S2));
 
     Cmu_ = rCmu(gradU, S2, magS);
 
     const volScalarField::Internal eta
     (
-        modelName("eta"), magS()*k_()/epsilon_()
+        typedName("eta"), magS()*k_()/epsilon_()
     );
     const volScalarField::Internal C1
     (
-        modelName("C1"),
+        typedName("C1"),
         max(eta/(scalar(5) + eta), scalar(0.43))
     );
 

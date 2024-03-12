@@ -122,13 +122,14 @@ autoPtr<compressible::momentumTransportModel> turbulence
 );
 
 Info<< "Creating thermophysical transport model\n" << endl;
-autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
-(
-    fluidThermophysicalTransportModel::New(turbulence(), thermo)
-);
+typedef ThermophysicalTransportModel
+<
+    compressible::momentumTransportModel, fluidThermo
+> tModel;
 
-surfaceScalarField alphaEff
-     = fvc::interpolate(thermophysicalTransport->alphaEff());
+autoPtr<tModel> thermophysicalTransport(tModel::New(turbulence(), thermo));
+
+surfaceScalarField alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
 alphaEff.oldTime();
 
 // Reading in the sponge layer coefficients (if present)

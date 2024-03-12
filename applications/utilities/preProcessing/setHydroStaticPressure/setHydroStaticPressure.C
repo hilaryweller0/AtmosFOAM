@@ -30,10 +30,21 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
+#include "uniformDimensionedFields.H"
 #include "rhoThermo.H"
 #include "ExnerTheta.H"
 #include "pimpleControl.H"
+#include "fvcSnGrad.H"
+#include "fvScalarMatrix.H"
+#include "fvmLaplacian.H"
+#include "findRefCell.H"
+using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

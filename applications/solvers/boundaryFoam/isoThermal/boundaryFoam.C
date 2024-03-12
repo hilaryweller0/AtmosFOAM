@@ -41,7 +41,6 @@ Description
 #include "fvModels.H"
 #include "fvConstraints.H"
 #include "wallFvPatch.H"
-#include "wallDist.H"
 #include "setWriter.H"
 #include "writeFile.H"
 
@@ -51,7 +50,7 @@ int main(int argc, char *argv[])
 {
     argList::noParallel();
 
-    #include "setRootCaseLists.H"
+    #include "setRootCase.H"
 
     #include "createTime.H"
     #include "createMesh.H"

@@ -4,6 +4,8 @@
 #include "mountain.H"
 #include "terrainFollowingTransform.H"
 
+namespace Foam
+{
 class btfTransform final : public terrainFollowingTransform
 {
     public:
@@ -17,5 +19,5 @@ class btfTransform final : public terrainFollowingTransform
     const autoPtr<mountain> m;
     const scalar groundOffset_;
 };
-
+}
 #endif

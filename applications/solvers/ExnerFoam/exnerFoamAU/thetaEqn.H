@@ -1,9 +1,10 @@
 // theta equation
+alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
 fvScalarMatrix thetaEqn
 (
     fvm::ddt(rho, theta)
   + fvm::div(phi, theta)
-  - fvm::laplacian(thermophysicalTransport->alphaEff(), theta)
+  - fvm::laplacian(alphaEff, theta)
 );
 
 if (implicitT)

@@ -4,6 +4,9 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
+
 class geodesicGaussiansTracerField final : public tracerField
 {
     public:
@@ -17,6 +20,6 @@ class geodesicGaussiansTracerField final : public tracerField
     const scalar hmax;
     const scalar b;
 };
-
+}
 #endif
 

@@ -33,8 +33,11 @@ Description
 #include "fvMesh.H"
 #include "argList.H"
 #include "mountain.H"
+#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+using namespace Foam;
 
 int main(int argc, char *argv[])
 {

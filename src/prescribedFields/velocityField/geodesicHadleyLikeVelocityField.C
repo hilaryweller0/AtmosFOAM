@@ -1,10 +1,13 @@
 #include "geodesicHadleyLikeVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mathematicalConstants.H"
-using namespace constant::mathematical;
 
 #include "polarPoint.H"
 #include "sphericalVector.H"
+
+namespace Foam
+{
+using namespace constant::mathematical;
 
 defineTypeNameAndDebug(geodesicHadleyLikeVelocityField, 0);
 addToRunTimeSelectionTable
@@ -54,4 +57,5 @@ vector geodesicHadleyLikeVelocityField::velocityAt
 
     sphericalVector sphericalp(p);
     return localWind.toCartesian(sphericalp);
+}
 }

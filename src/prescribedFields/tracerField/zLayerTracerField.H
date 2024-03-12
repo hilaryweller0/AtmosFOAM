@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class zLayerTracerField final : public tracerField
 {
     public:
@@ -18,7 +20,6 @@ class zLayerTracerField final : public tracerField
     scalar tracerAt(const point& p, const Time& t) const;
     const scalar z1_, z2_, z0_, H_;
 };
-
+}
 #endif
-
 

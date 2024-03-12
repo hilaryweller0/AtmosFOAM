@@ -3,6 +3,8 @@
 
 #include "nonDivergentVelocityField.H"
 
+namespace Foam
+{
 class deformationalNonDivergentVelocityField final
      : public nonDivergentVelocityField
 {
@@ -15,5 +17,5 @@ class deformationalNonDivergentVelocityField final
     const scalar deformationScale_;
     const vector domainSize_;
 };
-
+}
 #endif

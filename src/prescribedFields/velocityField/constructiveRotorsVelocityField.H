@@ -6,6 +6,8 @@
 
 // strictly, a uniform velocity field is nonDivergent
 // but it's easier to specify it without using a streamfunction
+namespace Foam
+{
 class constructiveRotorsVelocityField final : public nonDivergentVelocityField, public advectable
 {
     public:
@@ -20,7 +22,6 @@ class constructiveRotorsVelocityField final : public nonDivergentVelocityField, 
     const scalar ymax;
     const point center;
 };
-
+}
 #endif
-
 

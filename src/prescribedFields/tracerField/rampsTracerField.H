@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class rampsTracerField final : public tracerField
 {
     public:
@@ -17,7 +19,7 @@ class rampsTracerField final : public tracerField
     List<vector> lengths_;
     scalarList maxTracers_;
 };
-
+}
 #endif
 
 

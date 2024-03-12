@@ -1,6 +1,9 @@
 #include "shearedVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
+
 defineTypeNameAndDebug(shearedVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, shearedVelocityField, dict);
 
@@ -53,4 +56,5 @@ point shearedVelocityField::initialPositionOf
     vector U = u0 + (gradU & (p - p0))*u0hat;
     vector dist = U*time*(1 + 0.5*acceleration*time);
     return point(p - dist);
+}
 }

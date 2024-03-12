@@ -1,6 +1,8 @@
 #include "sinusoidalVelocityField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(sinusoidalVelocityField, 0);
 addToRunTimeSelectionTable
 (
@@ -88,3 +90,4 @@ vector sinusoidalVelocityField::velocityAt
     return vector(u,v,w);
 }
 
+}

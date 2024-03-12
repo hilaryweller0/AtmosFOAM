@@ -1,8 +1,6 @@
 #ifndef GEODESIC_VELOCITY_FIELD_H
 #define GEODESIC_VELOCITY_FIELD_H
 
-#include "fvCFD.H"
-
 #include "velocityField.H"
 
 namespace Foam

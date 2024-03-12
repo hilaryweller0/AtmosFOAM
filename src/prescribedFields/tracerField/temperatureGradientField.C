@@ -1,6 +1,8 @@
 #include "temperatureGradientField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(temperatureGradientField, 0);
 addToRunTimeSelectionTable(tracerField, temperatureGradientField, dict);
 
@@ -39,4 +41,5 @@ scalar temperatureGradientField::tracerAt
     {
         return T0;
     }
+}
 }

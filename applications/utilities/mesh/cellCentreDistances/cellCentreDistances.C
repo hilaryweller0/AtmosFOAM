@@ -1,5 +1,9 @@
-#include "fvCFD.H"
+#include "fvMesh.H"
 #include "cellSet.H"
+#include "argList.H"
+#include "volFields.H"
+
+using namespace Foam;
 
 int main(int argc, char *argv[])
 {

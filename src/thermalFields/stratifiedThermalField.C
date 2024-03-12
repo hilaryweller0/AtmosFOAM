@@ -26,6 +26,8 @@ License
 #include "stratifiedThermalField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(stratifiedThermalField, 0);
 addToRunTimeSelectionTable(tracerField, stratifiedThermalField, dict);
 
@@ -137,3 +139,4 @@ scalar Foam::stratifiedThermalField::tracerAt
 }
 
 // ************************************************************************* //
+}

@@ -1,6 +1,9 @@
 #include "zLayerTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mathematicalConstants.H"
+
+namespace Foam
+{
 using namespace constant::mathematical;
 
 defineTypeNameAndDebug(zLayerTracerField, 0);
@@ -41,4 +44,5 @@ scalar zLayerTracerField::tracerAt
     }
 
     return q;
+}
 }

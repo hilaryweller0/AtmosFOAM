@@ -1,6 +1,8 @@
 #include "polynomialTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(polynomialTracerField, 0);
 addToRunTimeSelectionTable(tracerField, polynomialTracerField, dict);
 
@@ -56,4 +58,4 @@ scalar polynomialTracerField::tracerAt
          + a_yyy*pow(y,3) + a_yyz*sqr(y)*z + a_yzz*y*sqr(z) + a_zzz*pow(z,3);
     return max(min(poly, polyMax), polyMin);
 }
-
+}

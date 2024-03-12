@@ -1,7 +1,7 @@
 thetaRHS = -fvc::div((1-offCentre)*phi, theta, "div(phi,theta)")
           + fvc::laplacian
             (
-                (1-offCentre)*fvc::interpolate(thermophysicalTransport->alphaEff()),
+                (1-offCentre)*alphaEff,
                 theta
             );
 

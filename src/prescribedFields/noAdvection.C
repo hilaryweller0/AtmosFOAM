@@ -1,5 +1,8 @@
 #include "noAdvection.H"
 
+namespace Foam
+{
+
 point noAdvection::initialPositionOf
 (
         const point& p,
@@ -7,4 +10,6 @@ point noAdvection::initialPositionOf
 ) const
 {
     return p;
+}
+
 }

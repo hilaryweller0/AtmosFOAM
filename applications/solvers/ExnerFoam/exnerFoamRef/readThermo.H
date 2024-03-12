@@ -19,7 +19,7 @@ const dimensionedScalar pRef
 
 const constTransport<hConstThermo<perfectGas<specie> > > air
 (
-    thermo.properties().subDict("mixture")
+    "mixture", thermo.properties()
 );
 
 const dimensionedScalar R("R", dimGasConstant, air.R());

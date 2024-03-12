@@ -30,13 +30,20 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "timeSelector.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
+#include "surfaceFields.H"
 #include "OFstream.H"
 #include "polarPoint.H"
 #include "sphericalVector.H"
 #include "sphericalMeshData.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+using namespace Foam;
 
 int main(int argc, char *argv[])
 {

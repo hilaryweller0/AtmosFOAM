@@ -4,6 +4,8 @@
 #include "polarPoint.H"
 #include "sphericalVector.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(constructiveRotorsVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, constructiveRotorsVelocityField, dict);
 
@@ -62,4 +64,5 @@ point constructiveRotorsVelocityField::initialPositionOf
 ) const
 {
     return p;
+}
 }

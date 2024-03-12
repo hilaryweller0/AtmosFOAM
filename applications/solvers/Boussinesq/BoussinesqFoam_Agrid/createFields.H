@@ -65,8 +65,6 @@ const int nNonOrthCorr =
         solDict.lookupOrDefault<int>("nNonOrthogonalCorrectors", 0);
 label pRefCell = 0;
 scalar pRefValue = 0.0;
-setRefCell(p, solDict, pRefCell, pRefValue);
-//mesh.setFluxRequired(p.name());
 
 // Gravity direction
 const uniformDimensionedVectorField kdir

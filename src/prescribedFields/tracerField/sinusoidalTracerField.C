@@ -1,6 +1,8 @@
 #include "sinusoidalTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(sinusoidalTracerField, 0);
 addToRunTimeSelectionTable(tracerField, sinusoidalTracerField, dict);
 
@@ -20,9 +22,9 @@ sinusoidalTracerField::sinusoidalTracerField
     b_y(dict.lookupOrDefault<scalar>("b_y", scalar(0))),
     b_z(dict.lookupOrDefault<scalar>("b_z", scalar(0))),
     
-    k_x(dict.lookupOrDefault<scalar>("k_x", scalar(0))),
-    k_y(dict.lookupOrDefault<scalar>("k_y", scalar(0))),
-    k_z(dict.lookupOrDefault<scalar>("k_z", scalar(0))),
+    k_x(dict.lookupOrDefault<scalar>("k_x", scalar(1))),
+    k_y(dict.lookupOrDefault<scalar>("k_y", scalar(1))),
+    k_z(dict.lookupOrDefault<scalar>("k_z", scalar(1))),
     
     L_x(dict.lookupOrDefault<scalar>("L_x", scalar(1))),
     L_y(dict.lookupOrDefault<scalar>("L_y", scalar(1))),
@@ -62,4 +64,4 @@ scalar sinusoidalTracerField::tracerAt
     }
     return max(min(func, funcMax), funcMin);
 }
-
+}

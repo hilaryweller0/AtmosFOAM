@@ -2,7 +2,7 @@ thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
           - (1-fvc::average(offCentrePG))*rho*w*dThetaadz
           + fvc::laplacian
             (
-                (1-offCentre)*fvc::interpolate(thermophysicalTransport->alphaEff()),
+                (1-offCentre)*alphaEff,
                 thetap
             );
 

@@ -41,7 +41,7 @@ volScalarField mixingLength
     "mixingLength", sign(turbulence->nut())*sqrt(mag(turbulence->nut())/magS)
 );
 
-setWriter::New(runTime.graphFormat())->write
+setWriter::New(runTime.controlDict().lookup("graphFormat"))->write
 (
     runTime.globalPath()
    /functionObjects::writeFile::outputPrefix

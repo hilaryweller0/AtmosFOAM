@@ -1,6 +1,8 @@
 #include "coneMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(coneMountain, 0);
 addToRunTimeSelectionTable(mountain, coneMountain, dict);
 
@@ -22,4 +24,4 @@ dimensionedScalar coneMountain::heightAt(const point& p) const
     }
     return h;
 }
-
+}

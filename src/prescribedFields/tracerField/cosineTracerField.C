@@ -1,6 +1,8 @@
 #include "cosineTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(cosineTracerField, 0);
 addToRunTimeSelectionTable(tracerField, cosineTracerField, dict);
 
@@ -19,13 +21,16 @@ cosineTracerField::cosineTracerField
 
 scalar cosineTracerField::tracerAt(const point& p, const Time& t) const
 {
-    if (mag(p - centre_) < width_)
+    scalar r = mag(p - centre_);
+    if (r < width_)
     {
         return backgroundTracer_
-             + maxTracer_*0.5*(1+Foam::cos(M_PI*mag(p - centre_)/width_));
+             + maxTracer_*0.5*(1+Foam::cos(M_PI*r/width_));
     }
     else
     {
         return backgroundTracer_;
     }
+}
+
 }

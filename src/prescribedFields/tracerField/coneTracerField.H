@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class coneTracerField final : public tracerField
 {
     public:
@@ -16,7 +18,7 @@ class coneTracerField final : public tracerField
     const point centre_;
     const scalar maxTracer_;
 };
-
+}
 #endif
 
 

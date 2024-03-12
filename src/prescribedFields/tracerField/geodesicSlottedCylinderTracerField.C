@@ -1,6 +1,8 @@
 #include "geodesicSlottedCylinderTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(geodesicSlottedCylinderTracerField, 0);
 addToRunTimeSelectionTable(tracerField, geodesicSlottedCylinderTracerField, dict);
 
@@ -62,4 +64,5 @@ scalar geodesicSlottedCylinderTracerField::tracerAt
     }
     
     return tracer;
+}
 }

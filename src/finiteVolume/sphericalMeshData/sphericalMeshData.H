@@ -39,7 +39,7 @@ SourceFiles
 #ifndef sphericalMeshData_H
 #define sphericalMeshData_H
 
-#include "MeshObject.H"
+#include "DemandDrivenMeshObject.H"
 #include "fvMesh.H"
 #include "mathematicalConstants.H"
 
@@ -54,7 +54,7 @@ namespace Foam
 
 class sphericalMeshData
 :
-    public MeshObject<fvMesh, MoveableMeshObject, sphericalMeshData>
+    public DemandDrivenMeshObject<fvMesh, MoveableMeshObject, sphericalMeshData>
 {
     // Private Data
 

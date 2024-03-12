@@ -1,6 +1,8 @@
 #include "rampsTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mathematicalConstants.H"
+namespace Foam
+{
 using namespace constant::mathematical;
 
 defineTypeNameAndDebug(rampsTracerField, 0);
@@ -45,4 +47,4 @@ scalar rampsTracerField::tracerAt(const point& p, const Time& t) const
 
     return tracer;
 }
-
+}

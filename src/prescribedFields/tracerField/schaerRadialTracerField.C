@@ -1,6 +1,8 @@
 #include "schaerRadialTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(schaerRadialTracerField, 0);
 addToRunTimeSelectionTable(tracerField, schaerRadialTracerField, dict);
 
@@ -34,4 +36,5 @@ scalar schaerRadialTracerField::tracerAt
     {
         return 0;
     }
+}
 }

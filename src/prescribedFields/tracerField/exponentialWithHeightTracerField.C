@@ -1,6 +1,9 @@
 #include "exponentialWithHeightTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 #include "mathematicalConstants.H"
+
+namespace Foam
+{
 using namespace constant::mathematical;
 
 defineTypeNameAndDebug(exponentialWithHeightTracerField, 0);
@@ -35,4 +38,6 @@ scalar exponentialWithHeightTracerField::tracerAt
              : p.z();
     z -= z0_;
     return offset_ + T0_*Foam::exp(-z/H_);
+}
+
 }

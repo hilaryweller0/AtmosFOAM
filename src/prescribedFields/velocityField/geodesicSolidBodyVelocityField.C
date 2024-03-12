@@ -3,6 +3,8 @@
 
 #include "polarPoint.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(geodesicSolidBodyVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, geodesicSolidBodyVelocityField, dict);
 
@@ -48,4 +50,5 @@ point geodesicSolidBodyVelocityField::initialPositionOf
 
     const polarPoint departureP(lon, lat, radius.value());
     return departureP.cartesian();
+}
 }

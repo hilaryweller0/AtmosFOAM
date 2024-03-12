@@ -1,8 +1,9 @@
 #ifndef TRACER_FIELD_H
 #define TRACER_FIELD_H
 
-#include "fvCFD.H"
 #include "advectable.H"
+#include "surfaceFields.H"
+#include "volFields.H"
 
 namespace Foam
 {
@@ -29,6 +30,9 @@ class tracerField
     );
     
     public:
+    
+    //- Runtime type information
+    TypeName("tracerField");
     
     declareRunTimeSelectionTable
     (

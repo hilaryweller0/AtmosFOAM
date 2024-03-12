@@ -2,6 +2,8 @@
 #include "btfTransform.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(btfVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, btfVelocityField, dict);
 
@@ -81,4 +83,5 @@ point btfVelocityField::initialHorizontalPositionOf
     {
         return p;
     }
+}
 }

@@ -1,6 +1,8 @@
 #include "schaerRadialDampedField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(schaerRadialDampedField, 0);
 addToRunTimeSelectionTable(tracerField, schaerRadialDampedField, dict);
 
@@ -95,4 +97,5 @@ scalar schaerRadialDampedField::tracerAt
         }
     }
     return rho;
+}
 }

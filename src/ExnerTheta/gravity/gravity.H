@@ -36,7 +36,8 @@ SourceFiles
 #ifndef gravity_H
 #define gravity_H
 
-#include "fvCFD.H"
+#include "dimensionedTypes.H"
+#include "surfaceFields.H"
 
 namespace Foam
 {

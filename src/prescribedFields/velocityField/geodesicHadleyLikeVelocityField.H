@@ -8,6 +8,8 @@ James Kent, Paul A. Ullrich and Christiane Jablonowski*/
 
 #include "geodesicVelocityField.H"
 
+namespace Foam
+{
 class geodesicHadleyLikeVelocityField final : public geodesicVelocityField
 {
     public:
@@ -19,5 +21,5 @@ class geodesicHadleyLikeVelocityField final : public geodesicVelocityField
     scalar H_, ztop_, u0_, w0_, tau_, rho0_;
     label K_;
 };
-
+}
 #endif

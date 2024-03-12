@@ -93,18 +93,6 @@ nutkAtmRoughCmuWallFunctionFvPatchScalarField::
 nutkAtmRoughCmuWallFunctionFvPatchScalarField
 (
     const fvPatch& p,
-    const DimensionedField<scalar, volMesh>& iF
-)
-:
-    nutkWallFunctionFvPatchScalarField(p, iF),
-    z0_(p.size(), 0.0)
-{}
-
-
-nutkAtmRoughCmuWallFunctionFvPatchScalarField::
-nutkAtmRoughCmuWallFunctionFvPatchScalarField
-(
-    const fvPatch& p,
     const DimensionedField<scalar, volMesh>& iF,
     const dictionary& dict
 )
@@ -155,41 +143,6 @@ Foam::nutkAtmRoughCmuWallFunctionFvPatchScalarField::nutw
             turbModel.nut()().boundaryField()[patchi]
         );
 }
-
-
-void nutkAtmRoughCmuWallFunctionFvPatchScalarField::autoMap
-(
-    const fvPatchFieldMapper& m
-)
-{
-    nutkWallFunctionFvPatchScalarField::autoMap(m);
-    m(z0_, z0_);
-}
-
-
-void nutkAtmRoughCmuWallFunctionFvPatchScalarField::rmap
-(
-    const fvPatchScalarField& ptf,
-    const labelList& addr
-)
-{
-    nutkWallFunctionFvPatchScalarField::rmap(ptf, addr);
-
-    const nutkAtmRoughCmuWallFunctionFvPatchScalarField& nrwfpsf =
-        refCast<const nutkAtmRoughCmuWallFunctionFvPatchScalarField>(ptf);
-
-    z0_.rmap(nrwfpsf.z0_, addr);
-}
-
-
-void nutkAtmRoughCmuWallFunctionFvPatchScalarField::write(Ostream& os) const
-{
-    fvPatchField<scalar>::write(os);
-    writeLocalEntries(os);
-    writeEntry(os, "z0", z0_);
-    writeEntry(os, "value", *this);
-}
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 

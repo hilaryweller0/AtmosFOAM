@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 {
     argList::noParallel();
 
-    #include "setRootCaseLists.H"
+    #include "setRootCase.H"
 
     #include "createTime.H"
     #include "createMesh.H"

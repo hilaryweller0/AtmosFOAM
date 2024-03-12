@@ -4,6 +4,8 @@
 #include "polarPoint.H"
 #include "sphericalVector.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(geodesicDeformationalDivergentVelocityField, 0);
 addToRunTimeSelectionTable
 (
@@ -47,4 +49,4 @@ vector geodesicDeformationalDivergentVelocityField::velocityAt
 
     return localWind.toCartesian(sphericalp);
 }
-
+}

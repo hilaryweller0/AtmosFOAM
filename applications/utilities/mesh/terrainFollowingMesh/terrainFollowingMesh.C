@@ -1,8 +1,11 @@
 #include "Time.H"
-#include "polyMesh.H"
+#include "fvMesh.H"
 #include "argList.H"
+#include "volFields.H"
 
 #include "terrainFollowingTransform.H"
+
+using namespace Foam;
 
 int main(int argc, char *argv[])
 {

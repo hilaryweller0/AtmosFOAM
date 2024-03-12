@@ -17,6 +17,8 @@ A velocity field which is a cosine in each Cartesian direction. Returns:
 
 #include "divergentVelocityField.H"
 
+namespace Foam
+{
 class sinusoidalVelocityField final : public divergentVelocityField
 {
     public:
@@ -41,7 +43,6 @@ class sinusoidalVelocityField final : public divergentVelocityField
                  psi_x, psi_y, psi_z,
                  chi_x, chi_y, chi_z;
 };
-
+}
 #endif
-
 

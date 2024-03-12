@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class radialDistance final : public tracerField
 {
     public:
@@ -14,7 +16,6 @@ class radialDistance final : public tracerField
     scalar tracerAt(const point& p, const Time& t) const;
     const point p0;
 };
-
+}
 #endif
-
 

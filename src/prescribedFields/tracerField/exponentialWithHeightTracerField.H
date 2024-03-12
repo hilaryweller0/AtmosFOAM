@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class exponentialWithHeightTracerField final : public tracerField
 {
     public:
@@ -18,7 +20,7 @@ class exponentialWithHeightTracerField final : public tracerField
     scalar tracerAt(const point& p, const Time& t) const;
     const scalar z0_, T0_, H_, offset_;
 };
-
+}
 #endif
 
 

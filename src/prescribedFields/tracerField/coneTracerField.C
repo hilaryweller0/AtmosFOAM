@@ -1,6 +1,8 @@
 #include "coneTracerField.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(coneTracerField, 0);
 addToRunTimeSelectionTable(tracerField, coneTracerField, dict);
 
@@ -20,4 +22,4 @@ scalar coneTracerField::tracerAt(const point& p, const Time& t) const
 {
     return max(maxTracer_*(1-mag(p - centre_)/width_), 0);
 }
-
+}

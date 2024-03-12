@@ -27,6 +27,8 @@ License
 #include "dualGradeMountain.H"
 #include "sleveTransform.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(sleveTransform, 0);
 addToRunTimeSelectionTable(terrainFollowingTransform, sleveTransform, dict);
 
@@ -78,3 +80,4 @@ point sleveTransform::computationalToPhysical(const point& p) const
 }
 
 // ************************************************************************* //
+}

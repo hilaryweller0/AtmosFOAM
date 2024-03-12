@@ -6,6 +6,8 @@
 #include "nonDivergentVelocityField.H"
 #include "btfTransform.H"
 
+namespace Foam
+{
 enum class analyticSolution { HORIZONTAL_ONLY, VERTICAL_ONLY };
 
 class btfVelocityField final : public nonDivergentVelocityField, public advectable
@@ -25,6 +27,6 @@ class btfVelocityField final : public nonDivergentVelocityField, public advectab
     const analyticSolution mode;
     const btfTransform transform; 
 };
-
+}
 #endif
 

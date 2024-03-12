@@ -1,5 +1,10 @@
-#include "fvCFD.H"
+#include "Time.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
 #include "mountain.H"
+
+using namespace Foam;
 
 int main(int argc, char *argv[])
 {

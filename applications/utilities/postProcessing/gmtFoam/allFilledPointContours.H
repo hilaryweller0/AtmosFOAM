@@ -1,4 +1,4 @@
-pointMesh pMesh(mesh);
+pointMesh2 pMesh(mesh);
 pointScalarField psf(fieldHeader, pMesh);
 
 scalar colourMin = fieldsToPlot[ifield].min();

@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class temperatureGradientField final : public tracerField
 {
     public:
@@ -19,7 +21,6 @@ class temperatureGradientField final : public tracerField
     const scalar cp;
     const scalar theta0;
 };
-
+}
 #endif
-
 

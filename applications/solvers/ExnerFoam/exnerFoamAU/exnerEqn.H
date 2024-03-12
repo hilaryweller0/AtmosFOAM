@@ -18,7 +18,7 @@ else
 
 // Exner from eqn of state
 Exner.oldTime() = pow(rho*R*theta/pRef, RbyCv);
-volScalarField Psi = rho/(RbyCv*Exner.oldTime());
+Psi = rho/(RbyCv*Exner.oldTime());
 
 for (int corr=0; corr<nCorr; corr++)
 {

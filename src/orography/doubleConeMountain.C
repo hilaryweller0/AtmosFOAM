@@ -1,6 +1,8 @@
 #include "doubleConeMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(doubleConeMountain, 0);
 addToRunTimeSelectionTable(mountain, doubleConeMountain, dict);
 
@@ -31,4 +33,4 @@ dimensionedScalar doubleConeMountain::heightAt(const point& p) const
     }
     return h;
 }
-
+}

@@ -1,8 +1,6 @@
 #ifndef GEODESIC_NON_DIVERGENT_VELOCITY_FIELD_H
 #define GEODESIC_NON_DIVERGENT_VELOCITY_FIELD_H
 
-#include "fvCFD.H"
-
 #include "velocityField.H"
 #include "sphericalMeshData.H"
 

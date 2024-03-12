@@ -1,8 +1,6 @@
 #ifndef NON_DIVERGENT_VELOCITY_FIELD_H
 #define NON_DIVERGENT_VELOCITY_FIELD_H
 
-#include "fvCFD.H"
-
 #include "velocityField.H"
 
 namespace Foam

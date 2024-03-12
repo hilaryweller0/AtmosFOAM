@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class schaer1DTracerField final : public tracerField
 {
     public:
@@ -16,7 +18,6 @@ class schaer1DTracerField final : public tracerField
     const point p0;
     const vector A;
 };
-
+}
 #endif
-
 

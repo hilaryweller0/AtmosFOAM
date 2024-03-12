@@ -1,5 +1,8 @@
 #include "terrainFollowingTransform.H"
 
+namespace Foam
+{
+defineTypeNameAndDebug(terrainFollowingTransform, 0);
 defineRunTimeSelectionTable(terrainFollowingTransform, dict);
 
 autoPtr<terrainFollowingTransform> terrainFollowingTransform::New(const dictionary& dict)
@@ -26,4 +29,4 @@ autoPtr<terrainFollowingTransform> terrainFollowingTransform::New(const dictiona
        cstrIter()(dict)
     );
 }
-
+}

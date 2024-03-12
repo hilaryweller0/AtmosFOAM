@@ -1,3 +1,0 @@
-courantNumber.C
-
-EXE = $(FOAM_USER_APPBIN)/courantNumber

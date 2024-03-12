@@ -28,6 +28,8 @@ License
 #include "compressibleMomentumTransportModels.H"
 #include "addToRunTimeSelectionTable.H"
 #include "fvcReconstruct.H"
+#include "fvcVolumeIntegrate.H"
+#include "fvcSnGrad.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 

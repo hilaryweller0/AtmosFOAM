@@ -1,6 +1,8 @@
 #include "btfTransform.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(btfTransform, 0);
 addToRunTimeSelectionTable(terrainFollowingTransform, btfTransform, dict);
 
@@ -31,4 +33,5 @@ point btfTransform::computationalToPhysical(const point& p) const
         z += groundOffset_;
     }
     return point(p.x(), p.y(), z);
+}
 }

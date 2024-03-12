@@ -37,7 +37,7 @@ SourceFiles
 #ifndef weightedReconstructData_H
 #define weightedReconstructData_H
 
-#include "MeshObject.H"
+#include "DemandDrivenMeshObject.H"
 #include "fvMesh.H"
 #include "surfaceFields.H"
 #include "volFields.H"
@@ -53,7 +53,7 @@ namespace Foam
 
 class weightedReconstructData
 :
-    public MeshObject<fvMesh, MoveableMeshObject, weightedReconstructData>
+    public DemandDrivenMeshObject<fvMesh, MoveableMeshObject, weightedReconstructData>
 {
     // Private data
 

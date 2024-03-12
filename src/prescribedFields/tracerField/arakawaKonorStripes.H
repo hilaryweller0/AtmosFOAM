@@ -3,6 +3,8 @@
 
 #include "tracerField.H"
 
+namespace Foam
+{
 class arakawaKonorStripesTracerField final : public tracerField
 {
     public:
@@ -19,6 +21,6 @@ class arakawaKonorStripesTracerField final : public tracerField
     const scalar z2Start;
     const scalar z2End;
 };
-
+}
 #endif
 

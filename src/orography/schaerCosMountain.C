@@ -1,6 +1,8 @@
 #include "schaerCosMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(schaerCosMountain, 0);
 addToRunTimeSelectionTable(mountain, schaerCosMountain, dict);
 
@@ -65,4 +67,5 @@ dimensionedScalar schaerCosMountain::timeToCrossIntegralAt
     );
 
     return x / u0 - h0/(4.0 * u0 * H) * (x + A + B);
+}
 }

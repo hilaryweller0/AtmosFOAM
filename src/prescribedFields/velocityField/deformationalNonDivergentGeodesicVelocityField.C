@@ -3,6 +3,8 @@
 #include "polarPoint.H"
 #include "deformationalNonDivergentGeodesicVelocityFieldData.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(deformationalNonDivergentGeodesicVelocityField, 0);
 addToRunTimeSelectionTable
 (
@@ -46,4 +48,5 @@ vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
       - data.TwoPiSinLat()[ip]
       + 4 * M_PI
     );
+}
 }

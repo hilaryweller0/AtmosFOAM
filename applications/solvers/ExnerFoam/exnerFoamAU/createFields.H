@@ -85,10 +85,15 @@ autoPtr<compressible::momentumTransportModel> turbulence
 );
 
 Info<< "Creating thermophysical transport model\n" << endl;
-autoPtr<fluidThermophysicalTransportModel> thermophysicalTransport
-(
-    fluidThermophysicalTransportModel::New(turbulence(), thermo)
-);
+typedef ThermophysicalTransportModel
+<
+    compressible::momentumTransportModel, fluidThermo
+> tModel;
+
+autoPtr<tModel> thermophysicalTransport(tModel::New(turbulence(), thermo));
+
+surfaceScalarField alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
+alphaEff.oldTime();
 
 // Reading in the sponge layer coefficients (if present)
 const volScalarField muSponge
@@ -128,4 +133,7 @@ surfaceScalarField G
     mesh,
     dimensionedScalar("G", dimless, scalar(1))
 );
+
+// Fields needed for implicit gravity and acoustic waves
+volScalarField Psi("Psi", rho/(RbyCv*Exner));
 

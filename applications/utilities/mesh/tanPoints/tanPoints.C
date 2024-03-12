@@ -31,9 +31,13 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "fvCFD.H"
+#include "Time.H"
+#include "fvMesh.H"
+#include "argList.H"
+#include "volFields.H"
 #include "mathematicalConstants.H"
 
+using namespace Foam;
 using namespace Foam::constant::mathematical;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

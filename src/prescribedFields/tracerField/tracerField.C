@@ -3,6 +3,9 @@
 #include "fixedGradientFvPatchFields.H"
 #include "sphericalMeshData.H"
 
+namespace Foam
+{
+defineTypeNameAndDebug(tracerField, 0);
 defineRunTimeSelectionTable(tracerField, dict);
 
 autoPtr<tracerField> tracerField::New
@@ -218,4 +221,5 @@ vector tracerField::gradientAt
         "tracerField::gradientAt(const point& p, const Time& t)"
     );
     return vector(0,0,0);
+}
 }

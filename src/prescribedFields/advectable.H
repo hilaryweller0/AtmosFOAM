@@ -1,7 +1,7 @@
 #ifndef ADVECTABLE_H
 #define ADVECTABLE_H
 
-#include "fvCFD.H"
+#include "fvMesh.H"
 
 namespace Foam
 {

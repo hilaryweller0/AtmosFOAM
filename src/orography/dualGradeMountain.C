@@ -25,6 +25,8 @@ License
 
 #include "dualGradeMountain.H"
 
+namespace Foam
+{
 defineRunTimeSelectionTable(dualGradeMountain, dict);
 
 // * * * * * * * * * * * * * * * * Selectors * * * * * * * * * * * * * * * * //
@@ -62,3 +64,4 @@ dimensionedScalar dualGradeMountain::heightAt(const point& p) const
 }
 
 // ************************************************************************* //
+}

@@ -6,6 +6,8 @@
 
 // strictly, a zero velocity field is nonDivergent
 // but it's easier to specify it without using a streamfunction
+namespace Foam
+{
 class zeroVelocityField final : public divergentVelocityField, public advectable
 {
     public:
@@ -16,7 +18,6 @@ class zeroVelocityField final : public divergentVelocityField, public advectable
     vector velocityAt(const point& p, const Time& t) const;
     point initialPositionOf(const point& p, const Time& t) const;
 };
-
+}
 #endif
-
 

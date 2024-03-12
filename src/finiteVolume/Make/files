@@ -1,4 +1,5 @@
 interpolation/surfaceInterpolation/QUICKupwind/QUICKupwind.C
+interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
 interpolation/surfaceInterpolation/localMinMin/localMinMin.C
 
 sphericalMeshData/sphericalMeshData.C
@@ -18,7 +19,6 @@ finiteVolume/fvc/fvcPosDefCof.C
 finiteVolume/fvc/fvcDet.C
 
 functionObjects/CourantNoU/CourantNoU.C
-functionObjects/heatFlux/heatFlux.C
 functionObjects/wFlux/wFlux.C
 
 finiteVolume/sGradSchemes/sGradScheme/sGradSchemes.C

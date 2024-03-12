@@ -45,7 +45,7 @@ Foam::deformationalNonDivergentGeodesicVelocityFieldData
     const scalar endTime
 )
 :
-    MeshObject
+    DemandDrivenMeshObject
     <
         fvMesh, Foam::MoveableMeshObject,
         deformationalNonDivergentGeodesicVelocityFieldData

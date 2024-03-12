@@ -4,6 +4,8 @@
 #include "advectable.H"
 #include "tracerField.H"
 
+namespace Foam
+{
 class polynomialTracerField final : public tracerField
 {
     public:
@@ -21,7 +23,6 @@ class polynomialTracerField final : public tracerField
     // The maximum and minimum possible values of the polynomial
     const scalar polyMax, polyMin;
 };
-
+}
 #endif
-
 

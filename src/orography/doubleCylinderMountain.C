@@ -1,6 +1,8 @@
 #include "doubleCylinderMountain.H"
 #include "addToRunTimeSelectionTable.H"
 
+namespace Foam
+{
 defineTypeNameAndDebug(doubleCylinderMountain, 0);
 addToRunTimeSelectionTable(mountain, doubleCylinderMountain, dict);
 
@@ -29,4 +31,5 @@ dimensionedScalar doubleCylinderMountain::heightAt(const point& p) const
         h = h0m_;
     }
     return h;
+}
 }

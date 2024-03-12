@@ -5,6 +5,8 @@
 #include "tracerField.H"
 #include "polarPoint.H"
 
+namespace Foam
+{
 class geodesicCosBellsTracerField final : public tracerField
 {
     public:
@@ -25,7 +27,6 @@ class geodesicCosBellsTracerField final : public tracerField
     const scalar b;
     const scalar c;
 };
-
+}
 #endif
-
 
