@@ -129,7 +129,10 @@ typedef ThermophysicalTransportModel
 
 autoPtr<tModel> thermophysicalTransport(tModel::New(turbulence(), thermo));
 
-surfaceScalarField alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
+surfaceScalarField alphaEff = fvc::interpolate
+(
+    thermophysicalTransport->kappaEff()/Cp
+);
 alphaEff.oldTime();
 
 // Reading in the sponge layer coefficients (if present)

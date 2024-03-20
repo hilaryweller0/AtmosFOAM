@@ -84,6 +84,10 @@ int main(int argc, char *argv[])
     (
         readScalar(mesh.schemes().subDict("divSchemes").lookup("CoLimitExp"))
     );
+    const scalar offCentreSafety
+    (
+        readScalar(mesh.schemes().subDict("ddtSchemes").lookup("offCentreSafety"))
+    );
 
     // Pre-defined time stepping scheme
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);

@@ -1,5 +1,5 @@
 // theta equation
-alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff());
+alphaEff = fvc::interpolate(thermophysicalTransport->kappaEff()/Cp);
 fvScalarMatrix thetaEqn
 (
     EulerDdt.fvmDdt(rho, thetap)

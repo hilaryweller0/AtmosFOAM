@@ -27,6 +27,8 @@ const dimensionedScalar Cp
 (
     "Cp", dimGasConstant, air.Cp(pRef.value(),Tref.value())
 );
+Info << "Cp = " << Cp.value() << " R = " << air.R() << endl;
+
 const dimensionedScalar kappa("kappa", R/Cp);
 const scalar gamma = (1/(1-kappa)).value();
 const dimensionedScalar Cv("Cv", Cp - R);
