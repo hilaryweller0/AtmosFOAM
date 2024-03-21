@@ -23,14 +23,14 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "QUICKupwind.H"
+#include "quadraticUpwind.H"
 #include "orthogonalSnGrad.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 template<>
 Foam::tmp<Foam::surfaceVectorField>
-Foam::QUICKupwind<Foam::vector>::correction
+Foam::quadraticUpwind<Foam::vector>::correction
 (
     const volVectorField& vf
 ) const
@@ -41,7 +41,7 @@ Foam::QUICKupwind<Foam::vector>::correction
     (
         surfaceVectorField::New
         (
-            "QUICKupwind::correction(" + vf.name() + ')',
+            "quadraticUpwind::correction(" + vf.name() + ')',
             mesh,
             dimensioned<vector>(vf.name(), vf.dimensions(), Zero)
         )
@@ -131,7 +131,7 @@ Foam::QUICKupwind<Foam::vector>::correction
 
 namespace Foam
 {
-    makelimitedSurfaceInterpolationScheme(QUICKupwind)
+    makelimitedSurfaceInterpolationScheme(quadraticUpwind)
 }
 
 // ************************************************************************* //

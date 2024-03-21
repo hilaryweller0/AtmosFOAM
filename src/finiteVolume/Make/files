@@ -1,4 +1,4 @@
-interpolation/surfaceInterpolation/QUICKupwind/QUICKupwind.C
+interpolation/surfaceInterpolation/quadraticUpwind/quadraticUpwind.C
 interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
 interpolation/surfaceInterpolation/localMinMin/localMinMin.C
 

@@ -22,23 +22,22 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::QUICKupwind
+    Foam::quadraticUpwind
 
 Description
-    QUICKupwind interpolation scheme class derived from upwind and returns
+    quadraticUpwind interpolation scheme class derived from upwind and returns
     upwind weighting factors and also applies a gradient-based explicit
-    correction. Same weighting factors as QUICK but all applied as an explicit
-    correction on first-order upwind. 
-    Scheme is QUICK below Courant number Co1 and upwind above Co2 and
+    correction. 
+    Scheme is quadratic below Courant number Co1 and upwind above Co2 and
     blended in between. If Co2 < Co1 or Co1 < 0 then no blending is done.
 
 SourceFiles
-    QUICKupwind.C
+    quadraticUpwind.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef QUICKupwind_H
-#define QUICKupwind_H
+#ifndef quadraticUpwind_H
+#define quadraticUpwind_H
 
 #include "upwind.H"
 #include "gaussGrad.H"
@@ -49,11 +48,11 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-                        Class QUICKupwind Declaration
+                        Class quadraticUpwind Declaration
 \*---------------------------------------------------------------------------*/
 
 template<class Type>
-class QUICKupwind
+class quadraticUpwind
 :
     public upwind<Type>
 {
@@ -74,13 +73,13 @@ class QUICKupwind
 public:
 
     //- Runtime type information
-    TypeName("QUICKupwind");
+    TypeName("quadraticUpwind");
 
 
     // Constructors
 
         //- Construct from faceFlux and Istream
-        QUICKupwind
+        quadraticUpwind
         (
             const fvMesh& mesh,
             const surfaceScalarField& faceFlux
@@ -89,14 +88,14 @@ public:
         //- Construct from Istream.
         //  The name of the flux field is read from the Istream and looked-up
         //  from the mesh objectRegistry
-        QUICKupwind
+        quadraticUpwind
         (
             const fvMesh& mesh,
             Istream& is
         );
 
         //- Construct from faceFlux and Istream
-        QUICKupwind
+        quadraticUpwind
         (
             const fvMesh& mesh,
             const surfaceScalarField& faceFlux,
@@ -104,7 +103,7 @@ public:
         );
 
         //- Disallow default bitwise copy construction
-        QUICKupwind(const QUICKupwind&) = delete;
+        quadraticUpwind(const quadraticUpwind&) = delete;
 
 
     // Member Functions
@@ -128,13 +127,13 @@ public:
     // Member Operators
 
         //- Disallow default bitwise assignment
-        void operator=(const QUICKupwind&) = delete;
+        void operator=(const quadraticUpwind&) = delete;
 };
 
 
 // Specialise for volVectorField to support cached gradients
 template<>
-tmp<surfaceVectorField> QUICKupwind<vector>::correction
+tmp<surfaceVectorField> quadraticUpwind<vector>::correction
 (
     const volVectorField& vf
 ) const;
@@ -147,7 +146,7 @@ tmp<surfaceVectorField> QUICKupwind<vector>::correction
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-    #include "QUICKupwindTemplates.C"
+    #include "quadraticUpwindTemplates.C"
 #endif
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

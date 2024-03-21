@@ -23,13 +23,13 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "QUICKupwind.H"
+#include "quadraticUpwind.H"
 #include "orthogonalSnGrad.H"
 
 // * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::QUICKupwind<Type>::QUICKupwind
+Foam::quadraticUpwind<Type>::quadraticUpwind
 (
     const fvMesh& mesh,
     const surfaceScalarField& faceFlux
@@ -44,7 +44,7 @@ Foam::QUICKupwind<Type>::QUICKupwind
 
 
 template<class Type>
-Foam::QUICKupwind<Type>::QUICKupwind
+Foam::quadraticUpwind<Type>::quadraticUpwind
 (
     const fvMesh& mesh,
     Istream& is
@@ -59,7 +59,7 @@ Foam::QUICKupwind<Type>::QUICKupwind
 
 
 template<class Type>
-Foam::QUICKupwind<Type>::QUICKupwind
+Foam::quadraticUpwind<Type>::quadraticUpwind
 (
     const fvMesh& mesh,
     const surfaceScalarField& faceFlux,
@@ -78,7 +78,7 @@ Foam::QUICKupwind<Type>::QUICKupwind
 
 template<class Type>
 Foam::tmp<Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>>
-Foam::QUICKupwind<Type>::correction
+Foam::quadraticUpwind<Type>::correction
 (
     const GeometricField<Type, fvPatchField, volMesh>& vf
 ) const
@@ -89,7 +89,7 @@ Foam::QUICKupwind<Type>::correction
     (
         GeometricField<Type, fvsPatchField, surfaceMesh>::New
         (
-            "QUICKupwind::correction(" + vf.name() + ')',
+            "quadraticUpwind::correction(" + vf.name() + ')',
             mesh,
             dimensioned<Type>(vf.name(), vf.dimensions(), Zero)
         )
@@ -193,7 +193,7 @@ Foam::QUICKupwind<Type>::correction
 }
 
 template<class Type>
-Foam::tmp<Foam::surfaceScalarField> Foam::QUICKupwind<Type>::blendingFactor() const
+Foam::tmp<Foam::surfaceScalarField> Foam::quadraticUpwind<Type>::blendingFactor() const
 {
     const fvMesh& mesh = this->mesh();
     tmp<surfaceScalarField> tUflux = this->faceFlux_;
