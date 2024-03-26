@@ -18,6 +18,12 @@ volScalarField u
     mesh
 );
 u = U & idir;
+volScalarField v
+(
+    IOobject("v", runTime.constant(), mesh, IOobject::MUST_READ),
+    mesh
+);
+v = U & jdir;
 volScalarField w
 (
     IOobject("w", runTime.constant(), mesh, IOobject::MUST_READ),

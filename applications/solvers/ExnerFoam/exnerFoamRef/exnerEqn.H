@@ -4,6 +4,7 @@ surfaceScalarField rhorAUf
     rhof*
     (
         fvc::interpolate(rho/uEqn.A())*(1-mag(gUnitNormal))
+      + fvc::interpolate(rho/vEqn.A())*(1-mag(gUnitNormal))
       + fvc::interpolate(rho/wEqn.A())*mag(gUnitNormal)
     )
 );
@@ -16,8 +17,9 @@ for (int corr=0; corr<nCorr; corr++)
 {
     // Velocity without pressure gradient or buoyancy
     u = uEqn.H()/uEqn.A();
+    v = vEqn.H()/vEqn.A();
     w = wEqn.H()/wEqn.A();
-    U = u*idir + w*kdir;
+    U = u*idir + v*jdir + w*kdir;
 
     // Flux without pressure gradient
     phi = fvc::flux(rho*U) - offCentrePG*rhorAUf*gSf*thetapf/thetaaf;
@@ -57,10 +59,11 @@ for (int corr=0; corr<nCorr; corr++)
             );
 
             u += (Urhs & idir)/uEqn.A();
+            v += (Urhs & jdir)/vEqn.A();
             w += (Urhs & kdir)/wEqn.A();
         }
     }
 }
-U = u*idir + w*kdir;
+U = u*idir + v*jdir + w*kdir;
 aphi = offCentre*phi;
 

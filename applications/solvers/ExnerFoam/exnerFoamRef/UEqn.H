@@ -1,6 +1,6 @@
 // Implicit solution of the Momentum equation for the turbulence
 
-// Separate u and w equations
+// Separate u, v and w equations
 fvScalarMatrix uEqn
 (
     EulerDdt.fvmDdt(rho, u)
@@ -9,6 +9,16 @@ fvScalarMatrix uEqn
   - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), u)
   //+ 2*rho*(Omega^(U-Ug))
   - (Urhs.oldTime() & idir)
+);
+
+fvScalarMatrix vEqn
+(
+    EulerDdt.fvmDdt(rho, v)
+  + fvm::div(ImEx*aphi, v, "div(phi,U)")
+  + fvc::div((1-ImEx)*aphi, v, "div(phi,U)")
+  - fvm::laplacian(offCentre*rhof*fvc::interpolate(turbulence->nuEff()), v)
+  //+ 2*rho*(Omega^(U-Ug))
+  - (Urhs.oldTime() & jdir)
 );
 
 // w equation
@@ -62,5 +72,6 @@ if (ucorr == 0)
     );
 }
 solve(uEqn == (Urhs & idir));
+solve(vEqn == (Urhs & jdir));
 solve(wEqn == (Urhs & kdir));
 

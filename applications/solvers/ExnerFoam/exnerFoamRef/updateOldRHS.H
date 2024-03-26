@@ -7,6 +7,7 @@ thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
             );
 
 Urhs = - fvc::div((1-offCentre)*phi, u, "div(phi,U)")*idir
+       - fvc::div((1-offCentre)*phi, v, "div(phi,U)")*jdir
        - fvc::div((1-offCentre)*phi, w, "div(phi,U)")*kdir
        - rho*fvc::weightedReconstruct
         (
