@@ -25,8 +25,8 @@ License
 
 #include "cubicUpwind.H"
 #include "orthogonalSnGrad.H"
-#include "localMax.H"
-#include "fvcLocalMinMax.H"
+//#include "localMax.H"
+//#include "fvcLocalMinMax.H"
 
 // * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * * //
 
@@ -224,9 +224,10 @@ Foam::tmp<Foam::surfaceScalarField> Foam::cubicUpwind<Type>::blendingFactor() co
     }
 
     // Smoothed Courant number
+    //localMax<scalar> maxInterp(mesh);
     surfaceScalarField Cf = mesh.time().deltaT()*mesh.deltaCoeffs()
                    *mag(tUflux)/mesh.magSf();
-    Cf = maxInterp.interpolate(fvc::localMax(Cf));
+    //Cf = maxInterp.interpolate(fvc::localMax(Cf));
 
     return surfaceScalarField::New
     (
