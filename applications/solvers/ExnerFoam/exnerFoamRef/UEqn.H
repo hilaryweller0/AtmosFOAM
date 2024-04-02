@@ -71,7 +71,7 @@ if (ucorr == 0)
         0.25
     );
 }
-solve(uEqn == (Urhs & idir));
-solve(vEqn == (Urhs & jdir));
-solve(wEqn == (Urhs & kdir));
+if (mesh.solutionD()[0] == 1) solve(uEqn == (Urhs & idir));
+if (mesh.solutionD()[1] == 1) solve(vEqn == (Urhs & jdir));
+if (mesh.solutionD()[2] == 1) solve(wEqn == (Urhs & kdir));
 

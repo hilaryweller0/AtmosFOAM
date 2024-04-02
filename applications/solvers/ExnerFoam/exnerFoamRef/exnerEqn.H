@@ -3,9 +3,12 @@ surfaceScalarField rhorAUf
     "rhorAUf",
     rhof*
     (
-        fvc::interpolate(rho/uEqn.A())*(1-mag(gUnitNormal))
-      + fvc::interpolate(rho/vEqn.A())*(1-mag(gUnitNormal))
-      + fvc::interpolate(rho/wEqn.A())*mag(gUnitNormal)
+        0.5*(mesh.solutionD()[0]+1)
+            *fvc::interpolate(rho/uEqn.A())*(1-mag(gUnitNormal))
+      + 0.5*(mesh.solutionD()[1]+1)
+            *fvc::interpolate(rho/vEqn.A())*(1-mag(gUnitNormal))
+      + 0.5*(mesh.solutionD()[2]+1)
+           *fvc::interpolate(rho/wEqn.A())*mag(gUnitNormal)
     )
 );
 
@@ -16,9 +19,9 @@ Psi = rho/(RbyCv*(Exnera+Exnerp.oldTime()));
 for (int corr=0; corr<nCorr; corr++)
 {
     // Velocity without pressure gradient or buoyancy
-    u = uEqn.H()/uEqn.A();
-    v = vEqn.H()/vEqn.A();
-    w = wEqn.H()/wEqn.A();
+    if (mesh.solutionD()[0] == 1) u = uEqn.H()/uEqn.A();
+    if (mesh.solutionD()[1] == 1) v = vEqn.H()/vEqn.A();
+    if (mesh.solutionD()[2] == 1) w = wEqn.H()/wEqn.A();
     U = u*idir + v*jdir + w*kdir;
 
     // Flux without pressure gradient
@@ -58,9 +61,9 @@ for (int corr=0; corr<nCorr; corr++)
                 0.25
             );
 
-            u += (Urhs & idir)/uEqn.A();
-            v += (Urhs & jdir)/vEqn.A();
-            w += (Urhs & kdir)/wEqn.A();
+            if (mesh.solutionD()[0] == 1) u += (Urhs & idir)/uEqn.A();
+            if (mesh.solutionD()[1] == 1) v += (Urhs & jdir)/vEqn.A();
+            if (mesh.solutionD()[2] == 1) w += (Urhs & kdir)/wEqn.A();
         }
     }
 }
