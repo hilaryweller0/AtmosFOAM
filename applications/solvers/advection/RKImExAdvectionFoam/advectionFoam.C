@@ -51,6 +51,9 @@ Description
 #include "EulerDdtScheme.H"
 #include "localMax.H"
 #include "fvModels.H"
+#include "upwind.H"
+#include "cubicUpwind.H"
+#include "gaussConvectionScheme.H"
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -61,14 +64,21 @@ int main(int argc, char *argv[])
     #include "createTime.H"
     #include "createMesh.H"
     #define dt runTime.deltaT()
-    #include "createFields.H"
-    #include "createFvModels.H"
-    #include "createRKFields.H"
-    #define aii Bt.coeffs()[iRK][iRK]
+    // Courant number limit for pure explicit/HO
+    const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
     // Pre-defined time stepping scheme and min/max interpolation
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     localMax<scalar> maxInterp(mesh);
-    const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
+
+    #include "createFields.H"
+    #include "createFvModels.H"
+    #include "createRKFields.H"
+    //#define aii Bt.coeffs()[iRK][iRK]
+    
+    // Low order interpolation and HO correction scheme
+    upwind<scalar> lo(mesh, phi);
+    cubicUpwind<scalar> hc(mesh, phi);
+    
 
     const dimensionedScalar Ttot0 = fvc::domainIntegrate(T);
 
@@ -146,26 +156,32 @@ int main(int argc, char *argv[])
                 }
             }
 
+            divSum = dimensionedScalar(divSum.dimensions(), scalar(0));
+            for(int lRK = 0; lRK < iRK; lRK++)
+            {
+                divSum += fvc::div(Bt.coeffs()[iRK][lRK]*phie*lo.interpolate(Ts[lRK]))
+                        + fvc::div(Bt.coeffs()[iRK][lRK]*phi*hc.correction(Ts[lRK]));
+            }
+
             // Implicit RK stage
             fvScalarMatrix TEqn
             (
                 EulerDdt.fvmDdt(T)
-              + Bt.subTimes()[iRK]*fvm::div(phii, T)
-              + aii*fvm::div(phie, T)
-              == Bt.RKstep(iRK, dTdt)
-              + fvModels.source(T)
+              + fvm::div(Bt.subTimes()[iRK]*phii, T)
+              + divSum
+              == fvModels.source(T)
             );
             TEqn.solve();
 
-            // update time derivatives for next stage
-            dTdt[iRK] = -fvc::div(phie, T);
+            // Store substage
+            Ts[iRK] = T;
         }
         
-        if (max(mag(Bt.weights())) > SMALL)
+        /*if (max(mag(Bt.weights())) > SMALL)
         {
             // Final RK steps
             T = T.oldTime() + dt*Bt.RKfinal(dTdt) - dt*fvc::div(phii, T);
-        }
+        }*/
         
         const dimensionedScalar Ttot = fvc::domainIntegrate(T);
         Info << runTime.timeName() << " T goes from " 

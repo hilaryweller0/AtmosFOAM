@@ -54,9 +54,6 @@ surfaceScalarField phi
     ),
     Uf & mesh.Sf()
 );
-surfaceScalarField phie("phie", phi);
-surfaceScalarField phii("phii", phi);
-surfaceScalarField ImEx("ImEx", phi/phi);
 
 // Courant numbers to write out
 volScalarField Co
@@ -65,5 +62,10 @@ volScalarField Co
     CourantNo(phi, runTime.deltaT())
 );
 Co.write();
+
+surfaceScalarField ImEx("ImEx", max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co)));
+surfaceScalarField phie("phie", (1-ImEx)*phi);
+surfaceScalarField phii("phii", ImEx*phi);
+
 dimensionedScalar Vtot = sum(mesh.V());
 
