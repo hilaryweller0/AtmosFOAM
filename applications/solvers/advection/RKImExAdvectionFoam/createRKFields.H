@@ -21,5 +21,11 @@ RKfield<scalar, fvPatchField, volMesh> Ts
     0*T
 );
 
+RKfield<scalar, fvsPatchField, surfaceMesh> phis
+(
+    Bt.nSteps(),
+    phi
+);
+
 volScalarField divSum("divSum", 0*T/dt);
 

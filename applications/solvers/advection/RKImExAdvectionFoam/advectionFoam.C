@@ -65,7 +65,10 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #define dt runTime.deltaT()
     // Courant number limit for pure explicit/HO
-    const scalar CoLimit = readScalar(mesh.schemes().lookup("CoLimit"));
+    const scalar CoLimit = readScalar
+    (
+        mesh.schemes().subDict("divSchemes").lookup("CoLimit")
+    );
     // Pre-defined time stepping scheme and min/max interpolation
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     localMax<scalar> maxInterp(mesh);
@@ -73,12 +76,15 @@ int main(int argc, char *argv[])
     #include "createFields.H"
     #include "createFvModels.H"
     #include "createRKFields.H"
-    //#define aii Bt.coeffs()[iRK][iRK]
     
     // Low order interpolation and HO correction scheme
     upwind<scalar> lo(mesh, phi);
+    fv::gaussConvectionScheme<scalar> upwindConvect
+    (
+        mesh, phi,
+        tmp<surfaceInterpolationScheme<scalar>>(new upwind<scalar>(mesh, phi))
+    );
     cubicUpwind<scalar> hc(mesh, phi);
-    
 
     const dimensionedScalar Ttot0 = fvc::domainIntegrate(T);
 
@@ -113,11 +119,6 @@ int main(int argc, char *argv[])
          << (fvc::domainIntegrate(Co)/Vtot).value()
          << " max: " << max(Co).value() << endl;
 
-    // Implicit/explicit blend
-    ImEx = max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co));
-    phii = ImEx*phi;
-    phie = (1 - ImEx)*phi;
-    
     Info << runTime.timeName() << " T goes from " 
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl;
@@ -148,26 +149,37 @@ int main(int argc, char *argv[])
                      << (fvc::domainIntegrate(Co)/Vtot).value()
                      << " max: " << max(Co).value() << endl;
             
+                phis[iRK] = phi;
+            
                 if (iRK == 0)
                 {
-                    ImEx = max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co));
-                    phii = ImEx*phi;
-                    phie = (1 - ImEx)*phi;
+                    beta = max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co));
+                    alpha = max(scalar(0.5), beta);
                 }
             }
 
-            divSum = dimensionedScalar(divSum.dimensions(), scalar(0));
+            divSum = fvc::div
+            (
+                (1-alpha)*beta*Bt.subTimes()[iRK]*phi.oldTime()
+                    *lo.interpolate(T.oldTime())
+            );
             for(int lRK = 0; lRK < iRK; lRK++)
             {
-                divSum += fvc::div(Bt.coeffs()[iRK][lRK]*phie*lo.interpolate(Ts[lRK]))
-                        + fvc::div(Bt.coeffs()[iRK][lRK]*phi*hc.correction(Ts[lRK]));
+                divSum += fvc::div
+                (
+                    Bt.coeffs()[iRK][lRK]*phis[lRK]*
+                    (
+                        (1-beta)*lo.interpolate(Ts[lRK])
+                      + hc.correction(Ts[lRK])
+                    )
+                );
             }
 
             // Implicit RK stage
             fvScalarMatrix TEqn
             (
                 EulerDdt.fvmDdt(T)
-              + fvm::div(Bt.subTimes()[iRK]*phii, T)
+              + upwindConvect.fvmDiv(alpha*beta*Bt.subTimes()[iRK]*phis[iRK], T)
               + divSum
               == fvModels.source(T)
             );

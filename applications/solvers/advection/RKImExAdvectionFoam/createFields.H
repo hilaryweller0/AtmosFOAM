@@ -13,6 +13,7 @@ volScalarField T
     mesh
 );
 T.correctBoundaryConditions();
+T.oldTime();
 
 volVectorField U
 (
@@ -54,6 +55,7 @@ surfaceScalarField phi
     ),
     Uf & mesh.Sf()
 );
+phi.oldTime();
 
 // Courant numbers to write out
 volScalarField Co
@@ -63,9 +65,8 @@ volScalarField Co
 );
 Co.write();
 
-surfaceScalarField ImEx("ImEx", max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co)));
-surfaceScalarField phie("phie", (1-ImEx)*phi);
-surfaceScalarField phii("phii", ImEx*phi);
+surfaceScalarField beta("beta", max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co)));
+surfaceScalarField alpha("alpha", max(scalar(0.5), beta));
 
 dimensionedScalar Vtot = sum(mesh.V());
 
