@@ -1,10 +1,10 @@
 CoNum = CourantNo(phi/rhof, runTime.deltaT());
 CoNum = fvc::localMax(maxInterp.interpolate(CoNum));
-surfaceScalarField Cof = max
-(
-    runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()/(rhof*mesh.magSf()),
-    maxInterp.interpolate(CoNum)
-);
+//surfaceScalarField Cof = max
+//(
+surfaceScalarField Cof =    runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()/(rhof*mesh.magSf());
+//    maxInterp.interpolate(CoNum)
+//);
 
 if (SIgravityWaves)
 {

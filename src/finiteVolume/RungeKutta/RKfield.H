@@ -39,11 +39,15 @@ SourceFiles
 #define RKfield_H
 
 #include "GeometricField.H"
+#include "fvMesh.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
+// Forward declaration of classes
+class butcherTableau;
+
 /*---------------------------------------------------------------------------*\
                          Class RKfield Declaration
 \*---------------------------------------------------------------------------*/
@@ -51,8 +55,17 @@ namespace Foam
 template<class Type, template<class> class PatchField, class GeoMesh>
 class RKfield
 :
+    public regIOobject,
     public PtrList<GeometricField<Type, PatchField, GeoMesh> >
 {
+    // Private data
+    
+        //- Reference to the Butcher tableau
+        const butcherTableau& BT_;
+        
+        //- Keep track of stage in the Butcher tableau
+        label iRK_;
+
     // Private Member Functions
 
         //- Disallow default bitwise copy construct
@@ -64,17 +77,58 @@ class RKfield
 
 public:
 
+    //- Runtime type information
+    TypeName("RKfield");
+
     // Constructors
 
-        //- Construct from size and one field
+        //- Construct from IOobject, size, one field and Butcher tableau
+        RKfield
+        (
+            const IOobject&,
+            const label nSteps,
+            const GeometricField<Type, PatchField, GeoMesh>& f,
+            const butcherTableau& BT__
+        );
+
+        //- Construct from size, one field and Butcher tableau
         RKfield
         (
             const label nSteps,
-            const GeometricField<Type, PatchField, GeoMesh>& f
+            GeometricField<Type, PatchField, GeoMesh>& f,
+            const butcherTableau& BT__
         );
+
+    // Member Functions
+
+        //- Do nothing to write out
+        bool writeData(Ostream&) const {return true;}
+
+        //- Reference to the Butcher tableau
+        const butcherTableau& BT() const {return BT_;}
+        
+        //- Access/set stage in the Butcher tableau
+        label iRK() const { return iRK_;}
+        void setRKstage(const label i) { iRK_ = i;}
+
+    // Overloaded operator []
+    
+        //- Overload operator[] to store iRK_
+        GeometricField<Type, PatchField, GeoMesh>& operator[](const label i)
+        {
+            iRK_ = i;
+            return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](i);
+        }
+
+        //- Overload operator[] without storing iRK_
+        const GeometricField<Type, PatchField, GeoMesh>& operator[]
+        (
+            const label i
+        ) const
+        {
+            return PtrList<GeometricField<Type, PatchField, GeoMesh> >::operator[](i);
+        }
 };
-
-
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam

@@ -15,16 +15,19 @@ RKfield<scalar, fvPatchField, volMesh> dTdt
 );*/
 
 // Fields to be stored at each Runge-Kutta sup-step
-RKfield<scalar, fvPatchField, volMesh> Ts
+RKvolScalarField Ts
 (
+    IOobject("Ts", runTime.timeName(), mesh),
     Bt.nSteps(),
-    0*T
+    0*T,
+    Bt
 );
 
-RKfield<scalar, fvsPatchField, surfaceMesh> phis
+RKsurfaceScalarField phis
 (
     Bt.nSteps(),
-    phi
+    phi,
+    Bt
 );
 
 volScalarField divSum("divSum", 0*T/dt);

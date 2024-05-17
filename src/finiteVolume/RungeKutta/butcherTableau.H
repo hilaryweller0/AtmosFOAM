@@ -61,15 +61,16 @@ class butcherTableau
         const scalarSquareMatrix coeffs_;
         
         //- RK weights (set to zero if final row to coeffs to be used instead)
-        const scalarList weights_;
+        scalarList weights_;
 
         //- Number of RK steps
         const label nSteps_;
         
         //- Sub-times (times for each row of coeffs)
-        const scalarList subTimes_;
+        scalarList subTimes_;
 
     // Private Member Functions
+        void checkAndFix();
 
 public:
 

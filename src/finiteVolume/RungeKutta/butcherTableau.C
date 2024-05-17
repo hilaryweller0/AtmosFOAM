@@ -26,6 +26,50 @@ License
 #include "butcherTableau.H"
 using namespace Foam;
 
+// * * * * * * * * * * * * * Private Member Function * * * * * * * * * * * //
+
+void Foam::butcherTableau::checkAndFix()
+{
+    // Enforce subTimes to be the sum of the rows of coeffs
+    subTimes_.resize(nSteps_);
+    for(label i = 0; i < nSteps_; i++)
+    {
+        subTimes_[i] = 0;
+        for(label j = 0; j < nSteps_; j++) subTimes_[i] += coeffs_[i][j];
+    }
+    
+    // Check that the weights are zero or the correct length sum to one
+    if (weights_.size() > 0)
+    {
+        if (weights_.size() != nSteps_ && max(mag(weights_)) > SMALL)
+        {
+            FatalErrorIn("Foam::butcherTableau::checkAndFix")
+            << " Butcher tableau is " << coeffs_.n() << " by " << coeffs_.n()
+            << " weights are " << weights_
+            << abort(FatalError);
+        }
+        else if (weights_.size() == nSteps_ && max(mag(weights_)) > SMALL)
+        {
+            // Check that the weights sum to one
+            scalar wSum = 0;
+            for(label i = 0; i < nSteps_; i++) wSum += weights_[i];
+            if (mag(wSum - 1) > SMALL)
+            {
+                FatalErrorIn("Foam::butcherTableau::checkAndFix")
+                    << " weights are " << weights_ << " which sum to " << wSum
+                    << " but which should sum to 1" << abort(FatalError);
+            }
+        }
+        else if (weights_.size() != nSteps_ && max(mag(weights_)) <= SMALL)
+        {
+            weights_.resize(nSteps_);
+            weights_ = scalar(0);
+        }
+        //else  (weights_.size() == nSteps_ && max(mag(weights_)) <= SMALL)
+    }
+
+}
+
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 Foam::butcherTableau::butcherTableau
@@ -37,17 +81,10 @@ Foam::butcherTableau::butcherTableau
 :
     coeffs_(coeffs__),
     weights_(weights__),
-    nSteps_(weights__.size()),
+    nSteps_(coeffs__.n()),
     subTimes_(subTimes__)
 {
-    if (nSteps_ != coeffs_.n())
-    {
-        FatalErrorIn("Foam::butcherTableau::butcherTableau from components")
-            << " not all components have the same size:\n"
-            << "coeffs_.n() = " << coeffs_.n() << nl
-            << "weights_.size() = " << weights_.size() << nl
-            << abort(FatalError);
-    }
+    checkAndFix();
 }
 
 
@@ -55,17 +92,10 @@ Foam::butcherTableau::butcherTableau(Istream& is)
 :
     coeffs_(is),
     weights_(is),
-    nSteps_(weights_.size()),
+    nSteps_(coeffs_.n()),
     subTimes_(is)
 {
-    if (nSteps_ != coeffs_.n())
-    {
-        FatalErrorIn("Foam::butcherTableau::butcherTableau from components")
-            << " not all components have the same size:\n"
-            << "coeffs_.n() = " << coeffs_.n() << nl
-            << "weights_.size() = " << weights_.size()
-            << abort(FatalError);
-    }
+    checkAndFix();
 }
 
 

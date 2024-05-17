@@ -25,18 +25,33 @@ License
 
 #include "RKfield.H"
 using namespace Foam;
+
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
+namespace Foam
+{
+    typedef RKfield<scalar, fvPatchField, volMesh> RKvolScalarField;
+    typedef RKfield<scalar, fvsPatchField, surfaceMesh> RKsurfaceScalarField;
+
+    defineTemplateTypeName(RKsurfaceScalarField);
+    defineTemplateTypeName(RKvolScalarField);
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
 template<class Type, template<class> class PatchField, class GeoMesh>
 Foam::RKfield<Type, PatchField, GeoMesh>::RKfield
 (
+    const IOobject& io,
     const label nSteps,
-    const GeometricField<Type, PatchField, GeoMesh>& f
+    const GeometricField<Type, PatchField, GeoMesh>& f,
+    const butcherTableau& BT__
 )
 :
-    PtrList<GeometricField<Type, PatchField, GeoMesh> >(nSteps)
+    regIOobject(io),
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(nSteps),
+    BT_(BT__),
+    iRK_(0)
 {
     for(label i = 0; i < nSteps; i++)
     {
@@ -44,6 +59,25 @@ Foam::RKfield<Type, PatchField, GeoMesh>::RKfield
     }
 }
 
+
+template<class Type, template<class> class PatchField, class GeoMesh>
+Foam::RKfield<Type, PatchField, GeoMesh>::RKfield
+(
+    const label nSteps,
+    GeometricField<Type, PatchField, GeoMesh>& f,
+    const butcherTableau& BT__
+)
+:
+    regIOobject(f),
+    PtrList<GeometricField<Type, PatchField, GeoMesh> >(nSteps),
+    BT_(BT__),
+    iRK_(0)
+{
+    for(label i = 0; i < nSteps; i++)
+    {
+        PtrList<GeometricField<Type, PatchField, GeoMesh> >::set(i, f);
+    }
+}
 
 
 // ************************************************************************* //

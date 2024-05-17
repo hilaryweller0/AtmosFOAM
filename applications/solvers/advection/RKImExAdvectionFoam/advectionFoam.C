@@ -84,7 +84,16 @@ int main(int argc, char *argv[])
         mesh, phi,
         tmp<surfaceInterpolationScheme<scalar>>(new upwind<scalar>(mesh, phi))
     );
-    cubicUpwind<scalar> hc(mesh, phi);
+    //cubicUpwind<scalar> hc(mesh, phi);
+    tmp<surfaceInterpolationScheme<scalar>> hct
+    (
+        surfaceInterpolationScheme<scalar>::New
+        (
+            mesh, phi,
+            mesh.schemes().subDict("divSchemes").lookup("correctionScheme")
+        )
+    );
+    surfaceInterpolationScheme<scalar>& hc = hct.ref();
 
     const dimensionedScalar Ttot0 = fvc::domainIntegrate(T);
 
@@ -122,6 +131,8 @@ int main(int argc, char *argv[])
     Info << runTime.timeName() << " T goes from " 
          << min(T.internalField()).value() << " to "
          << max(T.internalField()).value() << endl;
+    
+    fvModels.source(T);
     
     while (runTime.run())
     {
@@ -165,17 +176,16 @@ int main(int argc, char *argv[])
             );
             for(int lRK = 0; lRK < iRK; lRK++)
             {
-                divSum += fvc::div
-                (
-                    Bt.coeffs()[iRK][lRK]*phis[lRK]*
-                    (
-                        (1-beta)*lo.interpolate(Ts[lRK])
-                      + hc.correction(Ts[lRK])
-                    )
-                );
+                surfaceScalarField Tf = (1-beta)*lo.interpolate(Ts[lRK]);
+                if (hc.corrected())
+                {
+                    Tf += hc.correction(Ts[lRK]);
+                }
+                divSum += fvc::div(Bt.coeffs()[iRK][lRK]*phis[lRK]*Tf);
             }
 
             // Implicit RK stage
+            Ts.setRKstage(iRK);
             fvScalarMatrix TEqn
             (
                 EulerDdt.fvmDdt(T)
@@ -189,13 +199,18 @@ int main(int argc, char *argv[])
             Ts[iRK] = T;
         }
         
-        /*if (max(mag(Bt.weights())) > SMALL)
+        if (Bt.weights().size() > 0 && max(mag(Bt.weights())) > SMALL)
         {
             // Final RK steps
-            T = T.oldTime() + dt*Bt.RKfinal(dTdt) - dt*fvc::div(phii, T);
-        }*/
+            //T = T.oldTime() + dt*Bt.RKfinal(dTdt) - dt*fvc::div(phii, T);
+        }
+
+        // Update the rain
+        fvModels.source(T);
         
-        const dimensionedScalar Ttot = fvc::domainIntegrate(T);
+        const volScalarField& rain = mesh.lookupObject<volScalarField>("rain");
+        
+        const dimensionedScalar Ttot = fvc::domainIntegrate(T+rain);
         Info << runTime.timeName() << " T goes from " 
              << min(T.internalField()).value() << " to "
              << max(T.internalField()).value()
