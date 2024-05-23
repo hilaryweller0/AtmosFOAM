@@ -6,6 +6,14 @@ thetapRHS = -fvc::div((1-offCentre)*phi, thetap, "div(phi,thetap)")
                 thetap
             );
 
+/*thetapRHS = fv::FCTadvectDiffuse
+(
+    thetap, rho, 
+    (1-offCentre)*phi,
+    (1-offCentre)*alphaEff,
+    -(1-fvc::average(offCentrePG))*rho*w*dThetaadz, 1
+);
+*/
 Urhs = - fvc::div((1-offCentre)*phi, u, "div(phi,U)")*idir
        - fvc::div((1-offCentre)*phi, v, "div(phi,U)")*jdir
        - fvc::div((1-offCentre)*phi, w, "div(phi,U)")*kdir

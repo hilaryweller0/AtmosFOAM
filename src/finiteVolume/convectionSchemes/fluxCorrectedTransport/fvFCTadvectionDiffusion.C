@@ -49,80 +49,64 @@ NamedEnum<FCTType, 3> FCT_Type;
 template<> const char* Foam::NamedEnum<FCTType,3>::names[]
     = {"FCTon", "FCToff", "FCTfinal"};
 
-void FCTadvectionDiffusion
+
+tmp<volScalarField> FCTadvectDiffuse
 (
-    volScalarField& T,
+    const volScalarField& vf,
     const volScalarField& rho,
-    const surfaceScalarField& offCentre,
-    const surfaceScalarField& flux,
+    const surfaceScalarField& fluxE,
     const surfaceScalarField& gamma,
     const volScalarField& S,
-    const bool implicitAdvection, // = true
+    int nIter,// = -1,
     const bool finalIter //= true
 )
 {
     // Reference to the mesh and the time step
-    const fvMesh& mesh = T.mesh();
+    const fvMesh& mesh = vf.mesh();
     const dimensionedScalar& dt = mesh.time().deltaT();
     
+    // Create temporary field to advect
+    volScalarField T
+    (
+        IOobject(vf.name(), mesh.time().timeName(), mesh),
+        vf,
+        vf.boundaryField().types()
+    );
+    T.oldTime() == vf.oldTime();
+
     // Input
     dictionary dict
     (
-        dictionary
-        (
-            mesh.schemes().div("advectDiffuse("+flux.name()+','+T.name()+')')
-        ).subDict("advectionDiffusion")
+        dictionary(mesh.schemes().div("advectDiffuse("+T.name()+')')).subDict("advectionDiffusion")
     );
     
-    const label nIter(readLabel(dict.lookup("nIterations")));
+    nIter = (nIter == -1) ?
+        readLabel(dict.lookup("nIterations")):
+        dict.lookupOrDefault<label>("nIterations", nIter);
     
     const FCTType FCT(FCT_Type.read(dict.lookup("FCTlimit")));
-    const scalar FCTmin
+    const dimensionedScalar FCTmin
     (
-        FCT != FCTType::FCToff ? readScalar(dict.lookup("FCTmin")) : scalar(0)
+        FCT != FCTType::FCToff ?
+            dimensionedScalar(T.dimensions(), readScalar(dict.lookup("FCTmin"))) :
+            dimensionedScalar(T.dimensions(), scalar(0))
     );
-    const scalar FCTmax
+    const dimensionedScalar FCTmax
     (
-        FCT != FCTType::FCToff ? readScalar(dict.lookup("FCTmax")) : scalar(0)
+        FCT != FCTType::FCToff ?
+             dimensionedScalar(T.dimensions(), readScalar(dict.lookup("FCTmax"))) :
+             dimensionedScalar(T.dimensions(), scalar(0))
     );
     
     ITstream corrSchemeIS(dict.lookup("correctionScheme"));
-    OStringStream oss;
-    for(label i = 0; i < corrSchemeIS.size()-1; i++)
-    {
-        oss << corrSchemeIS[i] << " ";
-    }
-    oss << corrSchemeIS[corrSchemeIS.size()-1].wordToken()+"_0";
-    IStringStream corrSchemeIS0(oss.str());
     
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // Some additional fields needed throughout
-    // Old and new fluxes and old rhoT
-    surfaceScalarField aphi = offCentre*flux;
-    surfaceScalarField bphi = (1-offCentre)*flux.oldTime();
-    volScalarField rhoTold = rho.oldTime()*T.oldTime();
-
-    // Time averaged source
-    volScalarField Smid = fvc::average(offCentre)*(S - S.oldTime())+ S.oldTime();
-    
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Schemes needed
     linear<scalar> linearInterp(mesh);
-    EulerDdtScheme<scalar> backwardEuler(mesh);
     gaussConvectionScheme<scalar> upwindConvect
     (
         mesh,
-        aphi,
-        tmp<surfaceInterpolationScheme<scalar>>(new upwind<scalar>(mesh, aphi))
-    );
-    gaussConvectionScheme<scalar> upwindConvectOld
-    (
-        mesh,
-        bphi,
-        tmp<surfaceInterpolationScheme<scalar>>
-        (
-            new upwind<scalar>(mesh, bphi)
-        )
+        fluxE,
+        tmp<surfaceInterpolationScheme<scalar>>(new upwind<scalar>(mesh, fluxE))
     );
     tmp<snGradScheme<scalar>> snGrad
     (
@@ -134,128 +118,220 @@ void FCTadvectionDiffusion
     );
     
     // The HO divergence scheme
-    gaussConvectionScheme<scalar> gaussScheme
-    (
-        mesh, aphi, corrSchemeIS
-    );
-    gaussConvectionScheme<scalar> gaussSchemeOld
-    (
-        mesh, bphi, corrSchemeIS0
-    );
+    gaussConvectionScheme<scalar> gaussScheme(mesh, fluxE, corrSchemeIS);
     
     // The correction scheme
     const tmp<surfaceInterpolationScheme<scalar>>
         HOscheme(gaussScheme.interpScheme());
-    const tmp<surfaceInterpolationScheme<scalar>> 
-        HOschemeOld(gaussSchemeOld.interpScheme());
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // Full solution without FCT
-
-    // Initialise the high and low order total fluxes (including rho T)
-    surfaceScalarField fluxLow = 
-        bphi*upwindConvectOld.interpolate(bphi, T.oldTime())
-      - (1-offCentre)*gamma.oldTime()*mesh.magSf()*snGrad->snGrad(T.oldTime());
-    
-    surfaceScalarField fluxHigh = bphi*HOschemeOld->correction(T.oldTime());
-    
-    // Create and the matrix equation without the HOC and without FCT
-    fvMatrix<scalar> TEqn
-    (
-        backwardEuler.fvmDdt(rho, T)
-      - laplacian.fvmLaplacian(offCentre*gamma, T)
-      + fvc::div(fluxLow)
-      == Smid
-    );
-    if (implicitAdvection)
-    {
-        TEqn += fvMatrix<scalar>(upwindConvect.fvmDiv(aphi, T));
-    }
+    // Store the low order flux
+    surfaceScalarField fluxLow = fluxE*upwindConvect.interpolate(fluxE, T.oldTime())
+                               - gamma*snGrad->snGrad(T.oldTime())*mesh.magSf();
 
     // Iterations of full solution (without FCT)
+    surfaceScalarField fluxET = fluxE*HOscheme->correction(T);
     for(label iter = 0; iter < nIter; iter++)
     {
-        surfaceScalarField flux = fluxHigh + aphi*HOscheme->correction(T);
-        if (!implicitAdvection)
+        if (iter > 0)
         {
-            flux += aphi*upwindConvect.interpolate(aphi, T);
+            fluxET = fluxE*HOscheme->correction(T)
+                   + fluxE*upwindConvect.interpolate(fluxE, T)
+                   - fluxLow;
         }
-
-        solve(TEqn == -fvc::div(flux));
+        T = (rho.oldTime()*T.oldTime() - dt*
+        (
+            fvc::div(fluxLow + fluxET) - S
+        ))/rho;
     }
+    
+    Info << "Before explicit FCT " << T.name() << " goes from " << min(T).value()
+         << " to " << max(T).value() << endl;
 
     // Apply FCT if required
     if (FCT == FCTType::FCTon || (FCT == FCTType::FCTfinal && finalIter))
     {
-    if (implicitAdvection)
-    {
-        // Store full flux
-        surfaceScalarField flux = fluxLow + fluxHigh
-             +  aphi*HOscheme->correction(T) + TEqn.flux();
-
         // Calculate 1st-order (bounded) solution
+        T = (rho.oldTime()*T.oldTime() - dt*(fvc::div(fluxLow) - S))/rho;
+
+        Info << "After explicit 1st order solution " << T.name() << " goes from "
+             << min(T).value() << " to " << max(T).value() << endl;
+
+        // Limit the solution
+        if (FCTmin < FCTmax)
+            {Foam::fvc::fluxLimit(fluxET, rho*T, rho*FCTmin, rho*FCTmax, dt);}
+        else
+            {Foam::fvc::fluxLimit(fluxET, rho*T, rho.oldTime()*T.oldTime(), dt);}
+
+        // Testing (remove)
+        T += -dt*fvc::div(fluxET)/rho;
+        Info << "After explicit FCT " << T.name() << " goes from "
+             << min(T).value() << " to " << max(T).value() << endl;
+    }
+    
+    return tmp<volScalarField> 
+    (
+        new volScalarField
+        (
+            "ddt("+rho.name()+","+T.name()+")", 
+            -fvc::div(fluxET + fluxLow) + S
+        )
+    );
+}
+
+tmp<volScalarField> FCTadvectDiffuse
+(
+    const volScalarField& vf,
+    const volScalarField& rho,
+    const surfaceScalarField& fluxI,
+    const surfaceScalarField& fluxE,
+    const surfaceScalarField& gamma,
+    const volScalarField& S,
+    int nIter,// = -1,
+    const bool finalIter //= true
+)
+{
+    // Reference to the mesh and the time step
+    const fvMesh& mesh = vf.mesh();
+    const dimensionedScalar& dt = mesh.time().deltaT();
+    
+    // Create temporary field to advect
+    volScalarField T
+    (
+        IOobject(vf.name(), mesh.time().timeName(), mesh),
+        vf,
+        vf.boundaryField().types()
+    );
+    T.oldTime() == vf.oldTime();
+
+    // The total flux
+    const surfaceScalarField fluxSum = fluxI + fluxE;
+    
+    // Input
+    dictionary dict
+    (
+        dictionary(mesh.schemes().div("advectDiffuse("+T.name()+')')).subDict("advectionDiffusion")
+    );
+    
+    nIter = (nIter == -1) ?
+        readLabel(dict.lookup("nIterations")):
+        dict.lookupOrDefault<label>("nIterations", nIter);
+    
+    const FCTType FCT(FCT_Type.read(dict.lookup("FCTlimit")));
+    const dimensionedScalar FCTmin
+    (
+        FCT != FCTType::FCToff ?
+            dimensionedScalar(T.dimensions(), readScalar(dict.lookup("FCTmin"))) :
+            dimensionedScalar(T.dimensions(), scalar(0))
+    );
+    const dimensionedScalar FCTmax
+    (
+        FCT != FCTType::FCToff ?
+             dimensionedScalar(T.dimensions(), readScalar(dict.lookup("FCTmax"))) :
+             dimensionedScalar(T.dimensions(), scalar(0))
+    );
+    
+    ITstream corrSchemeIS(dict.lookup("correctionScheme"));
+    
+    // Schemes needed
+    linear<scalar> linearInterp(mesh);
+    EulerDdtScheme<scalar> backwardEuler(mesh);
+    gaussConvectionScheme<scalar> upwindConvect
+    (
+        mesh,
+        fluxSum,
+        tmp<surfaceInterpolationScheme<scalar>>(new upwind<scalar>(mesh, fluxSum))
+    );
+    tmp<snGradScheme<scalar>> snGrad
+    (
+        snGradScheme<scalar>::New(mesh, mesh.schemes().snGrad(T.name()))
+    );
+    gaussLaplacianScheme<scalar,scalar> laplacian
+    (
+        mesh, linearInterp, snGrad
+    );
+    
+    // The HO divergence scheme
+    gaussConvectionScheme<scalar> gaussScheme(mesh, fluxSum, corrSchemeIS);
+    
+    // The correction scheme
+    const tmp<surfaceInterpolationScheme<scalar>>
+        HOscheme(gaussScheme.interpScheme());
+
+    // Store the low order flux
+    surfaceScalarField fluxLow = fluxE
+        *upwindConvect.interpolate(fluxE, T.oldTime());
+
+    // Create and the matrix equation without the HOC and without FCT
+    fvMatrix<scalar> TEqn
+    (
+        backwardEuler.fvmDdt(rho, T)
+      + upwindConvect.fvmDiv(fluxI, T)
+      + fvc::div(fluxLow)
+      - laplacian.fvmLaplacian(gamma, T)
+      - S
+    );
+
+    // Iterations of full solution (without FCT)
+    surfaceScalarField fluxET = fluxSum*HOscheme->correction(T);
+    for(label iter = 0; iter < nIter; iter++)
+    {
+        if (iter > 0)
+        {
+            fluxET = fluxSum*HOscheme->correction(T)
+                   + fluxE*upwindConvect.interpolate(fluxE, T)
+                   - fluxLow;
+        }
+        solve(TEqn == -fvc::div(fluxET));
+    }
+    
+    Info << "Before FCT " << T.name() << "old goes from " << min(T.oldTime()).value()
+         << " to " << max(T.oldTime()).value() << endl;
+    Info << "Before FCT " << T.name() << " goes from " << min(T).value()
+         << " to " << max(T).value() << endl;
+
+    // Apply FCT if required
+    if (FCT == FCTType::FCTon || (FCT == FCTType::FCTfinal && finalIter))
+    {
+        // Store full flux (without fluxLow)
+        fluxET += TEqn.flux();
+        
+        // Add bits to T one at a time to see where it goes wrong
+        T = (T.oldTime()*rho.oldTime() + dt*S)/rho.oldTime();
+        Info << "After S " << T.name() << " goes from "
+             << min(T).value() << " to " << max(T).value() << endl;
+        T = (T*rho.oldTime() - dt*fvc::div(fluxLow))/rho;
+        Info << "After fluxLow " << T.name() << " goes from "
+             << min(T).value() << " to " << max(T).value() << endl;
+        
+        // Calculate 1st-order (bounded) solution and flux
+        //T = T.oldTime();
         TEqn.solve();
+        Info << "After 1st order solve " << T.name() << " goes from "
+             << min(T).value() << " to " << max(T).value() << endl;
         
         fluxLow += TEqn.flux();
-
-        // Remove low order fluxes
-        flux -= fluxLow;
+        // Remove implicit low order fluxes from fluxET
+        fluxET -= TEqn.flux();
 
         // Limit the solution
         if (FCTmin < FCTmax)
-        {
-            Foam::fvc::fluxLimit(flux, rho*T, rho*FCTmin, rho*FCTmax, dt);
-        }
+            {Foam::fvc::fluxLimit(fluxET, rho*T, rho*FCTmin, rho*FCTmax, dt);}
         else
-        {
-            Foam::fvc::fluxLimit(flux, rho*T, rhoTold, dt);
-        }
-
-        // Calculate the limited solution
-        T = 
-        (
-            rhoTold + dt*
-            (
-               -fvc::div(flux + fluxLow)
-              + Smid
-            )
-        )/rho;
-        T.correctBoundaryConditions();
+            {Foam::fvc::fluxLimit(fluxET, rho*T, rho.oldTime()*T.oldTime(), dt);}
     }
-    else // FCT for explicit advection
+    else
     {
-        surfaceScalarField fluxLowNew = aphi*upwindConvect.interpolate(aphi, T);
+        fluxLow += TEqn.flux();
+    }
     
-        // High order correction
-        fluxHigh += aphi*HOscheme->correction(T);
-
-        // Calculate 1st-order (bounded) solution
-        solve(TEqn == -fvc::div(fluxLowNew));
-        
-        fluxLow += fluxLowNew + TEqn.flux();
-
-        // Limit the solution
-        if (FCTmin < FCTmax)
-        {
-            Foam::fvc::fluxLimit(fluxHigh, rho*T, rho*FCTmin, rho*FCTmax, dt);
-        }
-        else
-        {
-            Foam::fvc::fluxLimit(fluxHigh, rho*T, rhoTold, dt);
-        }
-
-        // Calculate the limited solution
-        T = 
+    return tmp<volScalarField> 
+    (
+        new volScalarField
         (
-            rhoTold + dt*
-            (
-               -fvc::div(fluxHigh + fluxLow)
-              + Smid
-            )
-        )/rho;
-        T.correctBoundaryConditions();
-    }
-    }
+            "ddt("+rho.name()+","+T.name()+")", 
+            -fvc::div(fluxET + fluxLow) + S
+        )
+    );
 }
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
