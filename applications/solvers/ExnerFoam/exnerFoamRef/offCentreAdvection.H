@@ -3,7 +3,8 @@ CoNum = CourantNo(phi/rhof, runTime.deltaT());
 surfaceScalarField Cof = max
 (
     runTime.deltaT()*mag(phi)*mesh.deltaCoeffs()/(rhof*mesh.magSf()),
-    mag(gUnitNormal)*maxInterp.interpolate(CoNum)
+    //mag(gUnitNormal)*maxInterp.interpolate(CoNum)
+    maxInterp.interpolate(CoNum)
 );
 
 if (SIgravityWaves)
