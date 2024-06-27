@@ -1,19 +1,35 @@
-Info<< "Reading field T\n" << endl;
+Info<< "Reading tracers\n" << endl;
 
-volScalarField T
-(
-    IOobject
+PtrList<volScalarField> T(Tnames.size());
+for(label iT = 0; iT < T.size(); iT++)
+{
+    Info << "Reading " << Tnames[iT] << endl;
+    T.set
     (
-        "T",
-        runTime.timeName(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
+        iT, 
+        volScalarField
+        (
+            IOobject(Tnames[iT], runTime.timeName(), mesh, IOobject::MUST_READ),
+            mesh
+        )
+    );
+
+    T[iT].writeOpt() = IOobject::AUTO_WRITE;
+    T[iT].checkIn();
+    T[iT].correctBoundaryConditions();
+    T[iT].oldTime();
+}
+
+volScalarField Tsum
+(
+    IOobject("Tsum", runTime.timeName(), mesh,
+             IOobject::NO_READ, IOobject::AUTO_WRITE),
+    T[0]
 );
-T.correctBoundaryConditions();
-T.oldTime();
+for(label iT = 1; iT < T.size(); iT++)
+{
+    Tsum += T[iT];
+}
 
 volVectorField U
 (
@@ -70,3 +86,8 @@ surfaceScalarField alpha("alpha", max(scalar(0.5), beta));
 
 dimensionedScalar Vtot = sum(mesh.V());
 
+PtrList<volScalarField> divSum(Tnames.size());
+for(label iT = 0; iT < divSum.size(); iT++)
+{
+    divSum.set(iT, fvc::div(phi*linearInterpolate(T[iT])));
+}

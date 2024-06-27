@@ -7,21 +7,17 @@ const butcherTableau Bt
     )
 );
 
-/*// Fields to be stored at each Runge-Kutta sup-step
-RKfield<scalar, fvPatchField, volMesh> dTdt
-(
-    Bt.nSteps(),
-    0*T/dt
-);*/
-
 // Fields to be stored at each Runge-Kutta sup-step
-RKvolScalarField Ts
-(
-    IOobject("Ts", runTime.timeName(), mesh),
-    Bt.nSteps(),
-    0*T,
-    Bt
-);
+PtrList<PtrList<volScalarField> > Ts(T.size());
+for(label iT = 0; iT < T.size(); iT++)
+{
+    Ts.set(iT, new PtrList<volScalarField>(Bt.nSteps()));
+
+    for (int iRK = 0; iRK < Bt.nSteps(); iRK++)
+    {
+        Ts[iT].set(iRK, T[iT]);
+    }
+}
 
 RKsurfaceScalarField phis
 (
@@ -29,6 +25,4 @@ RKsurfaceScalarField phis
     phi,
     Bt
 );
-
-volScalarField divSum("divSum", 0*T/dt);
 

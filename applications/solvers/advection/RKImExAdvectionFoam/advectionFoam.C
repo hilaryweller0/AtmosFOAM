@@ -69,6 +69,12 @@ int main(int argc, char *argv[])
     (
         mesh.schemes().subDict("divSchemes").lookup("CoLimit")
     );
+    // list of the names of the tracers
+    const wordList Tnames
+    (
+        mesh.solution().lookupOrDefault<wordList>("tracerNames", wordList(1, "T"))
+    );
+    
     // Pre-defined time stepping scheme and min/max interpolation
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     localMax<scalar> maxInterp(mesh);
@@ -95,7 +101,7 @@ int main(int argc, char *argv[])
     );
     surfaceInterpolationScheme<scalar>& hc = hct.ref();
 
-    const dimensionedScalar Ttot0 = fvc::domainIntegrate(T);
+    const dimensionedScalar Ttot0 = fvc::domainIntegrate(Tsum);
 
     Info<< "\nCalculating advection\n" << endl;
 
@@ -128,11 +134,16 @@ int main(int argc, char *argv[])
          << (fvc::domainIntegrate(Co)/Vtot).value()
          << " max: " << max(Co).value() << endl;
 
-    Info << runTime.timeName() << " T goes from " 
-         << min(T.internalField()).value() << " to "
-         << max(T.internalField()).value() << endl;
-    
-    fvModels.source(T);
+    // Print Diagnostics
+    for(label iT = 0; iT < T.size(); iT++)
+    {
+        Info << T[iT].name() << " goes from "
+             << min(T[iT].internalField()).value() << " to "
+             << max(T[iT].internalField()).value() << endl;
+    }
+    Info << runTime.timeName() << " Tsum goes from " 
+         << min(Tsum.internalField()).value() << " to "
+         << max(Tsum.internalField()).value() << endl;
     
     while (runTime.run())
     {
@@ -146,13 +157,13 @@ int main(int argc, char *argv[])
                 Info << "Setting wind field" << endl;
                 runTime.setTime
                 (
-                    runTime.time().value() - (1-Bt.subTimes()[iRK])*dt,
+                    runTime.time().value() - (1-Bt.subTimes()[iRK])*dt.value(),
                     runTime.timeIndex()
                 );
                 v->applyTo(phi);
                 runTime.setTime
                 (
-                    runTime.time().value() + (1-Bt.subTimes()[iRK])*dt,
+                    runTime.time().value() + (1-Bt.subTimes()[iRK])*dt.value(),
                     runTime.timeIndex()
                 );
                 Co = CourantNo(phi, runTime.deltaT());
@@ -169,52 +180,75 @@ int main(int argc, char *argv[])
                 }
             }
 
-            divSum = fvc::div
-            (
-                (1-alpha)*beta*Bt.subTimes()[iRK]*phi.oldTime()
-                    *lo.interpolate(T.oldTime())
-            );
-            for(int lRK = 0; lRK < iRK; lRK++)
+            for(int iT = 0; iT < T.size(); iT++)
             {
-                surfaceScalarField Tf = (1-beta)*lo.interpolate(Ts[lRK]);
-                if (hc.corrected())
+                divSum[iT] = fvc::div
+                (
+                    (1-alpha)*beta*Bt.subTimes()[iRK]*phi.oldTime()
+                        *lo.interpolate(T[iT].oldTime())
+                );
+                for(int lRK = 0; lRK < iRK; lRK++)
                 {
-                    Tf += hc.correction(Ts[lRK]);
+                    surfaceScalarField Tf = (1-beta)*lo.interpolate(Ts[iT][lRK]);
+                    if (hc.corrected())
+                    {
+                        Tf += hc.correction(Ts[iT][lRK]);
+                    }
+                    divSum[iT] += fvc::div(Bt.coeffs()[iRK][lRK]*phis[lRK]*Tf);
                 }
-                divSum += fvc::div(Bt.coeffs()[iRK][lRK]*phis[lRK]*Tf);
+
+                // Implicit RK stage (only depends on this tracer)
+                fvScalarMatrix TEqn
+                (
+                    EulerDdt.fvmDdt(T[iT])
+                  + upwindConvect.fvmDiv
+                    (
+                        alpha*beta*Bt.subTimes()[iRK]*phis[iRK],
+                        T[iT]
+                    )
+                 + divSum[iT]
+                  == Bt.subTimes()[iRK]*fvModels.source(T[iT])
+                );
+                TEqn.solve();
+
+                // Store substage
+                Ts[iT][iRK] = T[iT];
+        
+            /*if (Bt.weights().size() > 0 && max(mag(Bt.weights())) > SMALL)
+            {
+                for(int iT = 0; iT < T.size(); iT++)
+                {
+                    // Final RK steps
+                    T = T.oldTime() + dt*Bt.RKfinal(dTdt) - dt*fvc::div(phii, T);
+                }
+            }*/
+
             }
-
-            // Implicit RK stage
-            Ts.setRKstage(iRK);
-            fvScalarMatrix TEqn
-            (
-                EulerDdt.fvmDdt(T)
-              + upwindConvect.fvmDiv(alpha*beta*Bt.subTimes()[iRK]*phis[iRK], T)
-              + divSum
-              == fvModels.source(T)
-            );
-            TEqn.solve();
-
-            // Store substage
-            Ts[iRK] = T;
         }
         
-        if (Bt.weights().size() > 0 && max(mag(Bt.weights())) > SMALL)
+        // Print Diagnostics
+        for(label iT = 0; iT < T.size(); iT++)
         {
-            // Final RK steps
-            //T = T.oldTime() + dt*Bt.RKfinal(dTdt) - dt*fvc::div(phii, T);
+            Info << T[iT].name() << " goes from "
+                 << min(T[iT].internalField()).value() << " to "
+                 << max(T[iT].internalField()).value() << endl;
         }
-
-        // Update the rain
-        fvModels.source(T);
         
-        const volScalarField& rain = mesh.lookupObject<volScalarField>("rain");
-        
-        const dimensionedScalar Ttot = fvc::domainIntegrate(T+rain);
-        Info << runTime.timeName() << " T goes from " 
-             << min(T.internalField()).value() << " to "
-             << max(T.internalField()).value()
-             << " normalised T mass change = "
+        // Sum of all tracers
+        if (T.size() > 1)
+        {
+            Tsum = T[0];
+            for(label iT = 1; iT < T.size(); iT++)
+            {
+                Tsum += T[iT];
+            }
+        }
+        const volScalarField& Ttmp = T.size() > 1 ? Tsum : T[0];
+        const dimensionedScalar Ttot = fvc::domainIntegrate(Ttmp);
+        Info << runTime.timeName() << " Tsum goes from " 
+             << min(Ttmp.internalField()).value() << " to "
+             << max(Ttmp.internalField()).value()
+             << " normalised Tsum mass change = "
              << ((Ttot - Ttot0)/Ttot0).value()
              << endl;
 
