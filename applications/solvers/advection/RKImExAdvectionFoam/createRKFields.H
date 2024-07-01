@@ -7,22 +7,18 @@ const butcherTableau Bt
     )
 );
 
-// Fields to be stored at each Runge-Kutta sup-step
-PtrList<PtrList<volScalarField> > Ts(T.size());
+// Fields to be stored at each Runge-Kutta sub-step
+PtrList<volScalarField> div0(T.size());
+PtrList<PtrList<volScalarField> > div(T.size());
 for(label iT = 0; iT < T.size(); iT++)
 {
-    Ts.set(iT, new PtrList<volScalarField>(Bt.nSteps()));
+    div0.set(iT, divSum[iT]);
 
-    for (int iRK = 0; iRK < Bt.nSteps(); iRK++)
+    div.set(iT, new PtrList<volScalarField>(Bt.nSteps()-1));
+
+    for (int iRK = 0; iRK < Bt.nSteps()-1; iRK++)
     {
-        Ts[iT].set(iRK, T[iT]);
+        div[iT].set(iRK, divSum[iT]);
     }
 }
-
-RKsurfaceScalarField phis
-(
-    Bt.nSteps(),
-    phi,
-    Bt
-);
 
