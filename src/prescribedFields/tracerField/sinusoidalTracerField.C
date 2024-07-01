@@ -14,6 +14,8 @@ sinusoidalTracerField::sinusoidalTracerField
 :
     tracerField(velocityField),
     
+    c(dict.lookupOrDefault<scalar>("c", scalar(0))),
+
     a_x(dict.lookupOrDefault<scalar>("a_x", scalar(1))),
     a_y(dict.lookupOrDefault<scalar>("a_y", scalar(1))),
     a_z(dict.lookupOrDefault<scalar>("a_z", scalar(1))),
@@ -54,11 +56,11 @@ scalar sinusoidalTracerField::tracerAt
     scalar x = p.x();
     scalar y = p.y();
     scalar z = p.z();
-    scalar func =  0;
+    scalar func =  c;
     
     if (x >= xmin && x <= xmax && y >= ymin && y <= ymax && z >= zmin && z <= zmax)
     {
-        func = (a_x + b_x*Foam::cos(2*M_PI*k_x*(x-phi_x)/L_x))
+        func +=(a_x + b_x*Foam::cos(2*M_PI*k_x*(x-phi_x)/L_x))
              * (a_y + b_y*Foam::cos(2*M_PI*k_y*(y-phi_y)/L_y))
              * (a_z + b_z*Foam::cos(2*M_PI*k_z*(z-phi_z)/L_z));
     }

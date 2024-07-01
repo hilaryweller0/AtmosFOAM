@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
             }
             for(int iT = 0; iT < T.size(); iT++)
             {
-                //if (mag(Bt.subTimes()[iRK]) > SMALL)
+                if (mag(Bt.subTimes()[iRK]) > SMALL)
                 {
                     divSum[iT] = Bt.subTimes()[iRK]*div0[iT];
                     for(int lRK = 0; lRK < iRK; lRK++)
