@@ -74,6 +74,11 @@ int main(int argc, char *argv[])
     (
         mesh.solution().lookupOrDefault<wordList>("tracerNames", wordList(1, "T"))
     );
+    // Is tracer zero density for the other tracers
+    const Switch withDensity
+    (
+        mesh.solution().lookupOrDefault<Switch>("withDensity", false)
+    );
     
     // Pre-defined time stepping scheme and min/max interpolation
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
@@ -176,18 +181,20 @@ int main(int argc, char *argv[])
                     alpha = max(scalar(0.5), beta);
                 }
             }
-            if (iRK == 0)
+            else if (withDensity)
             {
-                for (int iT = 0; iT < T.size(); iT++)
+                phi = phi.oldTime();
+            }
+            for(int iT = 0; iT < T.size(); iT++)
+            {
+                if (iRK == 0)
                 {
                     div0[iT] = fvc::div
                     (
                         (1-alpha)*beta*phi*lo.interpolate(T[iT])
                     );
                 }
-            }
-            for(int iT = 0; iT < T.size(); iT++)
-            {
+                
                 if (mag(Bt.subTimes()[iRK]) > SMALL)
                 {
                     divSum[iT] = Bt.subTimes()[iRK]*div0[iT];
@@ -196,11 +203,10 @@ int main(int argc, char *argv[])
                         divSum[iT] += Bt.coeffs()[iRK][lRK]*div[iT][lRK];
                     }
 
-                    // Implicit RK stage (only depends on this tracer)
+                    // Implicit RK stage
                     fvScalarMatrix TEqn
                     (
-                        EulerDdt.fvmDdt(T[iT])
-                      + upwindConvect.fvmDiv
+                        upwindConvect.fvmDiv
                         (
                             alpha*beta*Bt.subTimes()[iRK]*phi,
                             T[iT]
@@ -208,18 +214,40 @@ int main(int argc, char *argv[])
                      + divSum[iT]
                       == Bt.subTimes()[iRK]*fvModels.source(T[iT])
                     );
+                    if (withDensity && iT >= 1)
+                    {
+                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[0], T[iT]));
+                    }
+                    else
+                    {
+                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[iT]));
+                    }
+                    
                     TEqn.solve();
                 }
 
                 // Store substage
+                surfaceScalarField Tf = (1-beta)*lo.interpolate(T[iT]);
+                if (hc.corrected())
+                {
+                    Tf += hc.correction(T[iT]);
+                }
                 if (iRK < Bt.nSteps()-1)
                 {
-                    surfaceScalarField Tf = (1-beta)*lo.interpolate(T[iT]);
-                    if (hc.corrected())
-                    {
-                        Tf += hc.correction(T[iT]);
-                    }
                     div[iT][iRK] = fvc::div(phi*Tf);
+                }
+                
+                // Replace volume flux with mass flux if withDensity
+                if (withDensity && T.size() > 1 && iT == 0)
+                {
+                    // This is not consistent. The T[iT]s have changed
+                    Tf += beta*lo.interpolate(T[iT]);
+                
+                    Info << "phi goes from" << min(phi) << " to " << max(phi) << endl;
+                    Info << "iT = " << iT << " iRK = " << iRK
+                         << " multiplying flux by " << T[iT].name() << endl;
+                    phi *= Tf;
+                    Info << "phi goes from" << min(phi) << " to " << max(phi) << endl;
                 }
             }
         }
@@ -235,10 +263,14 @@ int main(int argc, char *argv[])
         // Sum of all tracers
         if (T.size() > 1)
         {
-            Tsum = T[0];
-            for(label iT = 1; iT < T.size(); iT++)
+            if (withDensity) Tsum = T[0]*T[1];
+            else
             {
-                Tsum += T[iT];
+                Tsum = T[0];
+                for(label iT = 1; iT < T.size(); iT++)
+                {
+                    Tsum += T[iT];
+                }
             }
         }
         const volScalarField& Ttmp = T.size() > 1 ? Tsum : T[0];

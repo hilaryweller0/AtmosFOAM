@@ -16,20 +16,29 @@ for(label iT = 0; iT < T.size(); iT++)
 
     T[iT].writeOpt() = IOobject::AUTO_WRITE;
     T[iT].checkIn();
+    T[iT].rename(Tnames[iT]);
     T[iT].correctBoundaryConditions();
     T[iT].oldTime();
 }
 
-volScalarField Tsum
-(
-    IOobject("Tsum", runTime.timeName(), mesh,
-             IOobject::NO_READ, IOobject::AUTO_WRITE),
-    T[0]
-);
-for(label iT = 1; iT < T.size(); iT++)
+volScalarField Tsum = withDensity ?
+    volScalarField
+    (
+        IOobject(T[0].name()+T[1].name(), runTime.timeName(), mesh,
+                 IOobject::NO_READ, IOobject::AUTO_WRITE),
+        T[0]*T[1]
+    ) :
+    volScalarField
+    (
+        IOobject("Tsum", runTime.timeName(), mesh,
+                 IOobject::NO_READ, IOobject::AUTO_WRITE),
+        T[0]
+    );
+if (!withDensity) for(label iT = 1; iT < T.size(); iT++)
 {
     Tsum += T[iT];
 }
+Tsum.write();
 
 volVectorField U
 (
