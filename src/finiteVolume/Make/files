@@ -1,6 +1,7 @@
 interpolation/surfaceInterpolation/quadraticUpwind/quadraticUpwind.C
 interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
 interpolation/surfaceInterpolation/localMinMin/localMinMin.C
+interpolation/surfaceInterpolation/upwindWithoutCorrection/upwindWithoutCorrection.C
 
 sphericalMeshData/sphericalMeshData.C
 sphericalMeshData/sphericalVector.C

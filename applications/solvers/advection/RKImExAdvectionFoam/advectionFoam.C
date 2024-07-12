@@ -84,9 +84,17 @@ int main(int argc, char *argv[])
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
     localMax<scalar> maxInterp(mesh);
 
+    Info << "Butcher Tableau\n" << endl;
+    const butcherTableau Bt
+    (
+        mesh.schemes().subDict("ddtSchemes").lookup
+        (
+            "butcherTableau"
+        )
+    );
+
     #include "createFields.H"
     #include "createFvModels.H"
-    #include "createRKFields.H"
     
     // Low order interpolation and HO correction scheme
     upwind<scalar> lo(mesh, phi);
@@ -128,12 +136,12 @@ int main(int argc, char *argv[])
         Info << "Setting wind from dictionary" << endl;
         timeVaryingWind = readBool(velocityDict.lookup("timeVaryingWind"));
         v = velocityField::New(velocityDict);
-        v->applyTo(phi);
-        U = fvc::reconstruct(phi);
+        v->applyTo(volFlux);
+        U = fvc::reconstruct(volFlux);
         U.write();
     }
 
-    Co = CourantNo(phi, runTime.deltaT());
+    Co = CourantNo(volFlux, runTime.deltaT());
     Info << "Courant Number mean: "
          << (fvc::domainIntegrate(Co)/Vtot).value()
          << " max: " << max(Co).value() << endl;
@@ -156,6 +164,7 @@ int main(int argc, char *argv[])
         
         for (int iRK = 0; iRK < Bt.nSteps(); iRK++)
         {
+            Info << "iRK = " << iRK << endl;
             if (timeVaryingWind)
             {
                 Info << "Setting wind field" << endl;
@@ -164,43 +173,35 @@ int main(int argc, char *argv[])
                     runTime.time().value() - (1-Bt.subTimes()[iRK])*dt.value(),
                     runTime.timeIndex()
                 );
-                v->applyTo(phi);
+                v->applyTo(volFlux);
                 runTime.setTime
                 (
                     runTime.time().value() + (1-Bt.subTimes()[iRK])*dt.value(),
                     runTime.timeIndex()
                 );
-                Co = CourantNo(phi, runTime.deltaT());
+                Co = CourantNo(volFlux, runTime.deltaT());
                 Info << "Courant Number mean: "
                      << (fvc::domainIntegrate(Co)/Vtot).value()
                      << " max: " << max(Co).value() << endl;
-            
                 if (iRK == 0)
                 {
                     beta = max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co));
                     alpha = max(scalar(0.5), beta);
                 }
             }
-            else if (withDensity)
-            {
-                phi = phi.oldTime();
-            }
             for(int iT = 0; iT < T.size(); iT++)
             {
                 if (iRK == 0)
                 {
-                    div0[iT] = fvc::div
-                    (
-                        (1-alpha)*beta*phi*lo.interpolate(T[iT])
-                    );
+                    fluxOld[iT] = (1-alpha)*beta*phi*lo.interpolate(T[iT]);
                 }
                 
                 if (mag(Bt.subTimes()[iRK]) > SMALL)
                 {
-                    divSum[iT] = Bt.subTimes()[iRK]*div0[iT];
+                    fluxT[iT] = Bt.subTimes()[iRK]*fluxOld[iT];
                     for(int lRK = 0; lRK < iRK; lRK++)
                     {
-                        divSum[iT] += Bt.coeffs()[iRK][lRK]*div[iT][lRK];
+                        fluxT[iT] += Bt.coeffs()[iRK][lRK]*fluxTmp[iT][lRK];
                     }
 
                     // Implicit RK stage
@@ -211,59 +212,56 @@ int main(int argc, char *argv[])
                             alpha*beta*Bt.subTimes()[iRK]*phi,
                             T[iT]
                         )
-                     + divSum[iT]
-                      == Bt.subTimes()[iRK]*fvModels.source(T[iT])
+                     + fvc::div(fluxT[iT])
+                      //== Bt.subTimes()[iRK]*fvModels.source(T[iT])
                     );
                     if (withDensity && iT >= 1)
                     {
-                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[0], T[iT]));
+                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[0], T[iT]))
+                             - Bt.subTimes()[iRK]*fvModels.source(T[0], T[iT]);
                     }
                     else
                     {
-                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[iT]));
+                        TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[iT]))
+                             - Bt.subTimes()[iRK]*fvModels.source(T[iT]);
                     }
                     
                     TEqn.solve();
                 }
+                
+                fluxTmp[iT][iRK] = phi*
+                (
+                    (1-beta)*lo.interpolate(T[iT])
+                  + hc.correction(T[iT])
+                );
 
-                // Store substage
-                surfaceScalarField Tf = (1-beta)*lo.interpolate(T[iT]);
-                if (hc.corrected())
-                {
-                    Tf += hc.correction(T[iT]);
-                }
-                if (iRK < Bt.nSteps()-1)
-                {
-                    div[iT][iRK] = fvc::div(phi*Tf);
-                }
-                
+                fluxT[iT] += alpha*beta*Bt.subTimes()[iRK]*phi*lo.interpolate(T[iT])
+                          + Bt.coeffs()[iRK][iRK]*fluxTmp[iT][iRK];
+
                 // Replace volume flux with mass flux if withDensity
-                if (withDensity && T.size() > 1 && iT == 0)
+                if (withDensity && iT == 0)
                 {
-                    // This is not consistent. The T[iT]s have changed
-                    Tf += beta*lo.interpolate(T[iT]);
-                
-                    Info << "phi goes from" << min(phi) << " to " << max(phi) << endl;
-                    Info << "iT = " << iT << " iRK = " << iRK
-                         << " multiplying flux by " << T[iT].name() << endl;
-                    phi *= Tf;
-                    Info << "phi goes from" << min(phi) << " to " << max(phi) << endl;
+                    massFlux = phi*(lo.interpolate(T[0]) + hc.correction(T[0]));
+                    phip = &massFlux;
                 }
+            }
+            if (withDensity)
+            {
+                phip = &volFlux;
             }
         }
         
         // Print Diagnostics
         for(label iT = 0; iT < T.size(); iT++)
         {
-            Info << T[iT].name() << " goes from "
-                 << min(T[iT].internalField()).value() << " to "
-                 << max(T[iT].internalField()).value() << endl;
+            Info << T[iT].name() << " goes from " << min(T[iT].field())
+                 << " to " << max(T[iT].field()) << endl;
         }
         
         // Sum of all tracers
         if (T.size() > 1)
         {
-            if (withDensity) Tsum = T[0]*T[1];
+            if (withDensity) {Tsum = T[0]*T[1];}
             else
             {
                 Tsum = T[0];

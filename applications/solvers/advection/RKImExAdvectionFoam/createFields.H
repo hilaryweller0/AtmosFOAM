@@ -68,11 +68,11 @@ surfaceVectorField Uf
     linearInterpolate(U)
 );
 
-surfaceScalarField phi
+surfaceScalarField volFlux
 (
     IOobject
     (
-        "phi",
+        "volFlux",
         runTime.timeName(),
         mesh,
         IOobject::READ_IF_PRESENT,
@@ -80,23 +80,43 @@ surfaceScalarField phi
     ),
     Uf & mesh.Sf()
 );
-phi.oldTime();
+
+surfaceScalarField massFlux("massFlux", volFlux*linearInterpolate(T[0]));
+surfaceScalarField* phip = &volFlux;
+#define phi (*phip)
 
 // Courant numbers to write out
 volScalarField Co
 (
     IOobject("Co", runTime.timeName(), mesh, IOobject::NO_READ, IOobject::AUTO_WRITE),
-    CourantNo(phi, runTime.deltaT())
+    CourantNo(volFlux, runTime.deltaT())
 );
 Co.write();
 
 surfaceScalarField beta("beta", max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co)));
 surfaceScalarField alpha("alpha", max(scalar(0.5), beta));
+Info << "alpha goes from " << min(alpha).value() << " to "
+     << max(alpha).value() << endl;
+Info << "beta goes from " << min(beta).value() << " to "
+     << max(beta).value() << endl;
 
 dimensionedScalar Vtot = sum(mesh.V());
 
-PtrList<volScalarField> divSum(Tnames.size());
-for(label iT = 0; iT < divSum.size(); iT++)
+// Additional fluxes for each tracer for RK time stepping with FCT
+PtrList<surfaceScalarField> fluxOld(T.size());
+PtrList<surfaceScalarField> fluxT(T.size());
+PtrList<PtrList<surfaceScalarField>> fluxTmp(T.size());
+
+for(label iT = 0; iT < T.size(); iT++)
 {
-    divSum.set(iT, fvc::div(phi*linearInterpolate(T[iT])));
+    fluxOld.set(iT, 0*phi*linearInterpolate(T[iT]));
+    fluxT.set(iT, fluxOld[iT]);
+    fluxTmp.set(iT, new PtrList<surfaceScalarField>(Bt.nSteps()));
+    for (int iRK = 0; iRK < Bt.nSteps(); iRK++)
+    {
+        fluxTmp[iT].set(iRK, fluxOld[iT]);
+    }
+    if (withDensity) phip = &massFlux;
 }
+if (withDensity) phip = &volFlux;
+
