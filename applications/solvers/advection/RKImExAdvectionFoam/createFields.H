@@ -84,6 +84,7 @@ surfaceScalarField volFlux
 surfaceScalarField massFlux("massFlux", volFlux*linearInterpolate(T[0]));
 surfaceScalarField* phip = &volFlux;
 #define phi (*phip)
+massFlux.oldTime();
 
 // Courant numbers to write out
 volScalarField Co
@@ -95,6 +96,8 @@ Co.write();
 
 surfaceScalarField beta("beta", max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co)));
 surfaceScalarField alpha("alpha", max(scalar(0.5), beta));
+//surfaceScalarField alpha("alpha", max(scalar(0.), beta));
+//alpha = 0; beta = 0;
 Info << "alpha goes from " << min(alpha).value() << " to "
      << max(alpha).value() << endl;
 Info << "beta goes from " << min(beta).value() << " to "
@@ -119,4 +122,16 @@ for(label iT = 0; iT < T.size(); iT++)
     if (withDensity) phip = &massFlux;
 }
 if (withDensity) phip = &volFlux;
+
+// Extra old time fields for low order solution for FCT
+if (FCT)
+{
+    T[0].oldTime();  // Old rho
+    for(label iT = 1; iT < T.size(); iT++)
+    {
+        fluxOld[iT].oldTime(); // Part of LO flux
+        fluxT[iT].oldTime();   // Low order flux
+        T[iT].oldTime().oldTime(); // Low order solution
+    }
+}
 

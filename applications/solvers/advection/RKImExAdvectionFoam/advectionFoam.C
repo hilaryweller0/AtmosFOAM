@@ -54,6 +54,7 @@ Description
 #include "upwind.H"
 #include "cubicUpwind.H"
 #include "gaussConvectionScheme.H"
+#include "fvcFluxLimit.H"
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -79,6 +80,7 @@ int main(int argc, char *argv[])
     (
         mesh.solution().lookupOrDefault<Switch>("withDensity", false)
     );
+    const Switch FCT(mesh.schemes().subDict("divSchemes").lookup("FCT"));
     
     // Pre-defined time stepping scheme and min/max interpolation
     fv::EulerDdtScheme<scalar> EulerDdt(mesh);
@@ -141,7 +143,7 @@ int main(int argc, char *argv[])
         U.write();
     }
 
-    Co = CourantNo(volFlux, runTime.deltaT());
+    Co = CourantNo(volFlux, dt);
     Info << "Courant Number mean: "
          << (fvc::domainIntegrate(Co)/Vtot).value()
          << " max: " << max(Co).value() << endl;
@@ -162,24 +164,26 @@ int main(int argc, char *argv[])
         runTime++;
         Info<< "\nTime = " << runTime.timeName() << endl;
         
+        // Loop over each RK stage
         for (int iRK = 0; iRK < Bt.nSteps(); iRK++)
         {
+            const scalar ci = Bt.subTimes()[iRK];
             Info << "iRK = " << iRK << endl;
             if (timeVaryingWind)
             {
                 Info << "Setting wind field" << endl;
                 runTime.setTime
                 (
-                    runTime.time().value() - (1-Bt.subTimes()[iRK])*dt.value(),
+                    runTime.time().value() - (1-ci)*dt.value(),
                     runTime.timeIndex()
                 );
                 v->applyTo(volFlux);
                 runTime.setTime
                 (
-                    runTime.time().value() + (1-Bt.subTimes()[iRK])*dt.value(),
+                    runTime.time().value() + (1-ci)*dt.value(),
                     runTime.timeIndex()
                 );
-                Co = CourantNo(volFlux, runTime.deltaT());
+                Co = CourantNo(volFlux, dt);
                 Info << "Courant Number mean: "
                      << (fvc::domainIntegrate(Co)/Vtot).value()
                      << " max: " << max(Co).value() << endl;
@@ -189,16 +193,22 @@ int main(int argc, char *argv[])
                     alpha = max(scalar(0.5), beta);
                 }
             }
+            // Advection for each tracer
             for(int iT = 0; iT < T.size(); iT++)
             {
                 if (iRK == 0)
                 {
                     fluxOld[iT] = (1-alpha)*beta*phi*lo.interpolate(T[iT]);
+                    if (FCT && !(withDensity && iT == 0))
+                    {
+                        fluxOld[iT].oldTime() = (1-alpha*beta)*phi
+                                                *lo.interpolate(T[iT]);
+                    }
                 }
                 
-                if (mag(Bt.subTimes()[iRK]) > SMALL)
+                if (mag(ci) > SMALL)
                 {
-                    fluxT[iT] = Bt.subTimes()[iRK]*fluxOld[iT];
+                    fluxT[iT] = ci*fluxOld[iT];
                     for(int lRK = 0; lRK < iRK; lRK++)
                     {
                         fluxT[iT] += Bt.coeffs()[iRK][lRK]*fluxTmp[iT][lRK];
@@ -207,49 +217,92 @@ int main(int argc, char *argv[])
                     // Implicit RK stage
                     fvScalarMatrix TEqn
                     (
-                        upwindConvect.fvmDiv
-                        (
-                            alpha*beta*Bt.subTimes()[iRK]*phi,
-                            T[iT]
-                        )
-                     + fvc::div(fluxT[iT])
-                      //== Bt.subTimes()[iRK]*fvModels.source(T[iT])
+                        upwindConvect.fvmDiv(alpha*beta*ci*phi, T[iT])
                     );
                     if (withDensity && iT >= 1)
                     {
                         TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[0], T[iT]))
-                             - Bt.subTimes()[iRK]*fvModels.source(T[0], T[iT]);
+                             - ci*fvModels.source(T[0], T[iT]);
                     }
                     else
                     {
                         TEqn += fvScalarMatrix(EulerDdt.fvmDdt(T[iT]))
-                             - Bt.subTimes()[iRK]*fvModels.source(T[iT]);
+                             - ci*fvModels.source(T[iT]);
                     }
                     
-                    TEqn.solve();
-                }
+                    // Low order solution (for FCT)
+                    if (FCT && !(withDensity && iT == 0))
+                    {
+                        fluxT[iT].oldTime() = ci*fluxOld[iT].oldTime();
+                        solve
+                        (
+                            TEqn == -fvc::div(fluxT[iT].oldTime())
+                        );
+                        Info << "Low order " << T[iT].name() << " goes from "
+                             << min(T[iT].field()) << " to "
+                             << max(T[iT].field()) << endl;
+                        // Store low order solution and low order flux
+                        T[iT].oldTime().oldTime() = T[iT];
+                        fluxT[iT].oldTime() += TEqn.flux();
+                    }
+                    
+                    // HO solution
+                    solve(TEqn == -fvc::div(fluxT[iT]));
+                    Info << "Full " << T[iT].name() << " goes from "
+                         << min(T[iT].field()) << " to "<< max(T[iT].field())
+                         << endl;
+                    
+                    fluxT[iT] += TEqn.flux();
+                } // end if (mag(ci) > SMALL)
                 
-                fluxTmp[iT][iRK] = phi*
-                (
-                    (1-beta)*lo.interpolate(T[iT])
-                  + hc.correction(T[iT])
-                );
+                // Full HO fluxes
+                fluxTmp[iT][iRK] = phi*(1-beta)*lo.interpolate(T[iT]);
+                if (withDensity && iT >= 1)
+                {
+                    fluxTmp[iT][iRK] += volFlux*
+                    (
+                        hc.interpolate(T[0])*hc.correction(T[iT])
+                      + hc.correction(T[0])*lo.interpolate(T[iT])
+                    );
+                }
+                else {fluxTmp[iT][iRK] += phi*hc.correction(T[iT]);}
+                
+                // Modify the fluxes and solution for FCT
+                if (FCT && !(withDensity && iT == 0))
+                {
+                    surfaceScalarField fluxCorr = fluxT[iT] - fluxT[iT].oldTime();
 
-                fluxT[iT] += alpha*beta*Bt.subTimes()[iRK]*phi*lo.interpolate(T[iT])
-                          + Bt.coeffs()[iRK][iRK]*fluxTmp[iT][iRK];
+                    fvc::fluxLimit(fluxCorr, T[0]*T[iT].oldTime().oldTime(), dt);
 
+                    fluxT[iT] = fluxT[iT].oldTime() + fluxCorr;
+                    if (withDensity && iT > 0)
+                    {
+                        //T[iT] =  (T[0].oldTime()*T[iT].oldTime() 
+                        //         - dt*fvc::div(fluxT[iT]))/T[0];
+                        T[iT] = T[iT].oldTime().oldTime() 
+                              - dt*fvc::div(fluxCorr)/T[0];
+                    }
+                    else
+                    {
+                        T[iT] =  T[iT].oldTime() - dt*fvc::div(fluxT[iT]);
+                    }
+                    Info << "Limited " << T[iT].name() << " goes from "
+                         << min(T[iT].field()) << " to "
+                         << max(T[iT].field()) << endl;
+                } // end of FCT
+                
                 // Replace volume flux with mass flux if withDensity
                 if (withDensity && iT == 0)
                 {
-                    massFlux = phi*(lo.interpolate(T[0]) + hc.correction(T[0]));
+                    massFlux = phi*lo.interpolate(T[0]);
                     phip = &massFlux;
                 }
-            }
+            } // End of Advection for each tracer
             if (withDensity)
             {
                 phip = &volFlux;
             }
-        }
+        } // End of Loop over each RK stage
         
         // Print Diagnostics
         for(label iT = 0; iT < T.size(); iT++)
