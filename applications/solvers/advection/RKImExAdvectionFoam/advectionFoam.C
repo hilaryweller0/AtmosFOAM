@@ -190,7 +190,11 @@ int main(int argc, char *argv[])
                 if (iRK == 0)
                 {
                     beta = max(scalar(0), 1-CoLimit/maxInterp.interpolate(Co));
-                    alpha = max(scalar(0.5), beta);
+                    alpha = max
+                    (
+                        scalar(0.5), //beta
+                        1-2/maxInterp.interpolate(Co)
+                    );
                 }
             }
             // Advection for each tracer
