@@ -77,17 +77,17 @@ Foam::quadraticUpwind<Type>::quadraticUpwind
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>>
+Foam::tmp<Foam::SurfaceField<Type>>
 Foam::quadraticUpwind<Type>::correction
 (
-    const GeometricField<Type, fvPatchField, volMesh>& vf
+    const VolField<Type>& vf
 ) const
 {
     const fvMesh& mesh = this->mesh();
 
-    tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> tsfCorr
+    tmp<SurfaceField<Type>> tsfCorr
     (
-        GeometricField<Type, fvsPatchField, surfaceMesh>::New
+        SurfaceField<Type>::New
         (
             "quadraticUpwind::correction(" + vf.name() + ')',
             mesh,
@@ -95,7 +95,7 @@ Foam::quadraticUpwind<Type>::correction
         )
     );
 
-    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr.ref();
+    SurfaceField<Type>& sfCorr = tsfCorr.ref();
 
     const surfaceScalarField& faceFlux = this->faceFlux_;
 
@@ -134,7 +134,7 @@ Foam::quadraticUpwind<Type>::correction
                 0.5*(Cf[facei] - C[celli]) & (gradVf[celli] + gradVff[facei]);
         }
 
-        typename GeometricField<Type, fvsPatchField, surfaceMesh>::
+        typename SurfaceField<Type>::
             Boundary& bSfCorr = sfCorr.boundaryFieldRef();
 
         forAll(bSfCorr, patchi)
@@ -214,7 +214,7 @@ Foam::tmp<Foam::surfaceScalarField> Foam::quadraticUpwind<Type>::blendingFactor(
 
         tUflux = this->faceFlux_/linearInterpolate(rho);
     }
-    else if (this->faceFlux_.dimensions() != dimFlux)
+    else if (this->faceFlux_.dimensions() != dimVolumetricFlux)
     {
         FatalErrorInFunction
             << "dimensions of faceFlux are not correct"

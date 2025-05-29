@@ -1,9 +1,0 @@
-EXE_INC = \
-    -g -O0 \
-    -I$(LIB_SRC)/finiteVolume/lnInclude \
-    -I$(LIB_SRC)/meshTools/lnInclude
-
-EXE_LIBS = \
-    -L$(FOAM_USER_LIBBIN) \
-    -lfiniteVolume \
-    -lmeshTools

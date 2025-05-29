@@ -123,8 +123,6 @@ Foam::cubicUpwind<Foam::vector>::correction
         }
     }
 
-    sfCorr *= blendingFactor();
-
     return tsfCorr;
 }
 

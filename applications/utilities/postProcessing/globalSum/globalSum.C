@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
                               args.optionRead<string>("region") :
                               fvMesh::defaultRegion;
 
-    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
+    Info << "Create mesh for time = " << runTime.name() <<  " region "
          << meshRegion << endl;
 
     Foam::fvMesh mesh
@@ -110,7 +110,7 @@ int main(int argc, char *argv[])
         Foam::IOobject
         (
             meshRegion,
-            runTime.timeName(),
+            runTime.name(),
             runTime,
             IOobject::MUST_READ
         )
@@ -152,14 +152,14 @@ int main(int argc, char *argv[])
         IOobject header
         (
             fieldName,
-            runTime.timeName(),
+            runTime.name(),
             mesh,
             IOobject::MUST_READ
         );
 
         if (!header.headerOk())
         {
-            Info << "Time = " << runTime.timeName() << " no " << fieldName
+            Info << "Time = " << runTime.name() << " no " << fieldName
                  << endl;
         }
         else if(header.headerClassName() == "volScalarField")
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 
             variance /= Vtot;
             
-            os << runTime.timeName() << ' ' << l1 << ' ' << l2 << ' ' << li
+            os << runTime.name() << ' ' << l1 << ' ' << l2 << ' ' << li
                << ' ' << l0 << ' ' << variance << ' ' << min << ' ' << max << endl;
         }
         else if (header.headerClassName() == "surfaceScalarField")
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 
             variance /= Atot;
             
-            os << runTime.timeName() << ' ' << l1 << ' ' << l2 << ' ' << li
+            os << runTime.name() << ' ' << l1 << ' ' << l2 << ' ' << li
                << ' ' << l0 << ' ' << variance << ' ' << min << ' ' << max << endl;
         }
         else

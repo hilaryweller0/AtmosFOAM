@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
                               args.optionRead<string>("region") :
                               fvMesh::defaultRegion;
 
-    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
+    Info << "Create mesh for time = " << runTime.name() <<  " region "
          << meshRegion << endl;
 
     fvMesh mesh
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
         Foam::IOobject
         (
             meshRegion,
-            runTime.timeName(),
+            runTime.name(),
             runTime,
             IOobject::MUST_READ
         )
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
 
         volScalarField vfOut
         (
-            IOobject(fileNameOut, runTime.timeName(), mesh),
+            IOobject(fileNameOut, runTime.name(), mesh),
             scales[0]*pow(vfIn, powers[0]),
             vfIn.boundaryField().types()
         );

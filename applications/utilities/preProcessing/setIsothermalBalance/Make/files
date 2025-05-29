@@ -1,3 +1,0 @@
-setIsothermalBalance.C
-
-EXE = $(FOAM_USER_APPBIN)/setIsothermalBalance

@@ -56,19 +56,10 @@ class cubicUpwind
 :
     public upwind<Type>
 {
-    // Private Data
+    // Private Member Functions
 
-        //- Courant number below which QUICK is used
-        const scalar Co1_;
-
-        //- Courant number above which upwind
-        const scalar Co2_;
-        
-        //- Whether or not to apply any blending
-        const Switch applyBlend_;
-        
-        //- Name of the density field to divide the flux (if needed)
-        const word rhoName_;
+        //- Disallow default bitwise assignment
+        void operator=(const cubicUpwind&) = delete;
 
 public:
 
@@ -115,19 +106,11 @@ public:
         }
 
         //- Return the explicit correction to the face-interpolate
-        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
+        virtual tmp<SurfaceField<Type>>
         correction
         (
-            const GeometricField<Type, fvPatchField, volMesh>&
+            const VolField<Type>&
         ) const;
-
-        //- Blending factor to scale the correction on upwind
-        tmp<surfaceScalarField> blendingFactor() const;
-
-    // Member Operators
-
-        //- Disallow default bitwise assignment
-        void operator=(const cubicUpwind&) = delete;
 };
 
 

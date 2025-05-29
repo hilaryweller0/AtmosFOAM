@@ -1,3 +1,0 @@
-invertVorticity.C
-
-EXE = $(FOAM_USER_APPBIN)/invertVorticity

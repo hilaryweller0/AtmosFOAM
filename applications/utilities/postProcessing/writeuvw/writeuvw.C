@@ -64,7 +64,7 @@ int main(int argc, char *argv[])
 
     const word fieldName(args.args()[1].c_str());
 
-    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
+    Info << "Create mesh for time = " << runTime.name() <<  " region "
          << meshRegion << endl;
 
     fvMesh mesh
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         Foam::IOobject
         (
             meshRegion,
-            runTime.timeName(),
+            runTime.name(),
             runTime,
             IOobject::MUST_READ
         )
@@ -81,7 +81,7 @@ int main(int argc, char *argv[])
     forAll(timeDirs, timeI)
     {
         runTime.setTime(timeDirs[timeI], timeI);
-        Info<< "Time = " << runTime.timeName() << endl;
+        Info<< "Time = " << runTime.name() << endl;
 
         mesh.readUpdate();
 
@@ -89,13 +89,13 @@ int main(int argc, char *argv[])
 
         IOobject fieldHeader
         (
-            fieldName, runTime.timeName(), mesh, IOobject::MUST_READ
+            fieldName, runTime.name(), mesh, IOobject::MUST_READ
         );
 
         if ( !fieldHeader.headerOk())
         {
             FatalErrorIn("writeuvw") << "Cannot read " << fieldName
-                << " from time directory " << runTime.timeName()
+                << " from time directory " << runTime.name()
                 << exit(FatalError);
         }
         else if (fieldHeader.headerClassName() == "volVectorField")

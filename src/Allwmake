@@ -2,13 +2,6 @@
 cd ${0%/*} || exit 1    # run from this directory
 
 wmake $makeType finiteVolume
-wmake $makeType ExnerTheta
-wmake $makeType shallowWater
-wmake $makeType thermalFields
-wmake $makeType TurbulenceModels
-wmake $makeType HodgeOps
-wmake $makeType sampling
-wmake $makeType prescribedFields
-wmake $makeType orography
-wmake $makeType ghostMesh
+wmake $makeType functionObjects/fields
+wmake $makeType functionObjects/solvers
 

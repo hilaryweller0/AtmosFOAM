@@ -1,3 +1,0 @@
-randomlyPerturbVertices.C
-
-EXE = $(FOAM_USER_APPBIN)/randomlyPerturbVertices

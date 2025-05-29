@@ -121,11 +121,11 @@ while  [ $i != ${#inputFiles[*]} ]; do
     
     if [ ${#nSkip[*]} -gt $i ]; then nsk=${nSkip[$i]};
     else nsk=$nSkip; fi
-    
+
     awk '{
             if \
             ( \
-                $1 == 1*$1 \
+                $1+0 == $1 \
              && $'$c''$ysc' >= '$ymin' \
              && $'$cx''$xsc' >= '$xmin' \
             ) \
@@ -135,12 +135,10 @@ while  [ $i != ${#inputFiles[*]} ]; do
             else { print $'$cx''$xsc', "-inf" }
         }' $inFile > $outFile.tmp
     if [ ${#symbols[*]} -gt $i ]; then
-        echo call 1
         gmt psxy -J -R -A -h$nsk -S${symbols[$i]} -W${spens[$i]} $outFile.tmp -K -O \
              >>$outFile
     fi
     if [ ${#pens[*]} -gt $i ]; then
-        echo call 2
         gmt psxy -J -R -A -h$nsk -W${pens[$i]} $outFile.tmp -K -O >> $outFile
     fi
     let i=$i+1
@@ -185,8 +183,9 @@ if [ -a ${outFile}.legends.dat ]; then
     rm ${outFile}.legends.dat
 fi
 
-echo call 3
-echo "" | gmt psxy -J -R -W -O >>$outFile
+echo "\n" | gmt psxy -J -R -W -O >>$outFile
+
+sed -i 's/405 60 7.09e+194 C//g' $outFile
 
 pstitle $outFile $outFile
 ps2eps -f $outFile > /dev/null 2>&1

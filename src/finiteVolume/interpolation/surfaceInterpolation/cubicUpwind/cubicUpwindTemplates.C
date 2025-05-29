@@ -37,11 +37,7 @@ Foam::cubicUpwind<Type>::cubicUpwind
     const surfaceScalarField& faceFlux
 )
 :
-    upwind<Type>(mesh, faceFlux),
-    Co1_(-1),
-    Co2_(-1),
-    applyBlend_(false),
-    rhoName_("")
+    upwind<Type>(mesh, faceFlux)
 {}
 
 
@@ -52,11 +48,7 @@ Foam::cubicUpwind<Type>::cubicUpwind
     Istream& is
 )
 :
-    upwind<Type>(mesh, is),
-    Co1_(readScalar(is)),
-    Co2_(readScalar(is)),
-    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0),
-    rhoName_("")
+    upwind<Type>(mesh, is)
 {}
 
 
@@ -68,28 +60,24 @@ Foam::cubicUpwind<Type>::cubicUpwind
     Istream& is
 )
 :
-    upwind<Type>(mesh, faceFlux, is),
-    Co1_(readScalar(is)),
-    Co2_(readScalar(is)),
-    applyBlend_(Co2_ >= Co1_ && Co1_ >= 0),
-    rhoName_(is)
+    upwind<Type>(mesh, faceFlux, is)
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
 template<class Type>
-Foam::tmp<Foam::GeometricField<Type, Foam::fvsPatchField, Foam::surfaceMesh>>
+Foam::tmp<Foam::SurfaceField<Type>>
 Foam::cubicUpwind<Type>::correction
 (
-    const GeometricField<Type, fvPatchField, volMesh>& vf
+    const VolField<Type>& vf
 ) const
 {
     const fvMesh& mesh = this->mesh();
 
-    tmp<GeometricField<Type, fvsPatchField, surfaceMesh>> tsfCorr
+    tmp<SurfaceField<Type>> tsfCorr
     (
-        GeometricField<Type, fvsPatchField, surfaceMesh>::New
+        SurfaceField<Type>::New
         (
             "cubicUpwind::correction(" + vf.name() + ')',
             mesh,
@@ -97,7 +85,7 @@ Foam::cubicUpwind<Type>::correction
         )
     );
 
-    GeometricField<Type, fvsPatchField, surfaceMesh>& sfCorr = tsfCorr.ref();
+    SurfaceField<Type>& sfCorr = tsfCorr.ref();
 
     const surfaceScalarField& faceFlux = this->faceFlux_;
 
@@ -136,7 +124,7 @@ Foam::cubicUpwind<Type>::correction
                 1./3.*(Cf[facei] - C[celli]) & (2*gradVf[celli] + gradVff[facei]);
         }
 
-        typename GeometricField<Type, fvsPatchField, surfaceMesh>::
+        typename SurfaceField<Type>::
             Boundary& bSfCorr = sfCorr.boundaryFieldRef();
 
         forAll(bSfCorr, patchi)
@@ -185,63 +173,8 @@ Foam::cubicUpwind<Type>::correction
             }
         }
     }
-    //Scale the correction by the blending factor
-    if (applyBlend_)
-    {
-        sfCorr *= blendingFactor();
-    }
 
     return tsfCorr;
-}
-
-template<class Type>
-Foam::tmp<Foam::surfaceScalarField> Foam::cubicUpwind<Type>::blendingFactor() const
-{
-    const fvMesh& mesh = this->mesh();
-    tmp<surfaceScalarField> tUflux = this->faceFlux_;
-    
-    if (this->faceFlux_.dimensions() == dimMassFlux)
-    {
-        /*// Currently assume that the density field
-        // corresponding to the mass-flux is named "rho" or "rho_0"
-        const word& fl = this->faceFlux_.name();
-        const word rhoName = (fl.replace("_0", "") != fl)
-             ? "rho_0" : "rho";
-        
-        //Info << "Flux is " << fl << " rho is " << rhoName << endl;
-        */
-        const volScalarField& rho =
-            mesh.objectRegistry::template lookupObject<volScalarField>
-            (rhoName_);
-
-        tUflux = this->faceFlux_/linearInterpolate(rho);
-    }
-    else if (this->faceFlux_.dimensions() != dimFlux)
-    {
-        FatalErrorInFunction
-            << "dimensions of faceFlux are not correct"
-            << exit(FatalError);
-    }
-
-    // Smoothed Courant number
-    //localMax<scalar> maxInterp(mesh);
-    surfaceScalarField Cf = mesh.time().deltaT()*mesh.deltaCoeffs()
-                   *mag(tUflux)/mesh.magSf();
-    //Cf = maxInterp.interpolate(fvc::localMax(Cf));
-
-    return surfaceScalarField::New
-    (
-        "BlendingFactor",
-        scalar(1) - max
-        (
-            min
-            (
-                (Cf - Co1_)/max(Co2_ - Co1_, SMALL),
-                scalar(1)
-            ),
-            scalar(0)
-        )
-    );
 }
 
 // ************************************************************************* //

@@ -56,6 +56,10 @@ class upwindWithoutCorrection
 :
     public upwind<Type>
 {
+    // Private Member Functions
+
+        //- Disallow default bitwise assignment
+        void operator=(const upwindWithoutCorrection&) = delete;
 
 public:
 
@@ -102,16 +106,11 @@ public:
         }
 
         //- Return the explicit correction to the face-interpolate
-        virtual tmp<GeometricField<Type, fvsPatchField, surfaceMesh>>
+        virtual tmp<SurfaceField<Type>>
         correction
         (
-            const GeometricField<Type, fvPatchField, volMesh>&
+            const VolField<Type>&
         ) const;
-
-    // Member Operators
-
-        //- Disallow default bitwise assignment
-        void operator=(const upwindWithoutCorrection&) = delete;
 };
 
 

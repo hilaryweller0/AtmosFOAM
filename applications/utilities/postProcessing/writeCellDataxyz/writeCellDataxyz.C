@@ -64,14 +64,14 @@ int main(int argc, char *argv[])
 
     Foam::Info
         << "Create mesh for time = "
-        << runTime.timeName() << Foam::nl << Foam::endl;
+        << runTime.name() << Foam::nl << Foam::endl;
 
     Foam::fvMesh mesh
     (
         Foam::IOobject
         (
             meshRegion,
-            runTime.timeName(),
+            runTime.name(),
             runTime,
             Foam::IOobject::MUST_READ
         )
@@ -81,18 +81,18 @@ int main(int argc, char *argv[])
     forAll(timeDirs, timeI)
     {
         runTime.setTime(timeDirs[timeI], timeI);
-        Info<< "Time = " << runTime.timeName() << endl;
+        Info<< "Time = " << runTime.name() << endl;
 
         IOobject fieldHeader
         (
             fieldName,
-            runTime.timeName(),
+            runTime.name(),
             mesh,
             IOobject::MUST_READ_IF_MODIFIED
         );
 
         // initialise output file
-        fileName outFile = args.rootPath() / args.caseName() / runTime.timeName();
+        fileName outFile = args.rootPath() / args.caseName() / runTime.name();
         if (meshRegion != fvMesh::defaultRegion) outFile = outFile / meshRegion;
         outFile = outFile / fieldName + ".xyz";
         Info << "Writing file " << outFile << endl;

@@ -1,8 +1,0 @@
-sphPolarLatLonMesh
-
-writeSphericalMeshGeometry
-
-setInitialTracerField
-setVelocityField
-advectionFoam -forwardEuler
-
