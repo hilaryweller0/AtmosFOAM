@@ -79,13 +79,13 @@ class adImExStrangAdvection
         const scalarSquareMatrix RK_;
         
         // Off centering uniform value [0,1] or variable (value <0)
-        const scalar alpha_;
+        //const scalar alpha_;
         
         // Implicitness uniform value [0,1] or variable (value <0)
-        const scalar beta_;
+        //const scalar beta_;
         
         // HO limiter uniform value [0,1] or variable (value <0)
-        const scalar gamma_;
+        //const scalar gamma_;
         
     // Private member functions
     

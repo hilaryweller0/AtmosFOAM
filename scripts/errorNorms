@@ -1,0 +1,30 @@
+#!/bin/bash -e
+#
+if [ "$#" -lt 5 ]
+then
+   echo usage: errorNorms case time0 Texact time1 T
+   exit
+fi
+
+case=$1
+t0=$2
+Te=$3
+t1=$4
+T=$5
+
+sumFields -case $case $t1 ${T}error $t0 $Te $t1 $T -scale0 -1 > $case/log.errorNorms
+globalSum -case $case -time $t1 ${T}error >> $case/log.errorNorms
+globalSum -case $case -time $t1 ${T} >> $case/log.errorNorms
+mv $case/globalSum${T}.dat $case/globalSum${T}error.dat $case/$t1
+globalSum -case $case -time $t0 $Te >> $case/log.errorNorms
+mv $case/globalSum${Te}.dat $case/$t0
+echo '#Time l1 l2 linf sum variance min max' > $case/${T}_${t1}errorNorms.dat
+awk 'NR>1 {print $1, 0,0,0, $5, $6, $7, $8}' \
+    $case/$t0/globalSum${T}.dat >> $case/${T}_${t1}errorNorms.dat
+paste $case/$t1/globalSum${T}error.dat $case/$t0/globalSum${T}.dat \
+      $case/$t1/globalSum${T}.dat \
+    | awk 'NR>1 {print $1, $2/$10, $3/$11, $4/$12, $21, $22, $23, $24}' \
+    >> $case/${T}_${t1}errorNorms.dat
+cat $case/${T}_${t1}errorNorms.dat
+rm $case/$t0/globalSum${T}.dat $case/$t1/globalSum${T}.dat \
+   $case/$t1/globalSum${T}error.dat

@@ -29,8 +29,8 @@ License
 #include "EulerDdtScheme.H"
 #include "fvc.H"
 //#include "fvcFluxLimit.H"
-//#include "CourantNoFunc.H"
-//#include "localMax.H"
+#include "localMax.H"
+#include "CourantNoFunc.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -54,10 +54,10 @@ adImExStrangAdvection<Type>::adImExStrangAdvection
 :
     convectionScheme<Type>(mesh, advFlux),
     dict_(is),
-    RK_(dict_.lookup("RK_ButcherCoeffs")),
-    alpha_(readScalar(dict_.lookup("alpha"))),
-    beta_(readScalar(dict_.lookup("beta"))),
-    gamma_(readScalar(dict_.lookup("gamma")))
+    RK_(dict_.lookup("RK_ButcherCoeffs"))
+    //alpha_(readScalar(dict_.lookup("alpha"))),
+    //beta_(readScalar(dict_.lookup("beta"))),
+    //gamma_(readScalar(dict_.lookup("gamma")))
     //fullSolver_(dict_.lookup("fullSolver")),
     //FCTlimit_(dict_.lookup("FCTlimit")),
     //FCTmin_(dict_.lookupOrDefault<scalar>("FCTmin", scalar(0))),
@@ -148,6 +148,24 @@ adImExStrangAdvection<Type>::fvcDiv
     );
     T.oldTime();
     
+    // Calculate the Courant number on faces
+    localMax<scalar> maxInterp(mesh);
+    volScalarField Co0 = CourantNo(advFlux.oldTime(), dt);
+    volScalarField Co1 = CourantNo(advFlux, dt);
+    surfaceScalarField Co = max
+    (
+        maxInterp.interpolate(Co0), maxInterp.interpolate(Co1)
+    );
+    // Calculate alpha, beta and gamma as a function of the max Courant number
+    surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
+    surfaceScalarField beta  = 1 - 1/max(scalar(1), Co);
+    surfaceScalarField gamma = 6.5/(max(Co,2.5)+scalar(4));
+    Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() << nl
+         << "alpha goes from " << min(alpha).value() << " to " << max(alpha).value() << nl
+         << "beta goes from " << min(beta).value() << " to " << max(beta).value() << nl
+         << "gamma goes from " << min(gamma).value() << " to " << max(gamma).value() 
+         << endl;
+    
     // Total fluxes for RK stages
     PtrList<SurfaceField<Type>> F(RK_.n()+1);
     
@@ -155,7 +173,7 @@ adImExStrangAdvection<Type>::fvcDiv
     F.set
     (
         0,
-        (1-alpha_)*beta_*advFlux.oldTime()*upInterp(advFlux.oldTime(),T)
+        (1-alpha)*beta*advFlux.oldTime()*upInterp(advFlux.oldTime(),T)
     );
 
     // Accumulate the total flux, starting from the old time step terms
@@ -176,7 +194,7 @@ adImExStrangAdvection<Type>::fvcDiv
         const surfaceScalarField af = (1-c)*advFlux.oldTime() + c*advFlux;
         
         // New sub stage flux
-        F.set(iRK+1, af*((1-beta_)*upInterp(af, T) + gamma_*hCorr(af, T)));
+        F.set(iRK+1, af*((1-beta)*upInterp(af, T) + gamma*hCorr(af, T)));
         
         // Update the flux sum
         totalFlux = F[0];
@@ -195,7 +213,7 @@ adImExStrangAdvection<Type>::fvcDiv
     (
         backwardEuler.fvmDdt(T)
       + fvc::div(totalFlux)
-      + upwindCon.fvmDiv(alpha_*beta_*advFlux, T)
+      + upwindCon.fvmDiv(alpha*beta*advFlux, T)
     );
     TEqn.solve();
     totalFlux += TEqn.flux();
