@@ -54,7 +54,10 @@ adImExStrangAdvection<Type>::adImExStrangAdvection
 :
     convectionScheme<Type>(mesh, advFlux),
     dict_(is),
-    RK_(dict_.lookup("RK_ButcherCoeffs"))
+    RK_(dict_.lookup("RK_ButcherCoeffs")),
+    gammaScale_(readScalar(dict_.lookup("gammaScale"))),
+    gamma1cMax_(readScalar(dict_.lookup("gamma1cMax"))),
+    gammaAdd_(gammaScale_ - gamma1cMax_)
     //alpha_(readScalar(dict_.lookup("alpha"))),
     //beta_(readScalar(dict_.lookup("beta"))),
     //gamma_(readScalar(dict_.lookup("gamma")))
@@ -159,7 +162,8 @@ adImExStrangAdvection<Type>::fvcDiv
     // Calculate alpha, beta and gamma as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
     surfaceScalarField beta  = 1 - 1/max(scalar(1), Co);
-    surfaceScalarField gamma = 6.5/(max(Co,2.5)+scalar(4));
+    //surfaceScalarField gamma = 6.5/(max(Co,2.5)+scalar(4));
+    surfaceScalarField gamma = gammaScale_/(gammaAdd_ + max(Co, gamma1cMax_));
     Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() << nl
          << "alpha goes from " << min(alpha).value() << " to " << max(alpha).value() << nl
          << "beta goes from " << min(beta).value() << " to " << max(beta).value() << nl
@@ -188,7 +192,6 @@ adImExStrangAdvection<Type>::fvcDiv
         // Sub-stage size
         scalar c = 0;
         for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
-        Info << "RK stage " << iRK << " c = " << c << endl;
         
         // Advecting flux at the sub time
         const surfaceScalarField af = (1-c)*advFlux.oldTime() + c*advFlux;

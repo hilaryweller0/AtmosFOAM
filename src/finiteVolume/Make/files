@@ -2,5 +2,8 @@ interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
 
 convectionSchemes/adImExStrangAdvection/adImExStrangAdvections.C
 
+sphericalMeshData/sphericalMeshData.C
+sphericalMeshData/sphericalVector.C
+
 LIB = $(FOAM_USER_LIBBIN)/libfiniteVolumeAtmosFOAM
 

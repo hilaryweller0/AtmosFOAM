@@ -22,7 +22,7 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::functionObjects::scalarTransport
+    Foam::functionObjects::massTransport
 
 Description
     Evolves a passive scalar transport equation.
@@ -42,7 +42,7 @@ Description
 
     Example:
     \verbatim
-        #includeFunc scalarTransport(T, alphal=1, alphat=1)
+        #includeFunc massTransport(T, alphal=1, alphat=1)
     \endverbatim
 
     For incompressible flow the passive scalar may optionally be solved with the
@@ -52,7 +52,7 @@ Description
 
     Example:
     \verbatim
-        #includeFunc scalarTransport(tracer, diffusivity=none)
+        #includeFunc massTransport(tracer, diffusivity=none)
 
     with scheme specification:
         div(phi,tracer)     Gauss interfaceCompression vanLeer 1;
@@ -86,12 +86,12 @@ See also
     Foam::functionObjects::fvMeshFunctionObject
 
 SourceFiles
-    scalarTransport.C
+    massTransport.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef functionObjects_scalarTransport_H
-#define functionObjects_scalarTransport_H
+#ifndef functionObjects_massTransport_H
+#define functionObjects_massTransport_H
 
 #include "fvMeshFunctionObject.H"
 #include "volFields.H"
@@ -104,10 +104,10 @@ namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                       Class scalarTransport Declaration
+                       Class massTransport Declaration
 \*---------------------------------------------------------------------------*/
 
-class scalarTransport
+class massTransport
 :
     public fvMeshFunctionObject
 {
@@ -182,13 +182,13 @@ private:
 public:
 
     //- Runtime type information
-    TypeName("scalarTransport");
+    TypeName("massTransport");
 
 
     // Constructors
 
         //- Construct from Time and dictionary
-        scalarTransport
+        massTransport
         (
             const word& name,
             const Time& runTime,
@@ -196,16 +196,16 @@ public:
         );
 
         //- Disallow default bitwise copy construction
-        scalarTransport(const scalarTransport&) = delete;
+        massTransport(const massTransport&) = delete;
 
 
     //- Destructor
-    virtual ~scalarTransport();
+    virtual ~massTransport();
 
 
     // Member Functions
 
-        //- Read the scalarTransport data
+        //- Read the massTransport data
         virtual bool read(const dictionary&);
 
         //- Return the list of fields required
@@ -217,7 +217,7 @@ public:
             return false;
         }
 
-        //- Calculate the scalarTransport
+        //- Calculate the massTransport
         virtual bool execute();
 
         //- Write the updated scalar field
@@ -227,7 +227,7 @@ public:
     // Member Operators
 
         //- Disallow default bitwise assignment
-        void operator=(const scalarTransport&) = delete;
+        void operator=(const massTransport&) = delete;
 };
 
 

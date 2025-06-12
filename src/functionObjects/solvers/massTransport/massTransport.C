@@ -23,7 +23,7 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "scalarTransport.H"
+#include "massTransport.H"
 #include "surfaceFields.H"
 #include "fvmDdt.H"
 #include "fvcDdt.H"
@@ -53,12 +53,12 @@ namespace Foam
 {
 namespace functionObjects
 {
-    defineTypeNameAndDebug(scalarTransport, 0);
+    defineTypeNameAndDebug(massTransport, 0);
 
     addToRunTimeSelectionTable
     (
         functionObject,
-        scalarTransport,
+        massTransport,
         dictionary
     );
 }
@@ -68,7 +68,7 @@ namespace functionObjects
 template<>
 const char* Foam::NamedEnum
 <
-    Foam::functionObjects::scalarTransport::diffusivityType,
+    Foam::functionObjects::massTransport::diffusivityType,
     3
 >::names[] =
 {
@@ -79,15 +79,15 @@ const char* Foam::NamedEnum
 
 const Foam::NamedEnum
 <
-    Foam::functionObjects::scalarTransport::diffusivityType,
+    Foam::functionObjects::massTransport::diffusivityType,
     3
-> Foam::functionObjects::scalarTransport::diffusivityTypeNames_;
+> Foam::functionObjects::massTransport::diffusivityTypeNames_;
 
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 
 Foam::tmp<Foam::volScalarField>
-Foam::functionObjects::scalarTransport::D() const
+Foam::functionObjects::massTransport::D() const
 {
     const word Dname("D" + fieldName_);
 
@@ -116,7 +116,7 @@ Foam::functionObjects::scalarTransport::D() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-Foam::functionObjects::scalarTransport::scalarTransport
+Foam::functionObjects::massTransport::massTransport
 (
     const word& name,
     const Time& runTime,
@@ -124,7 +124,7 @@ Foam::functionObjects::scalarTransport::scalarTransport
 )
 :
     fvMeshFunctionObject(name, runTime, dict),
-    fieldName_(dict.lookupOrDefault<word>("field", "s")),
+    fieldName_(dict.lookupOrDefault<word>("field", "m")),
     diffusivity_(diffusivityType::none),
     D_(0),
     nCorr_(0),
@@ -168,13 +168,13 @@ Foam::functionObjects::scalarTransport::scalarTransport
 
 // * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
 
-Foam::functionObjects::scalarTransport::~scalarTransport()
+Foam::functionObjects::massTransport::~massTransport()
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-bool Foam::functionObjects::scalarTransport::read(const dictionary& dict)
+bool Foam::functionObjects::massTransport::read(const dictionary& dict)
 {
     fvMeshFunctionObject::read(dict);
 
@@ -199,24 +199,56 @@ bool Foam::functionObjects::scalarTransport::read(const dictionary& dict)
             break;
     }
 
-    dict.readIfPresent("nCorr", nCorr_);
+    nCorr_ = dict.lookupOrDefaultBackwardsCompatible<label>
+    (
+        {"nCorrectors", "nCorr"},
+        0
+    );
 
     return true;
 }
 
 
-Foam::wordList Foam::functionObjects::scalarTransport::fields() const
+Foam::wordList Foam::functionObjects::massTransport::fields() const
 {
     return wordList{phiName_};
 }
 
 
-bool Foam::functionObjects::scalarTransport::execute()
+bool Foam::functionObjects::massTransport::execute()
 {
     Info<< type() << " execute:" << endl;
 
-    const surfaceScalarField& phi =
-        mesh_.lookupObject<surfaceScalarField>(phiName_);
+    // Look up or read phiName
+    Info << "mesh surfaceScalarField objects are " << mesh_.toc<surfaceScalarField>()
+         << endl;
+    
+    tmp<surfaceScalarField> phit;
+    if(mesh_.foundObject<surfaceScalarField>(phiName_))
+    {
+        phit.ref() = mesh_.lookupObjectRef<surfaceScalarField>(phiName_);
+    }
+    else
+    {
+        phit = new surfaceScalarField
+        (
+            IOobject
+            (
+                phiName_,
+                s_.time().startTime().name(),
+                mesh_,
+                IOobject::MUST_READ,
+                IOobject::AUTO_WRITE
+            ),
+            mesh_
+        );
+    }
+    surfaceScalarField& phi = phit.ref();
+    
+    Info << "mesh surfaceScalarField objects are " << mesh_.toc<surfaceScalarField>()
+         << endl;
+//    const surfaceScalarField& phi =
+//        mesh_.lookupObject<surfaceScalarField>(phiName_);
 
     const word divScheme("div(phi," + schemesField_ + ")");
 
@@ -311,7 +343,7 @@ bool Foam::functionObjects::scalarTransport::execute()
 }
 
 
-void Foam::functionObjects::scalarTransport::subCycleMULES()
+void Foam::functionObjects::massTransport::subCycleMULES()
 {
     const dictionary& controls = mesh_.solution().solverDict(fieldName_);
     const label nSubCycles(controls.lookup<label>("nSubCycles"));
@@ -363,10 +395,9 @@ void Foam::functionObjects::scalarTransport::subCycleMULES()
 }
 
 
-void Foam::functionObjects::scalarTransport::solveMULES()
+void Foam::functionObjects::massTransport::solveMULES()
 {
     const dictionary& controls = mesh_.solution().solverDict(fieldName_);
-    const label nCorr(controls.lookup<label>("nCorr"));
     const bool MULESCorr(controls.lookupOrDefault<Switch>("MULESCorr", false));
 
     const MULES::control MULEScontrols(mesh().solution().solverDict(s_.name()));
@@ -383,8 +414,8 @@ void Foam::functionObjects::scalarTransport::solveMULES()
 
     const word divScheme("div(phi," + schemesField_ + ")");
 
-    const surfaceScalarField& phi =
-        mesh_.lookupObject<surfaceScalarField>(phiName_);
+    // Look up phiName
+    const surfaceScalarField& phi = mesh_.lookupObject<surfaceScalarField>(phiName_);
 
     surfaceScalarField sPhi
     (
@@ -398,7 +429,10 @@ void Foam::functionObjects::scalarTransport::solveMULES()
         phi.dimensions()*s_.dimensions()
     );
 
-    const word sScheme(mesh_.schemes().div(divScheme)[1].wordToken());
+    Info << "mesh surfaceScalarField objects are " << mesh_.toc<surfaceScalarField>()
+         << endl;
+
+         const word sScheme(mesh_.schemes().div(divScheme)[1].wordToken());
 
     // If a compressive convection scheme is used
     // the interface normal must be cached
@@ -479,7 +513,7 @@ void Foam::functionObjects::scalarTransport::solveMULES()
         {
             const volScalarField::Internal Co
             (
-                0.5*time_.deltaT()*fvc::surfaceSum(mag(phi))/mesh_.V()
+                (0.5*time_.deltaT())*fvc::surfaceSum(mag(phi))/mesh_.V()
             );
 
             const surfaceScalarField cnBDCoeff
@@ -489,7 +523,7 @@ void Foam::functionObjects::scalarTransport::solveMULES()
                     volScalarField::New
                     (
                         "cnBDCoeff",
-                        1.0 - 1.0/max(Co, 2.0),
+                        max(cnCoeff, 1.0 - 1.0/max(Co, 2.0)),
                         zeroGradientFvPatchField<scalar>::typeName
                     )
                 )
@@ -565,17 +599,8 @@ void Foam::functionObjects::scalarTransport::solveMULES()
         tsPhiCorr0_ = tsPhiUD;
     }
 
-    volScalarField sUD("sUD", s_);
-    volScalarField s0("s0", s_);
-
-    for (int sCorr=0; sCorr<nCorr; sCorr++)
+    for (int sCorr=0; sCorr<nCorr_; sCorr++)
     {
-        // Relax the field to avoid explicit corrector instability
-        s_ = 0.5*s_ + 0.5*s0;
-
-        // Cache the current field for the next iteration
-        s0 = s_;
-
         // Split operator
         tmp<surfaceScalarField> tsPhiUn
         (
@@ -589,10 +614,8 @@ void Foam::functionObjects::scalarTransport::solveMULES()
 
         if (MULESCorr)
         {
-            s_ = sUD;
-            sPhi = tsPhiCorr0_();
-
             tmp<surfaceScalarField> tsPhiCorr(tsPhiUn() - sPhi);
+            volScalarField s0("s0", s_);
 
             MULES::correct
             (
@@ -605,7 +628,16 @@ void Foam::functionObjects::scalarTransport::solveMULES()
                 zeroField()
             );
 
-            sPhi += tsPhiCorr();
+            // Under-relax the correction for all but the 1st corrector
+            if (sCorr == 0)
+            {
+                sPhi += tsPhiCorr();
+            }
+            else
+            {
+                s_ = 0.5*s_ + 0.5*s0;
+                sPhi += 0.5*tsPhiCorr();
+            }
         }
         else
         {
@@ -642,7 +674,7 @@ void Foam::functionObjects::scalarTransport::solveMULES()
 }
 
 
-bool Foam::functionObjects::scalarTransport::write()
+bool Foam::functionObjects::massTransport::write()
 {
     s_.write();
     return true;

@@ -86,6 +86,8 @@ class adImExStrangAdvection
         
         // HO limiter uniform value [0,1] or variable (value <0)
         //const scalar gamma_;
+        // Parameters for setting the HO limiter, gamma
+        const scalar gammaScale_, gamma1cMax_, gammaAdd_;
         
     // Private member functions
     
