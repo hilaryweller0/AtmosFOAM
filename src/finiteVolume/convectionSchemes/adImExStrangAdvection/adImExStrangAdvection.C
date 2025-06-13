@@ -57,7 +57,8 @@ adImExStrangAdvection<Type>::adImExStrangAdvection
     RK_(dict_.lookup("RK_ButcherCoeffs")),
     gammaScale_(readScalar(dict_.lookup("gammaScale"))),
     gamma1cMax_(readScalar(dict_.lookup("gamma1cMax"))),
-    gammaAdd_(gammaScale_ - gamma1cMax_)
+    gammaAdd_(gammaScale_ - gamma1cMax_),
+    rhoName_(dict_.lookupOrDefault<word>("density", "none"))
     //alpha_(readScalar(dict_.lookup("alpha"))),
     //beta_(readScalar(dict_.lookup("beta"))),
     //gamma_(readScalar(dict_.lookup("gamma")))
@@ -183,45 +184,91 @@ adImExStrangAdvection<Type>::fvcDiv
     // Accumulate the total flux, starting from the old time step terms
     surfaceScalarField totalFlux = F[0];
     
-    // Advance T by the old time step low order flux
-    T -= dt*fvc::div(F[0]);
-
-    // RK advection
-    for(int iRK = 0; iRK < RK_.n(); iRK++)
+    if (rhoName_ == "none")
     {
-        // Sub-stage size
-        scalar c = 0;
-        for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
-        
-        // Advecting flux at the sub time
-        const surfaceScalarField af = (1-c)*advFlux.oldTime() + c*advFlux;
-        
-        // New sub stage flux
-        F.set(iRK+1, af*((1-beta)*upInterp(af, T) + gamma*hCorr(af, T)));
-        
-        // Update the flux sum
-        totalFlux = F[0];
-        for(int j = 0; j <= iRK; j++)
+        // Advance T by the old time step low order flux
+        T -= dt*fvc::div(F[0]);
+
+        // RK advection
+        for(int iRK = 0; iRK < RK_.n(); iRK++)
         {
-            totalFlux += RK_[iRK][j]*F[j+1];
+            // Sub-stage size
+            scalar c = 0;
+            for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
+            
+            // Advecting flux at the sub time
+            const surfaceScalarField af = (1-c)*advFlux.oldTime() + c*advFlux;
+            
+            // New sub stage flux
+            F.set(iRK+1, af*((1-beta)*upInterp(af, T) + gamma*hCorr(af, T)));
+            
+            // Update the flux sum
+            totalFlux = F[0];
+            for(int j = 0; j <= iRK; j++)
+            {
+                totalFlux += RK_[iRK][j]*F[j+1];
+            }
+        
+            // Update T
+            T = T.oldTime() - dt*fvc::div(totalFlux);
         }
-    
-        // Update T
-        T = T.oldTime() - dt*fvc::div(totalFlux);
+        
+        // Final implicit stage
+        gaussConvectionScheme<Type> upwindCon(mesh, advFlux, upwindScheme(advFlux));
+        fvMatrix<Type> TEqn
+        (
+            backwardEuler.fvmDdt(T)
+          + fvc::div(totalFlux)
+          + upwindCon.fvmDiv(alpha*beta*advFlux, T)
+        );
+        TEqn.solve();
+        totalFlux += TEqn.flux();
+    }
+    else
+    {
+        const volScalarField& rho = mesh.lookupObjectRef<volScalarField>(rhoName_);
+        VolField<Type> rhoT = rho.oldTime()*T.oldTime();
+        
+        // Advance rhoT by the old time step low order flux and keep T consistent
+        rhoT -= dt*fvc::div(F[0]);
+        T = rhoT/rho.oldTime();
+
+        // RK advection
+        for(int iRK = 0; iRK < RK_.n(); iRK++)
+        {
+            // Sub-stage size
+            scalar c = 0;
+            for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
+            
+            // Advecting flux at the sub time
+            const surfaceScalarField af = (1-c)*advFlux.oldTime() + c*advFlux;
+            
+            // New sub stage flux
+            F.set(iRK+1, af*((1-beta)*upInterp(af, T) + gamma*hCorr(af, T)));
+            
+            // Update the flux sum
+            totalFlux = F[0];
+            for(int j = 0; j <= iRK; j++)
+            {
+                totalFlux += RK_[iRK][j]*F[j+1];
+            }
+        
+            // Update rhoT
+            rhoT = rho.oldTime()*T.oldTime() - dt*fvc::div(totalFlux);
+        }
+        
+        // Final implicit stage
+        gaussConvectionScheme<Type> upwindCon(mesh, advFlux,upwindScheme(advFlux));
+        fvMatrix<Type> TEqn
+        (
+            backwardEuler.fvmDdt(rho,T)
+          + fvc::div(totalFlux)
+          + upwindCon.fvmDiv(alpha*beta*advFlux, T)
+        );
+        TEqn.solve();
+        totalFlux += TEqn.flux();
     }
     
-    // Final implicit stage
-    gaussConvectionScheme<Type> upwindCon(mesh, advFlux, upwindScheme(advFlux));
-    fvMatrix<Type> TEqn
-    (
-        backwardEuler.fvmDdt(T)
-      + fvc::div(totalFlux)
-      + upwindCon.fvmDiv(alpha*beta*advFlux, T)
-    );
-    TEqn.solve();
-    totalFlux += TEqn.flux();
-
-
     // Calculate the implied divergence and return
     return tmp<VolField<Type>>
     (

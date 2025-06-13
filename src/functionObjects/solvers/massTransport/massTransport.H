@@ -25,7 +25,7 @@ Class
     Foam::functionObjects::massTransport
 
 Description
-    Evolves a passive scalar transport equation.
+    Evolves a scalar transport equation for density or a density weighted field.
 
     - To specify the field name set the \c field entry
     - To employ the same numerical schemes as another field set
@@ -40,45 +40,36 @@ Description
           D = alphal*nu + alphat*nut
       \endverbatim
 
-    Example:
+    Example for density:
     \verbatim
-        #includeFunc massTransport(T, alphal=1, alphat=1)
+        #includeFunc massTransport
+        (
+            rho,
+            advectingFlux=phiv,
+            scalarFlux=phi // save phi= rho*phiv as phi in the database
+        )
+    \endverbatim
+    Example for a density weighted field:
+    \verbatim
+        #includeFunc massTransport
+        (
+            s,
+            advectingFlux=phi,
+            diffusivity=none,
+            density=rho
+        )
     \endverbatim
 
-    For incompressible flow the passive scalar may optionally be solved with the
-    MULES limiter and sub-cycling or semi-implicit in order to maintain
-    boundedness, particularly if a compressive, PLIC or MPLIC convection
-    scheme is used.
-
-    Example:
-    \verbatim
-        #includeFunc massTransport(tracer, diffusivity=none)
-
     with scheme specification:
-        div(phi,tracer)     Gauss interfaceCompression vanLeer 1;
+        div(phiv,rho)     Gauss linear;
 
     and solver specification:
         tracer
         {
-            nCorr      1;
-            nSubCycles 3;
-
-            MULESCorr       no;
-            nLimiterIter    5;
-            applyPrevCorr   yes;
-
             solver          smoothSolver;
             smoother        symGaussSeidel;
             tolerance       1e-8;
             relTol          0;
-
-            diffusivity
-            {
-                solver          smoothSolver;
-                smoother        symGaussSeidel;
-                tolerance       1e-8;
-                relTol          0;
-            }
         }
     \endverbatim
 
@@ -132,10 +123,13 @@ private:
         //- Name of field to process
         word fieldName_;
 
-        //- Name of flux field (optional)
+        //- Name of advecting flux field (optional, defaults to phi)
         word phiName_;
 
-        //- Name of density field (optional)
+        //- Name of calculated scalar flux field (optional, defaults to none)
+        word fluxName_;
+
+        //- Name of density field (optional, defaults to none)
         word rhoName_;
 
         //- The type of diffusivity
@@ -143,6 +137,9 @@ private:
 
         //- Constant diffusivity coefficient (optional)
         scalar D_;
+        
+        //- Number of outer corrector iterations (optional)
+        int nCorr_;
 
         //- Laminar diffusivity coefficient (optional)
         scalar alphal_;
@@ -150,33 +147,17 @@ private:
         //- Turbulent diffusivity coefficient (optional)
         scalar alphat_;
 
-        //- Number of corrector iterations (optional)
-        int nCorr_;
-
         //- Name of field whose schemes are used (optional)
         word schemesField_;
 
         //- The scalar field
         volScalarField s_;
 
-        //- Switch for MULES limited solution
-        bool MULES_;
-
-        //- Stabilisation for normalisation of the interface normal
-        //  needed if a compressive convection scheme is used
-        const dimensionedScalar deltaN_;
-
-        //- MULES Correction
-        tmp<surfaceScalarField> tsPhiCorr0_;
-
 
     // Private Member Functions
 
         //- Return the diffusivity field
         tmp<volScalarField> D() const;
-
-        void subCycleMULES();
-        void solveMULES();
 
 
 public:

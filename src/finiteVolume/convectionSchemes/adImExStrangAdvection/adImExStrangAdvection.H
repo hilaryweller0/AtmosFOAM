@@ -89,6 +89,9 @@ class adImExStrangAdvection
         // Parameters for setting the HO limiter, gamma
         const scalar gammaScale_, gamma1cMax_, gammaAdd_;
         
+        // Name of the density field, or "none"
+        const word rhoName_;
+        
     // Private member functions
     
         // The upwind scheme
