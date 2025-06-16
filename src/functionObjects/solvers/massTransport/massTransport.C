@@ -195,19 +195,7 @@ bool Foam::functionObjects::massTransport::execute()
 {
     Info<< type() << " execute:" << endl;
 
-    Info << "1. Checking for existance of phi in the db" << endl;
-    Info << mesh_.foundObject<surfaceScalarField>("phi") << endl;
-    Info << "Checking for deallocation of phi" << endl;
-    const surfaceScalarField& phiTmp = lookupObject<surfaceScalarField>("phi");
-    Info << "Referenced " << phiTmp.name() << endl;
-
     // Look up or read the advectingFlux, phiv
-    Info << "Solving for " << fieldName_
-         << " mesh surfaceScalarField objects are "
-         << mesh_.toc<surfaceScalarField>() << nl
-         << "mesh volScalarField objects are " << mesh_.toc<volScalarField>()
-         << endl;
-    
     tmp<surfaceScalarField> phit;
     if(mesh_.foundObject<surfaceScalarField>(phiName_))
     {
@@ -234,8 +222,6 @@ bool Foam::functionObjects::massTransport::execute()
     }
     surfaceScalarField& phi = phit.ref();
     
-    Info << "mesh surfaceScalarField objects are " << mesh_.toc<surfaceScalarField>() << endl;
-
     const word divScheme("div(" + phiName_ + "," + schemesField_ + ")");
 
     // Set under-relaxation coeff
@@ -287,7 +273,6 @@ bool Foam::functionObjects::massTransport::execute()
         }
         const surfaceScalarField& fluxTmp 
             = mesh_.lookupObject<surfaceScalarField>(fluxName_);
-        Info << fluxName_ << " recalculated" << endl;
     }
     else if (phi.dimensions() == dimMass/dimTime)
     {
@@ -325,13 +310,6 @@ bool Foam::functionObjects::massTransport::execute()
             << "Dimensions should be " << dimMass/dimTime << " or "
             << dimVolume/dimTime << exit(FatalError);
     }
-
-    Info<< endl;
-    Info << "Checking for existance of phi in the db" << endl;
-    mesh_.foundObject<surfaceScalarField>("phi");
-    Info << "Checking for deallocation of phi" << endl;
-    mesh_.lookupObject<surfaceScalarField>("phi");
-    Info << "Continuing" << endl;
 
     return true;
 }
