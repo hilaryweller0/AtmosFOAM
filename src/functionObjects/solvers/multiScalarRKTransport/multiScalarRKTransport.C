@@ -140,17 +140,10 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     const dimensionedScalar& dt = time_.deltaT();
 
     // Look up or read the advectingFlux, phiv
-    tmp<surfaceScalarField> phivt;
-    if(mesh_.foundObject<surfaceScalarField>(phivName_))
-    {
-        Info << "Looking up " << phivName_ << endl;
-        phivt = &mesh_.lookupObjectRef<surfaceScalarField>(phivName_);
-        Info << "Done" << endl;
-    }
-    else
-    {
-        Info << "Reading " << phivName_ << endl;
-        phivt = new surfaceScalarField
+    const surfaceScalarField phiv 
+      = mesh_.foundObject<surfaceScalarField>(phivName_) ?
+        mesh_.lookupObjectRef<surfaceScalarField>(phivName_) :
+        surfaceScalarField
         (
             IOobject
             (
@@ -162,18 +155,15 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             ),
             mesh_
         );
-    }
-    surfaceScalarField& phiv = phivt.ref();
     
     // Initialise the local max interpolation to find the Courant number
     localMax<scalar> maxInterp(mesh_);
 
     // Calculate the maximum Courant number on faces
-    volScalarField Co0 = CourantNo(phiv.oldTime(), dt);
-    volScalarField Co1 = CourantNo(phiv, dt);
     surfaceScalarField Co = max
     (
-        maxInterp.interpolate(Co0), maxInterp.interpolate(Co1)
+        maxInterp.interpolate(CourantNo(phiv.oldTime(), dt)),
+        maxInterp.interpolate(CourantNo(phiv, dt))
     );
     // Calculate alpha, beta and gamma as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
@@ -198,16 +188,19 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     surfaceScalarField phi = (1-alpha)*beta*phiv.oldTime();
     for(label is = 0; is < nFields_; is++)
     {
+        // Calculate the first low-order flux
+        F[0].set(is, phi*upInterp(phi,s_[is]));
+
+        // Change the flux for following, non-density tracers
+        if (is == 0 && massFluxName_ != "none")
+        {
+            phi *= upInterp(phi,s_[0]);
+        }
+    }
+    for(label is = 0; is < nFields_; is++)
+    {
         // Is this field density weighted?
         const bool densityWeighted = is > 0 && massFluxName_ != "none";
-        
-        // Calculate the first low-order flux
-        F[0].set
-        (
-            is,
-            phi*upInterp(phi,s_[is])
-        );
-        
         // Advance s by the low-order flux
         if (!densityWeighted)
         {
@@ -217,13 +210,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             s_[is] = (s_[is].oldTime()*s_[0].oldTime() - dt*fvc::div(F[0][is]))
                      /s_[0];
-        }
-        
-        // Change the flux for following, non-density tracers
-        if (is == 0 && massFluxName_ != "none")
-        {
-            Info << "Multiplying phi by density" << endl;
-            phi *= upInterp(phi,s_[0]);
         }
     }
     
@@ -238,24 +224,47 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         phi.dimensions().reset(phiv.dimensions());
         phi = (1-c)*phiv.oldTime() + c*phiv;
 
-        // This RK stage for each trancer
+        // The flux for eac RK stage for each trancer
         for(int is = 0; is < nFields_; is++)
         {
             // Is this field density weighted?
             const bool densityWeighted = is > 0 && massFluxName_ != "none";
         
-            // Update the scalar for each stage
+            // Calculate the scalar flux for this stage
             if (!densityWeighted)
             {
-                // Calculate the scalar flux for this stage
                 F[iRK+1].set
                 (
                     is,
-                    phi*((1-beta)*upInterp(phi,s_[is])
-                + gamma*hCorr(phi, s_[is]))
+                    phi*
+                    (
+                        (1-beta)*upInterp(phi,s_[is])
+                      + gamma*hCorr(phi, s_[is])
+                    )
                 );
+            }
+            else
+            {
+                F[iRK+1].set
+                (
+                    is,
+                    phi*
+                    (
+                        (1-beta)*upInterp(phi,s_[0]*s_[is])
+                      + gamma*hCorr(phi, s_[0]*s_[is])
+                    )
+                );
+            }
+        }
+        // This RK stage for each trancer
+        for(int is = 0; is < nFields_; is++)
+        {
+            // Is this field density weighted?
+            const bool densityWeighted = is > 0 && massFluxName_ != "none";
 
-                // Update the scalar
+            //Update the scalar for each stage
+            if (!densityWeighted)
+            {
                 s_[is] = s_[is].oldTime() - dt*fvc::div(F[0][is]);
                 for(int j = 0; j <= iRK; j++)
                 {
@@ -264,15 +273,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
             else
             {
-                // Calculate the scalar flux for this stage
-                F[iRK+1].set
-                (
-                    is,
-                    phi*((1-beta)*upInterp(phi,s_[0]*s_[is])
-                  + gamma*hCorr(phi, s_[0]*s_[is]))
-                );
-
-                // Update the density weighted scalar
                 volScalarField rhos = s_[is].oldTime()*s_[0].oldTime()
                                     - dt*fvc::div(F[0][is]);
                 for(int j = 0; j <= iRK; j++)
@@ -283,7 +283,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
         }
     }
-    
+
     // Accumulate the total flux for each scalar
     PtrList<surfaceScalarField> totalFlux(nFields_);
     for(int is = 0; is < nFields_; is++)
@@ -299,7 +299,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     phi.dimensions().reset(phiv.dimensions());
     phi = alpha*beta*phiv;
     fv::EulerDdtScheme<scalar> EulerDdt(mesh_);
-    fv::gaussConvectionScheme<scalar> upwindCon(mesh_, phi, upwindScheme(phi));    
+    fv::gaussConvectionScheme<scalar> upwindCon(mesh_, phi, upwindScheme(phi));
     for(label is = 0; is < nFields_; is++)
     {
         // Is this field density weighted?
@@ -331,8 +331,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             phi *= upInterp(phi,s_[0]);
         }
-        }
-    
+    }
+
     return true;
 }
 
