@@ -38,6 +38,7 @@ License
 #include "CourantNoFunc.H"
 
 #include "addToRunTimeSelectionTable.H"
+#include "fvcFluxLimit.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -74,12 +75,14 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
     massFluxName_(dict.lookup("massFlux")),
     RK_(dict.lookup("RK_ButcherCoeffs")),
     gammaCoeffs_(dict.lookup("gammaCoeffs")),
-    correctionSchemeName_(dict.lookup("correctionScheme"))
+    correctionSchemeName_(dict.lookup("correctionScheme")),
+    FCTiter_(dict.lookup("FCTiters"))
 {
-    if (nFields_ != fieldNames_.size())
+    if (nFields_ != fieldNames_.size() || nFields_ != FCTiter_.size())
     {
         FatalErrorIn("multiScalarRKTransport::multiScalarRKTransport")
             << "nFields = " << nFields_ << " but fields are " << fieldNames_
+            << " and FCTiters are " << FCTiter_
             << exit(FatalError);
     }
     
@@ -331,8 +334,48 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             phi *= upInterp(phi,s_[0]);
         }
-    }
 
+        // Apply FCT if needed
+        if (FCTiter_[is] > 0)
+        {
+            surfaceScalarField fluxCorr = totalFlux[is];
+            
+            // Find the bounded solution and the bounded flux
+            if (!densityWeighted)
+            {
+                const surfaceScalarField phi0 = (1-beta)*phiv.oldTime();
+                const surfaceScalarField phi1 = beta*phiv.oldTime();
+                
+                sEqn = fvScalarMatrix
+                (
+                    EulerDdt.fvmDdt(s_[is])
+                  + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
+                  + upwindCon.fvmDiv(phi1, s_[is])
+                );
+                sEqn.solve();
+                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+            }
+            else
+            {
+                const surfaceScalarField phi0
+                    = (1-beta)*phiv.oldTime()*upInterp(phiv.oldTime(),s_[0].oldTime());
+                const surfaceScalarField phi1
+                    = beta*phiv.oldTime()*upInterp(phiv.oldTime(), s_[0]);
+                
+                sEqn = fvScalarMatrix
+                (
+                    EulerDdt.fvmDdt(s_[0], s_[is])
+                  + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
+                  + upwindCon.fvmDiv(phi1, s_[is])
+                );
+                sEqn.solve();
+                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+            }
+            
+            //fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+        }
+    }
+    
     return true;
 }
 

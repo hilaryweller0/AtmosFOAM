@@ -1,6 +1,9 @@
 interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
+interpolation/surfaceInterpolation/localMinMin/localMinMin.C
 
 convectionSchemes/adImExStrangAdvection/adImExStrangAdvections.C
+
+convectionSchemes/fluxCorrectedTransport/fvcLocalMinMax.C
 
 sphericalMeshData/sphericalMeshData.C
 sphericalMeshData/sphericalVector.C

@@ -5,4 +5,5 @@ EXE_INC = \
 EXE_LIBS = \
     -L$(FOAM_USER_LIBBIN) \
     -lsolverFunctionObjects2 \
+    -lfiniteVolumeAtmosFOAM \
     -lfiniteVolume

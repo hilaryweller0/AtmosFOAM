@@ -22,4 +22,4 @@ LIB_LIBS = \
     -lmeshTools \
     -lfvModels \
     -lfvConstraints \
-    -lsolverFunctionObjects2
+    -lfiniteVolumeAtmosFOAM

@@ -124,6 +124,9 @@ private:
         
         //- Name of the high-order correction scheme
         const word correctionSchemeName_;
+        
+        //- How many FCT iterations to apply for each field (0 if no FCT)
+        const labelList FCTiter_;
 
     // Private member functions
     
