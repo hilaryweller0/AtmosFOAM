@@ -372,7 +372,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
             }
             
-            //fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+            fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
         }
     }
     

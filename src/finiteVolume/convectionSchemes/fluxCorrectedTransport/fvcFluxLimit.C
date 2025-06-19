@@ -52,6 +52,7 @@ void fluxLimit
 )
 {
     const fvMesh& mesh = fluxCorr.mesh();
+    const volScalarField& T0 = Td.oldTime();
     
     // Schemes needed
     Foam::localMax<scalar> maxInterp(mesh);
@@ -60,8 +61,8 @@ void fluxLimit
     // Where can we use T from the old time?
     
     // Local extrema
-    volScalarField Tmin = min(Td, Td.oldTime());
-    volScalarField Tmax = max(Td, Td.oldTime());
+    volScalarField Tmin = min(Td, T0);
+    volScalarField Tmax = max(Td, T0);
     surfaceScalarField Tfmax = maxInterp.interpolate(Tmax);
     surfaceScalarField Tfmin = minInterp.interpolate(Tmin);
     Tmax = fvc::localMax(Tfmax);
@@ -85,7 +86,7 @@ void fluxLimit
     surfaceScalarField limitedCorr = fluxCorr;
     for(int iter = 0; iter < nIter; iter++)
     {
-        if (iter == 0)
+        if (iter > 0)
         {
             limitedCorr = fluxCorr - limitedCorr;
         }
@@ -94,6 +95,7 @@ void fluxLimit
         volScalarField Qm = Td - Tmin;
 
         fluxLimitFromQ(limitedCorr, Qp, Qm, dt);
+
         Td -= dt*fvc::div(limitedCorr);
     }
 }
