@@ -53,13 +53,13 @@ void fluxLimit
 {
     const fvMesh& mesh = fluxCorr.mesh();
     const volScalarField& T0 = Td.oldTime();
-    
+
     // Schemes needed
     Foam::localMax<scalar> maxInterp(mesh);
     Foam::localMinMin<scalar> minInterp(mesh);
 
     // Where can we use T from the old time?
-    
+
     // Local extrema
     volScalarField Tmin = min(Td, T0);
     volScalarField Tmax = max(Td, T0);
@@ -110,11 +110,11 @@ void fluxLimitFromQ
 )
 {
     const fvMesh& mesh = fluxCorr.mesh();
-    
+
     // Fluxes into and out of each cell
     volScalarField Pp = dt*fvc::surfaceIntegrateIn(fluxCorr);
     volScalarField Pm = dt*fvc::surfaceIntegrateOut(fluxCorr);
-    
+
     // Ratios
     dimensionedScalar Psmall("Psmall", Pp.dimensions(), SMALL);
     volScalarField Rp = min(1., Qp/max(Pp, Psmall));
@@ -124,7 +124,7 @@ void fluxLimitFromQ
         if (mag(Pp[cellI]) < SMALL) Rp[cellI] = 0;
         if (mag(Pm[cellI]) < SMALL) Rm[cellI] = 0;
     }
-    
+
     // Up and downwind interpolation schemes
     upwind<scalar> up(mesh, mesh.magSf());
     downwind<scalar> down(mesh, mesh.magSf());
@@ -134,7 +134,7 @@ void fluxLimitFromQ
     surfaceScalarField RpNei = down.interpolate(Rp);
     surfaceScalarField RmOwn = up.interpolate(Rm);
     surfaceScalarField RmNei = down.interpolate(Rm);
-    
+
     fluxCorr *= 0.5*(1+sign(fluxCorr))*min(RpNei, RmOwn)
               + 0.5*(1-sign(fluxCorr))*min(RpOwn, RmNei);
 }

@@ -76,7 +76,15 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
     RK_(dict.lookup("RK_ButcherCoeffs")),
     gammaCoeffs_(dict.lookup("gammaCoeffs")),
     correctionSchemeName_(dict.lookup("correctionScheme")),
-    FCTiter_(dict.lookup("FCTiters"))
+    FCTiter_(dict.lookup("FCTiters")),
+    FCTlimits_
+    (
+        dict.lookupOrDefault<scalarListList>
+        (
+            "FCTlimits",
+            scalarListList(nFields_)
+        )
+    )
 {
     if (nFields_ != fieldNames_.size() || nFields_ != FCTiter_.size())
     {
@@ -85,7 +93,7 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
             << " and FCTiters are " << FCTiter_
             << exit(FatalError);
     }
-    
+
     read(dict);
 }
 
@@ -124,7 +132,7 @@ bool Foam::functionObjects::multiScalarRKTransport::read(const dictionary& dict)
         s_[is].correctBoundaryConditions();
         s_[is].oldTime();
     }
-    
+
     return true;
 }
 
@@ -143,7 +151,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     const dimensionedScalar& dt = time_.deltaT();
 
     // Look up or read the advectingFlux, phiv
-    const surfaceScalarField phiv 
+    const surfaceScalarField phiv
       = mesh_.foundObject<surfaceScalarField>(phivName_) ?
         mesh_.lookupObjectRef<surfaceScalarField>(phivName_) :
         surfaceScalarField
@@ -158,7 +166,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             ),
             mesh_
         );
-    
+
     // Initialise the local max interpolation to find the Courant number
     localMax<scalar> maxInterp(mesh_);
 
@@ -171,12 +179,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     // Calculate alpha, beta and gamma as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
     surfaceScalarField beta  = 1 - 1/max(scalar(1), Co);
-    surfaceScalarField gamma = gammaCoeffs_[1]
-                /(gammaCoeffs_[1]-gammaCoeffs_[0] + max(Co, gammaCoeffs_[0]));
+    surfaceScalarField gamma = 1/
+                (1 + gammaCoeffs_[1]*max(Co-gammaCoeffs_[0], scalar(0)));
     Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() << nl
          << "alpha goes from " << min(alpha).value() << " to " << max(alpha).value() << nl
          << "beta goes from " << min(beta).value() << " to " << max(beta).value() << nl
-         << "gamma goes from " << min(gamma).value() << " to " << max(gamma).value() 
+         << "gamma goes from " << min(gamma).value() << " to " << max(gamma).value()
          << endl;
 
     // Total fluxes for the RK stages for all tracers
@@ -185,7 +193,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     {
         F.set(iRK, new PtrList<surfaceScalarField>(nFields_));
     }
-    
+
     // First Strang low-order update, before the RK stages, for all fields
     // First, the advecting flux is not density weighted
     surfaceScalarField phi = (1-alpha)*beta*phiv.oldTime();
@@ -215,14 +223,14 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                      /s_[0];
         }
     }
-    
+
     // Explicit RK advection stages
     for(int iRK = 0; iRK < RK_.n(); iRK++)
     {
         // Sub-stage size
         scalar c = 0;
         for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
-        
+
         // Advecting flux at the sub time
         phi.dimensions().reset(phiv.dimensions());
         phi = (1-c)*phiv.oldTime() + c*phiv;
@@ -232,7 +240,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             // Is this field density weighted?
             const bool densityWeighted = is > 0 && massFluxName_ != "none";
-        
+
             // Calculate the scalar flux for this stage
             if (!densityWeighted)
             {
@@ -307,14 +315,14 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     {
         // Is this field density weighted?
         const bool densityWeighted = is > 0 && massFluxName_ != "none";
-        
+
         // Create the matrix equation
         fvScalarMatrix sEqn
         (
             upwindCon.fvmDiv(phi, s_[is])
           + fvc::div(totalFlux[is])
         );
-        
+
         // Add the rate of change term
         if (!densityWeighted)
         {
@@ -324,11 +332,11 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             sEqn += fvScalarMatrix(EulerDdt.fvmDdt(s_[0], s_[is]));
         }
-        
+
         // Solve and update the total flux
         sEqn.solve();
         totalFlux[is] += sEqn.flux();
-        
+
         // Change the flux for following, non-density tracers
         if (is == 0 && massFluxName_ != "none")
         {
@@ -339,13 +347,13 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         if (FCTiter_[is] > 0)
         {
             surfaceScalarField fluxCorr = totalFlux[is];
-            
+
             // Find the bounded solution and the bounded flux
             if (!densityWeighted)
             {
                 const surfaceScalarField phi0 = (1-beta)*phiv.oldTime();
                 const surfaceScalarField phi1 = beta*phiv.oldTime();
-                
+
                 sEqn = fvScalarMatrix
                 (
                     EulerDdt.fvmDdt(s_[is])
@@ -357,11 +365,39 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
             else
             {
-                const surfaceScalarField phi0
-                    = (1-beta)*phiv.oldTime()*upInterp(phiv.oldTime(),s_[0].oldTime());
-                const surfaceScalarField phi1
-                    = beta*phiv.oldTime()*upInterp(phiv.oldTime(), s_[0]);
-                
+                volScalarField betaC = max
+                (
+                    1- s_[0].oldTime()/max
+                    (
+                        dt*fvc::surfaceIntegrateOut(totalFlux[0]),
+                        dimensionedScalar(s_[0].dimensions(), SMALL)
+                    ),
+                    scalar(0)
+                );
+                beta = maxInterp.interpolate(betaC);
+                Info << "New beta goes from " << min(beta).value() << " to "
+                     << max(beta).value()
+
+                surfaceScalarField phi0 = (1-beta)*totalFlux[0];
+                surfaceScalarField phi1 = totalFlux[0] - phi0;
+
+/*                s_[is] =
+                (
+                        s_[0].oldTime()*s_[is].oldTime()
+                    - dt*fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
+                )/s_[0];
+                volScalarField Td0("Td0", s_[is]);
+                Td0.write();
+
+                volScalarField rhoMid
+                (
+                    "rhoMid",
+                    s_[0].oldTime() //- dt*fvc::div(phi0)
+                                - dt*fvc::surfaceIntegrateOut(phi0)
+                                //+ dt*fvc::surfaceIntegrateIn(phi0)
+                );
+                rhoMid.write();
+*/
                 sEqn = fvScalarMatrix
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
@@ -369,13 +405,37 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
                 sEqn.solve();
-                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+
+                //Info << "Writing out low order solution" << endl;
+                //volScalarField Td(s_[is].name()+"d", s_[is]);
+                //Td.write();
+
+                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime())
+                          + sEqn.flux();
             }
-            
-            fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+
+            if (FCTlimits_[is].size() == 0)
+            {
+                fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+            }
+            else if (FCTlimits_[is].size() == 1)
+            {
+                fvc::fluxLimit
+                (
+                    s_[is], fluxCorr, FCTlimits_[is][0], GREAT, dt, FCTiter_[is]
+                );
+            }
+            else
+            {
+                fvc::fluxLimit
+                (
+                    s_[is], fluxCorr, FCTlimits_[is][0], FCTlimits_[is][1],
+                    dt, FCTiter_[is]
+                );
+            }
         }
     }
-    
+
     return true;
 }
 

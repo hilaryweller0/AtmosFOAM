@@ -103,7 +103,7 @@ private:
 
         //- Number of fields being advected
         const int nFields_;
-        
+
         //- Names of fields to process
         wordList fieldNames_;
 
@@ -118,18 +118,21 @@ private:
 
         //- Butcher tableau for explicit scheme as a square matrix
         const scalarSquareMatrix RK_;
-        
+
         //- Coefficients for calculating gamma from the Courant number
         const FixedList<scalar,2> gammaCoeffs_;
-        
+
         //- Name of the high-order correction scheme
         const word correctionSchemeName_;
-        
+
         //- How many FCT iterations to apply for each field (0 if no FCT)
         const labelList FCTiter_;
 
+        //- (Optional) min and max values for each tracer
+        scalarListList FCTlimits_;
+
     // Private member functions
-    
+
         // The upwind scheme
         tmp<surfaceInterpolationScheme<scalar>> upwindScheme
         (
@@ -150,7 +153,7 @@ private:
         {
             return upwindScheme(flux)->interpolate(vf);
         }
-    
+
         // The correction scheme
         tmp<surfaceInterpolationScheme<scalar>> corrScheme
         (
@@ -163,7 +166,7 @@ private:
                 surfaceInterpolationScheme<scalar>::New(mesh_, flux, is)
             );
         };
-        
+
         // The high-order correction
         tmp<SurfaceField<scalar>> hCorr
         (
