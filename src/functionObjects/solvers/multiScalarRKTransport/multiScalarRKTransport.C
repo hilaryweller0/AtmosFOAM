@@ -381,23 +381,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 surfaceScalarField phi0 = (1-beta)*totalFlux[0];
                 surfaceScalarField phi1 = totalFlux[0] - phi0;
 
-/*                s_[is] =
-                (
-                        s_[0].oldTime()*s_[is].oldTime()
-                    - dt*fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
-                )/s_[0];
-                volScalarField Td0("Td0", s_[is]);
-                Td0.write();
-
-                volScalarField rhoMid
-                (
-                    "rhoMid",
-                    s_[0].oldTime() //- dt*fvc::div(phi0)
-                                - dt*fvc::surfaceIntegrateOut(phi0)
-                                //+ dt*fvc::surfaceIntegrateIn(phi0)
-                );
-                rhoMid.write();
-*/
                 sEqn = fvScalarMatrix
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
@@ -405,10 +388,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
                 sEqn.solve();
-
-                //Info << "Writing out low order solution" << endl;
-                //volScalarField Td(s_[is].name()+"d", s_[is]);
-                //Td.write();
 
                 fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime())
                           + sEqn.flux();

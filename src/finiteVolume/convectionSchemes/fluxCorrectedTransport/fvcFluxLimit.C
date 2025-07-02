@@ -125,7 +125,7 @@ void fluxLimitFromQ
         if (mag(Pm[cellI]) < SMALL) Rm[cellI] = 0;
     }
 
-    // Up and downwind interpolation schemes
+    // Up and downwind interpolation schemes based on mesh orientation
     upwind<scalar> up(mesh, mesh.magSf());
     downwind<scalar> down(mesh, mesh.magSf());
 
