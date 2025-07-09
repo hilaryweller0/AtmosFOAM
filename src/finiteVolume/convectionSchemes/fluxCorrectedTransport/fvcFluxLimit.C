@@ -31,6 +31,8 @@ License
 #include "fvcLocalMinMax.H"
 #include "upwind.H"
 #include "downwind.H"
+//#include "uncorrectedSnGrad.H"
+//#include "gaussGrad.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -83,6 +85,11 @@ void fluxLimit
     const int nIter
 )
 {
+    // Gradient schemes to check for diffusive correction special cases
+    //const fvMesh& mesh = Td.mesh();
+    //fv::uncorrectedSnGrad<scalar> snGrad(mesh);
+    //fv::gaussGrad<scalar> gGrad(mesh);
+
     surfaceScalarField limitedCorr = fluxCorr;
     for(int iter = 0; iter < nIter; iter++)
     {
@@ -93,6 +100,24 @@ void fluxLimit
         // Amount each cell can rise or fall by
         volScalarField Qp = Tmax - Td;
         volScalarField Qm = Td - Tmin;
+
+        // Check for diffusive (rather than anti-diffusive) corrections
+        // (not used as it makes the results noisy)
+        /*surfaceScalarField gradnT = snGrad.snGrad(Td);
+        volVectorField gradT = gGrad.grad(Td);
+        forAll(limitedCorr, faceI)
+        {
+            scalar& A = limitedCorr[faceI];
+            label own = mesh.owner()[faceI];
+            label nei = mesh.neighbour()[faceI];
+            scalar gradTo = gradT[own] & mesh.Sf()[faceI];
+            scalar gradTn = gradT[nei] & mesh.Sf()[faceI];
+
+            if (A*gradnT[faceI] < 0 && (A*gradTo < 0 || A*gradTn < 0))
+            {
+                //A = 0;
+            }
+        }*/
 
         fluxLimitFromQ(limitedCorr, Qp, Qm, dt);
 

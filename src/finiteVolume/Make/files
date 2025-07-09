@@ -1,4 +1,5 @@
 interpolation/surfaceInterpolation/cubicUpwind/cubicUpwind.C
+interpolation/surfaceInterpolation/quinticUpwind/quinticUpwind.C
 interpolation/surfaceInterpolation/localMinMin/localMinMin.C
 
 convectionSchemes/adImExStrangAdvection/adImExStrangAdvections.C

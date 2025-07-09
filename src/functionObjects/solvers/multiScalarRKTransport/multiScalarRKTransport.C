@@ -320,7 +320,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         fvScalarMatrix sEqn
         (
             upwindCon.fvmDiv(phi, s_[is])
-          + fvc::div(totalFlux[is])
+        + fvc::div(totalFlux[is])
         );
 
         // Add the rate of change term
@@ -336,7 +336,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         // Solve and update the total flux
         sEqn.solve();
         totalFlux[is] += sEqn.flux();
-
         // Change the flux for following, non-density tracers
         if (is == 0 && massFluxName_ != "none")
         {
@@ -354,7 +353,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 const surfaceScalarField phi0 = (1-beta)*phiv.oldTime();
                 const surfaceScalarField phi1 = beta*phiv.oldTime();
 
-                sEqn = fvScalarMatrix
+                fvScalarMatrix sEqn
                 (
                     EulerDdt.fvmDdt(s_[is])
                   + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
@@ -376,12 +375,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 );
                 beta = maxInterp.interpolate(betaC);
                 Info << "New beta goes from " << min(beta).value() << " to "
-                     << max(beta).value()
+                     << max(beta).value() << endl;
 
                 surfaceScalarField phi0 = (1-beta)*totalFlux[0];
                 surfaceScalarField phi1 = totalFlux[0] - phi0;
 
-                sEqn = fvScalarMatrix
+                fvScalarMatrix sEqn
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
                   + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
