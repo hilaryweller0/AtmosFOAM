@@ -125,11 +125,12 @@ Foam::quinticUpwind<Type>::correction
             const label d = (faceFlux[facei] < 0)  ? nei[facei] : own[facei];
 
             const vector dx = 2*(Cf[facei] - C[u]);
+            const scalar magDx = dx & dhat[facei];
 
-            setComponent(sfCorr[facei], cmpt) = 7/30.*gradf[facei]*mag(dx)
+            setComponent(sfCorr[facei], cmpt) = 7/30.*gradf[facei]*magDx
                                               + 11/30.*(dx & gradV[u])
-                                              - 1/20.*(dx & gradV[d])
-                                              + 2/15.*(dx & (dx & gradGrad[u]));
+                                              - 3/30.*(dx & gradV[d])
+                                              + 2/30.*(dx & (dx & gradGrad[u]));
         }
     // No correction on the boundary yet
     }
