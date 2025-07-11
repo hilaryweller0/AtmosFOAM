@@ -122,19 +122,72 @@ Foam::quinticUpwind<Type>::correction
         {
             // Upwind and downwind cells
             const label u = (faceFlux[facei] >= 0) ? own[facei] : nei[facei];
-            const label d = (faceFlux[facei] < 0)  ? nei[facei] : own[facei];
+            const label d = (faceFlux[facei] >  0) ? nei[facei] : own[facei];
 
             const vector dx = 2*(Cf[facei] - C[u]);
             const scalar magDx = dx & dhat[facei];
 
             setComponent(sfCorr[facei], cmpt) = 7/30.*gradf[facei]*magDx
-                                              + 11/30.*(dx & gradV[u])
-                                              - 3/30.*(dx & gradV[d])
-                                              + 2/30.*(dx & (dx & gradGrad[u]));
+                                              + 13/30.*(dx & gradV[u])
+                                              - 1/6.*(dx & gradV[d])
+                                              + 2/15.*(dx & (dx & gradGrad[u]));
+             //  1/6.*(2*(dx & gradV[u]) + gradf[facei]*magDx);// cubic
         }
-    // No correction on the boundary yet
+        
+        /*// Boundary correction
+        typename SurfaceField<Type>::
+        Boundary& bSfCorr = sfCorr.boundaryFieldRef();
+        
+        forAll(bSfCorr, patchi)
+        {
+            fvsPatchField<Type>& pSfCorr = bSfCorr[patchi];
+            
+            if (pSfCorr.coupled())
+            {
+                const labelUList& pOwner = mesh.boundary()[patchi].faceCells();
+                const vectorField& pCf = Cf.boundaryField()[patchi];
+                const scalarField& pFaceFlux = faceFlux.boundaryField()[patchi];
+                
+                const scalarField pgradf(gradf.boundaryField()[patchi]);
+                
+                const vectorField pGradVNei
+                (
+                    gradV.boundaryField()[patchi].patchNeighbourField()
+                );
+                
+                const tensorField pGradGrad
+                (
+                    gradGrad.boundaryField()[patchi].patchNeighbourField()
+                );
+                
+                // Build the d-vectors
+                const vectorField pd
+                (
+                    Cf.boundaryField()[patchi].patch().delta()
+                );
+                
+                forAll(pOwner, facei)
+                {
+                    label own = pOwner[facei];
+                    
+                    if (pFaceFlux[facei] > 0)
+                    {
+                        setComponent(pSfCorr[facei], cmpt) =
+                            7/30.*pgradf[facei]*
+                        1./3.*(pCf[facei] - C[own])
+                        & (2*gradVf[own] + pGradVff[facei]);
+                    }
+                    else
+                    {
+                        setComponent(pSfCorr[facei], cmpt) =
+                        1./3.*(pCf[facei] - pd[facei] - C[own])
+                        & (2*pGradVfNei[facei] + pGradVff[facei]);
+                    }
+                }
+            }
+        }*/
     }
-
+    
     return tsfCorr;
 }
 

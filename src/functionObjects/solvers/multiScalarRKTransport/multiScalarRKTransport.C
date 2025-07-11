@@ -413,7 +413,24 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
         }
     }
-
+    
+/*    // Check that upInterp + hCorr can exactly differentiate a quintic
+    volScalarField x5("x3", pow(mesh_.C().component(0),5));
+    volScalarField divx5
+    (
+        "divx5",
+        fvc::div(phiv*(upInterp(phiv, x5) + hCorr(phiv, x5)))/1e8
+     );
+    volScalarField divx5A
+    (
+        "divx5A",
+        dimensionedScalar(dimVelocity, scalar(10))*5e-8*pow(mesh_.C().component(0),4)
+    );
+    divx5.write();
+    divx5A.write();
+    volScalarField diff5("diff5", divx5 - divx5A);
+    diff5.write();
+*/
     return true;
 }
 
