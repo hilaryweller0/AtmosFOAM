@@ -131,10 +131,9 @@ Foam::quinticUpwind<Type>::correction
                                               + 13/30.*(dx & gradV[u])
                                               - 1/6.*(dx & gradV[d])
                                               + 2/15.*(dx & (dx & gradGrad[u]));
-             //  1/6.*(2*(dx & gradV[u]) + gradf[facei]*magDx);// cubic
         }
         
-        /*// Boundary correction
+        // Boundary correction
         typename SurfaceField<Type>::
         Boundary& bSfCorr = sfCorr.boundaryFieldRef();
         
@@ -145,7 +144,6 @@ Foam::quinticUpwind<Type>::correction
             if (pSfCorr.coupled())
             {
                 const labelUList& pOwner = mesh.boundary()[patchi].faceCells();
-                const vectorField& pCf = Cf.boundaryField()[patchi];
                 const scalarField& pFaceFlux = faceFlux.boundaryField()[patchi];
                 
                 const scalarField pgradf(gradf.boundaryField()[patchi]);
@@ -154,8 +152,7 @@ Foam::quinticUpwind<Type>::correction
                 (
                     gradV.boundaryField()[patchi].patchNeighbourField()
                 );
-                
-                const tensorField pGradGrad
+                const tensorField pGradGradNei
                 (
                     gradGrad.boundaryField()[patchi].patchNeighbourField()
                 );
@@ -172,20 +169,27 @@ Foam::quinticUpwind<Type>::correction
                     
                     if (pFaceFlux[facei] > 0)
                     {
+                        const vector dx = pd[facei];
+                        const scalar magDx = mag(dx);
                         setComponent(pSfCorr[facei], cmpt) =
-                            7/30.*pgradf[facei]*
-                        1./3.*(pCf[facei] - C[own])
-                        & (2*gradVf[own] + pGradVff[facei]);
+                            7/30.*pgradf[facei]*magDx
+                          + 13/30.*(dx & gradV[own])
+                          - 1/6.*(dx & pGradVNei[facei])
+                          + 2/15.*(dx & (dx & gradGrad[own]));
                     }
                     else
                     {
+                        const vector dx = -pd[facei];
+                        const scalar magDx = -mag(dx);
                         setComponent(pSfCorr[facei], cmpt) =
-                        1./3.*(pCf[facei] - pd[facei] - C[own])
-                        & (2*pGradVfNei[facei] + pGradVff[facei]);
+                            7/30.*pgradf[facei]*magDx
+                            + 13/30.*(dx & pGradVNei[facei])
+                            - 1/6.*(dx & gradV[own])
+                            + 2/15.*(dx & (dx & pGradGradNei[facei]));
                     }
                 }
             }
-        }*/
+        }
     }
     
     return tsfCorr;
