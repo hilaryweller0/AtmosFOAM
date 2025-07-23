@@ -10,6 +10,7 @@ addToRunTimeSelectionTable(velocityField, solidBodyRotationVelocityField, dict);
 
 solidBodyRotationVelocityField::solidBodyRotationVelocityField(const dictionary& dict)
 :
+    nonDivergentVelocityField(dict),
     rotation_(dict.lookup("solidBodyRotation")),
     centre_(dict.lookup("centreOfRotation")),
     innerRadius_(dict.lookupOrDefault<scalar>("innerRadius", scalar(-1))),
@@ -18,8 +19,8 @@ solidBodyRotationVelocityField::solidBodyRotationVelocityField(const dictionary&
 
 vector solidBodyRotationVelocityField::streamfunctionAt
 (
-        const point& p,
-        const Time& t
+    const point& p,
+    scalar time
 ) const
 {
     // Vector from point p to axis of rotation
@@ -63,11 +64,11 @@ vector solidBodyRotationVelocityField::streamfunctionAt
 point solidBodyRotationVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
     // rotation matrix
-    tensor R = Ra(rotation_/mag(rotation_), 2*mag(rotation_)*t.value());
+    tensor R = Ra(rotation_/mag(rotation_), 2*mag(rotation_)*time);
     
     return (R & (p - centre_)) + centre_;
 }

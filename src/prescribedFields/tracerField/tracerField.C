@@ -88,7 +88,7 @@ void tracerField::applyTo(surfaceScalarField& Tf) const
         const point& p = Cp[faceI];
         Tf[faceI] = tracerAt
         (
-            velocityField.initialPositionOf(p, Tf.time()),
+            velocityField.initialPositionOf(p, Tf.time().value()),
             Tf.time()
         );
     }
@@ -120,7 +120,7 @@ void tracerField::applyToInternalField(volScalarField& T) const
         const point& p = Cp[cellI];
         T[cellI] = tracerAt
         (
-            velocityField.initialPositionOf(p, T.time()),
+            velocityField.initialPositionOf(p, T.time().value()),
             T.time()
         );
     }

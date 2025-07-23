@@ -39,6 +39,7 @@ License
 
 #include "addToRunTimeSelectionTable.H"
 #include "fvcFluxLimit.H"
+#include "velocityField.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -57,6 +58,62 @@ namespace functionObjects
 }
 }
 
+
+// * * * * * * * * * * Private Member Functions * * * * * * * * * * * //
+
+void Foam::functionObjects::multiScalarRKTransport::setFlux(const label i)
+{
+    // Sub-stage size and intermediate time
+    scalar c = 0;
+    for(int j = 0; j <= i; j++) c += RK_[i][j];
+    scalar vTime = time_.time().value();
+    if (i >= 0 && i < RK_.n())
+    {
+        vTime -= (1-c)*time_.deltaTValue();
+    }
+    
+    // Three options, set from velocityField function, look up or read in
+    // First consider the velocityField funciton
+    if (velocityDictName_ != "")
+    {
+        IOdictionary dict
+        (
+            IOobject
+            (
+                velocityDictName_, time_.constant(), mesh_, IOobject::MUST_READ
+            )
+        );
+        
+        if (readBool(dict.lookup("timeVaryingWind")))
+        {
+            autoPtr<velocityField> v;
+            v = velocityField::New(dict);
+            // Set the velocity for this time
+            v->applyTo(phiv_, vTime);
+        }
+    }
+    
+    // If the velocity flux already exits
+    else if (mesh_.foundObject<surfaceScalarField>(phivName_))
+    {
+        Info << "Looking up " << phivName_ << endl;
+        const surfaceScalarField& phiv
+             = mesh_.lookupObjectRef<surfaceScalarField>(phivName_);
+        if (i == -1) phiv_ = phiv;
+        else if (i >= 0 && i < RK_.n())
+        {
+            Info << "Setting intermeidate" << endl;
+            phiv_ = (1-c)*phiv.oldTime() + c*phiv;
+        }
+        else
+        {
+            FatalErrorIn("multiScalarRKTransport::setFlux")
+                << " no time level " << i << exit(FatalError);
+        }
+        Info << "Done" << endl;
+    }
+    // Else the velocity flux stays the same
+}
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -84,8 +141,32 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
             "FCTlimits",
             scalarListList(nFields_)
         )
+    ),
+    velocityDictName_
+    (
+        dict.lookupOrDefault<word>("velocityFieldDict", "")
+    ),
+    phiv_
+    (
+        mesh_.foundObject<surfaceScalarField>(phivName_) ?
+        mesh_.lookupObjectRef<surfaceScalarField>(phivName_) :
+        surfaceScalarField
+        (
+            IOobject
+            (
+                phivName_,
+                runTime.startTime().name(),
+                mesh_,
+                IOobject::MUST_READ,
+                IOobject::NO_WRITE,
+                false
+            ),
+            mesh_
+        )
     )
 {
+    phiv_.oldTime();
+    
     if (nFields_ != fieldNames_.size() || nFields_ != FCTiter_.size())
     {
         FatalErrorIn("multiScalarRKTransport::multiScalarRKTransport")
@@ -145,27 +226,11 @@ Foam::wordList Foam::functionObjects::multiScalarRKTransport::fields() const
 
 bool Foam::functionObjects::multiScalarRKTransport::execute()
 {
-    Info<< type() << " execute:" << endl;
+    // Set the advection flux
+    setFlux();
 
     // Reference to the time step
     const dimensionedScalar& dt = time_.deltaT();
-
-    // Look up or read the advectingFlux, phiv
-    const surfaceScalarField phiv
-      = mesh_.foundObject<surfaceScalarField>(phivName_) ?
-        mesh_.lookupObjectRef<surfaceScalarField>(phivName_) :
-        surfaceScalarField
-        (
-            IOobject
-            (
-                phivName_,
-                s_[0].time().startTime().name(),
-                mesh_,
-                IOobject::MUST_READ,
-                IOobject::NO_WRITE
-            ),
-            mesh_
-        );
 
     // Initialise the local max interpolation to find the Courant number
     localMax<scalar> maxInterp(mesh_);
@@ -173,8 +238,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     // Calculate the maximum Courant number on faces
     surfaceScalarField Co = max
     (
-        maxInterp.interpolate(CourantNo(phiv.oldTime(), dt)),
-        maxInterp.interpolate(CourantNo(phiv, dt))
+        maxInterp.interpolate(CourantNo(phiv_.oldTime(), dt)),
+        maxInterp.interpolate(CourantNo(phiv_, dt))
     );
     // Calculate alpha, beta and gamma as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
@@ -196,7 +261,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
 
     // First Strang low-order update, before the RK stages, for all fields
     // First, the advecting flux is not density weighted
-    surfaceScalarField phi = (1-alpha)*beta*phiv.oldTime();
+    surfaceScalarField phi = (1-alpha)*beta*phiv_.oldTime();
     for(label is = 0; is < nFields_; is++)
     {
         // Calculate the first low-order flux
@@ -227,15 +292,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     // Explicit RK advection stages
     for(int iRK = 0; iRK < RK_.n(); iRK++)
     {
-        // Sub-stage size
-        scalar c = 0;
-        for(int j = 0; j <= iRK; j++) c += RK_[iRK][j];
-
         // Advecting flux at the sub time
-        phi.dimensions().reset(phiv.dimensions());
-        phi = (1-c)*phiv.oldTime() + c*phiv;
+        setFlux(iRK);
+        //phi.dimensions().reset(phiv_.dimensions());
+        phi = phiv_;
 
-        // The flux for eac RK stage for each trancer
+        // The flux for each RK stage for each trancer
         for(int is = 0; is < nFields_; is++)
         {
             // Is this field density weighted?
@@ -249,8 +311,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                     is,
                     phi*
                     (
-                        (1-beta)*upInterp(phi,s_[is])
-                      + gamma*hCorr(phi, s_[is])
+                        (1-beta)*upInterp(phi,s_[is].oldTime())
+                      + gamma*hCorr(phi, s_[is].oldTime())
                     )
                 );
             }
@@ -307,8 +369,9 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     }
 
     // Final, implicit, low-order Strang stage
-    phi.dimensions().reset(phiv.dimensions());
-    phi = alpha*beta*phiv;
+    setFlux();
+    phi.dimensions().reset(phiv_.dimensions());
+    phi = alpha*beta*phiv_;
     fv::EulerDdtScheme<scalar> EulerDdt(mesh_);
     fv::gaussConvectionScheme<scalar> upwindCon(mesh_, phi, upwindScheme(phi));
     for(label is = 0; is < nFields_; is++)
@@ -317,23 +380,28 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         const bool densityWeighted = is > 0 && massFluxName_ != "none";
 
         // Create the matrix equation
+        volScalarField divTotalFlux = fvc::div(totalFlux[is]);
         fvScalarMatrix sEqn
         (
             upwindCon.fvmDiv(phi, s_[is])
-        + fvc::div(totalFlux[is])
+          + divTotalFlux
         );
 
-        // Add the rate of change term
+        // Add the rate of change term and update the explicit part
         if (!densityWeighted)
         {
+            s_[is] = s_[is].oldTime() - dt*divTotalFlux;
+            s_[is][0] += SMALL;
+            s_[is][1] -= SMALL;
             sEqn += fvScalarMatrix(EulerDdt.fvmDdt(s_[is]));
         }
         else
         {
+            s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*divTotalFlux)/s_[0];
             sEqn += fvScalarMatrix(EulerDdt.fvmDdt(s_[0], s_[is]));
         }
 
-        // Solve and update the total flux
+        // Solve, then update the total flux
         sEqn.solve();
         totalFlux[is] += sEqn.flux();
         // Change the flux for following, non-density tracers
@@ -350,13 +418,17 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             // Find the bounded solution and the bounded flux
             if (!densityWeighted)
             {
-                const surfaceScalarField phi0 = (1-beta)*phiv.oldTime();
-                const surfaceScalarField phi1 = beta*phiv.oldTime();
+                const surfaceScalarField phi0 = (1-beta)*phiv_.oldTime();
+                const surfaceScalarField phi1 = beta*phiv_.oldTime();
 
+                volScalarField sInc
+                     = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
+                s_[is] = s_[is].oldTime() - dt*sInc;
+                     
                 fvScalarMatrix sEqn
                 (
                     EulerDdt.fvmDdt(s_[is])
-                  + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
+                  + sInc
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
                 sEqn.solve();
@@ -380,10 +452,14 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 surfaceScalarField phi0 = (1-beta)*totalFlux[0];
                 surfaceScalarField phi1 = totalFlux[0] - phi0;
 
+                volScalarField sInc
+                    = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
+                s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*sInc)/s_[0];
+                
                 fvScalarMatrix sEqn
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
-                  + fvc::div(phi0*upInterp(phi0, s_[is].oldTime()))
+                  + sInc
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
                 sEqn.solve();

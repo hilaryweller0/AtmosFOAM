@@ -8,12 +8,14 @@ defineTypeNameAndDebug(zeroVelocityField, 0);
 addToRunTimeSelectionTable(velocityField, zeroVelocityField, dict);
 
 zeroVelocityField::zeroVelocityField(const dictionary& dict)
+:
+    divergentVelocityField(dict)
 {};
 
 vector zeroVelocityField::velocityAt
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
     return vector::zero;
@@ -22,7 +24,7 @@ vector zeroVelocityField::velocityAt
 point zeroVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
     return p;

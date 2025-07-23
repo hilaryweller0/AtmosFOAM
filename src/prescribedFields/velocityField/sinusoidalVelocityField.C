@@ -16,6 +16,7 @@ sinusoidalVelocityField::sinusoidalVelocityField
     const dictionary& dict
 )
 :
+    divergentVelocityField(dict),
     a_x(dict.lookupOrDefault<scalar>("a_x", scalar(0))),
     a_y(dict.lookupOrDefault<scalar>("a_y", scalar(0))),
     a_z(dict.lookupOrDefault<scalar>("a_z", scalar(0))),
@@ -72,11 +73,9 @@ sinusoidalVelocityField::sinusoidalVelocityField
 vector sinusoidalVelocityField::velocityAt
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    const dimensionedScalar T = t.endTime();
-
     scalar u = (a_x + b_x*Foam::cos(2*M_PI*k_x*(p.x()-phi_x)/L_x))
              * (a_y + b_y*Foam::cos(2*M_PI*k_y*(p.y()-phi_y)/L_y))
              * (a_z + b_z*Foam::cos(2*M_PI*k_z*(p.z()-phi_z)/L_z));

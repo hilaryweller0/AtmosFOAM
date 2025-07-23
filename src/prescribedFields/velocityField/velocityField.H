@@ -26,12 +26,25 @@ class velocityField
     );
 
     static autoPtr<velocityField> New(const dictionary& dict);
-    void applyTo(surfaceScalarField& phi) const;
+    void applyTo(surfaceScalarField& phi) const
+    {
+        applyTo(phi, phi.time().value());
+    }
+    void applyTo(surfaceScalarField& phi, scalar time) const;
     virtual ~velocityField() {};
 
     private:
-    virtual void applyToInternalField(surfaceScalarField& phi) const = 0;
-    virtual void applyToBoundary(surfaceScalarField& phi, const label patchI) const = 0;
+    virtual void applyToInternalField
+    (
+        surfaceScalarField& phi,
+        scalar time 
+    ) const = 0;
+    virtual void applyToBoundary
+    (
+        surfaceScalarField& phi,
+        const label patchI,
+        scalar time
+    ) const = 0;
     virtual void project(surfaceScalarField& phi) const = 0;
 };
 

@@ -11,6 +11,7 @@ addToRunTimeSelectionTable(velocityField, constructiveRotorsVelocityField, dict)
 
 constructiveRotorsVelocityField::constructiveRotorsVelocityField(const dictionary& dict)
 :
+nonDivergentVelocityField(dict),
 vmax(dict.lookupOrDefault<scalar>("maxVelocity", scalar(1))),
 xmax(dict.lookupOrDefault<scalar>("xmax", scalar(1))),
 ymax(dict.lookupOrDefault<scalar>("ymax", scalar(1))),
@@ -38,8 +39,8 @@ vector constructiveRotorsVelocityField::velocityAt
 
 vector constructiveRotorsVelocityField::streamfunctionAt
 (
-        const point& p,
-        const Time& t
+    const point& p,
+    scalar time
 ) const
 {
     // Vector from point p to axis of rotation
@@ -60,7 +61,7 @@ vector constructiveRotorsVelocityField::streamfunctionAt
 point constructiveRotorsVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
     return p;

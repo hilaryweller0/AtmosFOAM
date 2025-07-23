@@ -9,6 +9,7 @@ addToRunTimeSelectionTable(velocityField, uniformVelocityField, dict);
 
 uniformVelocityField::uniformVelocityField(const dictionary& dict)
 :
+    divergentVelocityField(dict),
     v(dict.lookup("velocity")),
     acceleration(dict.lookupOrDefault<vector>("acceleration", vector::zero))
 {};
@@ -16,19 +17,18 @@ uniformVelocityField::uniformVelocityField(const dictionary& dict)
 vector uniformVelocityField::velocityAt
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    return v + acceleration*t.value();
+    return v + acceleration*time;
 }
 
 point uniformVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    scalar time = t.value();
     vector dist = v*time + 0.5*acceleration*sqr(time);
     return point(p - dist);
 }

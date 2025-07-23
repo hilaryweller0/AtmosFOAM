@@ -8,18 +8,25 @@ namespace Foam
 
 class geodesicVelocityField : public velocityField
 {
+    protected:
+    const dimensionedScalar earthRadius_;
+    const dimensionedScalar endTime_;
+        
     private:
-    scalar earthRadius_;
     const bool applyProjection_;
-    void applyToInternalField(surfaceScalarField& phi) const;
-    void applyToBoundary(surfaceScalarField& phi, const label patchI) const;
-    virtual vector velocityAt(const point& p, const Time& t) const = 0;
+    void applyToInternalField(surfaceScalarField& phi, scalar time) const;
+    void applyToBoundary
+    (
+        surfaceScalarField& phi,
+        const label patchI,
+        scalar time
+    ) const;
+    virtual vector velocityAt(const point& p, scalar time) const = 0;
 
     public:
     void project(surfaceScalarField& phi) const;
     geodesicVelocityField(const dictionary& dict);
     virtual ~geodesicVelocityField() {};
-    scalar earthRadius() const { return earthRadius_; }
     bool applyProjection() const { return applyProjection_; }
 };
 

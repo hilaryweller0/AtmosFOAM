@@ -9,6 +9,7 @@ addToRunTimeSelectionTable(velocityField, shearedVelocityField, dict);
 
 shearedVelocityField::shearedVelocityField(const dictionary& dict)
 :
+    nonDivergentVelocityField(dict),
     gradU(dict.lookup("gradU")),
     u0(dict.lookup("referenceVelocity")),
     p0(dict.lookup("referencePosition")),
@@ -34,12 +35,12 @@ shearedVelocityField::shearedVelocityField(const dictionary& dict)
 vector shearedVelocityField::streamfunctionAt
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
     scalar dist = (p - p0) & gradUhat;
 
-    return normal*(1 + acceleration*t.value())*
+    return normal*(1 + acceleration*time)*
     (
         0.5*sqr(dist)*magGradU
       + magU0*dist
@@ -49,10 +50,9 @@ vector shearedVelocityField::streamfunctionAt
 point shearedVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    scalar time = t.value();
     vector U = u0 + (gradU & (p - p0))*u0hat;
     vector dist = U*time*(1 + 0.5*acceleration*time);
     return point(p - dist);

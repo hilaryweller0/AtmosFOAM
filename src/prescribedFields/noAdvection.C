@@ -3,11 +3,7 @@
 namespace Foam
 {
 
-point noAdvection::initialPositionOf
-(
-        const point& p,
-        const Time& t
-) const
+point noAdvection::initialPositionOf(const point& p, scalar time) const
 {
     return p;
 }

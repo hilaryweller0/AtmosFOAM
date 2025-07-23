@@ -130,6 +130,12 @@ private:
 
         //- (Optional) min and max values for each tracer
         scalarListList FCTlimits_;
+        
+        //- The dictionary that describes the (changing) velocity field
+        const word velocityDictName_;
+        
+        //- The advecting flux
+        surfaceScalarField phiv_;
 
     // Private member functions
 
@@ -176,6 +182,10 @@ private:
         {
             return corrScheme(flux)->correction(vf);
         }
+        
+        // Set the flux for the wind at an intermediate time. i=-1 for old or
+        // new timelevel, i>=0 for an RK stage
+        void setFlux(const label i=-1);
 
 public:
 

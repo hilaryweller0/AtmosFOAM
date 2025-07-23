@@ -33,10 +33,10 @@ geodesicHadleyLikeVelocityField(const dictionary& dict)
 vector geodesicHadleyLikeVelocityField::velocityAt
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    scalar a = geodesicVelocityField::earthRadius();
+    scalar a = geodesicVelocityField::earthRadius_.value();
     const polarPoint& polarp = convertToPolar(p);
     const scalar lat = polarp.lat();
     const scalar z = polarp.r() - a;
@@ -47,12 +47,12 @@ vector geodesicHadleyLikeVelocityField::velocityAt
     (
         rho*u0_*Foam::cos(lat),
         -a*w0_*pi/(K_*ztop_)*Foam::cos(lat)*Foam::sin(K_*lat)
-            *Foam::cos(pi*z/ztop_)*Foam::cos(pi*t.value()/tau_),
+            *Foam::cos(pi*z/ztop_)*Foam::cos(pi*time/tau_),
         w0_/K_*
         (
             -2*Foam::sin(K_*lat)*Foam::sin(lat)
            + K_*Foam::cos(lat)*Foam::cos(K_*lat)
-        )*Foam::sin(pi*z/ztop_)*Foam::cos(pi*t.value()/tau_)
+        )*Foam::sin(pi*z/ztop_)*Foam::cos(pi*time/tau_)
     );
 
     sphericalVector sphericalp(p);

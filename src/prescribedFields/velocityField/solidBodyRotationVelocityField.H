@@ -13,8 +13,8 @@ class solidBodyRotationVelocityField final : public nonDivergentVelocityField, p
     solidBodyRotationVelocityField(const dictionary& dict);
 
     private:
-    vector streamfunctionAt(const point& p, const Time& t) const;
-    point initialPositionOf(const point& p, const Time& t) const;
+    vector streamfunctionAt(const point& p, scalar time) const;
+    point initialPositionOf(const point& p, scalar time) const;
     const vector rotation_;
     const point centre_;
     const scalar innerRadius_;

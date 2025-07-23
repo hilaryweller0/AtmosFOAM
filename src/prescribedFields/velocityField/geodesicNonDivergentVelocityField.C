@@ -7,12 +7,14 @@ geodesicNonDivergentVelocityField::geodesicNonDivergentVelocityField
     const dictionary& dict
 )
 :
-    earthRadius_(readScalar(dict.lookup("earthRadius")))
+    earthRadius_(dict.lookup("earthRadius")),
+    endTime_(dict.lookup("endTime"))
 {}
 
 void geodesicNonDivergentVelocityField::applyToInternalField
 (
-    surfaceScalarField& phi
+    surfaceScalarField& phi,
+    scalar time
 ) const
 {
     const fvMesh& mesh = phi.mesh();
@@ -20,7 +22,7 @@ void geodesicNonDivergentVelocityField::applyToInternalField
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        mesh, earthRadius_
+        mesh, earthRadius_.value()
     );
 
     phi = dimensionedScalar("phi", phi.dimensions(), scalar(0));
@@ -28,27 +30,27 @@ void geodesicNonDivergentVelocityField::applyToInternalField
     forAll(phi, faceI)
     {
         const face& f = mesh.faces()[faceI];
-        phi[faceI] = faceFlux(f, spherical, phi.time());
+        phi[faceI] = faceFlux(f, spherical, time);
     }
 }
 
 void geodesicNonDivergentVelocityField::applyToBoundary
 (
-    surfaceScalarField& phi, const label patchI
+    surfaceScalarField& phi, const label patchI, scalar time
 ) const
 {
     const fvMesh& mesh = phi.mesh();
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        mesh, earthRadius_
+        mesh, earthRadius_.value()
     );
 
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
         const face& f = mesh.boundaryMesh()[patchI][faceI];
-        bf[faceI] = faceFlux(f, spherical, phi.time());
+        bf[faceI] = faceFlux(f, spherical, time);
     }
 }
 
@@ -56,12 +58,12 @@ scalar geodesicNonDivergentVelocityField::faceFlux
 (
     const face& f,
     const sphericalMeshData& spherical,
-    const Time& t
+    scalar time
 ) const
 {
     point p0 = spherical.mesh().points()[f.last()];
     point p1;
-    vector s0 = streamfunctionAt(f.last(), spherical, t);
+    vector s0 = streamfunctionAt(f.last(), spherical, time);
     vector s1;
     scalar mags0 = mag(s0);
     scalar mags1;
@@ -71,7 +73,7 @@ scalar geodesicNonDivergentVelocityField::faceFlux
     forAll(f, ip)
     {
         p1 = spherical.mesh().points()[f[ip]];
-        s1 = streamfunctionAt(f[ip], spherical, t);
+        s1 = streamfunctionAt(f[ip], spherical, time);
         mags1 = mag(s1);
         
         // Average streamfunction is the average direction and the average

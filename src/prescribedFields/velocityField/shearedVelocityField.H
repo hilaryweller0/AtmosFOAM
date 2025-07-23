@@ -13,8 +13,8 @@ class shearedVelocityField final : public nonDivergentVelocityField, public adve
     shearedVelocityField(const dictionary& dict);
 
     private:
-    vector streamfunctionAt(const point& p, const Time& t) const;
-    point initialPositionOf(const point& p, const Time& t) const;
+    vector streamfunctionAt(const point& p, scalar time) const;
+    point initialPositionOf(const point& p, scalar time) const;
     const vector gradU;
     const vector u0;
     const point p0;

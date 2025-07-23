@@ -17,7 +17,7 @@ class geodesicHadleyLikeVelocityField final : public geodesicVelocityField
     geodesicHadleyLikeVelocityField(const dictionary& dict);
 
     private:
-    vector velocityAt(const point& p, const Time& t) const;
+    vector velocityAt(const point& p, scalar time) const;
     scalar H_, ztop_, u0_, w0_, tau_, rho0_;
     label K_;
 };

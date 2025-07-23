@@ -13,9 +13,10 @@ class deformationalNonDivergentVelocityField final
     deformationalNonDivergentVelocityField(const dictionary& dict);
 
     private:
-    vector streamfunctionAt(const point& p, const Time& t) const;
-    const scalar deformationScale_;
+    vector streamfunctionAt(const point& p, scalar time) const;
+    //const scalar deformationScale_;
     const vector domainSize_;
+    const vector backgroundFlow_;
 };
 }
 #endif

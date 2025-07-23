@@ -26,7 +26,7 @@ class sinusoidalVelocityField final : public divergentVelocityField
     sinusoidalVelocityField(const dictionary& dict);
 
     private:
-    vector velocityAt(const point& p, const Time& t) const;
+    vector velocityAt(const point& p, scalar time) const;
 
     // The coeffiecients for different terms
     const scalar a_x, a_y, a_z,

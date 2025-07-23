@@ -8,16 +8,21 @@ namespace Foam
 {
 geodesicVelocityField::geodesicVelocityField(const dictionary& dict)
 :
-    earthRadius_(readScalar(dict.lookup("earthRadius"))),
+    earthRadius_(dict.lookup("earthRadius")),
+    endTime_(dict.lookup("endTime_")),
     applyProjection_(readBool(dict.lookup("applyProjection")))
 {}
 
-void geodesicVelocityField::applyToInternalField(surfaceScalarField& phi) const
+void geodesicVelocityField::applyToInternalField
+(
+    surfaceScalarField& phi,
+    scalar time
+) const
 {
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        phi.mesh(), earthRadius_
+        phi.mesh(), earthRadius_.value()
     );
 
     phi = dimensionedScalar("phi", phi.dimensions(), scalar(0));
@@ -27,7 +32,7 @@ void geodesicVelocityField::applyToInternalField(surfaceScalarField& phi) const
         phi[faceI] = velocityAt
         (
             spherical.faceCentres()[faceI],
-            phi.time()
+            time
         ) & mesh.Sf()[faceI];
     }
 }
@@ -35,13 +40,14 @@ void geodesicVelocityField::applyToInternalField(surfaceScalarField& phi) const
 void geodesicVelocityField::applyToBoundary
 (
     surfaceScalarField& phi,
-    const label patchI
+    const label patchI,
+    scalar time
 ) const
 {
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        phi.mesh(), earthRadius_
+        phi.mesh(), earthRadius_.value()
     );
 
     const fvPatch& pat = phi.mesh().boundary()[patchI];
@@ -51,7 +57,7 @@ void geodesicVelocityField::applyToBoundary
         label i = pat.start() + faceI;
         bf[faceI] = velocityAt
         (
-            spherical.faceCentres()[i], phi.time()
+            spherical.faceCentres()[i], time
         ) & spherical.faceAreas()[i];
     }
 }

@@ -15,8 +15,8 @@ class zeroVelocityField final : public divergentVelocityField, public advectable
     zeroVelocityField(const dictionary& dict);
 
     private:
-    vector velocityAt(const point& p, const Time& t) const;
-    point initialPositionOf(const point& p, const Time& t) const;
+    vector velocityAt(const point& p, scalar time) const;
+    point initialPositionOf(const point& p, scalar time) const;
 };
 }
 #endif

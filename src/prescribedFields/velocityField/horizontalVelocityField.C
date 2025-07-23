@@ -8,6 +8,7 @@ addToRunTimeSelectionTable(velocityField, horizontalVelocityField, dict);
 
 horizontalVelocityField::horizontalVelocityField(const dictionary& dict)
 :
+    nonDivergentVelocityField(dict),
     u0("speed", dimVelocity, dict.lookupOrDefault<scalar>("speed", scalar(10))),
     z1
     (
@@ -26,7 +27,7 @@ horizontalVelocityField::horizontalVelocityField(const dictionary& dict)
 vector horizontalVelocityField::streamfunctionAt
 (
         const point& p,
-        const Time& t
+        scalar time
 ) const
 {
     const vector unitNormal(0, -1, 0);
@@ -52,27 +53,28 @@ vector horizontalVelocityField::streamfunctionAt
 point horizontalVelocityField::initialPositionOf
 (
     const point& p,
-    const Time& t
+    scalar time
 ) const
 {
-    const dimensionedScalar z("z", dimLength, p.z());
+    scalar z = p.z();
 
-    if (z.value() <= z1.value())
+    if (z <= z1.value())
     {
         return p;
     }
-    else if (z.value() <= z2.value())
+    else if (z <= z2.value())
     {
+        scalar ratio = (z - z1.value())/(z2.value() - z1.value());
         return point
         (
-            p.x() - (u0*sqr(Foam::sin(0.5*M_PI*(z-z1)/(z2-z1)))*t).value(),
+            p.x() - u0.value()*sqr(Foam::sin(0.5*M_PI*ratio))*time,
             p.y(),
             p.z()
         );
     }
     else
     {
-        return point(p.x() - u0.value()*t.value(), p.y(), p.z());
+        return point(p.x() - u0.value()*time, p.y(), p.z());
     }
 }
 }

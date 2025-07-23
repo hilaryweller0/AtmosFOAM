@@ -15,13 +15,12 @@ class deformationalNonDivergentGeodesicVelocityField final : public geodesicNonD
 
     const scalar radius;
     const scalar deformationScale;
-    const scalar endTime;
     
     vector streamfunctionAt
     (
         const label ip,
         const sphericalMeshData&,
-        const Time& t
+        scalar time
     ) const;
 };
 }

@@ -32,9 +32,9 @@ autoPtr<velocityField> velocityField::New(const dictionary& dict)
     );
 }
 
-void velocityField::applyTo(surfaceScalarField& phi) const
+void velocityField::applyTo(surfaceScalarField& phi, scalar time) const
 {
-    applyToInternalField(phi);
+    applyToInternalField(phi, time);
     
     forAll(phi.boundaryField(), patchI)
     {
@@ -44,7 +44,7 @@ void velocityField::applyTo(surfaceScalarField& phi) const
          && !isA<wallPolyPatch>(phi.mesh().boundaryMesh()[patchI])
         )
         {
-            applyToBoundary(phi, patchI);
+            applyToBoundary(phi, patchI, time);
         }
     }
     

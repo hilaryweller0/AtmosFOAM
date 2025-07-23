@@ -13,8 +13,8 @@ class horizontalVelocityField final : public nonDivergentVelocityField, public a
     horizontalVelocityField(const dictionary& dict);
 
     private:
-    vector streamfunctionAt(const point& p, const Time& t) const;
-    point initialPositionOf(const point& p, const Time& t) const;
+    vector streamfunctionAt(const point& p, scalar time) const;
+    point initialPositionOf(const point& p, scalar time) const;
     const dimensionedScalar u0;
     const dimensionedScalar z1;
     const dimensionedScalar z2;

@@ -16,8 +16,10 @@ deformationalNonDivergentVelocityField::deformationalNonDivergentVelocityField
     const dictionary& dict
 )
 :
-    deformationScale_(readScalar(dict.lookup("deformationScale"))),
-    domainSize_(dict.lookup("domainSize"))
+    nonDivergentVelocityField(dict),
+    //deformationScale_(readScalar(dict.lookup("deformationScale"))),
+    domainSize_(dict.lookup("domainSize")),
+    backgroundFlow_(dict.lookupOrDefault<vector>("backgroundFlow", vector::zero))
 {
     if (mag(domainSize_.z()) > SMALL)
     {
@@ -31,21 +33,24 @@ deformationalNonDivergentVelocityField::deformationalNonDivergentVelocityField
 vector deformationalNonDivergentVelocityField::streamfunctionAt
 (
     const point& p,
-    const Time& time
+    scalar time
 ) const
 {
-    const scalar T = time.endTime().value();
-    const scalar t = time.value();
+    const scalar T = endTime_.value();
 
-    return vector(0,0,1)*
+    scalar xp = p.x() + domainSize_.x()/2 - backgroundFlow_[0]*time;
+    scalar yp = p.y() + domainSize_.y()/2 - backgroundFlow_[1]*time;
+    scalar C = backgroundFlow_[0]*domainSize_.x()/M_PI;
+    
+    return -vector(0,0,1)*
     (
-        deformationScale_*sqr(0.5*domainSize_.x()/M_PI)/T*sqr
+        C*sqr
         (
-            Foam::sin(2*M_PI*(p.x()/domainSize_.x() - t/T))
-           *Foam::cos(M_PI*p.y()/domainSize_.y())
-        )
-        *Foam::cos(M_PI*t/T)
-      - domainSize_.x()*p.y()/T
+            Foam::cos(M_PI*xp/domainSize_.x())
+           *Foam::sin(M_PI*yp/domainSize_.y())
+        )*Foam::cos(M_PI*time/T)
+      + backgroundFlow_[0]*p.y()
+      - backgroundFlow_[1]*p.x()
     );
 }
 }

@@ -11,13 +11,25 @@ class divergentVelocityField : public velocityField
     public:
     const bool applyProjection;
     void project(surfaceScalarField& phi) const;
-    divergentVelocityField(const bool applyProjection__ = false);
+    divergentVelocityField
+    (
+        const dictionary& dict,
+        const bool applyProjection__ = false
+    );
     virtual ~divergentVelocityField() {};
 
     private:
-    void applyToInternalField(surfaceScalarField& phi) const;
-    void applyToBoundary(surfaceScalarField& phi, const label patchI) const;
-    virtual vector velocityAt(const point& p, const Time& t) const = 0;
+    void applyToInternalField(surfaceScalarField& phi, scalar time) const;
+    void applyToBoundary
+    (
+        surfaceScalarField& phi,
+        const label patchI,
+        scalar time
+    ) const;
+    virtual vector velocityAt(const point& p, scalar time) const = 0;
+    
+    protected:
+    const dimensionedScalar endTime_;
 };
 
 }
