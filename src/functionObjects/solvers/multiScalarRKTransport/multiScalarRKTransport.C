@@ -61,19 +61,15 @@ namespace functionObjects
 
 // * * * * * * * * * * Private Member Functions * * * * * * * * * * * //
 
-void Foam::functionObjects::multiScalarRKTransport::setFlux(const label i)
+void Foam::functionObjects::multiScalarRKTransport::setFlux()
 {
-    // Sub-stage size and intermediate time
-    scalar c = 0;
-    for(int j = 0; j <= i; j++) c += RK_[i][j];
-    scalar vTime = time_.time().value();
-    if (i >= 0 && i < RK_.n())
-    {
-        vTime -= (1-c)*time_.deltaTValue();
-    }
+    // The mid time
+    scalar vTime = time_.time().value() - 0.5*time_.deltaTValue();
     
-    // Three options, set from velocityField function, look up or read in
-    // First consider the velocityField funciton
+    // Two options:
+    //       set from velocityField function
+    //       or look up
+    // First consider the velocityField function
     if (velocityDictName_ != "")
     {
         IOdictionary dict
@@ -88,7 +84,6 @@ void Foam::functionObjects::multiScalarRKTransport::setFlux(const label i)
         {
             autoPtr<velocityField> v;
             v = velocityField::New(dict);
-            // Set the velocity for this time
             v->applyTo(phiv_, vTime);
         }
     }
@@ -96,21 +91,9 @@ void Foam::functionObjects::multiScalarRKTransport::setFlux(const label i)
     // If the velocity flux already exits
     else if (mesh_.foundObject<surfaceScalarField>(phivName_))
     {
-        Info << "Looking up " << phivName_ << endl;
         const surfaceScalarField& phiv
              = mesh_.lookupObjectRef<surfaceScalarField>(phivName_);
-        if (i == -1) phiv_ = phiv;
-        else if (i >= 0 && i < RK_.n())
-        {
-            Info << "Setting intermeidate" << endl;
-            phiv_ = (1-c)*phiv.oldTime() + c*phiv;
-        }
-        else
-        {
-            FatalErrorIn("multiScalarRKTransport::setFlux")
-                << " no time level " << i << exit(FatalError);
-        }
-        Info << "Done" << endl;
+        phiv_ = 0.5*(phiv.oldTime() + phiv);
     }
     // Else the velocity flux stays the same
 }
@@ -131,7 +114,7 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
     phivName_(dict.lookup("advectingFlux")),
     massFluxName_(dict.lookup("massFlux")),
     RK_(dict.lookup("RK_ButcherCoeffs")),
-    gammaCoeffs_(dict.lookup("gammaCoeffs")),
+    c_(RK_.n(), scalar(0)),
     correctionSchemeName_(dict.lookup("correctionScheme")),
     FCTiter_(dict.lookup("FCTiters")),
     FCTlimits_
@@ -165,14 +148,18 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
         )
     )
 {
-    phiv_.oldTime();
-    
     if (nFields_ != fieldNames_.size() || nFields_ != FCTiter_.size())
     {
         FatalErrorIn("multiScalarRKTransport::multiScalarRKTransport")
             << "nFields = " << nFields_ << " but fields are " << fieldNames_
             << " and FCTiters are " << FCTiter_
             << exit(FatalError);
+    }
+    
+    for(label iRK = 0; iRK < RK_.n(); iRK++)
+    {
+        for(label j = 0; j <= iRK; j++)
+        c_[iRK] += RK_[iRK][j];
     }
 
     read(dict);
@@ -226,138 +213,112 @@ Foam::wordList Foam::functionObjects::multiScalarRKTransport::fields() const
 
 bool Foam::functionObjects::multiScalarRKTransport::execute()
 {
-    // Set the advection flux
+    // Update the velocity if needed
     setFlux();
-
+    
+    // Schemes needed
+    localMax<scalar> maxInterp(mesh_);
+    fv::EulerDdtScheme<scalar> EulerDdt(mesh_);
+    fv::gaussConvectionScheme<scalar> upwindCon(mesh_,phiv_,upwindScheme(phiv_));
+    
     // Reference to the time step
     const dimensionedScalar& dt = time_.deltaT();
 
-    // Initialise the local max interpolation to find the Courant number
-    localMax<scalar> maxInterp(mesh_);
-
     // Calculate the maximum Courant number on faces
-    surfaceScalarField Co = max
-    (
-        maxInterp.interpolate(CourantNo(phiv_.oldTime(), dt)),
-        maxInterp.interpolate(CourantNo(phiv_, dt))
-    );
-    // Calculate alpha, beta and gamma as a function of the max Courant number
+    surfaceScalarField Co = maxInterp.interpolate(CourantNo(phiv_, dt));
+    // Calculate alpha as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
-    surfaceScalarField beta  = 1 - 1/max(scalar(1), Co);
-    surfaceScalarField gamma = 1/
-                (1 + gammaCoeffs_[1]*max(Co-gammaCoeffs_[0], scalar(0)));
-    Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() << nl
-         << "alpha goes from " << min(alpha).value() << " to " << max(alpha).value() << nl
-         << "beta goes from " << min(beta).value() << " to " << max(beta).value() << nl
-         << "gamma goes from " << min(gamma).value() << " to " << max(gamma).value()
-         << endl;
+    surfaceScalarField beta = 1 - 1/max(scalar(1), Co);
+    surfaceScalarField gamma = 1 - 1/max(scalar(GREAT), Co);
+    Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() <<nl
+        <<"alpha goes from "<<min(alpha).value()<<" to "<<max(alpha).value()<<nl
+        <<"beta goes from "<<min(beta).value()<<" to "<<max(beta).value()<<nl
+     <<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()<<endl;
 
-    // Total fluxes for the RK stages for all tracers
-    PtrList<PtrList<surfaceScalarField>> F(RK_.n()+1);
-    for(label iRK = 0; iRK <= RK_.n(); iRK++)
+    // Store the high and low-order face values for each stage, for each field
+     PtrList<PtrList<surfaceScalarField>> sL(RK_.n());
+     PtrList<PtrList<surfaceScalarField>> sHC(RK_.n());
+     PtrList<surfaceScalarField> rhoX(RK_.n());
+         for(label iRK = 0; iRK < RK_.n(); iRK++)
     {
-        F.set(iRK, new PtrList<surfaceScalarField>(nFields_));
+        sL.set(iRK, new PtrList<surfaceScalarField>(nFields_));
+        sHC.set(iRK, new PtrList<surfaceScalarField>(nFields_));
     }
 
-    // First Strang low-order update, before the RK stages, for all fields
-    // First, the advecting flux is not density weighted
-    surfaceScalarField phi = (1-alpha)*beta*phiv_.oldTime();
-    for(label is = 0; is < nFields_; is++)
-    {
-        // Calculate the first low-order flux
-        F[0].set(is, phi*upInterp(phi,s_[is]));
-
-        // Change the flux for following, non-density tracers
-        if (is == 0 && massFluxName_ != "none")
-        {
-            phi *= upInterp(phi,s_[0]);
-        }
-    }
-    for(label is = 0; is < nFields_; is++)
-    {
-        // Is this field density weighted?
-        const bool densityWeighted = is > 0 && massFluxName_ != "none";
-        // Advance s by the low-order flux
-        if (!densityWeighted)
-        {
-            s_[is] -= dt*fvc::div(F[0][is]);
-        }
-        else
-        {
-            s_[is] = (s_[is].oldTime()*s_[0].oldTime() - dt*fvc::div(F[0][is]))
-                     /s_[0];
-        }
-    }
-
-    // Explicit RK advection stages
+    // RK advection stages
     for(int iRK = 0; iRK < RK_.n(); iRK++)
     {
-        // Advecting flux at the sub time
-        setFlux(iRK);
-        //phi.dimensions().reset(phiv_.dimensions());
-        phi = phiv_;
-
-        // The flux for each RK stage for each trancer
+        // Update each tracer field, s_
         for(int is = 0; is < nFields_; is++)
         {
             // Is this field density weighted?
             const bool densityWeighted = is > 0 && massFluxName_ != "none";
 
-            // Calculate the scalar flux for this stage
-            if (!densityWeighted)
-            {
-                F[iRK+1].set
-                (
-                    is,
-                    phi*
-                    (
-                        (1-beta)*upInterp(phi,s_[is].oldTime())
-                      + gamma*hCorr(phi, s_[is].oldTime())
-                    )
-                );
-            }
-            else
-            {
-                F[iRK+1].set
-                (
-                    is,
-                    phi*
-                    (
-                        (1-beta)*upInterp(phi,s_[0]*s_[is])
-                      + gamma*hCorr(phi, s_[0]*s_[is])
-                    )
-                );
-            }
-        }
-        // This RK stage for each trancer
-        for(int is = 0; is < nFields_; is++)
-        {
-            // Is this field density weighted?
-            const bool densityWeighted = is > 0 && massFluxName_ != "none";
+            // Calculate the high and low-order face values
+            sL[iRK].set(is, upInterp(phiv_, s_[is]));
+            sHC[iRK].set(is, hCorr(phiv_, s_[is]));
 
-            //Update the scalar for each stage
+            // Sum the explicit fluxes
+            surfaceScalarField F = c_[iRK]*(1-alpha)*beta*sL[0][is];
+            
             if (!densityWeighted)
             {
-                s_[is] = s_[is].oldTime() - dt*fvc::div(F[0][is]);
-                for(int j = 0; j <= iRK; j++)
+                for(label j = 0; j <= iRK; j++)
                 {
-                    s_[is] -= dt*RK_[iRK][j]*fvc::div(F[j+1][is]);
+                    F += RK_[iRK][j]*((1-beta)*sL[j][is] + gamma*sHC[j][is]);
                 }
             }
             else
             {
-                volScalarField rhos = s_[is].oldTime()*s_[0].oldTime()
-                                    - dt*fvc::div(F[0][is]);
-                for(int j = 0; j <= iRK; j++)
+                F *= rhoX[0];
+                for(label j = 0; j <= iRK; j++)
                 {
-                    rhos -= dt*RK_[iRK][j]*fvc::div(F[j+1][is]);
+                    F += RK_[iRK][j]*rhoX[j]*
+                        ((1-beta)*sL[j][is] + gamma*sHC[j][is]);
                 }
-                s_[is] = rhos/s_[0];
+            }
+            
+            // Assemble and solve the transport equation
+            volScalarField divF("divF", fvc::div(phiv_*F));
+            if (!densityWeighted)
+            {
+                s_[is] = s_[is].oldTime() - dt*divF;
+                s_[is][0] += 1;
+                s_[is][1] -= 1;
+                fvScalarMatrix sEqn
+                (
+                    EulerDdt.fvmDdt(s_[is])
+                  + divF
+                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, s_[is])
+                );
+                sEqn.solve();
+            }
+            else
+            {
+                s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*divF)/s_[0];
+                fvScalarMatrix sEqn
+                (
+                    EulerDdt.fvmDdt(s_[0], s_[is])
+                  + divF
+                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*sL[iRK][0]*phiv_, s_[is])
+                );
+                sEqn.solve();
+            }
+            
+            // Set the density face values for fluxes
+            if (is == 0 && massFluxName_ != "none")
+            {
+                rhoX.set(0, sL[0][0] + gamma*sHC[0][0]
+                                 /(c_[iRK]*beta*(1-alpha)+RK_[iRK][0]*(1-beta)));
+                for(label j = 1; j <= iRK; j++)
+                {
+                    rhoX.set(j, sL[j][0] + gamma/(1-beta)*sHC[j][0]);
+                }
             }
         }
     }
 
-    // Accumulate the total flux for each scalar
+/*    // Accumulate the total flux for each scalar
     PtrList<surfaceScalarField> totalFlux(nFields_);
     for(int is = 0; is < nFields_; is++)
     {
@@ -367,50 +328,10 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             totalFlux[is] += RK_[RK_.n()-1][j]*F[j+1][is];
         }
     }
-
-    // Final, implicit, low-order Strang stage
-    setFlux();
-    phi.dimensions().reset(phiv_.dimensions());
-    phi = alpha*beta*phiv_;
-    fv::EulerDdtScheme<scalar> EulerDdt(mesh_);
-    fv::gaussConvectionScheme<scalar> upwindCon(mesh_, phi, upwindScheme(phi));
-    for(label is = 0; is < nFields_; is++)
+*/
+    // Apply FCT if needed
+/*    for(label is = 0; is < nFields_; is++)
     {
-        // Is this field density weighted?
-        const bool densityWeighted = is > 0 && massFluxName_ != "none";
-
-        // Create the matrix equation
-        volScalarField divTotalFlux = fvc::div(totalFlux[is]);
-        fvScalarMatrix sEqn
-        (
-            upwindCon.fvmDiv(phi, s_[is])
-          + divTotalFlux
-        );
-
-        // Add the rate of change term and update the explicit part
-        if (!densityWeighted)
-        {
-            s_[is] = s_[is].oldTime() - dt*divTotalFlux;
-            s_[is][0] += SMALL;
-            s_[is][1] -= SMALL;
-            sEqn += fvScalarMatrix(EulerDdt.fvmDdt(s_[is]));
-        }
-        else
-        {
-            s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*divTotalFlux)/s_[0];
-            sEqn += fvScalarMatrix(EulerDdt.fvmDdt(s_[0], s_[is]));
-        }
-
-        // Solve, then update the total flux
-        sEqn.solve();
-        totalFlux[is] += sEqn.flux();
-        // Change the flux for following, non-density tracers
-        if (is == 0 && massFluxName_ != "none")
-        {
-            phi *= upInterp(phi,s_[0]);
-        }
-
-        // Apply FCT if needed
         if (FCTiter_[is] > 0)
         {
             surfaceScalarField fluxCorr = totalFlux[is];
@@ -425,15 +346,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                      = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
                 s_[is] = s_[is].oldTime() - dt*sInc;
                      
-                fvScalarMatrix sEqn
-                (
-                    EulerDdt.fvmDdt(s_[is])
-                  + sInc
-                  + upwindCon.fvmDiv(phi1, s_[is])
-                );
-                sEqn.solve();
-                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
-            }
+           }
             else
             {
                 volScalarField betaC = max
@@ -489,23 +402,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
         }
     }
-    
-/*    // Check that upInterp + hCorr can exactly differentiate a quintic
-    volScalarField x5("x3", pow(mesh_.C().component(0),5));
-    volScalarField divx5
-    (
-        "divx5",
-        fvc::div(phiv*(upInterp(phiv, x5) + hCorr(phiv, x5)))/1e8
-     );
-    volScalarField divx5A
-    (
-        "divx5A",
-        dimensionedScalar(dimVelocity, scalar(10))*5e-8*pow(mesh_.C().component(0),4)
-    );
-    divx5.write();
-    divx5A.write();
-    volScalarField diff5("diff5", divx5 - divx5A);
-    diff5.write();
 */
     return true;
 }

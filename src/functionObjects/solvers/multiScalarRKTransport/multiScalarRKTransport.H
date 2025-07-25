@@ -25,7 +25,8 @@ Class
     Foam::functionObjects::multiScalarRKTransport
 
 Description
-    Transports a set of scalars, possibly including density
+    Transports a set of scalars, possibly including density, with AdImEx
+    time stepping, with the explcit scheme defined from a Butcher tableau
 
     Example:
     \verbatim
@@ -118,10 +119,9 @@ private:
 
         //- Butcher tableau for explicit scheme as a square matrix
         const scalarSquareMatrix RK_;
-
-        //- Coefficients for calculating gamma from the Courant number
-        const FixedList<scalar,2> gammaCoeffs_;
-
+        //- The sub time-steps
+        scalarList c_;
+        
         //- Name of the high-order correction scheme
         const word correctionSchemeName_;
 
@@ -183,9 +183,8 @@ private:
             return corrScheme(flux)->correction(vf);
         }
         
-        // Set the flux for the wind at an intermediate time. i=-1 for old or
-        // new timelevel, i>=0 for an RK stage
-        void setFlux(const label i=-1);
+        // Set the flux for the wind at the mid-time
+        void setFlux();
 
 public:
 
