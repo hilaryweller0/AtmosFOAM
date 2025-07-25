@@ -296,6 +296,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             else
             {
                 s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*divF)/s_[0];
+                s_[is][0] += 1;
+                s_[is][1] -= 1;
                 fvScalarMatrix sEqn
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
@@ -308,8 +310,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             // Set the density face values for fluxes
             if (is == 0 && massFluxName_ != "none")
             {
-                rhoX.set(0, sL[0][0] + gamma*sHC[0][0]
-                                 /(c_[iRK]*beta*(1-alpha)+RK_[iRK][0]*(1-beta)));
+                rhoX.set(0, sL[0][0] + RK_[iRK][0]*gamma*sHC[0][0]
+                              /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta)));
                 for(label j = 1; j <= iRK; j++)
                 {
                     rhoX.set(j, sL[j][0] + gamma/(1-beta)*sHC[j][0]);
