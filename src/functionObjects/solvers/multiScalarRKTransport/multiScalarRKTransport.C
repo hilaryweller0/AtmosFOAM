@@ -236,15 +236,18 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
      <<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()<<endl;
 
     // Store the high and low-order face values for each stage, for each field
-     PtrList<PtrList<surfaceScalarField>> sL(RK_.n());
-     PtrList<PtrList<surfaceScalarField>> sHC(RK_.n());
-     PtrList<surfaceScalarField> rhoX(RK_.n());
-         for(label iRK = 0; iRK < RK_.n(); iRK++)
+    PtrList<PtrList<surfaceScalarField>> sL(RK_.n());
+    PtrList<PtrList<surfaceScalarField>> sHC(RK_.n());
+    for(label iRK = 0; iRK < RK_.n(); iRK++)
     {
         sL.set(iRK, new PtrList<surfaceScalarField>(nFields_));
         sHC.set(iRK, new PtrList<surfaceScalarField>(nFields_));
     }
-
+    // The advecting density flux
+    PtrList<surfaceScalarField> rhoX(RK_.n()+1);
+    // The total flux for each tracer (used for FCT)
+    PtrList<surfaceScalarField> totalFlux(nFields_);
+    
     // RK advection stages
     for(int iRK = 0; iRK < RK_.n(); iRK++)
     {
@@ -292,6 +295,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                   + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, s_[is])
                 );
                 sEqn.solve();
+                // Accumulate the total flux for FCT
+                if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + sEqn.flux());
             }
             else
             {
@@ -302,38 +307,36 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 (
                     EulerDdt.fvmDdt(s_[0], s_[is])
                   + divF
-                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*sL[iRK][0]*phiv_, s_[is])
+                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*rhoX[iRK+1]*phiv_, s_[is])
                 );
                 sEqn.solve();
+                // Accumulate the total flux for FCT
+                if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + sEqn.flux());
             }
             
             // Set the density face values for fluxes
             if (is == 0 && massFluxName_ != "none")
             {
-                rhoX.set(0, sL[0][0] + RK_[iRK][0]*gamma*sHC[0][0]
-                              /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta)));
+                rhoX.set(0, sL[0][0]);
+                if (abs(RK_[iRK][0]) > SMALL)
+                {
+                    rhoX[0] += RK_[iRK][0]*gamma*sHC[0][0]
+                            /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta));
+                }
                 for(label j = 1; j <= iRK; j++)
                 {
                     rhoX.set(j, sL[j][0] + gamma/(1-beta)*sHC[j][0]);
                 }
+                rhoX.set(iRK+1, upInterp(phiv_, s_[0]));
             }
         }
     }
 
-/*    // Accumulate the total flux for each scalar
-    PtrList<surfaceScalarField> totalFlux(nFields_);
-    for(int is = 0; is < nFields_; is++)
-    {
-        totalFlux.set(is, F[0][is]);
-        for(label j = 0; j < RK_.n(); j++)
-        {
-            totalFlux[is] += RK_[RK_.n()-1][j]*F[j+1][is];
-        }
-    }
-*/
     // Apply FCT if needed
-/*    for(label is = 0; is < nFields_; is++)
+    for(label is = 0; is < nFields_; is++)
     {
+        const bool densityWeighted = is > 0 && massFluxName_ != "none";
+        
         if (FCTiter_[is] > 0)
         {
             surfaceScalarField fluxCorr = totalFlux[is];
@@ -341,46 +344,54 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             // Find the bounded solution and the bounded flux
             if (!densityWeighted)
             {
-                const surfaceScalarField phi0 = (1-beta)*phiv_.oldTime();
-                const surfaceScalarField phi1 = beta*phiv_.oldTime();
+                const surfaceScalarField phi0 = (1-beta)*phiv_;
+                const surfaceScalarField phi1 = beta*phiv_;
 
                 volScalarField sInc
                      = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
                 s_[is] = s_[is].oldTime() - dt*sInc;
                      
-           }
-            else
-            {
-                volScalarField betaC = max
-                (
-                    1- s_[0].oldTime()/max
-                    (
-                        dt*fvc::surfaceIntegrateOut(totalFlux[0]),
-                        dimensionedScalar(s_[0].dimensions(), SMALL)
-                    ),
-                    scalar(0)
-                );
-                beta = maxInterp.interpolate(betaC);
-                Info << "New beta goes from " << min(beta).value() << " to "
-                     << max(beta).value() << endl;
-
-                surfaceScalarField phi0 = (1-beta)*totalFlux[0];
-                surfaceScalarField phi1 = totalFlux[0] - phi0;
-
-                volScalarField sInc
-                    = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
-                s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*sInc)/s_[0];
-                
                 fvScalarMatrix sEqn
                 (
-                    EulerDdt.fvmDdt(s_[0], s_[is])
+                    EulerDdt.fvmDdt(s_[is])
                   + sInc
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
                 sEqn.solve();
+                
+                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+            }
+           else
+           {
+               volScalarField betaC = max
+               (
+                   1- s_[0].oldTime()/max
+                   (
+                       dt*fvc::surfaceIntegrateOut(totalFlux[0]),
+                       dimensionedScalar(s_[0].dimensions(), SMALL)
+                   ),
+                   scalar(0)
+               );
+               beta = maxInterp.interpolate(betaC);
+               Info << "New beta goes from " << min(beta).value() << " to "
+                    << max(beta).value() << endl;
 
-                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime())
-                          + sEqn.flux();
+               surfaceScalarField phi0 = (1-beta)*totalFlux[0];
+               surfaceScalarField phi1 = totalFlux[0] - phi0;
+
+               volScalarField sInc
+                    = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
+               s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*sInc)/s_[0];
+                
+               fvScalarMatrix sEqn
+               (
+                   EulerDdt.fvmDdt(s_[0], s_[is])
+                 + sInc
+                 + upwindCon.fvmDiv(phi1, s_[is])
+               );
+               sEqn.solve();
+
+               fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
             }
 
             if (FCTlimits_[is].size() == 0)
@@ -404,7 +415,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             }
         }
     }
-*/
+
     return true;
 }
 
