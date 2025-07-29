@@ -45,9 +45,11 @@ namespace fvc
 {
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+template<class FieldType>
 void fluxLimit
 (
     volScalarField& Td,
+    const FieldType& rho,
     const surfaceScalarField& fluxCorr,
     const dimensionedScalar& dt,
     const int nIter
@@ -70,14 +72,15 @@ void fluxLimit
     Tmax = fvc::localMax(Tfmax);
     Tmin = fvc::localMin(Tfmin);
 
-    fluxLimit(Td, fluxCorr, Tmin, Tmax, dt, nIter);
+    fluxLimit(Td, rho, fluxCorr, Tmin, Tmax, dt, nIter);
 }
 
 
-template<class Type>
+template<class Type, class FieldType>
 void fluxLimit
 (
     volScalarField& Td,
+    const FieldType& rho,
     const surfaceScalarField& fluxCorr,
     const Type& Tmin,
     const Type& Tmax,
@@ -98,8 +101,8 @@ void fluxLimit
             limitedCorr = fluxCorr - limitedCorr;
         }
         // Amount each cell can rise or fall by
-        volScalarField Qp = Tmax - Td;
-        volScalarField Qm = Td - Tmin;
+        volScalarField Qp(rho*(Tmax - Td));
+        volScalarField Qm(rho*(Td - Tmin));
 
         // Check for diffusive (rather than anti-diffusive) corrections
         // (not used as it makes the results noisy)
@@ -121,7 +124,7 @@ void fluxLimit
 
         fluxLimitFromQ(limitedCorr, Qp, Qm, dt);
 
-        Td -= dt*fvc::div(limitedCorr);
+        Td -= dt*fvc::div(limitedCorr)/rho;
     }
 }
 
@@ -149,6 +152,7 @@ void fluxLimitFromQ
         if (mag(Pp[cellI]) < SMALL) Rp[cellI] = 0;
         if (mag(Pm[cellI]) < SMALL) Rm[cellI] = 0;
     }
+    Info << "Done" << endl;
 
     // Up and downwind interpolation schemes based on mesh orientation
     upwind<scalar> up(mesh, mesh.magSf());

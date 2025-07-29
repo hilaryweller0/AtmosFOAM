@@ -396,22 +396,51 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
 
             if (FCTlimits_[is].size() == 0)
             {
-                fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+                if (!densityWeighted)
+                {
+                    fvc::fluxLimit(s_[is], fluxCorr, dt, FCTiter_[is]);
+                }
+                else
+                {
+                    fvc::fluxLimit(s_[is], s_[0], fluxCorr, dt, FCTiter_[is]);
+                }
             }
             else if (FCTlimits_[is].size() == 1)
             {
-                fvc::fluxLimit
-                (
-                    s_[is], fluxCorr, FCTlimits_[is][0], GREAT, dt, FCTiter_[is]
-                );
+                if (!densityWeighted)
+                {
+                    fvc::fluxLimit
+                    (
+                        s_[is], fluxCorr, FCTlimits_[is][0], GREAT, dt, FCTiter_[is]
+                    );
+                }
+                else
+                {
+                    fvc::fluxLimit
+                    (
+                        s_[is], s_[0], fluxCorr, FCTlimits_[is][0], GREAT, dt,
+                        FCTiter_[is]
+                    );
+                }
             }
             else
             {
-                fvc::fluxLimit
-                (
-                    s_[is], fluxCorr, FCTlimits_[is][0], FCTlimits_[is][1],
-                    dt, FCTiter_[is]
-                );
+                if (!densityWeighted)
+                {
+                    fvc::fluxLimit
+                    (
+                        s_[is], fluxCorr, FCTlimits_[is][0], FCTlimits_[is][1],
+                        dt, FCTiter_[is]
+                    );
+                }
+                else
+                {
+                    fvc::fluxLimit
+                    (
+                        s_[is], s_[0], fluxCorr, FCTlimits_[is][0],
+                        FCTlimits_[is][1], dt, FCTiter_[is]
+                    );
+                }
             }
         }
     }

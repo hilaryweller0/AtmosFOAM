@@ -48,10 +48,36 @@ namespace Foam
 
 namespace fvc
 {
+    template<class FieldType>
+    void fluxLimit
+    (
+        volScalarField& Td,
+        const FieldType& rho,
+        const surfaceScalarField& fluxCorr,
+        const dimensionedScalar& dt,
+        const int nIter = 1
+    );
+    
     void fluxLimit
     (
         volScalarField& Td,
         const surfaceScalarField& fluxCorr,
+        const dimensionedScalar& dt,
+        const int nIter = 1
+    )
+    {
+        geometricOneField rho;
+        return fluxLimit(Td, rho, fluxCorr, dt, nIter);
+    }
+    
+    template<class Type, class FieldType>
+    void fluxLimit
+    (
+        volScalarField& Td,
+        const FieldType& rho,
+        const surfaceScalarField& fluxCorr,
+        const Type& Tmin,
+        const Type& Tmax,
         const dimensionedScalar& dt,
         const int nIter = 1
     );
@@ -65,8 +91,12 @@ namespace fvc
         const Type& Tmax,
         const dimensionedScalar& dt,
         const int nIter = 1
-    );
-
+    )
+    {
+        geometricOneField rho;
+        return fluxLimit(Td, rho, fluxCorr, Tmin, Tmax, dt, nIter);
+    }
+    
     void fluxLimitFromQ
     (
         surfaceScalarField& fluxCorr,
