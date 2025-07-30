@@ -318,10 +318,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             if (is == 0 && massFluxName_ != "none")
             {
                 rhoX.set(0, sL[0][0]);
-                if (abs(RK_[iRK][0]) > SMALL)
+                if (mag(RK_[iRK][0]) > SMALL)
                 {
                     rhoX[0] += RK_[iRK][0]*gamma*sHC[0][0]
                             /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta));
+                    surfaceScalarField scale = RK_[iRK][0]*gamma
+                        /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta));
                 }
                 for(label j = 1; j <= iRK; j++)
                 {
