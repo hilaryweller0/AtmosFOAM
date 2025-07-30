@@ -243,10 +243,10 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         sL.set(iRK, new PtrList<surfaceScalarField>(nFields_));
         sHC.set(iRK, new PtrList<surfaceScalarField>(nFields_));
     }
-    // The advecting density flux
-    PtrList<surfaceScalarField> rhoX(RK_.n()+1);
     // The total flux for each tracer (used for FCT)
     PtrList<surfaceScalarField> totalFlux(nFields_);
+    
+    volScalarField rhoPrev = s_[0];
     
     // RK advection stages
     for(int iRK = 0; iRK < RK_.n(); iRK++)
@@ -256,81 +256,46 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
         {
             // Is this field density weighted?
             const bool densityWeighted = is > 0 && massFluxName_ != "none";
+            if (is == 0 && massFluxName_ != "none")
+            {
+                rhoPrev = s_[is];
+            }
 
+            // Temporary field for this tracer, optionally density weighted
+            volScalarField T = !densityWeighted ? s_[is]
+                 : volScalarField(s_[is].name(), rhoPrev*s_[is]);
+            T.oldTimeRef() = !densityWeighted ? s_[is].oldTime()
+                           : volScalarField(s_[0].oldTime()*s_[is].oldTime());
+            
             // Calculate the high and low-order face values
-            sL[iRK].set(is, upInterp(phiv_, s_[is]));
-            sHC[iRK].set(is, hCorr(phiv_, s_[is]));
+            sL[iRK].set(is, upInterp(phiv_, T));
+            sHC[iRK].set(is, hCorr(phiv_, T));
 
             // Sum the explicit fluxes
             surfaceScalarField F = c_[iRK]*(1-alpha)*beta*sL[0][is];
-            
-            if (!densityWeighted)
+            for(label j = 0; j <= iRK; j++)
             {
-                for(label j = 0; j <= iRK; j++)
-                {
-                    F += RK_[iRK][j]*((1-beta)*sL[j][is] + gamma*sHC[j][is]);
-                }
-            }
-            else
-            {
-                F *= rhoX[0];
-                for(label j = 0; j <= iRK; j++)
-                {
-                    F += RK_[iRK][j]*rhoX[j]*
-                        ((1-beta)*sL[j][is] + gamma*sHC[j][is]);
-                }
+                F += RK_[iRK][j]*((1-beta)*sL[j][is] + gamma*sHC[j][is]);
             }
             
             // Assemble and solve the transport equation
             volScalarField divF("divF", fvc::div(phiv_*F));
-            if (!densityWeighted)
-            {
-                s_[is] = s_[is].oldTime() - dt*divF;
-                s_[is][0] += 1;
-                s_[is][1] -= 1;
-                fvScalarMatrix sEqn
-                (
-                    EulerDdt.fvmDdt(s_[is])
-                  + divF
-                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, s_[is])
-                );
-                sEqn.solve();
-                // Accumulate the total flux for FCT
-                if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + sEqn.flux());
-            }
-            else
-            {
-                s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*divF)/s_[0];
-                s_[is][0] += 1;
-                s_[is][1] -= 1;
-                fvScalarMatrix sEqn
-                (
-                    EulerDdt.fvmDdt(s_[0], s_[is])
-                  + divF
-                  + upwindCon.fvmDiv(c_[iRK]*alpha*beta*rhoX[iRK+1]*phiv_, s_[is])
-                );
-                sEqn.solve();
-                // Accumulate the total flux for FCT
-                if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + sEqn.flux());
-            }
+            T = T.oldTime() - dt*divF;
+            T[0] += 1;
+            T[1] -= 1;
+            fvScalarMatrix TEqn
+            (
+                EulerDdt.fvmDdt(T)
+              + divF
+              + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, T)
+            );
+            TEqn.solve();
+
+            // Accumulate the total flux for FCT
+            if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + TEqn.flux());
             
-            // Set the density face values for fluxes
-            if (is == 0 && massFluxName_ != "none")
-            {
-                rhoX.set(0, sL[0][0]);
-                if (mag(RK_[iRK][0]) > SMALL)
-                {
-                    rhoX[0] += RK_[iRK][0]*gamma*sHC[0][0]
-                            /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta));
-                    surfaceScalarField scale = RK_[iRK][0]*gamma
-                        /(c_[iRK]*beta*(1-alpha) + RK_[iRK][0]*(1-beta));
-                }
-                for(label j = 1; j <= iRK; j++)
-                {
-                    rhoX.set(j, sL[j][0] + gamma/(1-beta)*sHC[j][0]);
-                }
-                rhoX.set(iRK+1, upInterp(phiv_, s_[0]));
-            }
+            // Update s_[is]
+            s_[is] = !densityWeighted ? T : volScalarField(T/s_[0]);
         }
     }
 
