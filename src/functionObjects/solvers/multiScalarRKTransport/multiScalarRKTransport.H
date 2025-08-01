@@ -131,6 +131,9 @@ private:
         //- (Optional) min and max values for each tracer
         scalarListList FCTlimits_;
         
+        //- The coefficients for calculating the Im-Ex mix, beta from Courant
+        const FixedList<scalar,3> betaCoeffs_;
+        
         //- The dictionary that describes the (changing) velocity field
         const word velocityDictName_;
         

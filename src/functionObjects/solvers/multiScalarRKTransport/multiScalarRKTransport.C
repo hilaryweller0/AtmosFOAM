@@ -125,6 +125,7 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
             scalarListList(nFields_)
         )
     ),
+    betaCoeffs_(dict.lookup("betaCoeffs")),
     velocityDictName_
     (
         dict.lookupOrDefault<word>("velocityFieldDict", "")
@@ -228,12 +229,15 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     surfaceScalarField Co = maxInterp.interpolate(CourantNo(phiv_, dt));
     // Calculate alpha as a function of the max Courant number
     surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
-    surfaceScalarField beta = 1 - 1/max(scalar(1), Co);
-    surfaceScalarField gamma = 1 - 1/max(scalar(GREAT), Co);
+    surfaceScalarField beta = betaCoeffs_[1]*(1 - 1/
+        (1 + betaCoeffs_[2]/betaCoeffs_[1]*max(Co - betaCoeffs_[0],scalar(0))));
+    //surfaceScalarField gamma = 1 - 1/max(scalar(GREAT), Co);
+    geometricOneField gamma;
     Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() <<nl
         <<"alpha goes from "<<min(alpha).value()<<" to "<<max(alpha).value()<<nl
         <<"beta goes from "<<min(beta).value()<<" to "<<max(beta).value()<<nl
-     <<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()<<endl;
+     //<<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()
+       <<endl;
 
     // Store the high and low-order face values for each stage, for each field
     PtrList<PtrList<surfaceScalarField>> sL(RK_.n());
@@ -311,6 +315,8 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             // Find the bounded solution and the bounded flux
             if (!densityWeighted)
             {
+                beta = 1 - 1/max(Co, scalar(1));
+                
                 const surfaceScalarField phi0 = (1-beta)*phiv_;
                 const surfaceScalarField phi1 = beta*phiv_;
 
