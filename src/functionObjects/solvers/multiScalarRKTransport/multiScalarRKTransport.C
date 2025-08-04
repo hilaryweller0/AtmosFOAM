@@ -40,6 +40,7 @@ License
 #include "addToRunTimeSelectionTable.H"
 #include "fvcFluxLimit.H"
 #include "velocityField.H"
+#include "fvcReconstruct.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
 
@@ -85,6 +86,13 @@ void Foam::functionObjects::multiScalarRKTransport::setFlux()
             autoPtr<velocityField> v;
             v = velocityField::New(dict);
             v->applyTo(phiv_, vTime);
+            
+            // Write wind if writeTime
+            if (time_.writeTime())
+            {
+                volVectorField U("U", fvc::reconstruct(phiv_));
+                U.write();
+            }
         }
     }
     

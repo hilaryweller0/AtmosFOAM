@@ -46,7 +46,7 @@ vector deformationalNonDivergentVelocityField::streamfunctionAt
     (
         C*sqr
         (
-            Foam::cos(M_PI*xp/domainSize_.x())
+            Foam::sin(M_PI*xp/domainSize_.x())
            *Foam::sin(M_PI*yp/domainSize_.y())
         )*Foam::cos(M_PI*time/T)
       + backgroundFlow_[0]*p.y()
