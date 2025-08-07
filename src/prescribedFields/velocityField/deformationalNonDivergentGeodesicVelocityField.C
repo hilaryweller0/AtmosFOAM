@@ -17,7 +17,6 @@ deformationalNonDivergentGeodesicVelocityField::
 deformationalNonDivergentGeodesicVelocityField(const dictionary& dict)
 :
     geodesicNonDivergentVelocityField(dict),
-    radius(readScalar(dict.lookup("radius"))),
     deformationScale(readScalar(dict.lookup("deformationScale")))
 {};
 
@@ -32,7 +31,7 @@ vector deformationalNonDivergentGeodesicVelocityField::streamfunctionAt
     const deformationalNonDivergentGeodesicVelocityFieldData&
          data = deformationalNonDivergentGeodesicVelocityFieldData::New
     (
-        spherical.mesh(), radius, deformationScale, endTime_.value()
+        spherical.mesh(), earthRadius_.value(), deformationScale, endTime_.value()
     );
 
     const scalar lon = spherical.pointsLatLonz()[ip][0];

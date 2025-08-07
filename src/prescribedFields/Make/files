@@ -37,6 +37,7 @@ velocityField/uniformVelocityField.C
 velocityField/zeroVelocityField.C
 velocityField/constructiveRotorsVelocityField.C
 velocityField/sinusoidalVelocityField.C
+velocityField/BK24SinusoidalVelocityField.C
 velocityField/geodesicVelocityField.C
 velocityField/geodesicNonDivergentVelocityField.C
 velocityField/geodesicHadleyLikeVelocityField.C

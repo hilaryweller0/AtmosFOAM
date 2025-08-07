@@ -12,6 +12,7 @@ f=$2
 
 # Get list of times
 times=(`grep 'Time = ' $case/log | awk '{if (NF == 3) print $3}'`)
+nTimes=${#times[*]}
 
 # Create file of Courant number versus time
 c=`grep 'Courant Number mean' $case/log | awk '{print $6}'`
@@ -22,14 +23,14 @@ echo -e ${times[*]}\\n$c | \
 echo Courant numbers written to $case/c.dat
 
 # Create file of iterations versus time
-noCorr=`grep nOuterCorrectors $case/system/fvSolution | awk '{print $2}' |\
-        awk -F';' '{print $1}'`
-niCorr=`grep nCorrectors $case/system/fvSolution | awk '{print $2}' \
-        | awk -F';' '{print $1}'`
-let nCorr=$noCorr*niCorr
-nTimes=${#times[*]}
-
+# Find the number of solver calls per time step
+#noCorr=`grep nOuterCorrectors $case/system/fvSolution | awk '{print $2}' |\
+#        awk -F';' '{print $1}'`
+#niCorr=`grep nCorrectors $case/system/fvSolution | awk '{print $2}' \
+#        | awk -F';' '{print $1}'`
+#let nCorr=$noCorr*niCorr
 nIter=(`grep 'Solving for '$f $case/log | awk '{print $15}'`)
+let nCorr=${#nIter[*]}/$nTimes
 
 echo "#Time n${f}Iter" > $case/n${f}Iter.dat
 let it=0

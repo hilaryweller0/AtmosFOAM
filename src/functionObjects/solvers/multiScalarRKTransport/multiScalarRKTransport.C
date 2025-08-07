@@ -338,7 +338,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                   + sInc
                   + upwindCon.fvmDiv(phi1, s_[is])
                 );
-                sEqn.solve();
+                sEqn.solve(s_[is].name()+"FCT");
                 
                 fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
             }

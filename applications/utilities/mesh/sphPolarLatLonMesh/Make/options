@@ -1,0 +1,15 @@
+EXE_INC = \
+    -ggdb3 -O0 -DFULLDEBUG \
+    -I$(FOAM_UTILITIES)/mesh/generation/extrudeMesh/extrudedMesh \
+    -I$(FOAM_SRC)/mesh/extrudeModel/lnInclude \
+    -I$(FOAM_SRC)/meshTools/lnInclude \
+    -IpolarPatch \
+    -I$(ATMOSFOAM_SRC)/finiteVolume/lnInclude
+
+
+EXE_LIBS = \
+    -L$(FOAM_USER_LIBBIN) \
+    -lmeshTools \
+    -lextrudeModel \
+    -lfiniteVolumeAtmosFOAM
+

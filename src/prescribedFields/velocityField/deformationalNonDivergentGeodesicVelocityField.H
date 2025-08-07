@@ -13,7 +13,6 @@ class deformationalNonDivergentGeodesicVelocityField final : public geodesicNonD
 
     private:
 
-    const scalar radius;
     const scalar deformationScale;
     
     vector streamfunctionAt
