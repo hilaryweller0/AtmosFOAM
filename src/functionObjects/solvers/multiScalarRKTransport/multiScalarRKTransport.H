@@ -157,12 +157,21 @@ private:
         tmp<SurfaceField<scalar>> upInterp
         (
             const surfaceScalarField& flux,
-            const volScalarField& vf
+         const volScalarField& vf
         ) const
         {
             return upwindScheme(flux)->interpolate(vf);
         }
-
+        // Upwind flux
+        tmp<SurfaceField<scalar>> upFlux
+        (
+            const surfaceScalarField& flux,
+         const volScalarField& vf
+        ) const
+        {
+            return flux*upwindScheme(flux)->interpolate(vf);
+        }
+        
         // The correction scheme
         tmp<surfaceInterpolationScheme<scalar>> corrScheme
         (

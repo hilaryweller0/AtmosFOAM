@@ -275,7 +275,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
 
             // Temporary field for this tracer, optionally density weighted
             volScalarField T = !densityWeighted ? s_[is]
-                 : volScalarField(s_[is].name(), rhoPrev*s_[is]);
+                : volScalarField
+                  (
+                      IOobject(s_[0].name()+s_[is].name(), time_.name(), mesh_),
+                      rhoPrev*s_[is],
+                      s_[is].boundaryField().types()
+                  );
             T.oldTimeRef() = !densityWeighted ? s_[is].oldTime()
                            : volScalarField(s_[0].oldTime()*s_[is].oldTime());
             
@@ -301,7 +306,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
               + divF
               + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, T)
             );
-            TEqn.solve();
+            if (is == 0 && massFluxName_ != "none" && iRK==RK_.n()-1)
+            // This is the final density, so make it accurate
+            {
+                TEqn.solve(s_[is].name()+"Final");
+            }
+            else TEqn.solve();
 
             // Accumulate the total flux for FCT
             if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + TEqn.flux());
@@ -370,7 +380,7 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                  + sInc
                  + upwindCon.fvmDiv(phi1, s_[is])
                );
-               sEqn.solve();
+               sEqn.solve(s_[is].name()+"FCT");
 
                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
             }

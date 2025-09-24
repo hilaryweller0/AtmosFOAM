@@ -9,6 +9,7 @@ tracerField/coneTracerField.C
 tracerField/slottedCylinderTracerField.C
 tracerField/geodesicCosBellsTracerField.C
 tracerField/geodesicSlottedCylinderTracerField.C
+tracerField/geodesicSinusoidalTracerField.C
 tracerField/geodesicGaussiansTracerField.C
 tracerField/schaerRadialTracerField.C
 tracerField/schaerRadial3DTracerField.C
