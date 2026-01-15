@@ -8,6 +8,8 @@ tracerField/cosSqrTracerField.C
 tracerField/coneTracerField.C
 tracerField/slottedCylinderTracerField.C
 tracerField/geodesicCosBellsTracerField.C
+tracerField/geodesicConeTracerField.C
+tracerField/geodesicSolidRotationTracerField.C
 tracerField/geodesicSlottedCylinderTracerField.C
 tracerField/geodesicSinusoidalTracerField.C
 tracerField/geodesicGaussiansTracerField.C

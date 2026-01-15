@@ -7,9 +7,14 @@ namespace Foam
 defineTypeNameAndDebug(velocityField, 0);
 defineRunTimeSelectionTable(velocityField, dict);
 
-autoPtr<velocityField> velocityField::New(const dictionary& dict)
+autoPtr<velocityField> velocityField::New
+(
+    const dictionary& dict,
+    const word velocityType
+)
 {
-    const word velocityFieldType(dict.lookupOrDefault<word>("type", "zeroVelocity"));
+    const word velocityFieldType = velocityType == "" ?
+            (dict.lookupOrDefault<word>("type", "zeroVelocity")) : velocityType;
 
     dictConstructorTable::iterator cstrIter =
         dictConstructorTablePtr_->find(velocityFieldType);

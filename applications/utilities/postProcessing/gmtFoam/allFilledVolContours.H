@@ -350,4 +350,5 @@ if (annotate == "minMax")
 
 // remove temp files
 systemCall = "rm colourScale.cpt '" + tmpFile + "' ";
+//systemCall = "rm '" + tmpFile + "' ";
 systemVerbose(systemCall);

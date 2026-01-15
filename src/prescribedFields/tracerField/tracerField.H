@@ -49,7 +49,8 @@ class tracerField
     static autoPtr<tracerField> New
     (
         const dictionary& dict,
-        const advectable& velocityField
+        const advectable& velocityField,
+        const word tracerType = ""
     );
     void applyTo(volScalarField& T) const;
     void applyTo(surfaceScalarField& Tf) const;

@@ -21,7 +21,7 @@ c(dict.lookupOrDefault<scalar>("c", scalar(0.9)))
 
 scalar geodesicCosBellsTracerField::tracerAt(const point& p, const Time& t) const
 {
-    const polarPoint& polarp = convertToPolar(p);
+    const polarPoint polarp = convertToPolar(p);
 
     if (r1(polarp) < R/2)
     {

@@ -29,7 +29,7 @@ class sphericalVector
 };
 
 //- convert Cartesian vector to local Cartesian
-sphericalVector convertToLocal
+vector convertToLocal
 (
     const point& pc,
     const vector& v

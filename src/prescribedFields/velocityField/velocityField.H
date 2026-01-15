@@ -25,7 +25,11 @@ class velocityField
         (dict)
     );
 
-    static autoPtr<velocityField> New(const dictionary& dict);
+    static autoPtr<velocityField> New
+    (
+        const dictionary& dict,
+        const word velocityType = ""
+    );
     void applyTo(surfaceScalarField& phi) const
     {
         applyTo(phi, phi.time().value());

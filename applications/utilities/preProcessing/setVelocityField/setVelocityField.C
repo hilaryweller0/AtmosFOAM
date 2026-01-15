@@ -17,6 +17,12 @@ int main(int argc, char *argv[])
     );
     Foam::argList::addOption
     (
+        "velocityType",
+        "type",
+        "specify velocity type rather than read from dictionary"
+    );
+    Foam::argList::addOption
+    (
         "region",
         "meshRegion",
         "specify a non-default region to plot"
@@ -111,7 +117,10 @@ int main(int argc, char *argv[])
         )
     );
 
-    autoPtr<velocityField> v(velocityField::New(dict));
+    const word velocityType = args.optionFound("velocityType") ?
+                    args.optionRead<word>("velocityType") : "";
+
+    autoPtr<velocityField> v(velocityField::New(dict, velocityType));
 
     forAll(timeDirs, timeI)
     {
@@ -123,6 +132,7 @@ int main(int argc, char *argv[])
         phi.write();
 
         U = fvc::reconstruct(phiv);
+        //v->applyTo(U);
         Uf = linearInterpolate(U);
         Uf += (phiv - (Uf & mesh.Sf()))*mesh.Sf()/sqr(mesh.magSf());
 

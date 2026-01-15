@@ -11,10 +11,12 @@ defineRunTimeSelectionTable(tracerField, dict);
 autoPtr<tracerField> tracerField::New
 (
     const dictionary& dict,
-    const advectable& velocityField
+    const advectable& velocityField,
+    const word tracerType
 )
 {
-    const word tracerFieldType(dict.lookup("type"));
+    const word tracerFieldType = tracerType == "" ?
+                                 word(dict.lookup("type")) : tracerType;
 
     dictConstructorTable::iterator cstrIter =
         dictConstructorTablePtr_->find(tracerFieldType);

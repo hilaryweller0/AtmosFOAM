@@ -11,8 +11,15 @@ addToRunTimeSelectionTable(velocityField, geodesicSolidBodyVelocityField, dict);
 geodesicSolidBodyVelocityField::geodesicSolidBodyVelocityField(const dictionary& dict)
 :
 nonDivergentVelocityField(dict),
-radius("radius", dimLength, dict.lookupOrDefault<scalar>("radius", scalar(6.3712e6))),
-alpha(dict.lookupOrDefault<scalar>("tilt", scalar(0)))
+radius
+(
+    dict.lookupOrDefault<dimensionedScalar>
+    (
+        "radius", dimensionedScalar(dimLength, scalar(6.3712e6))
+    ).value()
+),
+alpha(dict.lookupOrDefault<scalar>("tilt", scalar(0))),
+u0(dict.lookupOrDefault<dimensionedScalar>("u0", 2*M_PI*radius/endTime_).value())
 {};
 
 vector geodesicSolidBodyVelocityField::streamfunctionAt
@@ -21,14 +28,13 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
     scalar time
 ) const
 {
-    const scalar u0 = 2 * M_PI * radius.value() / endTime_.value();
     const polarPoint& polarp = convertToPolar(p);
     const scalar lat = polarp.lat();
     const scalar lon = polarp.lon();
 
     const scalar psi = - u0 * (Foam::sin(lat) * Foam::cos(alpha) - Foam::cos(lon) * Foam::cos(lat) * Foam::sin(alpha));
 
-    return p/mag(p) * psi * radius.value();
+    return p/polarp.r() * psi * polarp.r();
 }
 
 point geodesicSolidBodyVelocityField::initialPositionOf
@@ -39,14 +45,13 @@ point geodesicSolidBodyVelocityField::initialPositionOf
 {
     // assume alpha = 0
     
-    const scalar u0 = 2 * M_PI * radius.value() / endTime_.value();
     const polarPoint& polarp = convertToPolar(p);
     const scalar lat = polarp.lat();
     scalar lon = polarp.lon();
 
-    lon -= u0/radius.value() * time; 
+    lon -= u0/polarp.r() * time; 
 
-    const polarPoint departureP(lon, lat, radius.value());
+    const polarPoint departureP(lon, lat, polarp.r());
     return departureP.cartesian();
 }
 }

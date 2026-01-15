@@ -16,8 +16,14 @@ int main(int argc, char *argv[])
     Foam::argList::addOption
     (
         "tracerDict",
-        "dictName",
-        "specify non-default dictionary name for the tracer (in constant)"
+     "dictName",
+     "specify non-default dictionary name for the tracer (in constant)"
+    );
+    Foam::argList::addOption
+    (
+        "tracerType",
+        "type",
+        "specify tracer type rather than read from dictionary"
     );
     Foam::argList::addOption
     (
@@ -122,13 +128,17 @@ int main(int argc, char *argv[])
     
         velocityField = new zeroVelocityField(velocityDict);
     }
+    const word tracerType = args.optionFound("tracerType") ?
+                            args.optionRead<word>("tracerType") : "";
+
     Info << "Setting tracer" << endl;
     autoPtr<tracerField> tracer
     (
         tracerField::New
         (
             tracerDict,
-            dynamic_cast<advectable&>(velocityField())
+            dynamic_cast<advectable&>(velocityField()),
+            tracerType
         )
     );
 

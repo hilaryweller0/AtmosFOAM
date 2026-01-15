@@ -15,8 +15,9 @@ class geodesicSolidBodyVelocityField final : public nonDivergentVelocityField, p
     private:
     vector streamfunctionAt(const point& p, scalar time) const;
     point initialPositionOf(const point& p, scalar time) const;
-    const dimensionedScalar radius;
+    const scalar radius;
     const scalar alpha;
+    const scalar u0;
 };
 }
 #endif

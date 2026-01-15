@@ -51,7 +51,7 @@ Foam::tensor Foam::sphericalVector::unitTensor() const
     return tensor(lonHat, latHat, rHat);
 }
 
-Foam::sphericalVector Foam::convertToLocal
+Foam::vector Foam::convertToLocal
 (
     const point& pc,
     const vector& v
