@@ -80,6 +80,14 @@ int main(int argc, char *argv[])
             // Rate of change without implicit advection
             dhUdt = -h*(F ^ U) - magg*h*fvc::grad(h + h0);
             
+            // How close is the initial gradient wind balance
+            volScalarField gradWind("gradWind", mag(fvc::div(phi,U) + h*(F^U)));
+            gradWind.write();
+            volScalarField ghGradh("ghGradh", mag(magg*h*fvc::grad(h + h0)));
+            ghGradh.write();
+            volScalarField imbalance("imbalance", gradWind-ghGradh);
+            imbalance.write();
+            
             // Momentum equation with implicit advection
             fvVectorMatrix UEqn
             (
