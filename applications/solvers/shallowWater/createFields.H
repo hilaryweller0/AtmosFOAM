@@ -12,6 +12,7 @@ volScalarField h
     ),
     mesh
 );
+surfaceScalarField hf = fvc::interpolate(h);
 
 Info << "Reading in velocity field U (cell centre velocity)\n" << endl; 
 volVectorField U
@@ -38,7 +39,7 @@ surfaceScalarField phi
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    fvc::flux(h*U)
+    hf*fvc::flux(U)
 );
 
 const volVectorField gHat = mesh.C()/mag(mesh.C());
@@ -59,5 +60,7 @@ dhUdt = -fvc::div(phi,U) - h*(F ^ U) - magg*h*fvc::grad(h+h0),
 dhUdt -= (gHat & dhUdt)*gHat;
 dhUdt.correctBoundaryConditions();
 dhUdt.oldTime();
+
+surfaceScalarField ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
 
 mesh.schemes().setFluxRequired(h.name());

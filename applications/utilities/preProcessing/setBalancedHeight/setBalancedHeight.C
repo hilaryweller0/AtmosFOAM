@@ -31,51 +31,32 @@ Description
 
 \*---------------------------------------------------------------------------*/
 
-#include "Time.H"
-#include "timeSelector.H"
-#include "fvMesh.H"
 #include "argList.H"
-#include "volFields.H"
-#include "surfaceFields.H"
-#include "fvmLaplacian.H"
-#include "fvcDiv.H"
-#include "fvcVolumeIntegrate.H"
+#include "timeSelector.H"
+
+#include "fvMesh.H"
+#include "fvcDdt.H"
 #include "fvcSnGrad.H"
 #include "fvcFlux.H"
+#include "fvcLaplacian.H"
+#include "fvcReconstruct.H"
+
+#include "fvmDdt.H"
+#include "fvmDiv.H"
+#include "fvmLaplacian.H"
+#include "fvcVolumeIntegrate.H"
+
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
-    Foam::argList::addOption
-    (
-        "region",
-        "meshRegion",
-        "specify a non-default region to plot"
-    );
     #include "setRootCase.H"
     #include "createTime.H"
+    #include "createMesh.H"
     #define dt runTime.deltaT()
-    #define rMesh mesh
-    // Check for plotting non-default region
-    const string meshRegion = args.optionFound("region") ?
-                              args.optionRead<string>("region") :
-                              fvMesh::defaultRegion;
-
-    Info << "Create mesh for time = " << runTime.timeName() <<  " region "
-         << meshRegion << endl;
-
-    fvMesh mesh
-    (
-        Foam::IOobject
-        (
-            meshRegion, runTime.timeName(), runTime, IOobject::MUST_READ
-        )
-    );
-
-    // Read in and create variables and fields
-    #include "readEnvironmentalProperties.H"
+    #include "readEarthProperties.H"
     #include "createFields.H"
 
     const dictionary& itsDict = mesh.solution().subDict("initialisation");
@@ -84,27 +65,22 @@ int main(int argc, char *argv[])
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     // Keep the domain averaged h fixed
-    const dimensionedScalar meshVol("meshVol", dimVol, gSum(mesh.V()));
+    const dimensionedScalar meshVol(dimVolume, gSum(mesh.V()));
     const dimensionedScalar hMean = fvc::domainIntegrate(h)/meshVol;
 
     bool converged = false;
     for(label iter = 0; iter < maxIters && !converged; iter++)
     {
         Info << "Iteration " << iter << endl;
+        
         hf = fvc::interpolate(h);
-        phi = hf*(Uf & mesh.Sf());
-        
-        surfaceScalarField phiTmp = -dt*fvc::flux(fvc::div(phi,U))
-                                    -dt*hf*fvc::flux(twoOmega ^ U);
-        
-        if (withMountain)
-        {
-            phiTmp -= dt*g*hf*fvc::snGrad(h0)*mesh.magSf();
-        }
+        phi = hf*fvc::flux(U);
+        dhUdt = -fvc::div(phi, U) -h*(F ^ U);
+        phi = dt*(fvc::flux(dhUdt) - magg*hf*fvc::snGrad(h0)*mesh.magSf());
         
         fvScalarMatrix hEqn
         (
-            fvc::div(phiTmp) - fvm::laplacian(dt*g*hf, h, "laplacian(h)")
+            fvc::div(phi) - fvm::laplacian(dt*magg*hf, h, "laplacian(h)")
         );
         hEqn.setReference(0, h[0]);
         converged = hEqn.solve(h.name()).nIterations() == 0;
@@ -113,11 +89,22 @@ int main(int argc, char *argv[])
         dimensionedScalar hMeanTmp = fvc::domainIntegrate(h)/meshVol;
         h += hMean - hMeanTmp;
         Info << "h goes from " << min(h).value() << " to " << max(h).value()
-             << " mean = " << fvc::domainIntegrate(h)/meshVol
+             << " mean = " << (fvc::domainIntegrate(h)/meshVol).value()
              << endl;
     }
 
     h.write();
+    
+    // How close is the initial gradient wind balance
+    hf = fvc::interpolate(h);
+    phi = hf*fvc::flux(U);
+    ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
+    volScalarField gradWind("gradWind", mag(fvc::div(phi,U) + h*(F^U)));
+    gradWind.write();
+    volScalarField ghGradhC("ghGradh", mag(fvc::reconstruct(ghGradh)));
+    ghGradhC.write();
+    volScalarField imbalance("imbalance", gradWind-ghGradhC);
+    imbalance.write();
     
     volVectorField hU("hU", h*U);
     hU.write();

@@ -38,7 +38,6 @@ Description
 
 #include "fvMesh.H"
 #include "fvcDdt.H"
-#include "fvcGrad.H"
 #include "fvcSnGrad.H"
 #include "fvcFlux.H"
 #include "fvcLaplacian.H"
@@ -78,15 +77,9 @@ int main(int argc, char *argv[])
         {
             // Create and solve the momentum equation
             // Rate of change without implicit advection
-            dhUdt = -h*(F ^ U) - magg*h*fvc::grad(h + h0);
-            
-            // How close is the initial gradient wind balance
-            volScalarField gradWind("gradWind", mag(fvc::div(phi,U) + h*(F^U)));
-            gradWind.write();
-            volScalarField ghGradh("ghGradh", mag(magg*h*fvc::grad(h + h0)));
-            ghGradh.write();
-            volScalarField imbalance("imbalance", gradWind-ghGradh);
-            imbalance.write();
+            hf = fvc::interpolate(h);
+            ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
+            dhUdt = -h*(F ^ U) - fvc::reconstruct(ghGradh);
             
             // Momentum equation with implicit advection
             fvVectorMatrix UEqn
@@ -99,7 +92,7 @@ int main(int argc, char *argv[])
 
             // Update rate of change without pressure gradient (to be added
             // after the pressure equation)
-            dhUdt -= fvc::div(phi, U) + magg*h*fvc::grad(h+h0);
+            dhUdt -= fvc::div(phi, U) + fvc::reconstruct(ghGradh);
 
             // Constrain the momentum to be in the geometry if 3D geometry
             if (mesh.nGeometricD() == 3)
@@ -114,8 +107,9 @@ int main(int argc, char *argv[])
             volVectorField hU = h.oldTime() * U.oldTime()
                               + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
             
-            // Convert the momentum into a flux
-            phi = fvc::flux(hU);
+            // Convert the momentum into a flux and add mountain gradient
+            ghGradh = magg*hf*fvc::snGrad(h0)*mesh.magSf();
+            phi = fvc::flux(hU) - alpha*dt*ghGradh;
             
             // Construct and solve the pressure equation
             for(int icorr = 0; icorr < num.nPressureCorrs; icorr++)
@@ -128,8 +122,7 @@ int main(int argc, char *argv[])
                         fvm::ddt(h)
                       + fvc::div((1-alpha)*phi.oldTime())
                       + fvc::div(alpha*phi)
-                      - fvm::laplacian(alpha*dt*magg*h, h)
-                      - fvc::laplacian(alpha*dt*magg*h, h0)
+                      - fvm::laplacian(alpha*dt*magg*hf, h)
                     );
                     hEqn.solve();
 
@@ -137,13 +130,18 @@ int main(int argc, char *argv[])
                     if (orthCorr == num.nNonOrthogCorrs-1
                         && icorr == num.nPressureCorrs-1)
                     {
-                        surfaceScalarField hFlux = hEqn.flux()
-                            - alpha*dt*magg*fvc::interpolate(h)*fvc::snGrad(h0)*mesh.magSf();
-                        phi += hFlux;
-                        volVectorField hUinc = fvc::reconstruct(hFlux);
-                        hU  += hUinc;
-                        dhUdt += hUinc/(alpha*dt);
-                        dhUdt.correctBoundaryConditions();
+                        phi += hEqn.flux();
+                        volVectorField hUinc = fvc::reconstruct
+                        (
+                            hEqn.flux()
+                          - alpha*dt*ghGradh
+                        );
+                        hU += hUinc;
+                        if (alpha > 0)
+                        {
+                            dhUdt += hUinc/(alpha*dt);
+                            dhUdt.correctBoundaryConditions();
+                        }
                     }
                 }
 

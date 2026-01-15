@@ -1,4 +1,6 @@
 EXE_INC = -ggdb3 -O0 -DFULLDEBUG
 
-EXE_LIBS = 
 
+EXE_LIBS = \
+    -lmeshTools \
+    -lfiniteVolume
