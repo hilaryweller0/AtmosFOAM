@@ -34,3 +34,5 @@ volScalarField h0
 );
 Info << "Mountain height from " << min(h0.primitiveField()) << " to "
      << max(h0.primitiveField()) << endl;
+
+const volVectorField gHat = mesh.C()/mag(mesh.C());

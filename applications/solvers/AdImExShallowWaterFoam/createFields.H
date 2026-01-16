@@ -42,12 +42,10 @@ surfaceScalarField phi
     hf*fvc::flux(U)
 );
 
-const volVectorField gHat = mesh.C()/mag(mesh.C());
-
 Info<< "Creating Coriolis Force" << endl;
 const volVectorField F("F", ((2.0*Omega) & gHat)*gHat);
-volScalarField f("f", (2.0*Omega) & gHat);
-f.write();
+//volScalarField f("f", (2.0*Omega) & gHat);
+//f.write();
 
 // Rate of change of momentum, inheriting boundary conditions from U
 volVectorField dhUdt

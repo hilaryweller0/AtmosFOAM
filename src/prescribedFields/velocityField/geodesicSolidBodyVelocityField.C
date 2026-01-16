@@ -32,7 +32,8 @@ vector geodesicSolidBodyVelocityField::streamfunctionAt
     const scalar lat = polarp.lat();
     const scalar lon = polarp.lon();
 
-    const scalar psi = - u0 * (Foam::sin(lat) * Foam::cos(alpha) - Foam::cos(lon) * Foam::cos(lat) * Foam::sin(alpha));
+    const scalar psi = - u0 * (Foam::sin(lat) * Foam::cos(alpha)
+                     - Foam::cos(lon) * Foam::cos(lat) * Foam::sin(alpha));
 
     return p/polarp.r() * psi * polarp.r();
 }

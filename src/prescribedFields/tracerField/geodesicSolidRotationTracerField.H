@@ -21,6 +21,7 @@ class geodesicSolidRotationTracerField final : public tracerField
     const scalar H0;
     const scalar Omega;
     const scalar u0;
+    const Switch linear;
 };
 }
 #endif

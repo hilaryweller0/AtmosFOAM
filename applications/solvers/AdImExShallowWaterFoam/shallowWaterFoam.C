@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
         for(int outerCorr = 0; outerCorr < num.nOuterCorrs; outerCorr++)
         {
             // Create and solve the momentum equation
-            // Rate of change without implicit advection
+            // Rate of change with implicit advection
             hf = fvc::interpolate(h);
             ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
             dhUdt = -h*(F ^ U) - fvc::reconstruct(ghGradh);
