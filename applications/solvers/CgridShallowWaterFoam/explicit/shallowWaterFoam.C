@@ -25,10 +25,11 @@ Application
     CgridShallowWaterFoam
 
 Description
-    Explcit solver for inviscid shallow-water equations with rotation
-    on a C-grid.
+    Explicit solver for inviscid non-linear shallow-water equations
+    with rotation on a C-grid.
 
-    If the geometry is 3D then it is assumed to be one layers of cells.
+    If the geometry is 3D then it is assumed to be one layers of cells and
+    the component of the velocity normal to gravity is removed.
 
 \*---------------------------------------------------------------------------*/
 

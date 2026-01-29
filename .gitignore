@@ -9,19 +9,45 @@
 *.ii
 *.so
 *.pyc
+.ipynb_checkpoints
 
-# Large files #
+# Binary files #
+################
+*.docx
+*.doc
+*.xlsx
+*.xls
+*.odt
+*.ppt
+*.pptx
+*.nc
+*.rtf
+
+# Raw data files #
+*.dat
+*.xyz
+
+# Graphics files #
 ###############
 *.pdf
 *.ps
 *.eps
+*.epsi
 *.gif
-*.dat
 *.png
+*.jpg
+*.tiff
+*.mpg
+*.svg
+*.gif
+*.ogv
+*.mp4
+*.webm
 
 # Build directories
 ###################
 build
+dynamicCode
 
 # Packages #
 ############
@@ -72,6 +98,17 @@ core
 linux*
 lnInclude
 
+# OpenFOAM fields in constant directory #
+########################
+muSponge
+muSpongef
+Exnera
+thetaa
+u
+v
+w
+h0
+
 # Time and mesh directories #
 [0-9]
 [0-9]*[0-9]
@@ -96,6 +133,9 @@ processor*
 *.lof
 *.lot
 *.ttt
+
+# gedit latex file
+*.tex.ini
 
 testcases/build
 *.OpenFOAM

@@ -25,8 +25,8 @@ Application
     CgridShallowWaterFoam
 
 Description
-    Transient solver for inviscid (linear)shallow-water equations with rotation
-    on a C-grid.
+    Explicit solver for inviscid linear shallow-water equations
+    with rotation on a C-grid.
 
     If the geometry is 3D then it is assumed to be one layers of cells and the
     component of the velocity normal to gravity is removed.
@@ -41,13 +41,6 @@ Description
 #include "fvcDiv.H"
 #include "fvcFlux.H"
 #include "fvcReconstruct.H"
-#include "fvcAverage.H"
-
-//#include "fvcDdt.H"
-//#include "fvcLaplacian.H"
-//#include "fvmDdt.H"
-//#include "fvmDiv.H"
-//#include "fvmLaplacian.H"
 
 using namespace Foam;
 
@@ -71,14 +64,14 @@ int main(int argc, char *argv[])
 
     while (runTime.loop())
     {
-        Info<< "\n Time = " << runTime.name() << nl << endl;
+        Info<< "\n Time = " << runTime.name() << endl;
 
         #include "CourantNo.H"
 
         // Outer Iterations
         for (int iIt=0; iIt < nIters; iIt++)
         {
-            // Solve momentum equation on faces
+            // Solve momentum equation on faces to update the flux
             dUdt = - ((F^Uf) & mesh.Sf())
                    - magg*fvc::snGrad(h+h0)*mesh.magSf();
             volFlux = volFlux.oldTime()
@@ -88,7 +81,7 @@ int main(int argc, char *argv[])
             U = fvc::reconstruct(volFlux);
             Uf = fvc::interpolate(U);
             
-            // Solve the continuity equation
+            // Solve the continuity equation for h
             dhdt = -H*fvc::div(volFlux);
             h = h.oldTime() + dt*((1-alpha)*dhdt.oldTime() + alpha*dhdt);
         }
@@ -97,10 +90,10 @@ int main(int argc, char *argv[])
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"
             << "  ClockTime = " << runTime.elapsedClockTime() << " s"
-            << nl << endl;
+            << endl;
     }
 
-    Info<< "End\n" << endl;
+    Info<< "End" << endl;
 
     return 0;
 }
