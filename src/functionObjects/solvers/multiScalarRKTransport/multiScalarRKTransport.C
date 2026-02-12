@@ -364,8 +364,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                    scalar(0)
                );
                beta = maxInterp.interpolate(betaC);
-               Info << "New beta goes from " << min(beta).value() << " to "
-                    << max(beta).value() << endl;
 
                surfaceScalarField phi0 = (1-beta)*totalFlux[0];
                surfaceScalarField phi1 = totalFlux[0] - phi0;

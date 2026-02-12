@@ -71,6 +71,11 @@ void fluxLimit
     surfaceScalarField Tfmin = minInterp.interpolate(Tmin);
     Tmax = fvc::localMax(Tfmax);
     Tmin = fvc::localMin(Tfmin);
+    
+//    Tmin.rename("Tmin"); Tmax.rename("Tmax");
+//    Tmin.write(); Tmax.write();
+//    volScalarField TdTmp = Td;
+//    TdTmp.rename("Td"); TdTmp.write();
 
     fluxLimit(Td, rho, fluxCorr, Tmin, Tmax, dt, nIter);
 }
@@ -124,6 +129,9 @@ void fluxLimit
 
         fluxLimitFromQ(limitedCorr, Qp, Qm, dt);
 
+//        Qp.rename("Qp"); Qm.rename("Qm");
+//        Qp.write(); Qm.write();
+        
         Td -= dt*fvc::div(limitedCorr)/rho;
     }
 }
@@ -142,6 +150,9 @@ void fluxLimitFromQ
     // Fluxes into and out of each cell
     volScalarField Pp = dt*fvc::surfaceIntegrateIn(fluxCorr);
     volScalarField Pm = dt*fvc::surfaceIntegrateOut(fluxCorr);
+    
+//    Pp.rename("Pp"); Pm.rename("Pm");
+//    Pp.write(); Pm.write();
 
     // Ratios
     dimensionedScalar Psmall("Psmall", Pp.dimensions(), SMALL);
@@ -152,7 +163,6 @@ void fluxLimitFromQ
         if (mag(Pp[cellI]) < SMALL) Rp[cellI] = 0;
         if (mag(Pm[cellI]) < SMALL) Rm[cellI] = 0;
     }
-    Info << "Done" << endl;
 
     // Up and downwind interpolation schemes based on mesh orientation
     upwind<scalar> up(mesh, mesh.magSf());
