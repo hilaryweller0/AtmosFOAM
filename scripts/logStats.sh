@@ -47,3 +47,6 @@ while [ "$it" -lt "$nTimes" ]; do
     let it=$it+1
 done
 echo Number of iterateions written to $case/n${f}Iter.dat
+
+CPUtime=`grep ExecutionTime $case/log | tail -1 | awk '{print $3}'`
+echo ExecutionTime $CPUtime s > $case/CPUtime.dat

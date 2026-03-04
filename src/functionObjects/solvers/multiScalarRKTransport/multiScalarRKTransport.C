@@ -64,6 +64,8 @@ namespace functionObjects
 
 void Foam::functionObjects::multiScalarRKTransport::setFlux()
 {
+    localMax<scalar> maxInterp(mesh_);
+
     // The mid time
     scalar vTime = time_.time().value() - 0.5*time_.deltaTValue();
     
@@ -104,6 +106,27 @@ void Foam::functionObjects::multiScalarRKTransport::setFlux()
         phiv_ = 0.5*(phiv.oldTime() + phiv);
     }
     // Else the velocity flux stays the same
+    
+    // Update the Courant number, alpha and beta
+    const dimensionedScalar& dt = time_.deltaT();
+    
+    // Calculate the maximum Courant number on faces
+    Co_ = maxInterp.interpolate(CourantNo(phiv_, dt));
+    Info << "Co goes from " << min(Co_).value() << " to " << max(Co_).value()
+         << endl;
+    // Calculate alpha as a function of the max Courant number
+    if (!explicit_)
+    {
+        alpha_ = 1 - 1/max(scalar(2), Co_);
+        beta_ = betaCoeffs_[1]*(1 - 1/
+        (1 + betaCoeffs_[2]/betaCoeffs_[1]*max(Co_ - betaCoeffs_[0],scalar(0))));
+        //gamma_ = 1 - 1/max(scalar(GREAT), Co);
+        Info <<"alpha goes from "<<min(alpha_).value()<<" to "
+             <<max(alpha_).value()<<nl
+             <<"beta goes from "<<min(beta_).value()<<" to "<<max(beta_).value()<<nl
+            //<<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()
+            <<endl;
+    }
 }
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
@@ -134,6 +157,7 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
         )
     ),
     betaCoeffs_(dict.lookup("betaCoeffs")),
+    explicit_(mag(betaCoeffs_[1]) < SMALL),
     velocityDictName_
     (
         dict.lookupOrDefault<word>("velocityFieldDict", "")
@@ -155,8 +179,26 @@ Foam::functionObjects::multiScalarRKTransport::multiScalarRKTransport
             ),
             mesh_
         )
+    ),
+    Co_
+    (
+        IOobject("Co", runTime.startTime().name(), mesh_),
+        mesh_,
+        dimensionedScalar(dimless, scalar(0))
+    ),
+    alpha_
+    (
+        IOobject("alpha", runTime.startTime().name(), mesh_),
+        mesh_,
+        dimensionedScalar(dimless, scalar(0))
+    ),
+    beta_
+    (
+        IOobject("beta", runTime.startTime().name(), mesh_),
+        mesh_,
+        dimensionedScalar(dimless, scalar(0))
     )
-{
+    {
     if (nFields_ != fieldNames_.size() || nFields_ != FCTiter_.size())
     {
         FatalErrorIn("multiScalarRKTransport::multiScalarRKTransport")
@@ -233,20 +275,6 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
     // Reference to the time step
     const dimensionedScalar& dt = time_.deltaT();
 
-    // Calculate the maximum Courant number on faces
-    surfaceScalarField Co = maxInterp.interpolate(CourantNo(phiv_, dt));
-    // Calculate alpha as a function of the max Courant number
-    surfaceScalarField alpha = 1 - 1/max(scalar(2), Co);
-    surfaceScalarField beta = betaCoeffs_[1]*(1 - 1/
-        (1 + betaCoeffs_[2]/betaCoeffs_[1]*max(Co - betaCoeffs_[0],scalar(0))));
-    //surfaceScalarField gamma = 1 - 1/max(scalar(GREAT), Co);
-    geometricOneField gamma;
-    Info << "Co goes from " << min(Co).value() << " to " << max(Co).value() <<nl
-        <<"alpha goes from "<<min(alpha).value()<<" to "<<max(alpha).value()<<nl
-        <<"beta goes from "<<min(beta).value()<<" to "<<max(beta).value()<<nl
-     //<<"gamma goes from "<<min(gamma).value()<<" to "<<max(gamma).value()
-       <<endl;
-
     // Store the high and low-order face values for each stage, for each field
     PtrList<PtrList<surfaceScalarField>> sL(RK_.n());
     PtrList<PtrList<surfaceScalarField>> sHC(RK_.n());
@@ -289,33 +317,38 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             sHC[iRK].set(is, hCorr(phiv_, T));
 
             // Sum the explicit fluxes
-            surfaceScalarField F = c_[iRK]*(1-alpha)*beta*sL[0][is];
+            surfaceScalarField F = c_[iRK]*(1-alpha_)*beta_*sL[0][is];
             for(label j = 0; j <= iRK; j++)
             {
-                F += RK_[iRK][j]*((1-beta)*sL[j][is] + gamma*sHC[j][is]);
+                F += RK_[iRK][j]*((1-beta_)*sL[j][is] + gamma_*sHC[j][is]);
             }
             
             // Assemble and solve the transport equation
             volScalarField divF("divF", fvc::div(phiv_*F));
             T = T.oldTime() - dt*divF;
-            T[0] += 1;
-            T[1] -= 1;
-            fvScalarMatrix TEqn
-            (
-                EulerDdt.fvmDdt(T)
-              + divF
-              + upwindCon.fvmDiv(c_[iRK]*alpha*beta*phiv_, T)
-            );
-            if (is == 0 && massFluxName_ != "none" && iRK==RK_.n()-1)
-            // This is the final density, so make it accurate
+            if (!explicit_)
             {
-                TEqn.solve(s_[is].name()+"Final");
-            }
-            else TEqn.solve();
+                // Hack to get it to solve when initial residual is not scaled
+                // correctly
+                //T[0] += 1;
+                //T[1] -= 1;
+                fvScalarMatrix TEqn
+                (
+                    EulerDdt.fvmDdt(T)
+                  + divF
+                  + upwindCon.fvmDiv(c_[iRK]*alpha_*beta_*phiv_, T)
+                );
+                if (is == 0 && massFluxName_ != "none" && iRK==RK_.n()-1)
+                // This is the final density, so make it accurate
+                {
+                    TEqn.solve(s_[is].name()+"Final");
+                }
+                else TEqn.solve();
 
-            // Accumulate the total flux for FCT
-            if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + TEqn.flux());
-            
+                // Accumulate the total flux for FCT
+                if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_ + TEqn.flux());
+            }
+            else if (iRK==RK_.n()-1) totalFlux.set(is, F*phiv_);
             // Update s_[is]
             s_[is] = !densityWeighted ? T : volScalarField(T/s_[0]);
         }
@@ -331,12 +364,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
             surfaceScalarField fluxCorr = totalFlux[is];
 
             // Find the bounded solution and the bounded flux
-            if (!densityWeighted)
+            if (!densityWeighted && !explicit_)
             {
-                beta = 1 - 1/max(Co, scalar(1));
+                beta_ = 1 - 1/max(Co_, scalar(1));
                 
-                const surfaceScalarField phi0 = (1-beta)*phiv_;
-                const surfaceScalarField phi1 = beta*phiv_;
+                const surfaceScalarField phi0 = (1-beta_)*phiv_;
+                const surfaceScalarField phi1 = beta_*phiv_;
 
                 volScalarField sInc
                      = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
@@ -350,10 +383,16 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                 );
                 sEqn.solve(s_[is].name()+"FCT");
                 
-                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+               fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
             }
-           else
-           {
+            else if (!densityWeighted && explicit_)
+            {
+                s_[is] = s_[is].oldTime()
+                       - dt*fvc::div(phiv_*upInterp(phiv_, s_[is].oldTime()));
+                fluxCorr -= phiv_*upInterp(phiv_, s_[is].oldTime());
+            }
+            else if (densityWeighted && !explicit_)
+            {
                volScalarField betaC = max
                (
                    1- s_[0].oldTime()/max
@@ -363,9 +402,9 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                    ),
                    scalar(0)
                );
-               beta = maxInterp.interpolate(betaC);
+               beta_ = maxInterp.interpolate(betaC);
 
-               surfaceScalarField phi0 = (1-beta)*totalFlux[0];
+               surfaceScalarField phi0 = (1-beta_)*totalFlux[0];
                surfaceScalarField phi1 = totalFlux[0] - phi0;
 
                volScalarField sInc
@@ -381,6 +420,14 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                sEqn.solve(s_[is].name()+"FCT");
 
                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime()) + sEqn.flux();
+            }
+            else // densityWeighted && explicit_
+            {
+                surfaceScalarField& phi0 = totalFlux[0];
+                volScalarField sInc
+                    = fvc::div(phi0*upInterp(phi0, s_[is].oldTime()));
+                s_[is] = (s_[0].oldTime()*s_[is].oldTime() - dt*sInc)/s_[0];
+                fluxCorr -= phi0*upInterp(phi0, s_[is].oldTime());
             }
 
             if (FCTlimits_[is].size() == 0)

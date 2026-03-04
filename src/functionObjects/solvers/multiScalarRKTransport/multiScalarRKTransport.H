@@ -132,14 +132,27 @@ private:
         scalarListList FCTlimits_;
         
         //- The coefficients for calculating the Im-Ex mix, beta from Courant
+        //- betaCoeffs_[0] is the max stable explicit C
+        //- betaCoeffs_[1] is the gradient at betaCoeffs_[0]
+        //- Set betaCoeffs_[1] to zero for fully explicit
+        //- betaCoeffs_[2] is the curvature
         const FixedList<scalar,3> betaCoeffs_;
+        
+        // Check for a fully explicit solution throughout
+        const bool explicit_;
         
         //- The dictionary that describes the (changing) velocity field
         const word velocityDictName_;
         
         //- The advecting flux
         surfaceScalarField phiv_;
-
+        
+        //- Courant number, alpha, beta and gamma for the implicit/explicit blend
+        surfaceScalarField Co_;
+        surfaceScalarField alpha_;
+        surfaceScalarField beta_;
+        geometricOneField gamma_;
+        
     // Private member functions
 
         // The upwind scheme
