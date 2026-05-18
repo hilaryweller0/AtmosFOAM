@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
             // Update rate of change without pressure gradient (to be added
             // after the pressure equation)
-            dhUdt -= fvc::div(phi, U) + fvc::reconstruct(ghGradh);
+            dhUdt -= fvc::div(phi, U) - fvc::reconstruct(ghGradh);
 
             // Constrain the momentum to be in the geometry if 3D geometry
             if (mesh.nGeometricD() == 3)
