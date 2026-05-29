@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
             // Update rate of change without pressure gradient (to be added
             // after the pressure equation)
-            dhUdt -= fvc::div(phi, U) - fvc::reconstruct(ghGradh);
+            dhUdt += -fvc::div(phi, U) + fvc::reconstruct(ghGradh);
 
             // Constrain the momentum to be in the geometry if 3D geometry
             if (mesh.nGeometricD() == 3)
@@ -122,26 +122,23 @@ int main(int argc, char *argv[])
                         fvm::ddt(h)
                       + fvc::div((1-alpha)*phi.oldTime())
                       + fvc::div(alpha*phi)
-                      - fvm::laplacian(alpha*dt*magg*hf, h)
+                      - fvm::laplacian(sqr(alpha)*dt*magg*hf, h)
                     );
                     hEqn.solve();
 
                     // Back substitutions
                     if (orthCorr == num.nNonOrthogCorrs-1
-                        && icorr == num.nPressureCorrs-1)
+                        && icorr == num.nPressureCorrs-1 && alpha > 0)
                     {
-                        phi += hEqn.flux();
+                        phi += hEqn.flux()/alpha;
                         volVectorField hUinc = fvc::reconstruct
                         (
-                            hEqn.flux()
+                            hEqn.flux()/alpha
                           - alpha*dt*ghGradh
                         );
                         hU += hUinc;
-                        if (alpha > 0)
-                        {
-                            dhUdt += hUinc/(alpha*dt);
-                            dhUdt.correctBoundaryConditions();
-                        }
+                        dhUdt += hUinc/(alpha*dt);
+                        dhUdt.correctBoundaryConditions();
                     }
                 }
 

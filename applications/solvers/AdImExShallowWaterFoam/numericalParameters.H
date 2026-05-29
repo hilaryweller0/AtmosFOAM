@@ -13,7 +13,7 @@ public:
     nOuterCorrs(readLabel(dict.lookup("nOuterCorrs"))),
     nPressureCorrs(readLabel(dict.lookup("nPressureCorrs"))),
     nNonOrthogCorrs(readLabel(dict.lookup("nNonOrthogCorrs"))),
-    alpha(readScalar(dict.lookup("timeOffCenter")))
+    alpha(readScalar(dict.lookup("timeOffCentre")))
     {};
 };
 

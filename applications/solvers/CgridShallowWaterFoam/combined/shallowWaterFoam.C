@@ -25,7 +25,7 @@ Application
     CgridShallowWaterFoam
 
 Description
-    Semi-implicit solver for inviscid non-linear shallow-water equations
+    Explicit solver for inviscid non-linear shallow-water equations
     with rotation on a C-grid.
 
     If the geometry is 3D then it is assumed to be one layers of cells and
@@ -42,15 +42,19 @@ Description
 #include "fvcFlux.H"
 #include "fvcReconstruct.H"
 
-#include "fvmDdt.H"
-#include "fvmLaplacian.H"
-
 using namespace Foam;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])
 {
+    argList::addBoolOption
+    (
+        "non-linear",
+        "solve explicitly the non-linear SWE"
+    );
+    
+    
     #include "setRootCase.H"
     #include "createTime.H"
     #include "createMesh.H"
@@ -59,7 +63,9 @@ int main(int argc, char *argv[])
     #include "createFields.H"
 
     const int nIters = readLabel(mesh.solution().lookup("nIterations"));
-    const scalar alpha =readScalar(mesh.solution().lookup("timeOffCentre"));
+    const scalar alpha = readScalar(mesh.solution().lookup("timeOffCentre"));
+    
+    const bool nlin = args.optionFound("non-linear");
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -74,33 +80,33 @@ int main(int argc, char *argv[])
         // Outer Iterations
         for (int iIt=0; iIt < nIters; iIt++)
         {
-            // Solve momentum equation on faces without the pressure gradient
-            dhUdt = - hf*((F^Uf) & mesh.Sf())
-                   - hf*magg*fvc::snGrad(h0)*mesh.magSf()
-                   - fvc::flux(fvc::div(flux,U));
-            flux = flux.oldTime()
-                 + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
-
-            // Create the pressure equation
-            fvScalarMatrix hEqn
-            (
-                fvm::ddt(h)
-              + fvc::div((1-alpha)*flux.oldTime() + alpha*flux)
-              - fvm::laplacian(sqr(alpha)*dt*magg*hf, h)
-            );
-            hEqn.solve();
-            hf = fvc::interpolate(h);
+            // Solve momentum equation on faces to update the flux
             
-            // Back substitutions
-            if (alpha > 0) 
+            dUdt = - ((F^Uf) & mesh.Sf())
+                - magg*fvc::snGrad(h+h0)*mesh.magSf();
+            if (nlin)
             {
-                flux += hEqn.flux()/alpha;
-                dhUdt += hEqn.flux()/(sqr(alpha)*dt);
+                dhUdt = hf * dUdt - fvc::flux(fvc::div(flux,U));
+                flux = flux.oldTime()
+                     + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
+                massFlux = flux;
             }
-
+            else
+            {
+                volFlux = volFlux.oldTime()
+                        + dt*((1-alpha)*dUdt.oldTime() + alpha*dUdt);
+                massFlux = H * volFlux;
+            }
+            
             // Update the velocity field on cell centres and faces
-            U = fvc::reconstruct(flux/hf);
+            if (nlin) { U = fvc::reconstruct(flux/hf); }
+            else { U = fvc::reconstruct(volFlux); }
             Uf = fvc::interpolate(U);
+            
+            // Solve the continuity equation for h
+            dhdt = -fvc::div(massFlux);
+            h = h.oldTime() + dt*((1-alpha)*dhdt.oldTime() + alpha*dhdt);
+            if (nlin) { hf = fvc::interpolate(h); }
         }
 
         runTime.write();
