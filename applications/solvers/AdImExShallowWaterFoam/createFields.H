@@ -59,6 +59,9 @@ dhUdt -= (gHat & dhUdt)*gHat;
 dhUdt.correctBoundaryConditions();
 dhUdt.oldTime();
 
-surfaceScalarField ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
+volVectorField ghGradh = fvc::reconstruct
+(
+    magg*hf*fvc::snGrad(h+h0)*mesh.magSf()
+);
 
 mesh.schemes().setFluxRequired(h.name());

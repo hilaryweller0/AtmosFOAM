@@ -30,6 +30,10 @@ Description
 
     If the geometry is 3D then it is assumed to be one layers of cells and the
     component of the velocity normal to gravity is removed.
+    
+    Adaptive implicit-explicit not implemented yet. 
+    
+    There is an option "opSplit" to use or not use operator splitting
 
 \*---------------------------------------------------------------------------*/
 
@@ -76,10 +80,17 @@ int main(int argc, char *argv[])
         for(int outerCorr = 0; outerCorr < num.nOuterCorrs; outerCorr++)
         {
             // Create and solve the momentum equation
-            // Rate of change with implicit advection
+            // Rate of change of momentum with/without pressure gradient
             hf = fvc::interpolate(h);
-            ghGradh = magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
-            dhUdt = -h*(F ^ U) - fvc::reconstruct(ghGradh);
+            dhUdt = -h*(F ^ U);
+            if (!num.opSplit)
+            {
+                ghGradh = fvc::reconstruct
+                (
+                    magg*hf*fvc::snGrad(h+h0)*mesh.magSf()
+                );
+                dhUdt -= ghGradh;
+            }
             
             // Momentum equation with implicit advection
             fvVectorMatrix UEqn
@@ -90,9 +101,10 @@ int main(int argc, char *argv[])
             );
             UEqn.solve();
 
-            // Update rate of change without pressure gradient (to be added
+            // Update rate of change WITHOUT pressure gradient (to be added
             // after the pressure equation)
-            dhUdt += -fvc::div(phi, U) + fvc::reconstruct(ghGradh);
+            dhUdt -= fvc::div(phi, U);
+            if (!num.opSplit) dhUdt += ghGradh;
 
             // Constrain the momentum to be in the geometry if 3D geometry
             if (mesh.nGeometricD() == 3)
@@ -108,8 +120,7 @@ int main(int argc, char *argv[])
                               + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
             
             // Convert the momentum into a flux and add mountain gradient
-            ghGradh = magg*hf*fvc::snGrad(h0)*mesh.magSf();
-            phi = fvc::flux(hU) - alpha*dt*ghGradh;
+            phi = fvc::flux(hU) - alpha*dt*magg*hf*fvc::snGrad(h0)*mesh.magSf();
             
             // Construct and solve the pressure equation
             for(int icorr = 0; icorr < num.nPressureCorrs; icorr++)
@@ -131,13 +142,12 @@ int main(int argc, char *argv[])
                         && icorr == num.nPressureCorrs-1 && alpha > 0)
                     {
                         phi += hEqn.flux()/alpha;
-                        volVectorField hUinc = fvc::reconstruct
+                        volVectorField hUinc = -fvc::reconstruct
                         (
-                            hEqn.flux()/alpha
-                          - alpha*dt*ghGradh
+                            magg*hf*fvc::snGrad(h+h0)*mesh.magSf()
                         );
-                        hU += hUinc;
-                        dhUdt += hUinc/(alpha*dt);
+                        hU += alpha*dt*hUinc;
+                        dhUdt += hUinc;
                         dhUdt.correctBoundaryConditions();
                     }
                 }
