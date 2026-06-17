@@ -338,8 +338,12 @@ bool Foam::functionObjects::multiScalarRKTransport::execute()
                   + divF
                   + upwindCon.fvmDiv(c_[iRK]*alpha_*beta_*phiv_, T)
                 );
-                if (is == 0 && massFluxName_ != "none" && iRK==RK_.n()-1)
-                // This is the final density, so make it accurate
+                if 
+                (
+                    (massFluxName_ != "none" && iRK==RK_.n()-1)
+                 && (is == 0 || FCTiter_[is] == 0)
+                )
+                // This is the final solve, so make it accurate
                 {
                     TEqn.solve(s_[is].name()+"Final");
                 }
