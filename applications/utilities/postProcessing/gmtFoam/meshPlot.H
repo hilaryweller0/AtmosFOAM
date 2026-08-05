@@ -23,7 +23,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 
     for(label faci = 0; faci < plotPatch.size(); faci++)
     {
-        face f = plotPatch[faci];
+        face f = plotPatch.poly()[faci];
 
         // First check that all vertices of this face should be plot
         bool plotFace = true;

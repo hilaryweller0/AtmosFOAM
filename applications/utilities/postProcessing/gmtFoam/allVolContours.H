@@ -9,7 +9,7 @@ fileName tmpBFile = args.rootPath() / args.caseName()
     OFstream os(tmpFile);
     os << "#x    y    " << vf.name() << endl;
 
-    const DimensionedField<scalar,volMesh>& sf = vf.internalField();
+    const DimensionedField<scalar,fvMesh>& sf = vf.internalField();
     Info << vf.name() << " goes from " << min(sf).value() << " to "
          << max(sf).value() << endl;
     if (colourMin == colourMax)
@@ -42,9 +42,9 @@ fileName tmpBFile = args.rootPath() / args.caseName()
 
     // Plot a boundary patch if requested
     const label bpatchi = boundaryPatchName == "" ? -1 :
-                          mesh.boundaryMesh().findIndex(boundaryPatchName);
+                          mesh.boundary().findIndex(boundaryPatchName);
 
-    const polyPatch& plotBPatch = mesh.boundaryMesh()[max(bpatchi, 0)];
+    const fvPatch& plotBPatch = mesh.boundary()[max(bpatchi, 0)];
 
     if (bpatchi != -1)
     {

@@ -37,7 +37,6 @@ Description
 
 #include "fvMesh.H"
 #include "Time.H"
-#include "volMesh.H"
 #include "surfaceMesh.H"
 #include "volFields.H"
 #include "surfaceFields.H"
@@ -103,11 +102,11 @@ int main(int argc, char *argv[])
 #   include "readGmtDict.H"
 
     const label patchi = patchName == "" ? -1 :
-                         mesh.boundaryMesh().findIndex(patchName);
+                         mesh.boundary().findIndex(patchName);
 
     const bool plotAllCells = (patchi == -1);
 
-    const polyPatch& plotPatch = mesh.boundaryMesh()[max(patchi, 0)];
+    const fvPatch& plotPatch = mesh.boundary()[max(patchi, 0)];
 
     const scalar radToDeg = 180./constant::mathematical::pi;
 

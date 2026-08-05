@@ -22,11 +22,11 @@ void geodesicVelocityField::applyToInternalField
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        phi.mesh(), earthRadius_.value()
+        phi.mesh()(), earthRadius_.value()
     );
 
     phi = dimensionedScalar("phi", phi.dimensions(), scalar(0));
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
     forAll(phi, faceI)
     {
         phi[faceI] = velocityAt
@@ -47,10 +47,10 @@ void geodesicVelocityField::applyToBoundary
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
-        phi.mesh(), earthRadius_.value()
+        phi.mesh()(), earthRadius_.value()
     );
 
-    const fvPatch& pat = phi.mesh().boundary()[patchI];
+    const fvPatch& pat = phi.mesh()().boundary()[patchI];
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
@@ -66,7 +66,7 @@ void geodesicVelocityField::project(surfaceScalarField& phi) const
 {
     if (applyProjection_)
     {
-        const fvMesh& mesh = phi.mesh();
+        const fvMesh& mesh = phi.mesh()();
         volScalarField P
         (
             IOobject("ProjectionP", phi.time().name(), mesh),

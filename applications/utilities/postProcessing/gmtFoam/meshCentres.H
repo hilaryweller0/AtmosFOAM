@@ -21,7 +21,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
     // Find the plot bounding box
     boundBox bb = setRegion(mesh, projection2D, region, r);
 
-    pointField patchPoints(plotPatch.faceCentres());
+    pointField patchPoints(plotPatch.Cf());
     for(label ip = 0; ip < patchPoints.size(); ip++)
     {
         point p = patchPoints[ip];

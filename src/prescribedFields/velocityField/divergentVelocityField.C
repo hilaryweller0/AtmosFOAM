@@ -22,7 +22,7 @@ void divergentVelocityField::applyToInternalField
 ) const
 {
     phi = dimensionedScalar("phi", phi.dimensions(), scalar(0));
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
     forAll(phi, faceI)
     {
         phi[faceI] = velocityAt(mesh.Cf()[faceI], time) & mesh.Sf()[faceI];
@@ -36,7 +36,7 @@ void divergentVelocityField::applyToBoundary
     scalar time
 ) const
 {
-    const fvPatch& pat = phi.mesh().boundary()[patchI];
+    const fvPatch& pat = phi.mesh()().boundary()[patchI];
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
@@ -48,7 +48,7 @@ void divergentVelocityField::project(surfaceScalarField& phi) const
 {
     if (applyProjection)
     {
-        const fvMesh& mesh = phi.mesh();
+        const fvMesh& mesh = phi.mesh()();
         volScalarField P
         (
             IOobject("ProjectionP", phi.time().name(), mesh),

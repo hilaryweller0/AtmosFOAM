@@ -70,7 +70,7 @@ void tracerField::applyTo(volScalarField& T) const
 
 void tracerField::applyTo(surfaceScalarField& Tf) const
 {
-    const fvMesh& mesh = Tf.mesh();
+    const fvMesh& mesh = Tf.mesh()();
 
     // Face centres to apply the field at
     const vector* Cp { &mesh.Cf()[0] };
@@ -184,14 +184,14 @@ void tracerField::applyToBoundary
     const fvPatch& pat = T.mesh().boundary()[patchI];
 
     // Patch centres to apply the field at
-    const vector* Cp { &(T.mesh().Cf().boundaryField()[patchI][0]) };
+    const vector* Cp { &(T.mesh()().Cf().boundaryField()[patchI][0]) };
 
     if (spherical_)
     {
         // Get reference to spherical geometry if needed
         const sphericalMeshData& sphericalData = sphericalMeshData::New
         (
-            T.mesh(), earthRadius_
+            T.mesh()(), earthRadius_
         );
         Cp = &(sphericalData.faceCentres()[pat.start()]);
     }

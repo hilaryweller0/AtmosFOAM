@@ -9,7 +9,7 @@ scalar maxSsf = 0;
     OFstream os(tmpFile);
     os << "#x    y    " << vf.name() << endl;
 
-    const DimensionedField<scalar,volMesh>& ssf = vf.internalField();
+    const DimensionedField<scalar,fvMesh>& ssf = vf.internalField();
     Info << vf.name() << " goes from " << min(ssf).value() << " to "
          << max(ssf).value() << endl;
 

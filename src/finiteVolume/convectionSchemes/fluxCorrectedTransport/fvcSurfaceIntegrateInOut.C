@@ -45,7 +45,7 @@ void surfaceIntegrateIn
     const SurfaceField<Type>& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     const labelUList& owner = mesh.owner();
     const labelUList& neighbour = mesh.neighbour();
@@ -80,7 +80,7 @@ surfaceIntegrateIn
     const SurfaceField<Type>& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     tmp<VolField<Type>> tvf
     (
@@ -136,7 +136,7 @@ void surfaceIntegrateOut
     const SurfaceField<Type>& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     const labelUList& owner = mesh.owner();
     const labelUList& neighbour = mesh.neighbour();
@@ -171,7 +171,7 @@ surfaceIntegrateOut
     const SurfaceField<Type>& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     tmp<VolField<Type>> tvf
     (

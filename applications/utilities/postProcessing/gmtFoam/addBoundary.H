@@ -20,9 +20,9 @@ fileName tmpFile = args.rootPath() / args.caseName()
     }
 
     // Loop over the boundaries and then over the edges of each boundary
-    for(label patchI = 0; patchI < mesh.boundaryMesh().size(); patchI++)
+    for(label patchI = 0; patchI < mesh.boundary().size(); patchI++)
     {
-        const polyPatch& patch = mesh.boundaryMesh()[patchI];
+        const polyPatch& patch = mesh.boundary()[patchI].poly();
         if (!isA<emptyPolyPatch>(patch))
         {
         forAll(patch.edgeLoops(), loopi)

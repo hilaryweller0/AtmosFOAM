@@ -46,7 +46,7 @@ void localMin
     const surfaceScalarField& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
     
     const labelUList& owner = mesh.owner();
     const labelUList& neighbour = mesh.neighbour();
@@ -82,7 +82,7 @@ localMin
     const surfaceScalarField& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     tmp<volScalarField> tvf
     (
@@ -138,7 +138,7 @@ void localMax
     const surfaceScalarField& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
     
     const labelUList& owner = mesh.owner();
     const labelUList& neighbour = mesh.neighbour();
@@ -174,7 +174,7 @@ localMax
     const surfaceScalarField& ssf
 )
 {
-    const fvMesh& mesh = ssf.mesh();
+    const fvMesh& mesh = ssf.mesh()();
 
     tmp<volScalarField> tvf
     (

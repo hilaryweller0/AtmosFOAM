@@ -268,7 +268,7 @@ Foam::polarPatchData::polarPatchData
         List<scalarList>
         (
             lats_.size(),
-            scalarList(earthProperties.lookup("longitudes"))*constant::mathematical::pi/180.
+            scalarField(earthProperties.lookup("longitudes"))*constant::mathematical::pi/180.
         ) :
         calcLons
         (

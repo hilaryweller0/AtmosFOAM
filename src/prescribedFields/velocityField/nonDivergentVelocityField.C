@@ -16,7 +16,7 @@ void nonDivergentVelocityField::applyToInternalField
 ) const
 {
     phi = dimensionedScalar("phi", phi.dimensions(), scalar(0));
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
     forAll(phi, faceI)
     {
         const face& f = mesh.faces()[faceI];
@@ -31,11 +31,11 @@ void nonDivergentVelocityField::applyToBoundary
     scalar time
 ) const
 {
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
-        const face& f = mesh.boundaryMesh()[patchI][faceI];
+        const face& f = mesh.boundary()[patchI].poly()[faceI];
         bf[faceI] = faceFlux(f, mesh, time);
     }
 }

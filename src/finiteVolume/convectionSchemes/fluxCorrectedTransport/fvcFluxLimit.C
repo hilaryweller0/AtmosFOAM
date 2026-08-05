@@ -55,7 +55,7 @@ void fluxLimit
     const int nIter
 )
 {
-    const fvMesh& mesh = fluxCorr.mesh();
+    const fvMesh& mesh = fluxCorr.mesh()();
     const volScalarField& T0 = Td.oldTime();
 
     // Schemes needed
@@ -145,7 +145,7 @@ void fluxLimitFromQ
     const dimensionedScalar& dt
 )
 {
-    const fvMesh& mesh = fluxCorr.mesh();
+    const fvMesh& mesh = fluxCorr.mesh()();
 
     // Fluxes into and out of each cell
     volScalarField Pp = dt*fvc::surfaceIntegrateIn(fluxCorr);

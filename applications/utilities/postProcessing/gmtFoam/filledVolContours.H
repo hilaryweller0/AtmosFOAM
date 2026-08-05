@@ -22,7 +22,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
     scalar r = 0;
     if (ortho)
     {
-        point pi = mesh.points()[plotPatch[0][0]];
+        point pi = mesh.points()[plotPatch.poly()[0][0]];
         r = mag(pi);
         p0 = polarPoint(lon0, lat0, r).cartesian(xdir, ydir, axis);
         maxDist2 = 2*sqr(r);
@@ -33,7 +33,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 
     for(label faci = 0; faci < ssf.size(); faci++)
     {
-        point p = plotPatch.faceCentres()[faci];
+        point p = plotPatch.Cf()[faci];
 
         // First check that this vertex should be plot
         bool plotFace = !ortho || magSqr(p - p0) < maxDist2;

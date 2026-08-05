@@ -5,7 +5,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
     OFstream os(tmpFile);
     os << "#x    y    " << U.name() << endl;
 
-    const DimensionedField<vector,volMesh>& Uf = U.internalField();
+    const DimensionedField<vector,fvMesh>& Uf = U.internalField();
     Info << U.name() << " goes from " << min(mag(U)).value() << " to "
          << max(mag(U)).value() << endl;
 

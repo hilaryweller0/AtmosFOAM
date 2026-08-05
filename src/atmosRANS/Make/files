@@ -1,0 +1,3 @@
+atmosRANSs.C
+
+LIB = $(FOAM_USER_LIBBIN)/libatmosRANS

@@ -45,8 +45,8 @@ void velocityField::applyTo(surfaceScalarField& phi, scalar time) const
     {
         if
         (
-            !isA<emptyPolyPatch>(phi.mesh().boundaryMesh()[patchI])
-         && !isA<wallPolyPatch>(phi.mesh().boundaryMesh()[patchI])
+            !isA<emptyPolyPatch>(phi.mesh()().boundary()[patchI])
+         && !isA<wallPolyPatch>(phi.mesh()().boundary()[patchI])
         )
         {
             applyToBoundary(phi, patchI, time);

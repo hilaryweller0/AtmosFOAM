@@ -15,9 +15,9 @@ fileName tmpFile = args.rootPath() / args.caseName()
         centres[cellI] = mesh.C()[cellI];
         vals[cellI] = vf[cellI];
     }
-    forAll(mesh.boundaryMesh(), patchI)
+    forAll(mesh.boundary(), patchI)
     {
-        const polyPatch& patch = mesh.boundaryMesh()[patchI];
+        const polyPatch& patch = mesh.boundary()[patchI].poly();
         if (vf.boundaryField()[patchI].size() != 0)
         {
             nPoints += patch.size();

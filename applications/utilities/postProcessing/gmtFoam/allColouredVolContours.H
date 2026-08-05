@@ -9,7 +9,7 @@ scalar maxSsf = 0;
     OFstream os(tmpFile);
     os << "#x    y    " << vf.name() << endl;
 
-    const DimensionedField<scalar,volMesh>& ssf = vf.internalField();
+    const DimensionedField<scalar,fvMesh>& ssf = vf.internalField();
     Info << vf.name() << " goes from " << min(ssf).value() << " to "
          << max(ssf).value() << endl;
 
@@ -59,9 +59,9 @@ scalar maxSsf = 0;
 
     // Plot a boundary patch if requested
     const label bpatchi = boundaryPatchName == "" ? -1 :
-                          mesh.boundaryMesh().findIndex(boundaryPatchName);
+                          mesh.boundary().findIndex(boundaryPatchName);
 
-    const polyPatch& plotBPatch = mesh.boundaryMesh()[max(bpatchi, 0)];
+    const fvPatch& plotBPatch = mesh.boundary()[max(bpatchi, 0)];
 
     if (bpatchi != -1)
     {

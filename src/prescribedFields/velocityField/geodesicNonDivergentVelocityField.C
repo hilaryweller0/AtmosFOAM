@@ -17,7 +17,7 @@ void geodesicNonDivergentVelocityField::applyToInternalField
     scalar time
 ) const
 {
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
 
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
@@ -39,7 +39,7 @@ void geodesicNonDivergentVelocityField::applyToBoundary
     surfaceScalarField& phi, const label patchI, scalar time
 ) const
 {
-    const fvMesh& mesh = phi.mesh();
+    const fvMesh& mesh = phi.mesh()();
     // Get reference to spherical geometry
     const sphericalMeshData& spherical = sphericalMeshData::New
     (
@@ -49,7 +49,7 @@ void geodesicNonDivergentVelocityField::applyToBoundary
     scalarField& bf = phi.boundaryFieldRef()[patchI];
     forAll(bf, faceI)
     {
-        const face& f = mesh.boundaryMesh()[patchI][faceI];
+        const face& f = mesh.boundary()[patchI].poly()[faceI];
         bf[faceI] = faceFlux(f, spherical, time);
     }
 }

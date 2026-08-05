@@ -6,7 +6,7 @@ scalar maxMagU = 0;
     OFstream os(tmpFile);
     os << "#x    y    " << U.name() << endl;
 
-    const DimensionedField<vector,volMesh>& Uf = U.internalField();
+    const DimensionedField<vector,fvMesh>& Uf = U.internalField();
     maxMagU = max(mag(Uf)).value();
     Info << U.name() << " goes from " << min(mag(Uf)).value() << " to "
          << maxMagU << endl;

@@ -27,7 +27,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
     scalar r = 0;
     if (ortho)
     {
-        point pi = mesh.points()[plotPatch[0][0]];
+        point pi = mesh.points()[plotPatch.poly()[0][0]];
         r = mag(pi);
         p0 = polarPoint(lon0, lat0, r).cartesian();
         maxDist2 = 2*sqr(r);
@@ -38,7 +38,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 
     for(label faci = 0; faci < ssf.size(); faci++)
     {
-        face f = plotPatch[faci];
+        face f = plotPatch.poly()[faci];
 
         // First check that all vertices of this face should be plot
         bool plotFace = true;

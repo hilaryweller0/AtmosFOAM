@@ -48,7 +48,7 @@ fileName tmpFile = args.rootPath() / args.caseName()
 
     for(label faci = 0; faci < Uf.size(); faci+= vectorFreq)
     {
-        point p = plotPatch.faceCentres()[faci];
+        point p = plotPatch.Cf()[faci];
 
         // First check that vector for this face should be plot
         bool plotFace = (!ortho || magSqr(p - p0) < maxDist2)
