@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2014-2026 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2026 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -88,10 +88,20 @@ protected:
 
     // Protected Member Functions
 
-        tmp<volScalarField> Gcoef() const;
+        //- Bound epsilon and return Cmu*sqr(k) for nut
+        tmp<volScalarField> boundEpsilon();
 
+        //- Correct the eddy-viscosity nut
+        virtual void correctNut();
+
+        //- Source term for the k equation
         virtual tmp<fvScalarMatrix> kSource() const;
+
+        //- Source term for the epsilon equation
         virtual tmp<fvScalarMatrix> epsilonSource() const;
+
+        // Bouyancy source
+        tmp<volScalarField> Gcoef() const;
 
 
 public:

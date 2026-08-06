@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2014-2026 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2011-2026 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -34,6 +34,93 @@ namespace Foam
 {
 namespace RASModels
 {
+
+// * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
+
+template<class BasicMomentumTransportModel>
+tmp<volScalarField> stableBLkEpsilon<BasicMomentumTransportModel>::boundEpsilon()
+{
+    tmp<volScalarField> tCmuk2(this->Cmu_*sqr(this->k_));
+    this->epsilon_ = max(this->epsilon_, this->Cmu_*sqr(this->kMin_)/this->nu());
+    return tCmuk2;
+}
+
+
+template<class BasicMomentumTransportModel>
+void stableBLkEpsilon<BasicMomentumTransportModel>::correctNut()
+{
+    this->nut_ = boundEpsilon()/this->epsilon_;
+    this->nut_.correctBoundaryConditions();
+    fvConstraints::New(this->mesh_).constrain(this->nut_);
+}
+
+
+template<class BasicMomentumTransportModel>
+tmp<fvScalarMatrix>
+stableBLkEpsilon<BasicMomentumTransportModel>::kSource() const
+{
+    const uniformDimensionedVectorField& g =
+        this->mesh_.objectRegistry::template
+        lookupObject<uniformDimensionedVectorField>("g");
+
+    if (mag(g.value()) > small)
+    {
+        return fvm::SuSp(Gcoef(), this->k_);
+    }
+    else
+    {
+        return kEpsilon<BasicMomentumTransportModel>::kSource();
+    }
+}
+
+
+template<class BasicMomentumTransportModel>
+tmp<fvScalarMatrix>
+stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
+{
+    const uniformDimensionedVectorField& g =
+        this->mesh_.objectRegistry::template
+        lookupObject<uniformDimensionedVectorField>("g");
+
+    if (mag(g.value()) > small)
+    {
+        volScalarField Gneg = min
+        (
+            Gcoef(),
+            dimensionedScalar(dimDensity/dimTime, scalar(0))
+        );
+
+        return fvm::SuSp(this->C1_*Gneg, this->epsilon_);
+    }
+    else
+    {
+        return kEpsilon<BasicMomentumTransportModel>::epsilonSource();
+    }
+}
+
+
+template<class BasicMomentumTransportModel>
+tmp<volScalarField>
+stableBLkEpsilon<BasicMomentumTransportModel>::Gcoef() const
+{
+    const uniformDimensionedVectorField& g =
+        this->mesh_.objectRegistry::template
+        lookupObject<uniformDimensionedVectorField>("g");
+
+//    const uniformDimensionedScalarField& pRef =
+//        this->mesh_.objectRegistry::template
+//        lookupObject<uniformDimensionedScalarField>("pRef");
+    
+    const volScalarField& T = 
+        this->mesh_.objectRegistry::template
+        lookupObject<volScalarField>("T");
+
+    return
+        (Cg_*this->Cmu_)*this->alpha_*this->rho_*this->k_*(g & fvc::grad(T))/T
+       /this->epsilon_;
+}
+
+
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
@@ -81,71 +168,6 @@ bool stableBLkEpsilon<BasicMomentumTransportModel>::read()
     }
 }
 
-
-template<class BasicMomentumTransportModel>
-tmp<volScalarField>
-stableBLkEpsilon<BasicMomentumTransportModel>::Gcoef() const
-{
-    const uniformDimensionedVectorField& g =
-        this->mesh_.objectRegistry::template
-        lookupObject<uniformDimensionedVectorField>("g");
-
-//    const uniformDimensionedScalarField& pRef =
-//        this->mesh_.objectRegistry::template
-//        lookupObject<uniformDimensionedScalarField>("pRef");
-    
-    const volScalarField& T = 
-        this->mesh_.objectRegistry::template
-        lookupObject<volScalarField>("T");
-
-    return
-        (Cg_*this->Cmu_)*this->alpha_*this->rho_*this->k_*(g & fvc::grad(T))/T
-       /this->epsilon_;
-}
-
-
-template<class BasicMomentumTransportModel>
-tmp<fvScalarMatrix>
-stableBLkEpsilon<BasicMomentumTransportModel>::kSource() const
-{
-    const uniformDimensionedVectorField& g =
-        this->mesh_.objectRegistry::template
-        lookupObject<uniformDimensionedVectorField>("g");
-
-    if (mag(g.value()) > small)
-    {
-        return fvm::SuSp(Gcoef(), this->k_);
-    }
-    else
-    {
-        return kEpsilon<BasicMomentumTransportModel>::kSource();
-    }
-}
-
-
-template<class BasicMomentumTransportModel>
-tmp<fvScalarMatrix>
-stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
-{
-    const uniformDimensionedVectorField& g =
-        this->mesh_.objectRegistry::template
-        lookupObject<uniformDimensionedVectorField>("g");
-
-    if (mag(g.value()) > small)
-    {
-        volScalarField Gneg = min
-        (
-            Gcoef(),
-            dimensionedScalar(dimDensity/dimTime, scalar(0))
-        );
-
-        return fvm::SuSp(this->C1_*Gneg, this->epsilon_);
-    }
-    else
-    {
-        return kEpsilon<BasicMomentumTransportModel>::epsilonSource();
-    }
-}
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
