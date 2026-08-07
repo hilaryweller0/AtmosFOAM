@@ -1,3 +1,4 @@
 CourantNoU/CourantNoU.C
+uStar/uStar.C
 
 LIB = $(FOAM_USER_LIBBIN)/libfieldFunctionObjects2

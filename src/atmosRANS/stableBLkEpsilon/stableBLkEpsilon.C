@@ -84,13 +84,13 @@ stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
 
     if (mag(g.value()) > small)
     {
-        volScalarField Gneg = min
+        volScalarField Gpos = max
         (
             Gcoef(),
             dimensionedScalar(dimDensity/dimTime, scalar(0))
         );
 
-        return fvm::SuSp(this->C1_*Gneg, this->epsilon_);
+        return fvm::SuSp(this->C1_*Gpos, this->epsilon_);
     }
     else
     {
