@@ -2,7 +2,7 @@
   =========                 |
   \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
    \\    /   O peration     | Website:  https://openfoam.org
-    \\  /    A nd           | Copyright (C) 2013-2025 OpenFOAM Foundation
+    \\  /    A nd           | Copyright (C) 2012-2025 OpenFOAM Foundation
      \\/     M anipulation  |
 -------------------------------------------------------------------------------
 License
@@ -22,91 +22,84 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::functionObjects::uStar
+    Foam::functionObjects::ground
 
 Description
-    Evaluates and outputs turbulence uStar for models. Values written to
-    time directories as field 'uStar' or 'uStar.\<phase\>'.
+    Evaluates and surface fields at the ground
 
-    Example of function object specification:
+    Example:
     \verbatim
-    uStar1
-    {
-        type        uStar;
-        libs        ("libfieldFunctionObjects2.so");
-        ...
-    }
+        #includeFunc ground(z0=0.1)
     \endverbatim
 
-Usage
-    \table
-        Property | Description                | Required   | Default value
-        type     | type name: uStar           | yes        |
-        phase    | phase name                 | no         |
-    \endtable
+See also
+    Foam::functionObjects::fvMeshFunctionObject
 
 SourceFiles
-    uStar.C
+    ground.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef uStar_functionObject_H
-#define uStar_functionObject_H
+#ifndef functionObjects_ground_H
+#define functionObjects_ground_H
 
 #include "fvMeshFunctionObject.H"
 #include "logFiles.H"
 #include "writeLocalObjects.H"
-#include "volFieldsFwd.H"
+#include "volFields.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-// Forward declaration of classes
-class momentumTransportModel;
-
 namespace functionObjects
 {
 
 /*---------------------------------------------------------------------------*\
-                            Class uStar Declaration
+                       Class ground Declaration
 \*---------------------------------------------------------------------------*/
 
-class uStar
+class ground
 :
     public fvMeshFunctionObject,
     public logFiles,
     public writeLocalObjects
+
 {
-    // Private data
 
-        //- Optional phase name
-        word phaseName_;
+private:
 
+    // Private Data
+
+        //- The patch number of the ground
+        const label gPatchi_;
+
+        //- Surface roughness height
+        volScalarField z0_;
+
+        //- Friction velocity
+        scalarField uStar_;
 
     // Private Member Functions
 
         //- File header information
         virtual void writeFileHeader(const label i);
 
-        //- Calculate uStar
-        tmp<volScalarField> calcuStar
-        (
-            const momentumTransportModel& turbModel
-        );
+        //- Calculate ground
+        bool  calcGround();
 
 
 public:
 
     //- Runtime type information
-    TypeName("uStar");
+    TypeName("ground");
 
 
     // Constructors
 
         //- Construct from Time and dictionary
-        uStar
+        ground
         (
             const word& name,
             const Time& runTime,
@@ -114,16 +107,16 @@ public:
         );
 
         //- Disallow default bitwise copy construction
-        uStar(const uStar&) = delete;
+        ground(const ground&) = delete;
 
 
     //- Destructor
-    virtual ~uStar();
+    virtual ~ground();
 
 
     // Member Functions
 
-        //- Read the uStar data
+        //- Read the ground data
         virtual bool read(const dictionary&);
 
         //- Return the list of fields required
@@ -132,17 +125,27 @@ public:
             return wordList::null();
         }
 
-        //- Calculate the uStar field
+        //- Execute at the start of the run
+        virtual bool executeAtStart() const { return true; }
+
+        //- Calculate the ground fields
         virtual bool execute();
 
-        //- Write the uStar field
+        //- Write the BL fields
         virtual bool write();
 
+    // Access
+    
+        //- The surface roughness
+        const scalarField& z0() { return z0_.boundaryField()[gPatchi_];}
+        
+        //- The friction velocity
+        const scalarField& uStar() { return uStar_;}
 
     // Member Operators
 
         //- Disallow default bitwise assignment
-        void operator=(const uStar&) = delete;
+        void operator=(const ground&) = delete;
 };
 
 

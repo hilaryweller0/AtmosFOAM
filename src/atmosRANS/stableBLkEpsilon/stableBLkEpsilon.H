@@ -48,6 +48,10 @@ Description
         stableBLkEpsilon
         {
             Cg              1.0;
+            kappa           0.41;
+            betam           4.8;
+            betah           7.8;
+            Tref            288;
         }
     \endverbatim
 
@@ -84,7 +88,26 @@ protected:
         // Model coefficients
 
             dimensionedScalar Cg_;
+            dimensionedScalar kappa_;
+            dimensionedScalar betam_;
+            dimensionedScalar betah_;
+            dimensionedScalar Tref_;
 
+        // Surface fields
+            volScalarField z0_;
+            volScalarField Lmo_;
+            volScalarField uStar_;
+            volScalarField thetaStar_;
+            volScalarField nutGround_;
+            volScalarField alphatGround_;
+            volScalarField epsilonGroundCorr_;
+            
+        // Vol fields
+            volScalarField theta_;
+        
+        // Themodynamic pRef and R/Cp for updating potential temperature
+            const dimensionedScalar& pRef_;
+            scalar RbyCp_;
 
     // Protected Member Functions
 
@@ -102,7 +125,12 @@ protected:
 
         // Bouyancy source
         tmp<volScalarField> Gcoef() const;
+        
+        // Update the surface Fields
+        virtual void updateSurfaceFields();
 
+        // Update theta
+        volScalarField& calcTheta();
 
 public:
 
@@ -142,6 +170,23 @@ public:
         //- Re-read model coefficients if they have changed
         virtual bool read();
 
+        //- Solve the turbulence equations and correct the turbulence viscosity
+        //- and update the surface fields
+        virtual void correct();
+
+    // Access
+    
+        //- The surface roughness
+        const volScalarField& z0() const { return z0_;}
+
+        //- The Monin-Obukov length
+        const volScalarField& Lmo() const { return Lmo_;}
+
+        //- The friction velocity
+        const volScalarField& uStar() const { return uStar_;}
+
+        //- The surface thetaStar
+        const volScalarField& thetaStar() const { return thetaStar_;}
 
     // Member Operators
 
