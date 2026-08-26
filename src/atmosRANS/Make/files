@@ -1,7 +1,3 @@
 atmosRANSs.C
 
-nutStableBLWallFunction/nutStableBLWallFunctionFvPatchScalarField.C
-alphatStableBLWallFunction/alphatStableBLWallFunctionFvPatchScalarField.C
-epsilonStableBLWallFunction/epsilonStableBLWallFunctionFvPatchScalarField.C
-
 LIB = $(FOAM_USER_LIBBIN)/libatmosRANS
