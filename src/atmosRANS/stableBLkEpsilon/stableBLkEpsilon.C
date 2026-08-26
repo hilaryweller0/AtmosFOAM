@@ -128,7 +128,7 @@ void stableBLkEpsilon<BasicMomentumTransportModel>::updateSurfaceFields()
 
     volScalarField::Boundary& uStarBf = uStar_.boundaryFieldRef();
     volScalarField::Boundary& thetaStarBf = thetaStar_.boundaryFieldRef();
-    volScalarField::Boundary& LmoBf = Lmo_.boundaryFieldRef();
+    volScalarField::Boundary& LmoInvBf = LmoInv_.boundaryFieldRef();
     volScalarField::Boundary& nutG = nutGround_.boundaryFieldRef();
     volScalarField::Boundary& alphatG = alphatGround_.boundaryFieldRef();
     volScalarField::Boundary& epsilonGcorr
@@ -157,7 +157,7 @@ void stableBLkEpsilon<BasicMomentumTransportModel>::updateSurfaceFields()
                 )/
                 (
                     log(y[facei]/max(z0Bf[patchi][facei],SMALL))
-                  + betam_.value()*y[facei]/LmoBf[patchi][facei]
+                  + betam_.value()*y[facei]*LmoInvBf[patchi][facei]
                 );
                 
                 thetaStarBf[patchi][facei] = max
@@ -165,25 +165,28 @@ void stableBLkEpsilon<BasicMomentumTransportModel>::updateSurfaceFields()
                     kappa_.value()*(theta_[celli] - thetaBf[patchi][facei])/
                     (
                         log(y[facei]/max(z0Bf[patchi][facei],SMALL))
-                      + betah_.value()*y[facei]/LmoBf[patchi][facei]
+                      + betah_.value()*y[facei]*LmoInvBf[patchi][facei]
                     ),
                     SMALL
                 );
+                Info << "thetaStar = " << thetaStarBf[patchi][facei] << endl;
             }
-            LmoBf[patchi] = Tref_.value()*sqr(uStarBf[patchi])
-                         /(mag(g.value())*thetaStarBf[patchi]*kappa_.value());
+            //LmoInvBf[patchi]
+            //     = mag(g.value())*thetaStarBf[patchi]*kappa_.value()
+            //     /(Tref_.value()*sqr(uStarBf[patchi]));
             
             nutG[patchi] = uStarBf[patchi]*y*kappa_.value()/
             (
                 log(y/max(z0Bf[patchi],SMALL))
-              + betam_.value()*y/LmoBf[patchi]
+              + betam_.value()*y*LmoInvBf[patchi]
             );
             alphatG[patchi] = thetaStarBf[patchi]*y*kappa_.value()/
             (
                 log(y/max(z0Bf[patchi],SMALL))
-              + betah_.value()*y/LmoBf[patchi]
+              + betah_.value()*y*LmoInvBf[patchi]
             );
-            epsilonGcorr[patchi] = (1 + (betam_.value()-1)*y/LmoBf[patchi]);
+            Info << "alphatG = " << alphatG[patchi][0] << endl;
+            epsilonGcorr[patchi] = (1 + (betam_.value()-1)*y*LmoInvBf[patchi]);
         }
     }
 }
@@ -237,12 +240,12 @@ stableBLkEpsilon<BasicMomentumTransportModel>::stableBLkEpsilon
         IOobject("z0", "constant", this->mesh_, IOobject::MUST_READ),
         this->mesh_
     ),
-    Lmo_
+    LmoInv_
     (
-        IOobject("Lmo", this->runTime_.name(), this->mesh_, 
+        IOobject("LmoInv", this->runTime_.name(), this->mesh_, 
                  IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
         this->mesh_,
-        dimensionedScalar(dimLength, GREAT)
+        dimensionedScalar(dimensionSet(0,-1,0,0,0), scalar(0))
     ),
     uStar_
     (

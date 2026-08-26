@@ -23,23 +23,30 @@ License
 
 \*---------------------------------------------------------------------------*/
 
-#include "nutkStableBLWallFunctionFvPatchScalarField.H"
+#include "nutStableBLWallFunctionFvPatchScalarField.H"
 #include "momentumTransportModel.H"
 #include "fieldMapper.H"
 #include "volFields.H"
+#include "wallFvPatch.H"
 #include "addToRunTimeSelectionTable.H"
+
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 namespace Foam
 {
 
-
 // * * * * * * * * * * * * Protected Member Functions  * * * * * * * * * * * //
 
-tmp<scalarField> nutkStableBLWallFunctionFvPatchScalarField::nut() const
+tmp<Foam::scalarField> nutStableBLWallFunctionFvPatchScalarField::nut() const
 {
     const label patchi = patch().index();
+
+    const momentumTransportModel& turbModel =
+        db().lookupType<momentumTransportModel>(internalField().group());
+
+    const tmp<scalarField> tnuw = turbModel.nu(patchi);
+    const scalarField& nuw = tnuw();
 
     tmp<scalarField> tnutw(new scalarField(*this));
     scalarField& nutw = tnutw.ref();
@@ -47,7 +54,16 @@ tmp<scalarField> nutkStableBLWallFunctionFvPatchScalarField::nut() const
     const volScalarField& nutGround
          = db().lookupObject<volScalarField>("nutGround");
 
-    nutw = nutGround.boundaryField()[patchi];
+    // To avoid oscillations limit the change in the wall viscosity
+    nutw = max
+    (
+        min
+        (
+            nutGround.boundaryField()[patchi] - nuw,
+            max(2*nutw, nuw)
+        ),
+        0.5*nutw
+    );
 
     return tnutw;
 }
@@ -55,78 +71,58 @@ tmp<scalarField> nutkStableBLWallFunctionFvPatchScalarField::nut() const
 
 // * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
 
-nutkStableBLWallFunctionFvPatchScalarField::nutkStableBLWallFunctionFvPatchScalarField
+nutStableBLWallFunctionFvPatchScalarField::nutStableBLWallFunctionFvPatchScalarField
 (
     const fvPatch& p,
     const DimensionedField<scalar, fvMesh>& iF,
     const dictionary& dict
 )
 :
-    nutkWallFunctionFvPatchScalarField(p, iF, dict)
+    nutWallFunctionFvPatchScalarField(p, iF, dict)
 {}
 
 
-nutkStableBLWallFunctionFvPatchScalarField::nutkStableBLWallFunctionFvPatchScalarField
+Foam::nutStableBLWallFunctionFvPatchScalarField::nutStableBLWallFunctionFvPatchScalarField
 (
-    const nutkStableBLWallFunctionFvPatchScalarField& ptf,
+    const nutStableBLWallFunctionFvPatchScalarField& ptf,
     const fvPatch& p,
     const DimensionedField<scalar, fvMesh>& iF,
     const fieldMapper& mapper
 )
 :
-    nutkWallFunctionFvPatchScalarField(ptf, p, iF, mapper)
+    nutWallFunctionFvPatchScalarField(ptf, p, iF, mapper)
 {}
 
 
-nutkStableBLWallFunctionFvPatchScalarField::nutkStableBLWallFunctionFvPatchScalarField
+Foam::nutStableBLWallFunctionFvPatchScalarField::nutStableBLWallFunctionFvPatchScalarField
 (
-    const nutkStableBLWallFunctionFvPatchScalarField& rwfpsf,
+    const nutStableBLWallFunctionFvPatchScalarField& rwfpsf,
     const DimensionedField<scalar, fvMesh>& iF
 )
 :
-    nutkWallFunctionFvPatchScalarField(rwfpsf, iF)
+    nutWallFunctionFvPatchScalarField(rwfpsf, iF)
 {}
 
 
 // * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
 
-void nutkStableBLWallFunctionFvPatchScalarField::map
-(
-    const fvPatchScalarField& ptf,
-    const fieldMapper& mapper
-)
+tmp<scalarField> nutStableBLWallFunctionFvPatchScalarField::yPlus() const
 {
-    nutkWallFunctionFvPatchScalarField::map(ptf, mapper);
+    FatalErrorInFunction << "yPlus is not used in nutStableBLWallFunction"
+        << nl << abort(FatalError);
 }
-
-
-void nutkStableBLWallFunctionFvPatchScalarField::reset
-(
-    const fvPatchScalarField& ptf
-)
-{
-    nutkWallFunctionFvPatchScalarField::reset(ptf);
-}
-
-
-void nutkStableBLWallFunctionFvPatchScalarField::write(Ostream& os) const
-{
-    fvPatchField<scalar>::write(os);
-    writeLocalEntries(os);
-    writeEntry(os, "value", *this);
-}
-
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 makePatchTypeField
 (
     fvPatchScalarField,
-    nutkStableBLWallFunctionFvPatchScalarField
+    nutStableBLWallFunctionFvPatchScalarField
 );
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 } // End namespace Foam
+
 
 // ************************************************************************* //

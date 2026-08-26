@@ -22,13 +22,12 @@ License
     along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 Class
-    Foam::nutkStableBLWallFunctionFvPatchScalarField
+    Foam::nutStableBLWallFunctionFvPatchScalarField
 
 Description
     This boundary condition provides a turbulent kinematic viscosity condition
-    when using wall functions for rough walls, based on turbulence kinetic
-    energy.  The condition manipulates the E parameter to account for roughness
-    effects.
+    when using wall functions for rough walls, based on stableBLkEpsilon
+    scheme and surface roughness, z0, for a stable atmospheric boundary layer.
 
     Reference:
     \verbatim
@@ -40,23 +39,23 @@ Usage
     \verbatim
     <patchName>
     {
-        type            nutkStableBLWallFunction;
+        type            nutStableBLWallFunction;
         value           uniform 0;
     }
     \endverbatim
 
 See also
-    Foam::nutkWallFunctionFvPatchScalarField
+    Foam::nutWallFunctionFvPatchScalarField
 
 SourceFiles
-    nutkStableBLWallFunctionFvPatchScalarField.C
+    nutStableBLWallFunctionFvPatchScalarField.C
 
 \*---------------------------------------------------------------------------*/
 
-#ifndef nutkStableBLWallFunctionFvPatchScalarField_H
-#define nutkStableBLWallFunctionFvPatchScalarField_H
+#ifndef nutStableBLWallFunctionFvPatchScalarField_H
+#define nutStableBLWallFunctionFvPatchScalarField_H
 
-#include "nutkWallFunctionFvPatchScalarField.H"
+#include "nutWallFunctionFvPatchScalarField.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -64,12 +63,12 @@ namespace Foam
 {
 
 /*---------------------------------------------------------------------------*\
-           Class nutkStableBLWallFunctionFvPatchScalarField Declaration
+           Class nutStableBLWallFunctionFvPatchScalarField Declaration
 \*---------------------------------------------------------------------------*/
 
-class nutkStableBLWallFunctionFvPatchScalarField
+class nutStableBLWallFunctionFvPatchScalarField
 :
-    public nutkWallFunctionFvPatchScalarField
+    public nutWallFunctionFvPatchScalarField
 {
 protected:
 
@@ -82,13 +81,13 @@ protected:
 public:
 
     //- Runtime type information
-    TypeName("nutkStableBLWallFunction");
+    TypeName("nutStableBLWallFunction");
 
 
     // Constructors
 
         //- Construct from patch, internal field and dictionary
-        nutkStableBLWallFunctionFvPatchScalarField
+        nutStableBLWallFunctionFvPatchScalarField
         (
             const fvPatch&,
             const DimensionedField<scalar, fvMesh>&,
@@ -96,26 +95,26 @@ public:
         );
 
         //- Construct by mapping given
-        //  nutkStableBLWallFunctionFvPatchScalarField
+        //  nutStableBLWallFunctionFvPatchScalarField
         //  onto a new patch
-        nutkStableBLWallFunctionFvPatchScalarField
+        nutStableBLWallFunctionFvPatchScalarField
         (
-            const nutkStableBLWallFunctionFvPatchScalarField&,
+            const nutStableBLWallFunctionFvPatchScalarField&,
             const fvPatch&,
             const DimensionedField<scalar, fvMesh>&,
             const fieldMapper&
         );
 
         //- Disallow copy without setting internal field reference
-        nutkStableBLWallFunctionFvPatchScalarField
+        nutStableBLWallFunctionFvPatchScalarField
         (
-            const nutkStableBLWallFunctionFvPatchScalarField&
+            const nutStableBLWallFunctionFvPatchScalarField&
         ) = delete;
 
         //- Copy constructor setting internal field reference
-        nutkStableBLWallFunctionFvPatchScalarField
+        nutStableBLWallFunctionFvPatchScalarField
         (
-            const nutkStableBLWallFunctionFvPatchScalarField&,
+            const nutStableBLWallFunctionFvPatchScalarField&,
             const DimensionedField<scalar, fvMesh>&
         );
 
@@ -127,33 +126,21 @@ public:
         {
             return tmp<fvPatchScalarField>
             (
-                new nutkStableBLWallFunctionFvPatchScalarField(*this, iF)
+                new nutStableBLWallFunctionFvPatchScalarField(*this, iF)
             );
         }
 
 
     // Member Functions
 
-        // Mapping functions
-
-            //- Map the given fvPatchField onto this fvPatchField
-            virtual void map(const fvPatchScalarField&, const fieldMapper&);
-
-            //- Reset the fvPatchField to the given fvPatchField
-            //  Used for mesh to mesh mapping
-            virtual void reset(const fvPatchScalarField&);
-
-
-        // I-O
-
-            //- Write
-            virtual void write(Ostream&) const;
+        //- Calculate and return the yPlus at the boundary
+        virtual tmp<scalarField> yPlus() const;
 
 
     // Member Operators
 
         //- Inherit assignment
-        using nutkWallFunctionFvPatchScalarField::operator=;
+        using nutWallFunctionFvPatchScalarField::operator=;
 };
 
 

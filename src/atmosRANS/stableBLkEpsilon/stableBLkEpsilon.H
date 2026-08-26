@@ -95,7 +95,7 @@ protected:
 
         // Surface fields
             volScalarField z0_;
-            volScalarField Lmo_;
+            volScalarField LmoInv_;
             volScalarField uStar_;
             volScalarField thetaStar_;
             volScalarField nutGround_;
@@ -176,11 +176,14 @@ public:
 
     // Access
     
+        const dimensionedScalar& Cmu() const { return this->Cmu_; }
+        const dimensionedScalar& kappa() const { return this->kappa_; }
+    
         //- The surface roughness
         const volScalarField& z0() const { return z0_;}
 
         //- The Monin-Obukov length
-        const volScalarField& Lmo() const { return Lmo_;}
+        const volScalarField& LmoInv() const { return LmoInv_;}
 
         //- The friction velocity
         const volScalarField& uStar() const { return uStar_;}

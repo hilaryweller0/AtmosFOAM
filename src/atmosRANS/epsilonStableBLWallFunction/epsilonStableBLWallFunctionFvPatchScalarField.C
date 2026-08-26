@@ -83,7 +83,6 @@ Foam::epsilonStableBLWallFunctionFvPatchScalarField::calculate
 
         epsilon[facei] = Cmu75*k[celli]*sqrt(k[celli])/(nutw.kappa()*y[facei])
                         *groundCorr[facei];
-        Info << "epsilon ground corr = " << groundCorr[facei] << nl;
     }
 
     return GandEpsilon;

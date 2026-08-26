@@ -1,6 +1,6 @@
 atmosRANSs.C
 
-nutkStableBLWallFunction/nutkStableBLWallFunctionFvPatchScalarField.C
+nutStableBLWallFunction/nutStableBLWallFunctionFvPatchScalarField.C
 alphatStableBLWallFunction/alphatStableBLWallFunctionFvPatchScalarField.C
 epsilonStableBLWallFunction/epsilonStableBLWallFunctionFvPatchScalarField.C
 
