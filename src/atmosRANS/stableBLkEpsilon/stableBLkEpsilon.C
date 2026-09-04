@@ -26,6 +26,7 @@ License
 #include "stableBLkEpsilon.H"
 #include "uniformDimensionedFields.H"
 #include "fvcGrad.H"
+#include "fvcLaplacian.H"
 #include "addToRunTimeSelectionTable.H"
 #include "wallFvPatch.H"
 #include "nearWallDist.H"
@@ -81,9 +82,19 @@ template<class BasicMomentumTransportModel>
 tmp<fvScalarMatrix>
 stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
 {
+    // Local references
+    const alphaField& alpha = this->alpha_;
+    const rhoField& rho = this->rho_;
+    const volScalarField& k = this->k_;
+    const volScalarField& epsilon = this->epsilon_;
+
     const uniformDimensionedVectorField& g =
         this->mesh_.objectRegistry::template
         lookupObject<uniformDimensionedVectorField>("g");
+
+    tmp<fvScalarMatrix> tepsS
+        = kEpsilon<BasicMomentumTransportModel>::epsilonSource();
+    fvScalarMatrix& epsS = tepsS.ref();
 
     if (mag(g.value()) > small)
     {
@@ -93,12 +104,14 @@ stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
             dimensionedScalar(dimDensity/dimTime, scalar(0))
         );
 
-        return fvm::SuSp(this->C1_*Gpos, this->epsilon_);
+        epsS += fvm::SuSp(this->C1_*Gpos, epsilon);
     }
-    else
+    if (C3_Tk_.value() > small)
     {
-        return kEpsilon<BasicMomentumTransportModel>::epsilonSource();
+        epsS += C3_Tk_*fvc::laplacian(alpha*rho*this->DkEff(), k)*epsilon/k;
     }
+    
+    return tepsS;
 }
 
 
@@ -154,6 +167,7 @@ stableBLkEpsilon<BasicMomentumTransportModel>::stableBLkEpsilon
         type
     ),
     Cg_("Cg", this->typeDict(type), 1.0),
+    C3_Tk_("C3_Tk", this->typeDict(type), 0.0),
     theta_
     (
         IOobject("theta", this->runTime_.name(), this->mesh_,

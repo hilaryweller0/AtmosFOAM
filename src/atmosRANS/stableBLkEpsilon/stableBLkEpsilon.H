@@ -85,6 +85,7 @@ protected:
         // Model coefficients
 
             dimensionedScalar Cg_;
+            dimensionedScalar C3_Tk_;
 
         // Vol fields
             volScalarField theta_;
