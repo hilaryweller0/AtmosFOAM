@@ -48,6 +48,9 @@ Description
         stableBLkEpsilon
         {
             Cg              1.0;
+            kappa           0.41;
+            betam           4.8;
+            betah           7.8;
             Tref            288;
         }
     \endverbatim
@@ -85,8 +88,18 @@ protected:
         // Model coefficients
 
             dimensionedScalar Cg_;
-            dimensionedScalar C3_Tk_;
+            dimensionedScalar kappa_;
+            dimensionedScalar betam_;
+            dimensionedScalar betah_;
+            dimensionedScalar Tref_;
 
+        // Surface fields
+            volScalarField z0_;
+            volScalarField LmoInv_;
+            volScalarField thetaStar_;
+            volScalarField betazbyL_;
+            volScalarField epsilonGroundCorr_;
+            
         // Vol fields
             volScalarField theta_;
         
@@ -110,6 +123,9 @@ protected:
 
         // Bouyancy source
         tmp<volScalarField> Gcoef() const;
+        
+        // Update the surface Fields
+        virtual void updateSurfaceFields();
 
         // Update theta
         volScalarField& calcTheta();
@@ -156,6 +172,19 @@ public:
         //- and update the surface fields
         virtual void correct();
 
+    // Access
+    
+        const dimensionedScalar& Cmu() const { return this->Cmu_; }
+        const dimensionedScalar& kappa() const { return this->kappa_; }
+    
+        //- The surface roughness
+        const volScalarField& z0() const { return z0_;}
+
+        //- The Monin-Obukov length
+        const volScalarField& LmoInv() const { return LmoInv_;}
+
+        //- The surface thetaStar
+        const volScalarField& thetaStar() const { return thetaStar_;}
 
     // Member Operators
 

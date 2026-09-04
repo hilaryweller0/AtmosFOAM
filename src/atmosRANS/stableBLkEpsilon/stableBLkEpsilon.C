@@ -26,7 +26,6 @@ License
 #include "stableBLkEpsilon.H"
 #include "uniformDimensionedFields.H"
 #include "fvcGrad.H"
-#include "fvcLaplacian.H"
 #include "addToRunTimeSelectionTable.H"
 #include "wallFvPatch.H"
 #include "nearWallDist.H"
@@ -83,9 +82,6 @@ tmp<fvScalarMatrix>
 stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
 {
     // Local references
-    const alphaField& alpha = this->alpha_;
-    const rhoField& rho = this->rho_;
-    const volScalarField& k = this->k_;
     const volScalarField& epsilon = this->epsilon_;
 
     const uniformDimensionedVectorField& g =
@@ -106,10 +102,6 @@ stableBLkEpsilon<BasicMomentumTransportModel>::epsilonSource() const
 
         epsS += fvm::SuSp(this->C1_*Gpos, epsilon);
     }
-    if (C3_Tk_.value() > small)
-    {
-        epsS += C3_Tk_*fvc::laplacian(alpha*rho*this->DkEff(), k)*epsilon/k;
-    }
     
     return tepsS;
 }
@@ -125,6 +117,62 @@ stableBLkEpsilon<BasicMomentumTransportModel>::Gcoef() const
 
     return (Cg_*this->Cmu_)*this->alpha_*this->rho_*this->k_
            *(g & fvc::grad(theta_))/(theta_*this->epsilon_);
+}
+
+
+template<class BasicMomentumTransportModel>
+void stableBLkEpsilon<BasicMomentumTransportModel>::updateSurfaceFields()
+{
+    // Look up fields for the surface
+    const uniformDimensionedVectorField& g =
+        this->mesh_.objectRegistry::template
+        lookupObject<uniformDimensionedVectorField>("g");
+
+    const fvPatchList& patches = this->mesh_.boundary();
+    
+    const scalar Cmu025 = pow(this->Cmu_.value(), 0.25);
+
+    forAll(patches, patchi)
+    {
+        const fvPatch& patch = patches[patchi];
+
+        const scalarField& z0G = z0_.boundaryField()[patchi];
+        scalarField& LmoInvG = LmoInv_.boundaryFieldRef()[patchi];
+        scalarField& thetaStarG = thetaStar_.boundaryFieldRef()[patchi];
+        scalarField& betazbyLG = betazbyL_.boundaryFieldRef()[patchi];
+        scalarField& epsilonGcorr
+            = epsilonGroundCorr_.boundaryFieldRef()[patchi];
+        const scalarField& thetaG = theta_.boundaryField()[patchi];
+
+        if (isA<wallFvPatch>(patch))
+        {
+            const scalarField& y = this->yb()[patchi];
+            forAll(y, facei)
+            {
+                const label celli = patch.faceCells()[facei];
+                scalar uStar = Cmu025 * sqrt(this->k_[celli]);
+
+                thetaStarG[facei] = max
+                (
+                    kappa_.value()*(theta_[celli] - thetaG[facei])/
+                    (
+                        log(y[facei]/max(z0G[facei],SMALL))
+                      + betah_.value()*y[facei]*LmoInvG[facei]
+                    ),
+                    SMALL
+                );
+
+                LmoInvG[facei]
+                    = mag(g.value())*thetaStarG[facei]*kappa_.value()
+                     /(Tref_.value()*sqr(uStar));
+                
+                betazbyLG[facei] = betam_.value()*y[facei]*LmoInvG[facei];
+                
+            }
+            
+            epsilonGcorr = 1 + betazbyLG;
+        }
+    }
 }
 
 
@@ -167,13 +215,47 @@ stableBLkEpsilon<BasicMomentumTransportModel>::stableBLkEpsilon
         type
     ),
     Cg_("Cg", this->typeDict(type), 1.0),
-    C3_Tk_("C3_Tk", this->typeDict(type), 0.0),
+    kappa_("kappa", this->typeDict(type), 0.41),
+    betam_("betam", this->typeDict(type), 4.8),
+    betah_("betah", this->typeDict(type), 7.8),
+    Tref_("Tref",   dimTemperature, this->typeDict(type)),
+    z0_
+    (
+        IOobject("z0", "constant", this->mesh_, IOobject::MUST_READ),
+        this->mesh_
+    ),
+    LmoInv_
+    (
+        IOobject("LmoInv", this->runTime_.name(), this->mesh_, 
+                 IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
+        this->mesh_,
+        dimensionedScalar(dimensionSet(0,-1,0,0,0), scalar(0))
+    ),
+    thetaStar_
+    (
+        IOobject("thetaStar", this->runTime_.name(), this->mesh_,
+                 IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
+        this->mesh_,
+        dimensionedScalar(dimTemperature, scalar(0))
+    ),
+    betazbyL_
+    (
+        IOobject("betazbyL", this->runTime_.name(), this->mesh_),
+        this->mesh_,
+        dimensionedScalar(dimless, scalar(0))
+    ),
+    epsilonGroundCorr_
+    (
+        IOobject("epsilonGroundCorr", this->runTime_.name(), this->mesh_),
+        this->mesh_,
+        dimensionedScalar(dimless, scalar(0))
+    ),
     theta_
     (
         IOobject("theta", this->runTime_.name(), this->mesh_,
                  IOobject::READ_IF_PRESENT, IOobject::AUTO_WRITE),
         this->mesh_,
-        dimensionedScalar(dimTemperature, scalar(0))
+        Tref_
     ),
     pRef_
     (
@@ -225,7 +307,9 @@ void stableBLkEpsilon<BasicMomentumTransportModel>::correct()
         return;
     }
     calcTheta();
+    updateSurfaceFields();
     kEpsilon<BasicMomentumTransportModel>::correct();
+    updateSurfaceFields();
     correctNut();
 }
 

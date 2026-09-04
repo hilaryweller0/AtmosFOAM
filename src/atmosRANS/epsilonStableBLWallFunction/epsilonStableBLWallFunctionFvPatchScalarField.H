@@ -1,0 +1,195 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Copyright (C) 2011-2026 OpenFOAM Foundation
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+Class
+    Foam::epsilonStableBLWallFunctionFvPatchScalarField
+
+Description
+    This boundary condition provides a turbulence dissipation wall constraint
+    a stable boundary layer.
+
+    The condition can be applied to wall boundaries for which it
+    - calculates \c epsilon and \c G
+    - specifies the near-wall epsilon value
+
+    where
+ 
+    \vartable
+        epsilon | turbulence dissipation field
+        G       | turbulence generation field
+    \endvartable
+
+Usage
+    Example of the boundary condition specification:
+    \verbatim
+    <patchName>
+    {
+        type            epsilonStableBLWallFunction;
+    }
+    \endverbatim
+
+SourceFiles
+    epsilonStableBLWallFunctionFvPatchScalarField.C
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef epsilonStableBLWallFunctionFvPatchScalarField_H
+#define epsilonStableBLWallFunctionFvPatchScalarField_H
+
+#include "wallCellWallFunctionFvPatchScalarField.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+
+class momentumTransportModel;
+
+/*---------------------------------------------------------------------------*\
+            Class epsilonStableBLWallFunctionFvPatchScalarField Declaration
+\*---------------------------------------------------------------------------*/
+
+class epsilonStableBLWallFunctionFvPatchScalarField
+:
+    public wallCellWallFunctionFvPatchScalarField
+{
+private:
+
+    // Private Data
+
+        //- Wall cell turbulence generation values. Master patch only.
+        autoPtr<scalarField> wallCellGPtr_;
+
+        //- Wall cell turbulence dissipation values. Master patch only.
+        autoPtr<scalarField> wallCellEpsilonPtr_;
+
+
+    // Private Member Functions
+
+        //- Calculate and return G and epsilon
+        Pair<tmp<scalarField>> calculate(const momentumTransportModel&) const;
+
+        //- Calculate the turbulent values in wall cells and apply to the
+        //  turbulence model's fields
+        void updateCoeffsMaster();
+
+        //- Constrain the matrix such that the wall cells take the value
+        //  specified by the wall function
+        void manipulateMatrixMaster(fvMatrix<scalar>& matrix);
+
+
+public:
+
+    //- Runtime type information
+    TypeName("epsilonStableBLWallFunction");
+
+
+    // Constructors
+
+        //- Construct from patch, internal field and dictionary
+        epsilonStableBLWallFunctionFvPatchScalarField
+        (
+            const fvPatch&,
+            const DimensionedField<scalar, fvMesh>&,
+            const dictionary&
+        );
+
+        //- Construct by mapping given
+        //  epsilonStableBLWallFunctionFvPatchScalarField
+        //  onto a new patch
+        epsilonStableBLWallFunctionFvPatchScalarField
+        (
+            const epsilonStableBLWallFunctionFvPatchScalarField&,
+            const fvPatch&,
+            const DimensionedField<scalar, fvMesh>&,
+            const fieldMapper&
+        );
+
+        //- Disallow copy without setting internal field reference
+        epsilonStableBLWallFunctionFvPatchScalarField
+        (
+            const epsilonStableBLWallFunctionFvPatchScalarField&
+        ) = delete;
+
+        //- Copy constructor setting internal field reference
+        epsilonStableBLWallFunctionFvPatchScalarField
+        (
+            const epsilonStableBLWallFunctionFvPatchScalarField&,
+            const DimensionedField<scalar, fvMesh>&
+        );
+
+        //- Construct and return a clone setting internal field reference
+        virtual tmp<fvPatchScalarField> clone
+        (
+            const DimensionedField<scalar, fvMesh>& iF
+        ) const
+        {
+            return tmp<fvPatchScalarField>
+            (
+                new epsilonStableBLWallFunctionFvPatchScalarField(*this, iF)
+            );
+        }
+
+
+    //- Destructor
+    virtual ~epsilonStableBLWallFunctionFvPatchScalarField()
+    {}
+
+
+    // Member Functions
+
+        // Mapping functions
+
+            //- Map the given fvPatchField onto this fvPatchField
+            virtual void map(const fvPatchScalarField&, const fieldMapper&);
+
+            //- Reset the fvPatchField to the given fvPatchField
+            //  Used for mesh to mesh mapping
+            virtual void reset(const fvPatchScalarField&);
+
+
+        // Evaluation functions
+
+            //- Update the coefficients associated with the patch field
+            virtual void updateCoeffs();
+
+            //- Manipulate matrix
+            virtual void manipulateMatrix(fvMatrix<scalar>& matrix);
+
+
+    // Member Operators
+
+        //- Inherit assignment
+        using wallCellWallFunctionFvPatchScalarField::operator=;
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
+
+// ************************************************************************* //
