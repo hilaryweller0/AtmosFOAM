@@ -1,0 +1,11 @@
+You do not need so many variables. This complicates the code.
+
+Do not redeclare dhUdt. In fact you don't need it.
+
+For conservation, only solve flux form equations, not advective form. So instead of
+h = h.oldTime() - dt/2 * h * fvc::div(U);
+h = h.oldTime() - dt/2 * fvc::div(phi);
+
+This means that only momentum advection is implicit. I have ignored implicit advection of h. hmmm
+
+You calculate E every time step but only write it out occasionally. It would be better to calculate a volume some of energy every time step and write out every time step using a functionObject.

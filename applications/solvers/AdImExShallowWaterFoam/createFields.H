@@ -44,24 +44,22 @@ surfaceScalarField phi
 
 Info<< "Creating Coriolis Force" << endl;
 const volVectorField F("F", ((2.0*Omega) & gHat)*gHat);
-//volScalarField f("f", (2.0*Omega) & gHat);
-//f.write();
 
-// Rate of change of momentum, inheriting boundary conditions from U
+volVectorField ghGradh = fvc::reconstruct
+(
+    magg*hf*fvc::snGrad(h+h0)*mesh.magSf()
+);
+ghGradh -= (ghGradh & gHat)*gHat;
+
+// Rate of change of momentum, inheriting U boundary conditions
 volVectorField dhUdt
 (
     IOobject("dhUdt", runTime.name(), mesh),
     h*U/dt,
     U.boundaryField().types()
 );
-dhUdt = -fvc::div(phi,U) - h*(F ^ U) - magg*h*fvc::grad(h+h0),
+dhUdt = -fvc::div(phi,U) - h*(F ^ U) - ghGradh,
 dhUdt -= (gHat & dhUdt)*gHat;
-dhUdt.correctBoundaryConditions();
 dhUdt.oldTime();
-
-volVectorField ghGradh = fvc::reconstruct
-(
-    magg*hf*fvc::snGrad(h+h0)*mesh.magSf()
-);
 
 mesh.schemes().setFluxRequired(h.name());

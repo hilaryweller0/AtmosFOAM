@@ -74,6 +74,8 @@ int main(int argc, char *argv[])
         // Outer Iterations
         for (int iIt=0; iIt < nIters; iIt++)
         {
+            hf = fvc::interpolate(h);
+
             // Solve momentum equation on faces without the pressure gradient
             dhUdt = - hf*((F^Uf) & mesh.Sf())
                    - hf*magg*fvc::snGrad(h0)*mesh.magSf()
@@ -89,7 +91,6 @@ int main(int argc, char *argv[])
               - fvm::laplacian(sqr(alpha)*dt*magg*hf, h)
             );
             hEqn.solve();
-            hf = fvc::interpolate(h);
             
             // Back substitutions
             if (alpha > 0) 

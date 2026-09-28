@@ -12,22 +12,9 @@ volScalarField h
     ),
     mesh
 );
-surfaceScalarField hf = linearInterpolate(h);
+surfaceScalarField hf = fvc::interpolate(h);
 
-Info << "Reading in velocity field Uf (velocity on face)\n" << endl; 
-surfaceVectorField Uf
-(
-    IOobject
-    (
-        "Uf",
-        runTime.name(),
-        mesh,
-        IOobject::MUST_READ,
-        IOobject::AUTO_WRITE
-    ),
-    mesh
-);
-// Create cell centre velocity
+Info << "Reading in velocity field U (cell centre velocity)\n" << endl; 
 volVectorField U
 (
     IOobject
@@ -35,37 +22,41 @@ volVectorField U
         "U",
         runTime.name(),
         mesh,
-        IOobject::NO_READ,
+        IOobject::MUST_READ,
         IOobject::AUTO_WRITE
     ),
-    fvc::reconstruct(Uf & mesh.Sf())
+    mesh
 );
 
-// Mass flux through faces
-surfaceScalarField flux
+volVectorField hU
 (
     IOobject
     (
-        "flux",
+        "hU",
         runTime.name(),
         mesh,
         IOobject::READ_IF_PRESENT,
         IOobject::AUTO_WRITE
     ),
-    hf*(Uf&mesh.Sf()),
-    "fixedValue"
+    h*U,
+    U.boundaryField().types()
 );
-flux.boundaryFieldRef() == 0;
-flux.oldTime();
 
-// Rate of change of flux
-surfaceScalarField dhUdt
+// Mass flux through faces
+surfaceScalarField phi
 (
-    IOobject("dhUdt", runTime.name(), mesh),
-  - hf*((F^Uf) & mesh.Sf())
-  - hf*magg*fvc::snGrad(h+h0)*mesh.magSf()
-  - fvc::flux(fvc::div(flux,U))
+    IOobject
+    (
+        "phi",
+        runTime.name(),
+        mesh,
+        IOobject::READ_IF_PRESENT,
+        IOobject::AUTO_WRITE
+    ),
+    hf*fvc::flux(U)
 );
-dhUdt.oldTime();
+
+Info<< "Creating Coriolis Force" << endl;
+const volVectorField F("F", ((2.0*Omega) & gHat)*gHat);
 
 mesh.schemes().setFluxRequired(h.name());

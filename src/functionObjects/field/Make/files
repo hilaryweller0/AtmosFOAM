@@ -1,6 +1,9 @@
+SWenergy/SWenergy.C
 CourantNoU/CourantNoU.C
 uStar/uStar.C
 theta/theta.C
 ground/ground.C
+w/w.C
+axialAngMom/axialAngMom.C
 
 LIB = $(FOAM_USER_LIBBIN)/libfieldFunctionObjects2

@@ -62,10 +62,9 @@ int main(int argc, char *argv[])
     #include "createMesh.H"
     #include "numericalParameters.H"
     #define dt runTime.deltaT()
-    #define alpha num.alpha
     #include "readEarthProperties.H"
     #include "createFields.H"
-
+    
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     Info<< "\nStarting time loop\n" << endl;
@@ -75,78 +74,75 @@ int main(int argc, char *argv[])
         Info<< "\n Time = " << runTime.name() << nl << endl;
 
         #include "CourantNo.H"
-
-        // Outer Corrections
-        for(int outerCorr = 0; outerCorr < num.nOuterCorrs; outerCorr++)
+        
+        // half Coriolis
+        for(int it = 0; it < num.nCoriIters; it++)
         {
-            // Create and solve the momentum equation
-            // Rate of change of momentum with/without pressure gradient
-            dhUdt = -h*(F ^ U);
-            if (!num.opSplit) dhUdt -= ghGradh;
-
-            // Explicit momentum solve
-            dhUdt -= fvc::div(phi, U)
-                  - ((fvc::div(phi, U,"div(phi,U)")) & gHat)*gHat;
-            fvVectorMatrix UEqn
-            (
-                fvm::ddt(h,U)
-             == (1-alpha)*dhUdt.oldTime() + alpha*dhUdt
-            );
-            UEqn.solve();
-
-            // Momentum equation with implicit advection, without radial component
-            /*fvVectorMatrix UEqn
-            (
-                fvm::ddt(h,U)
-              + fvm::div(alpha*phi, U, "div(phi,U)")
-             == (1-alpha)*dhUdt.oldTime() + alpha*dhUdt
-              + ((fvc::div(alpha*phi, U,"div(phi,U)")) & gHat)*gHat
-            );
-            UEqn.solve();
-
-            // Update rate of change WITHOUT pressure gradient (to be added
-            // after the pressure equation)
-            U -= (U & gHat)*gHat;
-            dhUdt -= fvc::div(phi, U)
-                  - ((fvc::div(phi, U,"div(phi,U)")) & gHat)*gHat;
-            */
-            if (!num.opSplit) dhUdt += ghGradh;
-
-            // The momentum without the pressure gradient
-            volVectorField hU = h.oldTime() * U.oldTime()
-                              + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
-            // The flux without the pressure gradient
-            phi = fvc::flux(hU) - alpha*dt*magg*hf*fvc::snGrad(h0)*mesh.magSf();
-            
-            // Construct and solve the pressure equation
-            for(int icorr = 0; icorr < num.nPressureCorrs; icorr++)
-            {
-                hf = fvc::interpolate(h);
-                // Solve pressure equation
-                for(int orthCorr = 0; orthCorr < num.nNonOrthogCorrs;orthCorr++)
-                {
-                    fvScalarMatrix hEqn
-                    (
-                        fvm::ddt(h)
-                      + fvc::div((1-alpha)*phi.oldTime())
-                      + fvc::div(alpha*phi)
-                      - fvm::laplacian(sqr(alpha)*dt*magg*hf, h)
-                    );
-                    hEqn.solve();
-                    
-                    bool lastIter = icorr == num.nPressureCorrs-1 
-                            && orthCorr == num.nNonOrthogCorrs-1 && alpha > 0;
-                    if (lastIter) phi += hEqn.flux()/alpha;
-                }
-            }
-
-            // Back substitutions
-            ghGradh = fvc::reconstruct(magg*hf*fvc::snGrad(h+h0)*mesh.magSf());
-            ghGradh -= (ghGradh & gHat)*gHat;
-            U = (hU - alpha*dt*ghGradh)/h;
+            U = U.oldTime() - 0.5*dt*(F ^ U);
         }
         
-        dhUdt -= ghGradh;
+        // half gravity (expl)
+        phi = fvc::flux(h*U);
+        if (! num.FB) hf = fvc::interpolate(h);
+        h = h.oldTime() - 0.5*dt*fvc::div(phi);
+        if (num.FB) hf = fvc::interpolate(h);
+        U = 
+        (
+            h.oldTime()*U
+          - 0.5*dt*fvc::reconstruct(magg*hf*fvc::snGrad(h+h0)*mesh.magSf())
+        )/h;
+        phi = fvc::flux(h*U);
+        
+        // Momentum advection with iterations for the non-linearity
+        // First store the previous velocity (from after half a gravity)
+        U.oldTimeRef() = U;
+        for(int it = 0; it < num.nNonLinIters; it++)
+        {
+            // First implicit RK stage
+            fvVectorMatrix UEqn
+            (
+                fvm::ddt(h, U)
+              + 0.25*fvm::div(phi, U)
+            );
+            UEqn.solve();
+            phi = fvc::flux(h*U);
+            
+            // Second implicit RK stage
+            UEqn = fvVectorMatrix
+            (
+                fvm::ddt(h, U)
+              + 2/3*fvc::div(phi, U)
+              + 1/3*fvm::div(phi, U)
+            );
+            UEqn.solve();
+            phi = fvc::flux(h*U);
+        }
+        
+        // Previous stages are no longer needed
+        U.oldTimeRef() = U;
+        h.oldTimeRef() = h;
+        phi = fvc::flux(h*U);
+        
+        // Final gravity (implicit), with non-linear iterations
+        for(int it = 0; it < num.nNonLinIters; it++)
+        {
+            hf = fvc::interpolate(h);
+            
+            fvScalarMatrix hEqn
+            (
+                fvm::ddt(h)
+              + 0.5*fvc::div(phi)
+              - 0.25*fvm::laplacian(dt*magg*hf, h)
+              - 0.25*fvc::laplacian(dt*magg*hf, h0)
+            );
+            hEqn.solve();
+            U -= 0.5*dt*magg*fvc::reconstruct(fvc::snGrad(h)*mesh.magSf());
+            phi -= 0.5*dt*magg*hf*fvc::snGrad(h+h0)*mesh.magSf();
+        }
+        
+        // Final half Coriolis
+        U -= 0.5*dt*(F ^ U);
+
         runTime.write();
 
         Info<< "ExecutionTime = " << runTime.elapsedCpuTime() << " s"

@@ -73,18 +73,32 @@ int main(int argc, char *argv[])
                               "T_analytic";
 
     Info << "Reading " << tracerName << " if it exists" << endl;
-    volScalarField T
+    IOobject Tio
     (
-        IOobject
-        (
-            tracerName,
-            runTime.name(),
-            mesh,
-            IOobject::READ_IF_PRESENT
-        ),
+        tracerName,
+        runTime.name(),
         mesh,
-        dimensionedScalar(tracerName, dimless, scalar(0))
+        IOobject::READ_IF_PRESENT
     );
+    autoPtr<volScalarField> Tp;
+
+    if (Tio.headerOk())
+    {
+        Tp.reset(new volScalarField(Tio, mesh));
+    }
+    else
+    {
+        Tp.reset
+        (
+            new volScalarField
+            (
+                Tio,
+                mesh,
+                dimensionedScalar(tracerName, dimless, 0)
+            )
+        );
+    }
+    volScalarField& T = Tp();
 
     const word tracerDictName = args.optionFound("tracerDict") ?
                                 args.optionRead<word>("tracerDict") :

@@ -1,0 +1,19 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  10
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+Description
+    Calculates the energy of the shallow water equations.
+
+\*---------------------------------------------------------------------------*/
+
+type            SWenergy;
+libs            ("libfieldFunctionObjects2.so");
+
+executeControl  writeTime;
+writeControl    writeTime;
+
+// ************************************************************************* //
