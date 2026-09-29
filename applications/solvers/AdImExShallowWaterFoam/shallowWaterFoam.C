@@ -79,23 +79,25 @@ int main(int argc, char *argv[])
         // Outer Corrections
         for(int outerCorr = 0; outerCorr < num.nOuterCorrs; outerCorr++)
         {
+            hf = fvc::interpolate(h);
+        
             // Create and solve the momentum equation
             // Rate of change of momentum with/without pressure gradient
             dhUdt = -h*(F ^ U);
             if (!num.opSplit) dhUdt -= ghGradh;
 
             // Explicit momentum solve
-            dhUdt -= fvc::div(phi, U)
+            /*dhUdt -= fvc::div(phi, U)
                   - ((fvc::div(phi, U,"div(phi,U)")) & gHat)*gHat;
             fvVectorMatrix UEqn
             (
                 fvm::ddt(h,U)
              == (1-alpha)*dhUdt.oldTime() + alpha*dhUdt
             );
-            UEqn.solve();
+            UEqn.solve();*/
 
             // Momentum equation with implicit advection, without radial component
-            /*fvVectorMatrix UEqn
+            fvVectorMatrix UEqn
             (
                 fvm::ddt(h,U)
               + fvm::div(alpha*phi, U, "div(phi,U)")
@@ -109,19 +111,20 @@ int main(int argc, char *argv[])
             U -= (U & gHat)*gHat;
             dhUdt -= fvc::div(phi, U)
                   - ((fvc::div(phi, U,"div(phi,U)")) & gHat)*gHat;
-            */
+            
+            // Remove the pressure gradient, if it was previously included
             if (!num.opSplit) dhUdt += ghGradh;
 
             // The momentum without the pressure gradient
             volVectorField hU = h.oldTime() * U.oldTime()
                               + dt*((1-alpha)*dhUdt.oldTime() + alpha*dhUdt);
             // The flux without the pressure gradient
-            phi = fvc::flux(hU) - alpha*dt*magg*hf*fvc::snGrad(h0)*mesh.magSf();
+            phi = fvc::flux(hU) // Convergent version stops here
+                - alpha*dt*magg*hf*fvc::snGrad(h0)*mesh.magSf();
             
             // Construct and solve the pressure equation
             for(int icorr = 0; icorr < num.nPressureCorrs; icorr++)
             {
-                hf = fvc::interpolate(h);
                 // Solve pressure equation
                 for(int orthCorr = 0; orthCorr < num.nNonOrthogCorrs;orthCorr++)
                 {
