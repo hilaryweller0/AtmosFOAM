@@ -38,22 +38,17 @@ Description
        *fvc::surfaceSum(mag(phi))().primitiveField()/h.primitiveField()
     );
     
-    scalar CoMax = gMax(CoNum);
     scalar CoMean = gSum(CoNum*mesh.V().primitiveField())
                     /gSum(mesh.V().primitiveField());
     
-    Info << "Advective Courant number mean: " << CoMean << " max: " << CoMax
-         << endl;
+    Info << "Advective Courant number mean: " << CoMean
+         << " max: " << gMax(CoNum) << endl;
 
     // Gravity wave Courant number
     CoNum = dt*sqrt(linearInterpolate(magg*h))*mesh.deltaCoeffs();
     
-    CoMax = gMax(CoNum);
-    CoMean = gSum(CoNum*mesh.V().primitiveField())
-                    /gSum(mesh.V().primitiveField());
-    
-    Info << "Gravity wave Courant number mean: " << CoMean << " max: " << CoMax
-         << endl;
+    Info << "Gravity wave Courant number min: " << gMin(CoNum)
+         << " max: " << gMax(CoNum) << endl;
 }
 
 
