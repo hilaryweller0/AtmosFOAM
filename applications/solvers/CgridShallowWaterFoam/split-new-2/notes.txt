@@ -1,0 +1,24 @@
+Notes on 
+https://github.com/winterniphredil/OpenFOAM_SWE_splitting_schemes/blob/master/applications/solvers/CgridShallowWaterFoam/current/shallowWaterFoam.C.
+
+Your code ran fine and generated a good solution using a time step of 1800.
+
+This code does not use a C-grid. It is co-located. It needs a new name.
+
+I have made a lot of changes to your code. You should compare your previous version and this one using "meld". 
+
+I removed numericalParameters.H as it was not used.
+I removed tolerance as it was not used.
+
+I created field ghGradh to simplify your code.
+
+You calculate phi at the very start and end of the time step. You don't need both. I removed the one at the start.
+
+I reduced the number of non-linear iterations. They weren't all needed.
+
+I removed phi_a and U_a for the second implicit non-linear advection and did the calculation more efficiently. 
+
+I calculate hf before hEqn rather than after to make sure that the same hf is used in ghGradh (for consistency).
+
+After all these changes ...
+My version runs ALOT faster and the solutions are nearly the same, but slightly different as I am doing fewer non-linear iterations.

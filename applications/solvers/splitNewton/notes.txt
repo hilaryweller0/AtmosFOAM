@@ -1,0 +1,15 @@
+I am starting by melding the previous split-new-2.shallowWaterFoam.C with 
+splitNewton/shallowWaterFoam.C as some of the changes are the same as changes that I suggested before.
+
+At convergence, U_prime=0, so initialise U_prime to be zero before the solve. This means that you do not need the term
+              - 0.5*(fvc::div(phi, U_prime) & gHat)*gHat
+
+
+The term
+                1/dt* (fvm::Sp(h,U_prime) + h*U - h*U.oldTime())
+should be
+                1/dt* (fvm::Sp(h,U_prime) + h*U - h.oldTime()*U.oldTime())
+
+or should it? Hmm, not sure. You will need to compare with your analysis.
+
+I ran your code for the 480x240 grid with dt=1800 and it was unstable, crashing after 4 time steps.
